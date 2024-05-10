@@ -1,13 +1,10 @@
-use eschec::board::{fen::parse_fen, Board};
+use eschec::board::components::Piece;
 
 fn main() {
-    let _board = Board::new();
-    // let rights = eschec::board::components::CastlingRights(0b1101);
-
-    // println!("{}", rights);
-    // dbg!(parse_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq e3 0 1").unwrap());
-    let b = parse_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq e3 0 1").unwrap();
-    let s = eschec::board::components::Square(27);
-    println!("{s}");
-    // dbg!(board);
+    let k_moves = eschec::board::moves::Moves::new(Piece::Knight);
+    let bb = k_moves.attack_bb[0];
+    // println!("{}", eschec::board::components::Square(52));
+    // let bb = BitBoard(63);
+    println!("{}", bb.print_bitboard());
+    // dbg!(0xFF << 1);
 }
