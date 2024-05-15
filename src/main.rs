@@ -1,10 +1,12 @@
-use eschec::board::components::Piece;
+use eschec::board::components::{Piece, Square};
 
 fn main() {
-    let k_moves = eschec::board::moves::Moves::new(Piece::Knight);
-    let bb = k_moves.attack_bb[0];
-    // println!("{}", eschec::board::components::Square(52));
+    let k_moves = eschec::board::moves::Moves::new(Piece::Rook);
+    let s = 60;
+    let sq = Square(s);
+    let bb = k_moves.attack_bb[s];
+    // println!("{}", eschec::board::components::Square(20));
     // let bb = BitBoard(63);
-    println!("{}", bb.print_bitboard());
+    println!("printing bb({sq}):\n{}", bb.print_bitboard());
     // dbg!(0xFF << 1);
 }

@@ -1,3 +1,5 @@
+use crate::board::components::Square;
+
 use super::components::{BitBoard, Piece};
 
 #[derive(Default, Debug, PartialEq, Eq, PartialOrd, Clone)]
@@ -6,12 +8,62 @@ pub struct Moves {
     pub attack_bb: Vec<BitBoard>,
 }
 
+pub struct Direction;
+impl Direction {
+    pub const NORTH: i8 = 8;
+    pub const SOUTH: i8 = -8;
+    pub const WEST: i8 = -1;
+    pub const EAST: i8 = 1;
+    pub const NORTHWEST: i8 = -7;
+    pub const SOUTHEAST: i8 = 7;
+    pub const NORTHEAST: i8 = 9;
+    pub const SOUTHWEST: i8 = -9;
+
+    pub const ORTHO: [i8; 4] = [Self::NORTH, Self::SOUTH, Self::WEST, Self::EAST];
+}
+
 impl Moves {
+    /// First 4 are orhtogonal, rest are diagonal
+    ///                                (N, S, W, E, NW, SE, NE, SW)
     pub fn new(piece: Piece) -> Self {
         let moves = Self::default();
         match piece {
             Piece::Knight => moves.gen_knight_moves(),
+            Piece::Rook => moves.gen_rook_moves(),
             _ => Moves::default(),
+        }
+    }
+
+    pub fn gen_rook_moves(self) -> Self {
+        let mut attack_bb = vec![BitBoard(0); 64];
+        (0..64).for_each(|index| {
+            let square = Square(index);
+            let mut rook_moves = BitBoard(0);
+            let (file, rank) = square.coords();
+
+            // Vertical
+            for f in 0..8 {
+                if f != file {
+                    let target_index = f * 8 + rank;
+                    // dbg!(index, f, rank, target_index);
+                    let target_bb = BitBoard(1 << target_index);
+                    rook_moves = rook_moves | target_bb;
+                }
+            }
+
+            // // Horizontal
+            for r in 0..8 {
+                if r != rank {
+                    let target_index = r + file * 8;
+                    let target_bb = BitBoard(1 << target_index);
+                    rook_moves = rook_moves | target_bb;
+                }
+            }
+            attack_bb[index] = rook_moves;
+        });
+        Self {
+            piece: Piece::Rook,
+            attack_bb,
         }
     }
 
@@ -47,8 +99,6 @@ impl Moves {
                     } // // Generate a bitboard with only the target square set
                 }
             }
-
-            // Set the attack bitboard for the current square
             attack_bb[index] = knight_moves;
         });
 
