@@ -1,4 +1,4 @@
-use std::io::{self};
+use std::io::{self, Write};
 
 use components::Square;
 use eschec::{board::*, clear_screen};
@@ -8,13 +8,18 @@ fn main() -> anyhow::Result<()> {
 
     let stdin: io::Stdin = io::stdin();
     loop {
+        println!("{}", board);
+
         let mut s = String::new();
-        stdin.read_line(&mut s).unwrap(); // Changed from read_to_string to read_line
+        print!("{} >> ", board.stm);
+        io::stdout().flush()?;
+        stdin.read_line(&mut s).unwrap();
         clear_screen()?;
 
-        let trimmed = s.trim(); // Remove any trailing newline or spaces
+        // Remove any trailing newline or spaces
+        let trimmed = s.trim();
         if trimmed.is_empty() {
-            continue; // Ignore empty input
+            continue;
         }
 
         let (from, to) = match trimmed.split_once(' ') {
@@ -63,11 +68,6 @@ fn main() -> anyhow::Result<()> {
         }
 
         // Sleep to give some delay
-        std::thread::sleep(std::time::Duration::from_millis(300));
-
-        println!("Black pieces bitboard:");
-        println!("{}", board.positions.all_sides[1].print_bitboard());
-        println!("White pieces bitboard:");
-        println!("{}", board.positions.all_sides[0].print_bitboard());
+        std::thread::sleep(std::time::Duration::from_millis(30));
     }
 }

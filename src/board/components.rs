@@ -50,11 +50,13 @@ impl BitBoard {
     pub fn get_set_bits(&self) -> Vec<usize> {
         let mut set_bits = Vec::new();
         let mut bb = self.0;
+        let mut bit_position = 0;
 
-        for i in 0..64 {
-            if (bb & i) != 0 {
-                set_bits.push(i.try_into().unwrap());
+        while bb > 0 {
+            if bb & 1 == 1 {
+                set_bits.push(bit_position);
             }
+            bit_position += 1;
             bb >>= 1;
         }
         set_bits
@@ -65,10 +67,20 @@ impl BitBoard {
     }
 }
 
-#[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
+#[derive(Default, Debug, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
 pub enum Side {
+    #[default]
     White,
     Black,
+}
+
+impl Display for Side {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match &self {
+            Side::White => write!(f, "White"),
+            Side::Black => write!(f, "Black"),
+        }
+    }
 }
 
 impl Not for Side {
@@ -79,12 +91,8 @@ impl Not for Side {
     }
 }
 
-impl Default for Side {
-    fn default() -> Self {
-        Self::White
-    }
-}
 impl Side {
+    pub const SIDES: [Side; 2] = [Side::White, Side::Black];
     // TODO: Should this consume self?
     pub fn flip(&self) -> Self {
         match self {
@@ -275,7 +283,7 @@ impl Display for CastlingRights {
 }
 impl Default for CastlingRights {
     fn default() -> Self {
-        Self::ANY_CASTLING
+        Self::empty()
     }
 }
 
@@ -339,10 +347,21 @@ impl Square {
         let square_index = row_index * 8 + col_index;
         Ok(Square(square_index))
     }
+    /// NOTE: Coords are 1 indexed (Rank and File)
     pub fn coords(&self) -> (usize, usize) {
-        let file = self.0 / 8;
-        let rank = self.0 % 8;
+        let file = self.0 / 8 + 1;
+        let rank = self.0 % 8 + 1;
         (file, rank)
+    }
+
+    /// NOTE: Coords are 1 indexed (Rank and File)
+    pub fn rank(&self) -> usize {
+        self.0 % 8 + 1
+    }
+
+    /// NOTE: Coords are 1 indexed (Rank and File)
+    pub fn file(&self) -> usize {
+        self.0 / 8 + 1
     }
 
     pub fn index(&self) -> usize {
@@ -410,7 +429,7 @@ mod tests {
 0 0 0 0 0 0 0 0
 0 0 0 0 0 0 0 0
 0 0 0 0 0 0 0 0
-0 0 0 0 1 0 0 0
+0 0 0 0 0 0 0 0
 1 0 0 0 0 0 0 0
 0 1 1 1 1 1 1 1
 1 1 1 1 1 1 1 1

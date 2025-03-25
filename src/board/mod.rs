@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Display};
 
 use moves::Moves;
 
@@ -9,7 +9,7 @@ mod fen;
 pub mod moves;
 
 /// Completely encapsulate the game
-#[derive(Debug, Default, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
+#[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
 pub struct Board {
     // Snapshot of current board
     pub positions: BoardState,
@@ -26,6 +26,98 @@ pub struct Board {
     pub fullmove_counter: u8,
     /// Material left for each side [White, Black]
     pub material: [u64; 2],
+}
+
+impl Default for Board {
+    fn default() -> Self {
+        Self {
+            positions: BoardState::default(),
+            stm: Side::default(),
+            castling_rights: CastlingRights::empty(),
+            enpassant_square: None,
+            halfmove_clock: 0,
+            fullmove_counter: 1,
+            material: [0, 0],
+        }
+    }
+}
+
+impl Display for Board {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // Define Unicode chess pieces
+        let piece_chars = [
+            ['♙', '♗', '♘', '♖', '♕', '♔'], // White pieces
+            ['♟', '♝', '♞', '♜', '♛', '♚'], // Black pieces
+        ];
+
+        // Create top border with file labels
+        writeln!(f, "  +---+---+---+---+---+---+---+---+")?;
+
+        // Iterate through ranks (from top to bottom)
+        for rank in (0..8).rev() {
+            // Write rank number
+            write!(f, "{} |", rank + 1)?;
+
+            // Iterate through files (from left to right)
+            for file in 0..8 {
+                let square_idx = rank * 8 + file;
+
+                // Check if there's a piece at this square
+                let mut piece_found = false;
+
+                for (piece_type, side) in Piece::all() {
+                    let side_idx = side.index();
+                    let piece_idx = piece_type.index();
+
+                    if self.positions.all_pieces[side_idx][piece_idx].contains_square(square_idx) {
+                        // Draw the piece using Unicode chess piece
+                        write!(f, " {} |", piece_chars[side_idx][piece_idx])?;
+                        piece_found = true;
+                        break;
+                    }
+                }
+
+                // If no piece found, draw empty square
+                if !piece_found {
+                    // Use different background for alternating squares
+                    let is_dark = (rank + file) % 2 == 1;
+                    if is_dark {
+                        write!(f, " · |")?;
+                    } else {
+                        write!(f, "   |")?;
+                    }
+                }
+            }
+
+            // End of rank
+            writeln!(f)?;
+            writeln!(f, "  +---+---+---+---+---+---+---+---+")?;
+        }
+
+        // File letters at the bottom
+        writeln!(f, "    A   B   C   D   E   F   G   H  ")?;
+
+        // Additional game information
+        writeln!(f, "\nSide to move: {}", self.stm)?;
+        writeln!(f, "Castling rights: {}", self.castling_rights)?;
+
+        if let Some(ep) = self.enpassant_square {
+            writeln!(f, "En passant square: {}", ep)?;
+        } else {
+            writeln!(f, "En passant square: -")?;
+        }
+
+        writeln!(f, "Halfmove clock: {}", self.halfmove_clock)?;
+        writeln!(f, "Fullmove counter: {}", self.fullmove_counter)?;
+        writeln!(
+            f,
+            "Material balance: W:{} B:{}",
+            self.material[Side::White.index()],
+            self.material[Side::Black.index()]
+        )?;
+
+        Ok(())
+    }
 }
 
 impl Board {
@@ -68,7 +160,7 @@ impl Board {
         (0..64).for_each(|index| {
             let square = Square::new(index).expect("Get a valid index");
             if let Some(piece) = self.get_piece_at(square) {
-                let moves = Moves::new(piece);
+                let moves = Moves::new(piece, self.stm);
                 moves.attack_bb.into_iter().for_each(|attack_bb| {
                     let targets = attack_bb.get_set_bits();
                     targets.into_iter().for_each(|target_index| {
@@ -121,8 +213,9 @@ impl Board {
         }
 
         // 3. Generate legal moves for the piece
-        let moves = Moves::new(piece);
+        let moves = Moves::new(piece, self.stm);
         let legal_squares = moves.attack_bb[from.index()];
+        println!("{}", legal_squares.print_bitboard());
 
         // 4. Check if the 'to' square is a legal square for the piece
         if !legal_squares.contains_square(to.index()) {
@@ -131,8 +224,23 @@ impl Board {
 
         // 5. Check if the move puts own king in check
         let mut board = *self;
-        board.make_move(from, to).unwrap();
-        Ok(!board.is_in_check(self.stm))
+        board.try_move(from, to);
+        // Ok(!board.is_in_check(self.stm))
+        Ok(true)
+    }
+
+    fn try_move(&mut self, from: Square, to: Square) {
+        if let Some(piece) = self.get_piece_at(from) {
+            self.positions
+                .update_piece_position(&piece, &self.stm, from, to);
+
+            self.handle_special_rules(from, to);
+            self.calculate_material();
+            self.halfmove_clock += 1;
+            if self.stm == Side::White {
+                self.fullmove_counter += 1;
+            }
+        }
     }
 
     pub fn is_in_check(&self, side: Side) -> bool {
@@ -145,7 +253,7 @@ impl Board {
         let opponent = side.flip();
         for piece in Piece::colored_pieces(opponent) {
             let piece_bb = self.positions.all_pieces[opponent.index()][piece.index()];
-            let moves = Moves::new(piece);
+            let moves = Moves::new(piece, self.stm);
             // If any opponent piece can attack king's square, king is in check
             if piece_bb
                 .get_set_bits()
@@ -211,7 +319,7 @@ impl Board {
             match c {
                 '1'..='8' => {
                     // dbg!(rank, file);
-                    file += c.to_digit(10).unwrap() as usize - 1;
+                    file += c.to_digit(10).unwrap() as usize;
                     // dbg!(rank, file);
                 }
                 '/' => {
@@ -315,7 +423,6 @@ impl Board {
         // Reset material counts
         self.material = [0; 2];
 
-        // Calculate material for each side
         for side in [Side::White, Side::Black] {
             let side_index = side.index();
             for piece in Piece::colored_pieces(side) {
@@ -327,13 +434,79 @@ impl Board {
         }
     }
 
+    // fn is_insufficient_material(&self) -> bool {
+    //     let white_pieces = self.positions.all_sides[Side::White.index()];
+    //     let black_pieces = self.positions.all_sides[Side::Black.index()];
+
+    //     let mut white_counts = [0; 6];
+    //     let mut black_counts = [0; 6];
+
+    //     for piece in Piece::PIECES.iter() {
+    //         white_counts[piece.index()] = self.positions.all_pieces[Side::White.index()]
+    //             [piece.index()]
+    //         .get_set_bits()
+    //         .len();
+    //         black_counts[piece.index()] = self.positions.all_pieces[Side::Black.index()]
+    //             [piece.index()]
+    //         .get_set_bits()
+    //         .len();
+    //     }
+
+    //     if white_pieces.0.count_ones() == 1 && black_pieces.0.count_ones() == 1 {
+    //         return true;
+    //     }
+    //     // King and Bishop vs King
+    //     if (white_counts[Piece::King.index()] == 1
+    //         && white_counts[Piece::Bishop.index()] == 1
+    //         && white_pieces.0.count_ones() == 2
+    //         && black_counts[Piece::King.index()] == 1
+    //         && black_pieces.0.count_ones() == 1)
+    //         || (black_counts[Piece::King.index()] == 1
+    //             && black_counts[Piece::Bishop.index()] == 1
+    //             && black_pieces.0.count_ones() == 2
+    //             && white_counts[Piece::King.index()] == 1
+    //             && white_pieces.0.count_ones() == 1)
+    //     {
+    //         return true;
+    //     }
+
+    //     // King and Knight vs King
+    //     if (white_counts[Piece::King.index()] == 1
+    //         && white_counts[Piece::Knight.index()] == 1
+    //         && white_pieces.0.count_ones() == 2
+    //         && black_counts[Piece::King.index()] == 1
+    //         && black_pieces.0.count_ones() == 1)
+    //         || (black_counts[Piece::King.index()] == 1
+    //             && black_counts[Piece::Knight.index()] == 1
+    //             && black_pieces.0.count_ones() == 2
+    //             && white_counts[Piece::King.index()] == 1
+    //             && white_pieces.0.count_ones() == 1)
+    //     {
+    //         return true;
+    //     }
+
+    //     // King and Bishop vs King and Bishop (same colored squares)
+    //     if white_counts[Piece::King.index()] == 1
+    //         && white_counts[Piece::Bishop.index()] == 1
+    //         && black_counts[Piece::King.index()] == 1
+    //         && black_counts[Piece::Bishop.index()] == 1
+    //         && self.same_colored_bishops()
+    //     {
+    //         return true;
+    //     }
+
+    //     false
+    // }
+
     fn is_insufficient_material(&self) -> bool {
         let white_pieces = self.positions.all_sides[Side::White.index()];
         let black_pieces = self.positions.all_sides[Side::Black.index()];
 
+        // Arrays to store the counts of each piece type
         let mut white_counts = [0; 6];
         let mut black_counts = [0; 6];
 
+        // Count the pieces for both sides
         for piece in Piece::PIECES.iter() {
             white_counts[piece.index()] = self.positions.all_pieces[Side::White.index()]
                 [piece.index()]
@@ -345,10 +518,12 @@ impl Board {
             .len();
         }
 
+        // If both sides have only their kings, it's insufficient material
         if white_pieces.0.count_ones() == 1 && black_pieces.0.count_ones() == 1 {
             return true;
         }
-        // King and Bishop vs King
+
+        // King and Bishop vs King (White or Black can have King and Bishop)
         if (white_counts[Piece::King.index()] == 1
             && white_counts[Piece::Bishop.index()] == 1
             && white_pieces.0.count_ones() == 2
@@ -363,7 +538,7 @@ impl Board {
             return true;
         }
 
-        // King and Knight vs King
+        // King and Knight vs King (White or Black can have King and Knight)
         if (white_counts[Piece::King.index()] == 1
             && white_counts[Piece::Knight.index()] == 1
             && white_pieces.0.count_ones() == 2
@@ -388,6 +563,17 @@ impl Board {
             return true;
         }
 
+        // Additional check for opposite colored bishops (same as insufficient material)
+        if white_counts[Piece::King.index()] == 1
+            && white_counts[Piece::Bishop.index()] == 1
+            && black_counts[Piece::King.index()] == 1
+            && black_counts[Piece::Bishop.index()] == 1
+            && !self.same_colored_bishops()
+        {
+            return true;
+        }
+
+        // If none of the above conditions are met, it's not insufficient material
         false
     }
 
@@ -403,7 +589,9 @@ impl Board {
             let (white_file, white_rank) = Square::new(*white_sq).unwrap().coords();
             let (black_file, black_rank) = Square::new(*black_sq).unwrap().coords();
 
-            (white_file + white_rank) % 2 == (black_file + black_rank) % 2
+            let a = (white_file + white_rank) % 2;
+            let b = (black_file + black_rank) % 2;
+            a == b
         } else {
             false
         }
@@ -433,83 +621,69 @@ mod material_tests {
 
     #[test]
     fn test_material_after_capture() {
-        let mut board = Board::new();
-
-        // Simulate capturing a pawn
-        board.positions.all_pieces[Side::White.index()][Piece::Pawn.index()].capture(8);
+        let mut board = Board::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPP1PP/RNBQKBNR w KQkq - 0 1");
         board.calculate_material();
+        // Standard position with a missing f2 pawn on white's side
 
         assert_eq!(board.material[Side::White.index()], 39); // 40 - 1 = 39
         assert_eq!(board.material[Side::Black.index()], 40);
     }
 
-    fn create_empty_board() -> Board {
-        let mut board = Board::default();
-        board.stm = Side::White;
-        board.castling_rights = CastlingRights::empty();
-        board.enpassant_square = None;
-        board.halfmove_clock = 0;
-        board.fullmove_counter = 1;
-        board
-    }
-
     #[test]
     fn test_king_vs_king() {
-        let mut board = create_empty_board();
-
-        // Place only kings
-        board.positions.all_pieces[Side::White.index()][Piece::King.index()].set(4); // E1
-        board.positions.all_pieces[Side::Black.index()][Piece::King.index()].set(60); // E8
+        let board = Board::from_fen("4k3/8/8/8/8/8/8/4K3 w - - 0 1");
 
         assert!(board.is_insufficient_material());
     }
 
     #[test]
     fn test_king_and_bishop_vs_king() {
-        let mut board = create_empty_board();
-
-        // Place kings and one bishop
-        board.positions.all_pieces[Side::White.index()][Piece::King.index()].set(4); // E1
-        board.positions.all_pieces[Side::White.index()][Piece::Bishop.index()].set(5); // F1
-        board.positions.all_pieces[Side::Black.index()][Piece::King.index()].set(60); // E8
+        let board = Board::from_fen("4k3/8/8/8/8/8/8/4KB2 w - - 0 1");
 
         assert!(board.is_insufficient_material());
     }
 
     #[test]
     fn test_king_and_knight_vs_king() {
-        let mut board = create_empty_board();
-
-        // Place kings and one knight
-        board.positions.all_pieces[Side::White.index()][Piece::King.index()].set(4); // E1
-        board.positions.all_pieces[Side::White.index()][Piece::Knight.index()].set(6); // G1
-        board.positions.all_pieces[Side::Black.index()][Piece::King.index()].set(60); // E8
+        let board = Board::from_fen("4k3/8/8/8/8/8/8/4KN2 w - - 0 1");
 
         assert!(board.is_insufficient_material());
     }
 
     #[test]
     fn test_kings_and_same_colored_bishops() {
-        let mut board = create_empty_board();
+        // Bishops on the same color squares (both on light squares)
+        let board = Board::from_fen("2b1k3/8/8/8/8/8/8/2B1K3 w - - 0 1");
+        println!("{board}");
 
-        // Place kings and bishops on same colored squares
-        board.positions.all_pieces[Side::White.index()][Piece::King.index()].set(4); // E1
-        board.positions.all_pieces[Side::White.index()][Piece::Bishop.index()].set(2); // C1 (light square)
-        board.positions.all_pieces[Side::Black.index()][Piece::King.index()].set(60); // E8
-        board.positions.all_pieces[Side::Black.index()][Piece::Bishop.index()].set(58); // C8 (light square)
+        assert!(board.is_insufficient_material());
+    }
+
+    #[test]
+    fn test_kings_and_different_colored_bishops() {
+        // Bishops on different color squares (one on light, one on dark)
+        let board = Board::from_fen("1b2k3/8/8/8/8/8/8/2B1K3 w - - 0 1");
 
         assert!(board.is_insufficient_material());
     }
 
     #[test]
     fn test_sufficient_material() {
-        let mut board = create_empty_board();
+        let board = Board::from_fen("4k3/8/8/8/8/8/4P3/4KB2 w - - 0 1");
 
-        // Place kings, bishop and pawn
-        board.positions.all_pieces[Side::White.index()][Piece::King.index()].set(4); // E1
-        board.positions.all_pieces[Side::White.index()][Piece::Bishop.index()].set(5); // F1
-        board.positions.all_pieces[Side::White.index()][Piece::Pawn.index()].set(12); // E2
-        board.positions.all_pieces[Side::Black.index()][Piece::King.index()].set(60); // E8
+        assert!(!board.is_insufficient_material());
+    }
+
+    #[test]
+    fn test_two_knights_sufficient_material() {
+        let board = Board::from_fen("4k3/8/8/8/8/8/8/4KNN1 w - - 0 1");
+
+        assert!(!board.is_insufficient_material());
+    }
+
+    #[test]
+    fn test_two_bishops_sufficient_material() {
+        let board = Board::from_fen("4k3/8/8/8/8/8/8/3BKB2 w - - 0 1");
 
         assert!(!board.is_insufficient_material());
     }
