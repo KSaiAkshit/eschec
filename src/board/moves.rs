@@ -30,7 +30,40 @@ impl Moves {
         match piece {
             Piece::Knight => moves.gen_knight_moves(),
             Piece::Rook => moves.gen_rook_moves(),
+            Piece::Bishop => moves.gen_bishop_moves(),
             _ => Moves::default(),
+        }
+    }
+
+    pub fn gen_bishop_moves(self) -> Self {
+        let mut attack_bb = vec![BitBoard(0); 64];
+        (0..64).for_each(|index| {
+            let square = Square(index);
+            let mut bishop_moves = BitBoard(0);
+            let (file, rank) = square.coords();
+            // diagonal = [+9, -9]
+            for &delta in &[-9, -7, 7, 9] {
+                let mut target_index = index as i8 + delta;
+                while (0..64).contains(&target_index) {
+                    let target_square = Square(target_index as usize);
+                    let (target_file, target_rank) = target_square.coords();
+                    let file_diff = file as i8 - target_file as i8;
+                    let rank_diff = rank as i8 - target_rank as i8;
+                    if file_diff.abs() == rank_diff.abs() {
+                        let target_bb = BitBoard(1 << target_index);
+                        bishop_moves = bishop_moves | target_bb;
+                    }
+                    if file_diff.abs() != rank_diff.abs() || file_diff == 0 {
+                        break;
+                    }
+                    target_index += delta;
+                }
+            }
+            attack_bb[index] = bishop_moves;
+        });
+        Self {
+            piece: Piece::Bishop,
+            attack_bb,
         }
     }
 

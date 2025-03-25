@@ -1,8 +1,8 @@
 use eschec::board::components::{Piece, Square};
 
 fn main() {
-    let k_moves = eschec::board::moves::Moves::new(Piece::Rook);
-    let s = 60;
+    let k_moves = eschec::board::moves::Moves::new(Piece::Bishop);
+    let s = 50;
     let sq = Square(s);
     let bb = k_moves.attack_bb[s];
     // println!("{}", eschec::board::components::Square(20));
