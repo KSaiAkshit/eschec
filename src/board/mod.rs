@@ -9,7 +9,7 @@ mod fen;
 pub mod moves;
 
 /// Completely encapsulate the game
-#[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
+#[derive(Default, Debug, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
 pub struct Board {
     // Snapshot of current board
     pub positions: BoardState,
@@ -26,20 +26,6 @@ pub struct Board {
     pub fullmove_counter: u8,
     /// Material left for each side [White, Black]
     pub material: [u64; 2],
-}
-
-impl Default for Board {
-    fn default() -> Self {
-        Self {
-            positions: BoardState::default(),
-            stm: Side::default(),
-            castling_rights: CastlingRights::empty(),
-            enpassant_square: None,
-            halfmove_clock: 0,
-            fullmove_counter: 1,
-            material: [0, 0],
-        }
-    }
 }
 
 impl Display for Board {
@@ -157,10 +143,11 @@ impl Board {
     pub fn generate_legal_moves(&self) -> anyhow::Result<Vec<(Square, Square)>> {
         // NOTE: Is this correct as well?
         let mut legal_moves = Vec::new();
+        let state = self.positions;
         (0..64).for_each(|index| {
             let square = Square::new(index).expect("Get a valid index");
             if let Some(piece) = self.get_piece_at(square) {
-                let moves = Moves::new(piece, self.stm);
+                let moves = Moves::new(piece, self.stm, state);
                 moves.attack_bb.into_iter().for_each(|attack_bb| {
                     let targets = attack_bb.get_set_bits();
                     targets.into_iter().for_each(|target_index| {
@@ -201,27 +188,29 @@ impl Board {
 
     pub fn is_move_legal(&self, from: Square, to: Square) -> anyhow::Result<bool> {
         // NOTE: Is this correct? seems like something is missing
-        // 1. Check if there is a piece at the 'from' square
+        // Check if there is a piece at the 'from' square
         let piece = match self.get_piece_at(from) {
             Some(p) => p,
             None => return Ok(false),
         };
+        let state = self.positions;
 
-        // 2. Check if the piece belongs to the current side to move
+        // Check if the piece belongs to the current side to move
         if !self.positions.all_sides[self.stm.index()].contains_square(from.index()) {
             return Ok(false);
         }
 
-        // 3. Generate legal moves for the piece
-        let moves = Moves::new(piece, self.stm);
+        // Generate legal moves for the piece
+        let mut moves = Moves::new(piece, self.stm, state);
+        moves.make_legal(&self.stm, &self.positions);
         let legal_squares = moves.attack_bb[from.index()];
 
-        // 4. Check if the 'to' square is a legal square for the piece
+        // Check if the 'to' square is a legal square for the piece
         if !legal_squares.contains_square(to.index()) {
             return Ok(false);
         }
 
-        // 5. Check if the move puts own king in check
+        // Check if the move puts own king in check
         let mut board = *self;
         board.try_move(from, to);
         Ok(!board.is_in_check(self.stm))
@@ -249,9 +238,10 @@ impl Board {
 
         // 2. Generate oppponent's attacks
         let opponent = side.flip();
+        let state = self.positions;
         for piece in Piece::colored_pieces(opponent) {
             let piece_bb = self.positions.all_pieces[opponent.index()][piece.index()];
-            let moves = Moves::new(piece, self.stm);
+            let moves = Moves::new(piece, self.stm, state);
             // If any opponent piece can attack king's square, king is in check
             if piece_bb
                 .get_set_bits()

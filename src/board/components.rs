@@ -1,10 +1,16 @@
 use std::{
     fmt::Display,
-    ops::{BitAnd, BitOr, Not},
+    ops::{BitAnd, BitAndAssign, BitOr, Not},
 };
 
 #[derive(Debug, Default, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
 pub struct BitBoard(pub u64);
+
+impl BitAndAssign for BitBoard {
+    fn bitand_assign(&mut self, rhs: Self) {
+        self.0 &= rhs.0
+    }
+}
 
 impl BitOr for BitBoard {
     type Output = BitBoard;
@@ -19,6 +25,14 @@ impl BitAnd for BitBoard {
 
     fn bitand(self, rhs: Self) -> Self::Output {
         Self(self.0 & rhs.0)
+    }
+}
+
+impl Not for BitBoard {
+    type Output = BitBoard;
+
+    fn not(self) -> Self::Output {
+        Self(!self.0)
     }
 }
 
@@ -44,6 +58,22 @@ impl BitBoard {
             out += "\n";
         }
         out
+    }
+
+    pub fn lsb(&self) -> Option<usize> {
+        if self.0 == 0 {
+            None
+        } else {
+            Some(self.0.trailing_zeros() as usize)
+        }
+    }
+
+    pub fn pop_lsb(&mut self) -> Option<usize> {
+        let lsb = self.lsb();
+        if let Some(_bit) = lsb {
+            self.0 &= self.0 - 1;
+        }
+        lsb
     }
 
     pub fn get_set_bits(&self) -> Vec<usize> {

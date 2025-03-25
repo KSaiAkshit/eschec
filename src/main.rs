@@ -1,7 +1,23 @@
 use std::io::{self, Write};
 
+use components::{Side, Square};
 use eschec::{board::*, clear_screen, get_input};
+use moves::Moves;
 
+fn main2() {
+    let mut board = Board::from_fen("8/3p3p/8/8/8/8/3P3P/8 w KQkq - 0 1");
+    let _ = board.make_move(Square::new(10).unwrap(), Square::new(18).unwrap());
+    let mut m = Moves::new(components::Piece::Rook, Side::White, board.positions);
+    println!("{}", board);
+    m.make_legal(&Side::White, &board.positions);
+    let mut idx = 0;
+    for b in m.attack_bb {
+        idx += 1;
+        println!("{idx}: \n{}", b.print_bitboard())
+    }
+}
+
+#[allow(dead_code)]
 fn main() -> anyhow::Result<()> {
     color_backtrace::install();
     let mut board = Board::new();
