@@ -1,7 +1,6 @@
 use std::io::{self, Write};
 
-use components::Square;
-use eschec::{board::*, clear_screen};
+use eschec::{board::*, clear_screen, get_input};
 
 fn main() -> anyhow::Result<()> {
     color_backtrace::install();
@@ -17,48 +16,10 @@ fn main() -> anyhow::Result<()> {
         stdin.read_line(&mut s).unwrap();
         clear_screen()?;
 
-        // Remove any trailing newline or spaces
-        let trimmed = s.trim();
-        if trimmed.is_empty() {
-            continue;
-        }
-
-        let (from, to) = match trimmed.split_once(' ') {
-            Some((f, t)) => (f, t),
-            None => {
-                eprintln!("Invalid input format. Expected 'from to'.");
-                continue;
-            }
-        };
-
-        let from_pos: usize = match from.parse() {
-            Ok(num) => num,
-            Err(_) => {
-                eprintln!("Invalid 'from' position: {}", from);
-                continue;
-            }
-        };
-
-        let to_pos: usize = match to.parse() {
-            Ok(num) => num,
-            Err(_) => {
-                eprintln!("Invalid 'to' position: {}", to);
-                continue;
-            }
-        };
-
-        let from_square = match Square::new(from_pos) {
-            Some(square) => square,
-            None => {
-                eprintln!("Invalid 'from' square: {}", from_pos);
-                continue;
-            }
-        };
-
-        let to_square = match Square::new(to_pos) {
-            Some(square) => square,
-            None => {
-                eprintln!("Invalid 'to' square: {}", to_pos);
+        let (from_square, to_square) = match get_input(&s) {
+            Ok(f) => (f.0, f.1),
+            Err(e) => {
+                eprintln!("Error: {}", e);
                 continue;
             }
         };
