@@ -1,6 +1,6 @@
 use crate::board::components::Square;
 
-use super::components::{BitBoard, Piece};
+use super::components::{BitBoard, Piece, Side};
 
 #[derive(Default, Debug, PartialEq, Eq, PartialOrd, Clone)]
 pub struct Moves {
@@ -25,38 +25,29 @@ impl Direction {
 impl Moves {
     /// First 4 are orhtogonal, rest are diagonal
     ///                                (N, S, W, E, NW, SE, NE, SW)
-    pub fn new(piece: Piece) -> Self {
+    pub fn new(piece: Piece, stm: Side) -> Self {
         match piece {
-            Piece::Knight => Self::gen_knight_moves(),
-            Piece::Rook => Self::gen_rook_moves(),
-            Piece::Bishop => Self::gen_bishop_moves(),
-            Piece::Queen => Self::gen_queen_moves(),
-            Piece::Pawn => Self::gen_pawn_moves(),
+            Piece::Knight => Self::gen_knight_moves(stm),
+            Piece::Rook => Self::gen_rook_moves(stm),
+            Piece::Bishop => Self::gen_bishop_moves(stm),
+            Piece::Queen => Self::gen_queen_moves(stm),
+            Piece::Pawn => Self::gen_pawn_moves(stm),
             _ => Moves::default(),
         }
     }
 
     pub fn all_legal_moves() -> Vec<Self> {
         let mut moves: Vec<Moves> = Vec::new();
-        [
-            Piece::Pawn,
-            Piece::Knight,
-            Piece::Rook,
-            Piece::Bishop,
-            Piece::Queen,
-            Piece::King,
-        ]
-        .into_iter()
-        .for_each(|piece| moves.push(Moves::new(piece)));
+        Piece::all().for_each(|(piece, stm)| moves.push(Moves::new(piece, stm)));
 
         moves
     }
 
-    pub fn gen_pawn_moves() -> Self {
-        let white_moves = Self::gen_white_pawn_moves();
-        let black_moves = Self::gen_black_pawn_moves();
-
-        let attack_bb = [white_moves, black_moves].concat();
+    pub fn gen_pawn_moves(stm: Side) -> Self {
+        let attack_bb = match stm {
+            Side::White => Self::gen_white_pawn_moves(),
+            Side::Black => Self::gen_black_pawn_moves(),
+        };
 
         Self {
             piece: Piece::Pawn,
@@ -122,10 +113,10 @@ impl Moves {
         attack_bb
     }
 
-    pub fn gen_queen_moves() -> Self {
+    pub fn gen_queen_moves(stm: Side) -> Self {
         let mut attack_bb = vec![BitBoard(0); 64];
-        let bishop_moves = Self::gen_bishop_moves().attack_bb;
-        let rook_moves = Self::gen_rook_moves().attack_bb;
+        let bishop_moves = Self::gen_bishop_moves(stm).attack_bb;
+        let rook_moves = Self::gen_rook_moves(stm).attack_bb;
         (0..64).for_each(|index| {
             // let queen_moves: BitBoard = BitBoard(0);
             attack_bb[index] = bishop_moves[index] | rook_moves[index];
@@ -136,7 +127,7 @@ impl Moves {
         }
     }
 
-    pub fn gen_bishop_moves() -> Self {
+    pub fn gen_bishop_moves(_stm: Side) -> Self {
         let mut attack_bb = vec![BitBoard(0); 64];
         (0..64).for_each(|index| {
             let square = Square::new(index).expect("Get a valid index");
@@ -169,7 +160,7 @@ impl Moves {
         }
     }
 
-    pub fn gen_rook_moves() -> Self {
+    pub fn gen_rook_moves(_stm: Side) -> Self {
         let mut attack_bb = vec![BitBoard(0); 64];
         (0..64).for_each(|index| {
             let square = Square::new(index).expect("Get a valid index");
@@ -202,7 +193,7 @@ impl Moves {
         }
     }
 
-    pub fn gen_knight_moves() -> Self {
+    pub fn gen_knight_moves(_stm: Side) -> Self {
         let mut attack_bb = vec![BitBoard(0); 64];
         let knight_offsets: [i8; 8] = [-17, -15, -10, -6, 6, 10, 15, 17];
 
