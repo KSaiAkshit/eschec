@@ -1,4 +1,7 @@
-use std::{fmt::Display, ops::BitOr};
+use std::{
+    fmt::Display,
+    ops::{BitAnd, BitOr},
+};
 
 #[derive(Debug, Default, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
 pub struct BitBoard(pub u64);
@@ -11,11 +14,33 @@ impl BitOr for BitBoard {
     }
 }
 
+impl BitAnd for BitBoard {
+    type Output = BitBoard;
+
+    fn bitand(self, rhs: Self) -> Self::Output {
+        Self(self.0 & rhs.0)
+    }
+}
+
 impl BitBoard {
     pub fn set(&mut self, position: usize) {
         // dbg!(position);
         let mask = 1 << position;
         self.0 ^= mask;
+    }
+
+    pub fn print_bitboard(&self) -> String {
+        const LAST_BIT: u64 = 63;
+        let mut out = String::new();
+        for rank in 0..8 {
+            for file in (0..8).rev() {
+                let mask = 1u64 << (LAST_BIT - (rank * 8) - file);
+                let char = if self.0 & mask != 0 { '1' } else { '0' };
+                out = out + &char.to_string() + " ";
+            }
+            out += "\n";
+        }
+        out
     }
 }
 
@@ -39,14 +64,15 @@ impl Side {
     }
 }
 
-pub struct Pieces;
-impl Pieces {
-    pub const PAWN: usize = 0;
-    pub const BISHOP: usize = 1;
-    pub const KNIGHT: usize = 2;
-    pub const ROOK: usize = 3;
-    pub const QUEEN: usize = 4;
-    pub const KING: usize = 5;
+#[derive(Default, PartialEq, Eq, Debug, PartialOrd, Clone, Copy)]
+pub enum Piece {
+    #[default]
+    Pawn,
+    Bishop,
+    Knight,
+    Rook,
+    Queen,
+    King,
 }
 
 #[derive(Debug, Default, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
@@ -54,6 +80,7 @@ pub struct Position {
     /// Boards for all peices of white and black sides
     pub all_sides: [BitBoard; 2],
     /// Boards for all peices, of both colors
+    /// [Pawn, Bishop, Knight, Rook, Queen, King]
     pub all_pieces: [[BitBoard; 6]; 2],
 }
 
@@ -136,23 +163,24 @@ impl Default for CastlingRights {
     }
 }
 
-/*
-    None,
-    A8, B8, C8, D8, E8, F8, G8, H8,// 7
-    A7, B7, C7, D7, E7, F7, G7, H7,// 6
-    A6, B6, C6, D6, E6, F6, G6, H6,// 5
-    A5, B5, C5, D5, E5, F5, G5, H5,// 4
-    A4, B4, C4, D4, E4, F4, G4, H4,// 3
-    A3, B3, C3, D3, E3, F3, G3, H3,// 2
-    A2, B2, C2, D2, E2, F2, G2, H2,// 1
-    A1, B1, C1, D1, E1, F1, G1, H1,// 0
-*/
-
 /// Represents a single square on the board.
 /// # Representation
 /// 1 is A1
 /// 2 is B1
 /// 64 is H8
+/// ```text
+///    None,
+///    v(bit 56)
+///    A8, B8, C8, D8, E8, F8, G8, H8,  <- h1 (bit 7) // 7
+///    A7, B7, C7, D7, E7, F7, G7, H7,// 6
+///    A6, B6, C6, D6, E6, F6, G6, H6,// 5
+///    A5, B5, C5, D5, E5, F5, G5, H5,// 4
+///    A4, B4, C4, D4, E4, F4, G4, H4,// 3
+///    A3, B3, C3, D3, E3, F3, G3, H3,// 2
+///    A2, B2, C2, D2, E2, F2, G2, H2,// 1
+///    A1, B1, C1, D1, E1, F1, G1, H1,  <- h1 (bit 7) // 0
+///    ^(bit 0)
+///````
 #[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
 pub struct Square(pub usize);
 impl Square {
@@ -187,6 +215,22 @@ impl Display for Square {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_print_bitboard() {
+        let out = "0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 
+0 0 0 0 1 0 0 0 
+0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 
+";
+        let num = 268_435_456;
+        let b = BitBoard(num);
+        assert_eq!(out, b.print_bitboard())
+    }
 
     #[test]
     fn test_display_square() {
