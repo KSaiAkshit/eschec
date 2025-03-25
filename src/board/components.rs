@@ -23,11 +23,10 @@ impl BitAnd for BitBoard {
 }
 
 impl BitBoard {
-    pub fn set(&mut self, position: usize) {
-        // dbg!(position);
-        let mask = 1 << position;
-        self.0 |= mask;
+    pub fn set(&mut self, pos: usize) {
+        self.0 |= 1 << pos;
     }
+
     pub fn capture(&mut self, from_index: usize) {
         self.0 &= !(1 << from_index);
     }
@@ -347,19 +346,18 @@ impl Square {
         let square_index = row_index * 8 + col_index;
         Ok(Square(square_index))
     }
-    /// NOTE: Coords are 1 indexed (Rank and File)
     pub fn coords(&self) -> (usize, usize) {
-        let file = self.0 / 8 + 1;
-        let rank = self.0 % 8 + 1;
+        let file = self.0 / 8;
+        let rank = self.0 % 8;
         (file, rank)
     }
 
-    /// NOTE: Coords are 1 indexed (Rank and File)
+    /// NOTE: Rank is 1 indexed
     pub fn rank(&self) -> usize {
         self.0 % 8 + 1
     }
 
-    /// NOTE: Coords are 1 indexed (Rank and File)
+    /// NOTE: File is 1 indexed
     pub fn file(&self) -> usize {
         self.0 / 8 + 1
     }
