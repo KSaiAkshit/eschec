@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 
-use self::components::{CastlingRights, Pieces, Position, Side, Square};
+use self::components::{CastlingRights, Piece, Position, Side, Square};
 
 pub mod components;
-pub mod fen;
+mod fen;
+pub mod moves;
 
 /// Completely encapsulate the game
 #[derive(Debug, Default, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
@@ -23,6 +24,7 @@ pub struct Board {
 }
 
 impl Board {
+    /// Use to initialize a default board
     pub fn new() -> Self {
         const START_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
         // const START_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -50,24 +52,24 @@ impl Board {
     Update the bb_pieces array in the Position struct to reflect the positions of the pieces for each side. You'll need to update the appropriate BitBoard for each piece type and side.
     Ensure that the bb_sides array in the Position struct is updated accordingly to reflect the presence of pieces on each side of the board.
     Initialize the Board struct with the Position struct containing the updated piece positions.    */
-    pub fn place_pieces(&mut self, fen: &str) -> anyhow::Result<()> {
+    fn place_pieces(&mut self, fen: &str) -> anyhow::Result<()> {
         // TODO: Allow for full FEN notation
         if fen.contains(' ') {
             return Err(anyhow::Error::msg("Not supported for now"));
         }
         let lookup_table: HashMap<char, (usize, usize)> = [
-            ('P', (Pieces::PAWN, Side::White as usize)),
-            ('p', (Pieces::PAWN, Side::Black as usize)),
-            ('B', (Pieces::BISHOP, Side::White as usize)),
-            ('b', (Pieces::BISHOP, Side::Black as usize)),
-            ('N', (Pieces::KNIGHT, Side::White as usize)),
-            ('n', (Pieces::KNIGHT, Side::Black as usize)),
-            ('R', (Pieces::ROOK, Side::White as usize)),
-            ('r', (Pieces::ROOK, Side::Black as usize)),
-            ('Q', (Pieces::QUEEN, Side::White as usize)),
-            ('q', (Pieces::QUEEN, Side::Black as usize)),
-            ('K', (Pieces::KING, Side::White as usize)),
-            ('k', (Pieces::KING, Side::Black as usize)),
+            ('P', (Piece::Pawn as usize, Side::White as usize)),
+            ('p', (Piece::Pawn as usize, Side::Black as usize)),
+            ('B', (Piece::Bishop as usize, Side::White as usize)),
+            ('b', (Piece::Bishop as usize, Side::Black as usize)),
+            ('N', (Piece::Knight as usize, Side::White as usize)),
+            ('n', (Piece::Knight as usize, Side::Black as usize)),
+            ('R', (Piece::Rook as usize, Side::White as usize)),
+            ('r', (Piece::Rook as usize, Side::Black as usize)),
+            ('Q', (Piece::Queen as usize, Side::White as usize)),
+            ('q', (Piece::Queen as usize, Side::Black as usize)),
+            ('K', (Piece::King as usize, Side::White as usize)),
+            ('k', (Piece::King as usize, Side::Black as usize)),
         ]
         .into_iter()
         .collect();
@@ -118,5 +120,17 @@ impl Board {
             | self.positions.all_pieces[1][4]
             | self.positions.all_pieces[1][5];
         Ok(())
+    }
+
+    /// Use this to construct a board from fen
+    pub fn from_fen(fen: &str) -> Self {
+        let parsed = fen::parse_fen(fen);
+        match parsed {
+            Ok(b) => b,
+            Err(e) => {
+                eprintln!("Got error while parsing given fen: {}", e);
+                panic!("very bad fen")
+            }
+        }
     }
 }
