@@ -5,6 +5,16 @@ use super::{
     Board,
 };
 
+/// Parse the FEN string to extract the piece placement part. This part of the FEN string represents the positions of the pieces on the board.
+/// Iterate over each character of the piece placement part of the FEN string.
+/// Map each character to the corresponding piece type and side using a lookup table. For example,
+/// 'P' represents a white pawn, 'p' represents a black pawn, 'K' represents a white king, and so on.
+/// Determine the corresponding position on the board for each piece based on its rank and file. The rank
+/// and file are represented by the row and column of the chessboard, respectively.
+/// Update the bb_pieces array in the Position struct to reflect the positions of the pieces for each side.
+/// You'll need to update the appropriate BitBoard for each piece type and side.
+/// Ensure that the bb_sides array in the Position struct is updated accordingly to reflect the presence of pieces on each side of the board.
+/// Initialize the Board struct with the Position struct containing the updated piece positions.
 pub fn parse_fen(fen: &str) -> anyhow::Result<Board> {
     let parts: Vec<&str> = fen.split_whitespace().collect();
     let mut board = Board::default();
@@ -100,7 +110,7 @@ mod tests {
         // Valid en passant
         let enpassant = "e3";
         let square = parse_enpassant(enpassant).unwrap().unwrap();
-        assert_eq!(square, Square(20)); // Adjust based on your implementation
+        assert_eq!(square, Square::new(20).unwrap()); // Adjust based on your implementation
 
         // Invalid en passant (missing rank)
         let enpassant_missing_rank = "e";

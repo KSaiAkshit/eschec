@@ -4,7 +4,7 @@ use super::components::{BitBoard, Piece};
 
 #[derive(Default, Debug, PartialEq, Eq, PartialOrd, Clone)]
 pub struct Moves {
-    piece: Piece,
+    pub piece: Piece,
     pub attack_bb: Vec<BitBoard>,
 }
 
@@ -36,6 +36,22 @@ impl Moves {
         }
     }
 
+    pub fn all_legal_moves() -> Vec<Self> {
+        let mut moves: Vec<Moves> = Vec::new();
+        [
+            Piece::Pawn,
+            Piece::Knight,
+            Piece::Rook,
+            Piece::Bishop,
+            Piece::Queen,
+            Piece::King,
+        ]
+        .into_iter()
+        .for_each(|piece| moves.push(Moves::new(piece)));
+
+        moves
+    }
+
     pub fn gen_pawn_moves() -> Self {
         let white_moves = Self::gen_white_pawn_moves();
         let black_moves = Self::gen_black_pawn_moves();
@@ -51,7 +67,7 @@ impl Moves {
     fn gen_white_pawn_moves() -> Vec<BitBoard> {
         let mut attack_bb = vec![BitBoard(0); 64];
         (0..64).for_each(|index| {
-            let square = Square(index);
+            let square = Square::new(index).expect("Get a valid index");
             let mut white_pawn_moves = BitBoard(0);
             let (file, _rank) = square.coords();
             if file == 0 {
@@ -79,7 +95,7 @@ impl Moves {
     fn gen_black_pawn_moves() -> Vec<BitBoard> {
         let mut attack_bb = vec![BitBoard(0); 64];
         (0..64).for_each(|index| {
-            let square = Square(index);
+            let square = Square::new(index).expect("Get a valid index");
             let mut black_pawn_moves = BitBoard(0);
             let (file, _rank) = square.coords();
             if file == 7 || file == 0 {
@@ -123,14 +139,15 @@ impl Moves {
     pub fn gen_bishop_moves() -> Self {
         let mut attack_bb = vec![BitBoard(0); 64];
         (0..64).for_each(|index| {
-            let square = Square(index);
+            let square = Square::new(index).expect("Get a valid index");
             let mut bishop_moves = BitBoard(0);
             let (file, rank) = square.coords();
             // diagonal = [+9, -9]
             for &delta in &[-9, -7, 7, 9] {
                 let mut target_index = index as i8 + delta;
                 while (0..64).contains(&target_index) {
-                    let target_square = Square(target_index as usize);
+                    let target_square =
+                        Square::new(target_index as usize).expect("get a valid index");
                     let (target_file, target_rank) = target_square.coords();
                     let file_diff = file as i8 - target_file as i8;
                     let rank_diff = rank as i8 - target_rank as i8;
@@ -155,7 +172,7 @@ impl Moves {
     pub fn gen_rook_moves() -> Self {
         let mut attack_bb = vec![BitBoard(0); 64];
         (0..64).for_each(|index| {
-            let square = Square(index);
+            let square = Square::new(index).expect("Get a valid index");
             let mut rook_moves = BitBoard(0);
             let (file, rank) = square.coords();
 

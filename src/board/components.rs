@@ -1,6 +1,6 @@
 use std::{
     fmt::Display,
-    ops::{BitAnd, BitOr},
+    ops::{BitAnd, BitOr, Not},
 };
 
 #[derive(Debug, Default, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
@@ -26,7 +26,10 @@ impl BitBoard {
     pub fn set(&mut self, position: usize) {
         // dbg!(position);
         let mask = 1 << position;
-        self.0 ^= mask;
+        self.0 |= mask;
+    }
+    pub fn capture(&mut self, from_index: usize) {
+        self.0 &= !(1 << from_index);
     }
 
     pub fn print_bitboard(&self) -> String {
@@ -42,6 +45,23 @@ impl BitBoard {
         }
         out
     }
+
+    pub fn get_set_bits(&self) -> Vec<usize> {
+        let mut set_bits = Vec::new();
+        let mut bb = self.0;
+
+        for i in 0..64 {
+            if (bb & i) != 0 {
+                set_bits.push(i.try_into().unwrap());
+            }
+            bb >>= 1;
+        }
+        set_bits
+    }
+
+    pub fn contains_square(&self, index: usize) -> bool {
+        (self.0 & (1 << index)) != 0
+    }
 }
 
 #[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
@@ -50,16 +70,31 @@ pub enum Side {
     Black,
 }
 
+impl Not for Side {
+    type Output = Side;
+
+    fn not(self) -> Self::Output {
+        self.flip()
+    }
+}
+
 impl Default for Side {
     fn default() -> Self {
         Self::White
     }
 }
 impl Side {
+    // TODO: Should this consume self?
     pub fn flip(&self) -> Self {
         match self {
             Side::White => Side::Black,
             Side::Black => Side::White,
+        }
+    }
+    pub fn index(&self) -> usize {
+        match self {
+            Side::White => 0,
+            Side::Black => 1,
         }
     }
 }
@@ -74,14 +109,86 @@ pub enum Piece {
     Queen,
     King,
 }
+impl Piece {
+    const PIECES: [Piece; 6] = [
+        Piece::Pawn,
+        Piece::Bishop,
+        Piece::Knight,
+        Piece::Rook,
+        Piece::Queen,
+        Piece::King,
+    ];
+    const SIDES: [Side; 2] = [Side::White, Side::Black];
+    pub fn all() -> impl Iterator<Item = (Piece, Side)> {
+        Self::SIDES
+            .iter()
+            .flat_map(move |&side| Self::PIECES.iter().map(move |&piece| (piece, side)))
+    }
 
+    pub fn colored_pieces(_side: Side) -> impl Iterator<Item = Piece> {
+        Self::PIECES.iter().copied()
+    }
+
+    pub fn index(&self) -> usize {
+        match self {
+            Piece::Pawn => 0,
+            Piece::Bishop => 1,
+            Piece::Knight => 2,
+            Piece::Rook => 3,
+            Piece::Queen => 4,
+            Piece::King => 5,
+        }
+    }
+}
+
+impl From<Piece> for u8 {
+    fn from(value: Piece) -> Self {
+        match value {
+            Piece::Pawn => 1,
+            Piece::Bishop => 3,
+            Piece::Knight => 3,
+            Piece::Rook => 5,
+            Piece::Queen => 9,
+            Piece::King => 1,
+        }
+    }
+}
+
+/// Snapshot of current board
 #[derive(Debug, Default, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
-pub struct Position {
+pub struct BoardState {
     /// Boards for all peices of white and black sides
     pub all_sides: [BitBoard; 2],
     /// Boards for all peices, of both colors
     /// [Pawn, Bishop, Knight, Rook, Queen, King]
     pub all_pieces: [[BitBoard; 6]; 2],
+}
+impl BoardState {
+    pub fn update_piece_position(&mut self, piece: &Piece, side: &Side, from: Square, to: Square) {
+        let from_index = from.index();
+        let to_index = to.index();
+
+        self.all_pieces[side.index()][piece.index()].capture(from_index);
+        self.all_pieces[side.index()][piece.index()].set(to_index);
+
+        self.update_all_sides();
+    }
+
+    fn update_all_sides(&mut self) {
+        self.all_sides[0] = self.all_pieces[0][0]
+            | self.all_pieces[0][1]
+            | self.all_pieces[0][2]
+            | self.all_pieces[0][3]
+            | self.all_pieces[0][4]
+            | self.all_pieces[0][5];
+
+        self.all_sides[1] = self.all_pieces[1][0]
+            | self.all_pieces[1][1]
+            | self.all_pieces[1][2]
+            | self.all_pieces[1][3]
+            | self.all_pieces[1][4]
+            | self.all_pieces[1][5];
+    }
 }
 
 /// Castling rights are stored in a [`u8`], which is divided into the following parts:
@@ -100,22 +207,22 @@ impl CastlingRights {
     pub const BLACK_00: u8 = 0b00000100;
     pub const BLACK_000: u8 = 0b00001000;
 
-    pub const KING_SIDE: u8 = Self::BLACK_00 | Self::WHITE_00;
-    pub const QUEEN_SIDE: u8 = Self::BLACK_000 | Self::WHITE_000;
-    pub const WHITE_CASTLING: u8 = Self::WHITE_00 | Self::WHITE_000;
-    pub const BLACK_CASTLING: u8 = Self::BLACK_00 | Self::BLACK_000;
-    pub const ANY_CASTLING: u8 = Self::BLACK_CASTLING | Self::WHITE_CASTLING;
+    pub const KING_SIDE: Self = Self(Self::BLACK_00 | Self::WHITE_00);
+    pub const QUEEN_SIDE: Self = Self(Self::BLACK_000 | Self::WHITE_000);
+    pub const WHITE_CASTLING: Self = Self(Self::WHITE_00 | Self::WHITE_000);
+    pub const BLACK_CASTLING: Self = Self(Self::BLACK_00 | Self::BLACK_000);
+    pub const ANY_CASTLING: Self = Self(Self::BLACK_CASTLING.0 | Self::WHITE_CASTLING.0);
     pub fn add_right(&mut self, rights: CastlingRights) {
         self.0 |= rights.0;
     }
     pub fn all() -> Self {
-        Self(Self::ANY_CASTLING)
+        Self::ANY_CASTLING
     }
     pub fn allows(&self, rights: CastlingRights) -> bool {
         self.0 & rights.0 != Self::NO_CASTLING
     }
     pub fn black_only() -> Self {
-        Self(Self::BLACK_CASTLING)
+        Self::BLACK_CASTLING
     }
     pub fn empty() -> Self {
         Self(Self::NO_CASTLING)
@@ -124,16 +231,24 @@ impl CastlingRights {
         self.0 == 0b0000
     }
     pub fn king_side() -> Self {
-        Self(Self::KING_SIDE)
+        Self::KING_SIDE
     }
     pub fn queen_side() -> Self {
-        Self(Self::QUEEN_SIDE)
+        Self::QUEEN_SIDE
     }
     pub fn remove_right(&mut self, rights: CastlingRights) {
         self.0 &= rights.0
     }
     pub fn white_only() -> Self {
-        Self(Self::WHITE_CASTLING)
+        Self::WHITE_CASTLING
+    }
+}
+
+impl BitOr<CastlingRights> for CastlingRights {
+    type Output = CastlingRights;
+
+    fn bitor(self, rhs: CastlingRights) -> Self::Output {
+        Self(self.0 | rhs.0)
     }
 }
 
@@ -159,7 +274,7 @@ impl Display for CastlingRights {
 }
 impl Default for CastlingRights {
     fn default() -> Self {
-        Self(Self::ANY_CASTLING)
+        Self::ANY_CASTLING
     }
 }
 
@@ -173,7 +288,7 @@ impl Default for CastlingRights {
 /// ranks -------------------------------->
 /// files
 ///  | v(bit 56)
-///  | A8, B8, C8, D8, E8, F8, G8, H8,  <- h1 (bit 7) // 7
+///  | A8, B8, C8, D8, E8, F8, G8, H8,  <- h1 (bit 63) // 7
 ///  | A7, B7, C7, D7, E7, F7, G7, H7,// 6
 ///  | A6, B6, C6, D6, E6, F6, G6, H6,// 5
 ///  | A5, B5, C5, D5, E5, F5, G5, H5,// 4
@@ -183,10 +298,29 @@ impl Default for CastlingRights {
 ///  v A1, B1, C1, D1, E1, F1, G1, H1,  <- h1 (bit 7) // 0
 ///    ^(bit 0)
 ///````
-#[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
-pub struct Square(pub usize);
+#[derive(Default, Debug, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
+pub struct Square(usize);
 impl Square {
+    /// Returns a Square from a given index. Will return None if index is out of bounds
+    /// index should be [0, 63]
+    pub fn new(index: usize) -> Option<Self> {
+        if index < 64 {
+            return Some(Self(index));
+        }
+        None
+    }
+
+    /// Returns a Square from a given File and Rank.
+    /// Will return None if either File or Rank are out of bounds.
+    /// Rank < 7, File < 8
+    pub fn from_coords(file: usize, rank: usize) -> Option<Self> {
+        if file < 7 && rank < 8 {
+            return Some(Square(rank * 8 + file));
+        }
+        None
+    }
     pub fn enpassant_from_index(file: char, rank: char) -> anyhow::Result<Self> {
+        let file = file.to_ascii_lowercase();
         if !('a'..='g').contains(&file) {
             return Err(
                 anyhow::Error::msg("given file isn't valid. Valid file = ['a'..='g']")
@@ -204,10 +338,14 @@ impl Square {
         let square_index = row_index * 8 + col_index;
         Ok(Square(square_index))
     }
-    pub fn coords(&self) -> (u8, u8) {
-        let file: u8 = (self.0 / 8) as u8;
-        let rank: u8 = (self.0 % 8) as u8;
+    pub fn coords(&self) -> (usize, usize) {
+        let file = self.0 / 8;
+        let rank = self.0 % 8;
         (file, rank)
+    }
+
+    pub fn index(&self) -> usize {
+        self.0
     }
 }
 
@@ -221,18 +359,20 @@ impl Display for Square {
 
 #[cfg(test)]
 mod tests {
+    use crate::board::Board;
+
     use super::*;
 
     #[test]
     fn test_print_bitboard() {
-        let out = "0 0 0 0 0 0 0 0 
-0 0 0 0 0 0 0 0 
-0 0 0 0 0 0 0 0 
-0 0 0 0 0 0 0 0 
-0 0 0 0 1 0 0 0 
-0 0 0 0 0 0 0 0 
-0 0 0 0 0 0 0 0 
-0 0 0 0 0 0 0 0 
+        let out = "0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0
+0 0 0 0 1 0 0 0
+0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0
 ";
         let num = 268_435_456;
         let b = BitBoard(num);
@@ -253,5 +393,32 @@ mod tests {
         assert_eq!(format!("{}", Square(56)), "A8");
         assert_eq!(format!("{}", Square(28)), "E4");
         assert_eq!(format!("{}", Square(63)), "H8");
+    }
+
+    #[test]
+    fn test_en_passent_from_square() {
+        assert!(Square::enpassant_from_index('A', '2').is_err());
+        assert!(Square::enpassant_from_index('A', '3').is_ok());
+        assert!(Square::enpassant_from_index('B', '3').is_ok());
+        assert!(Square::enpassant_from_index('B', '6').is_ok());
+    }
+
+    #[test]
+    fn test_make_move() {
+        let out = "0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0
+0 0 0 0 1 0 0 0
+1 0 0 0 0 0 0 0
+0 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1
+";
+        let mut board = Board::new();
+        assert!(board
+            .make_move(Square::new(8).unwrap(), Square::new(16).unwrap())
+            .is_ok());
+        let o = board.positions.all_sides[0].print_bitboard();
+        assert_eq!(out, o);
     }
 }
