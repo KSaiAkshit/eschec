@@ -1,0 +1,50 @@
+* Chess Engine in Rust
+
+** ( )TODO:
+   - (x) move gen
+   - ( ) add move generators per given square
+***  ( ) implement basic evaulation
+****  ( ) Material Evaluation:
+      expand evaluate material to consider the diff btw White and Black material
+****  ( ) Piece-Squre Tables
+*****  ( ) impl piece-square tables for each piece
+*****  ( ) adjust scores based on piece's position and game state
+*** ( ) enhance evaluation
+**** ( ) add positional evaluation
+     impl `evaluate_piece_postion()` incorporate piece-square tables
+**** ( ) additional evaluation factors
+     - *mobility* : count no. of legal moves for each side and factor it
+     - *king safety*: eval safety of kings (ex: pawn shields, open files near kings)
+     - *pawn structure*: account for isolated pawns, doubled pawns, passed pawns and pawn chains
+**** ( ) combine evaluation
+     combine all the above strategies
+
+*** ( ) search algorithm
+    recursively evaluate moves at different depths
+**** ( ) impl `minimax` search algo
+**** ( ) impl `alpha-beta` search algo
+*** ( ) improve search efficiency
+**** ( ) move ordering
+     order moves (ex: prioritize captures) to improve alpha-beta pruning
+**** ( ) transposition table
+     store and retrieve previously evaluated positions
+*** ( ) advanced eval and optimization
+    - ( ) impl `Quiescence Search`
+          for positions with tactical possibilities, continue the search to avoid horizon effect
+    - ( ) impl `Null Move pruning`: skip a turn to prune unlikely good moves in the search tree
+    - ( ) late move reduction: reduce search depth for less likely moves
+    - ( ) history heuristic: track and prioritize moves that have worked historically
+*** ( ) move generation improvements:
+    - ( ) *refactor move generation*: ensure accurate and efficient move generation.
+    - ( ) *special move rules*: implement castling, en passant, and pawn promotion correctly.
+*** ( ) code optimization:
+    - ( ) *bitboard operations*: improve performance of bitboard operations (e.g., bit scanning, pop least significant bit).
+    - ( ) *board copy performance*: optimize the copying of the board state for move evaluation.
+    - ( ) *position caching*: add transposition table for position caching to avoid redundant calculations.
+
+*** ( ) testing & debugging:
+    - ( ) *test evaluation*: regularly test the evaluation function with known positions and ensure it behaves as expected.
+    - ( ) *unit tests*: write tests for move generation, evaluation, and search algorithm to ensure correctness.
+
+    ===
+- ( ) next: https://paste.rs/0XSlR
