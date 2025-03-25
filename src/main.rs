@@ -1,15 +1,16 @@
 use std::io::{self};
 
 use components::Square;
-use eschec::board::*;
+use eschec::{board::*, clear_screen};
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     let mut board = Board::new();
 
+    let stdin: io::Stdin = io::stdin();
     loop {
         let mut s = String::new();
-        let stdin: io::Stdin = io::stdin();
         stdin.read_line(&mut s).unwrap(); // Changed from read_to_string to read_line
+        clear_screen()?;
 
         let trimmed = s.trim(); // Remove any trailing newline or spaces
         if trimmed.is_empty() {
@@ -56,10 +57,10 @@ fn main() {
             }
         };
 
-        // if let Err(e) = board.make_move(from_square, to_square) {
-        //     eprintln!("Failed to make move: {}", e);
-        //     continue;
-        // }
+        if let Err(e) = board.make_move(from_square, to_square) {
+            eprintln!("Failed to make move: {}", e);
+            continue;
+        }
 
         // Sleep to give some delay
         std::thread::sleep(std::time::Duration::from_millis(300));

@@ -41,6 +41,7 @@ impl BitBoard {
                 let char = if self.0 & mask != 0 { '1' } else { '0' };
                 out = out + &char.to_string() + " ";
             }
+            out = out.trim().to_owned();
             out += "\n";
         }
         out
@@ -110,7 +111,7 @@ pub enum Piece {
     King,
 }
 impl Piece {
-    const PIECES: [Piece; 6] = [
+    pub const PIECES: [Piece; 6] = [
         Piece::Pawn,
         Piece::Bishop,
         Piece::Knight,
@@ -280,8 +281,8 @@ impl Default for CastlingRights {
 
 /// Represents a single square on the board.
 /// # Representation
-/// 1 is A1
-/// 2 is B1
+/// 1 is A1 \
+/// 2 is B1 \
 /// 64 is H8
 /// ```text
 ///    None,
@@ -297,7 +298,7 @@ impl Default for CastlingRights {
 ///  | A2, B2, C2, D2, E2, F2, G2, H2,// 1
 ///  v A1, B1, C1, D1, E1, F1, G1, H1,  <- h1 (bit 7) // 0
 ///    ^(bit 0)
-///````
+///```
 #[derive(Default, Debug, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
 pub struct Square(usize);
 impl Square {

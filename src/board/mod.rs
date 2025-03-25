@@ -24,13 +24,15 @@ pub struct Board {
     pub halfmove_clock: u8,
     ///  The number of the full moves in a game. It starts at 1, and is incremented after each Black's move.
     pub fullmove_counter: u8,
+    /// Material left for each side [White, Black]
+    pub material: [u64; 2],
 }
 
 impl Board {
     /// Use to initialize a default board
     pub fn new() -> Self {
-        // const START_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
-        const START_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        const START_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+        // const START_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
         let mut board = Self {
             positions: BoardState::default(),
             stm: Side::default(),
@@ -38,6 +40,7 @@ impl Board {
             enpassant_square: Option::default(),
             halfmove_clock: u8::default(),
             fullmove_counter: u8::default(),
+            material: [u64::default(); 2],
         };
         match board.place_pieces(START_FEN) {
             Ok(_) => {}
@@ -59,7 +62,8 @@ impl Board {
         }
     }
 
-    pub fn generate_legal_moves(&self) -> Vec<(Square, Square)> {
+    pub fn generate_legal_moves(&self) -> anyhow::Result<Vec<(Square, Square)>> {
+        // NOTE: Is this correct as well?
         let mut legal_moves = Vec::new();
         (0..64).for_each(|index| {
             let square = Square::new(index).expect("Get a valid index");
@@ -69,18 +73,21 @@ impl Board {
                     let targets = attack_bb.get_set_bits();
                     targets.into_iter().for_each(|target_index| {
                         let target_square = Square::new(target_index).expect("Get a valid index");
-                        if self.is_move_legal(square, target_square) {
+                        if self
+                            .is_move_legal(square, target_square)
+                            .expect("Should be able to check if it is a legal move")
+                        {
                             legal_moves.push((square, target_square));
                         }
                     });
                 });
             }
         });
-        legal_moves
+        Ok(legal_moves)
     }
 
     pub fn make_move(&mut self, from: Square, to: Square) -> anyhow::Result<()> {
-        if !self.is_move_legal(from, to) {
+        if !self.is_move_legal(from, to)? {
             anyhow::bail!("Illegal move from {} to {}", from, to);
         }
         if let Some(piece) = self.get_piece_at(from) {
@@ -88,6 +95,7 @@ impl Board {
                 .update_piece_position(&piece, &self.stm, from, to);
 
             self.handle_special_rules(from, to);
+            self.calculate_material();
             self.stm = self.stm.flip();
             self.halfmove_clock += 1;
             if self.stm == Side::White {
@@ -99,16 +107,17 @@ impl Board {
         }
     }
 
-    pub fn is_move_legal(&self, from: Square, to: Square) -> bool {
+    pub fn is_move_legal(&self, from: Square, to: Square) -> anyhow::Result<bool> {
+        // NOTE: Is this correct? seems like something is missing
         // 1. Check if there is a piece at the 'from' square
         let piece = match self.get_piece_at(from) {
             Some(p) => p,
-            None => return false,
+            None => return Ok(false),
         };
 
         // 2. Check if the piece belongs to the current side to move
         if !self.positions.all_sides[self.stm.index()].contains_square(from.index()) {
-            return false;
+            return Ok(false);
         }
 
         // 3. Generate legal moves for the piece
@@ -117,13 +126,13 @@ impl Board {
 
         // 4. Check if the 'to' square is a legal square for the piece
         if !legal_squares.contains_square(to.index()) {
-            return false;
+            return Ok(false);
         }
 
         // 5. Check if the move puts own king in check
-        let mut board = self.clone();
+        let mut board = *self;
         board.make_move(from, to).unwrap();
-        !board.is_in_check(self.stm)
+        Ok(!board.is_in_check(self.stm))
     }
 
     pub fn is_in_check(&self, side: Side) -> bool {
@@ -151,18 +160,26 @@ impl Board {
     }
 
     pub fn is_checkmate(&self, side: Side) -> bool {
-        self.is_in_check(side) && !self.generate_legal_moves().is_empty()
+        self.is_in_check(side)
+            && !self
+                .generate_legal_moves()
+                .expect("Should be able to gen legal moves")
+                .is_empty()
     }
 
     pub fn is_stalemate(&self, side: Side) -> bool {
-        !self.is_in_check(side) && self.generate_legal_moves().is_empty()
+        !self.is_in_check(side)
+            && self
+                .generate_legal_moves()
+                .expect("Should be able to gen legal moves")
+                .is_empty()
     }
 
     pub fn is_draw(&self) -> bool {
         self.is_stalemate(self.stm) || self.halfmove_clock >= 100 || self.is_insufficient_material()
     }
 
-    // NOTE: Older Implementation
+    // NOTE: Older Implementation without support for full length FEN strings
     fn place_pieces(&mut self, fen: &str) -> anyhow::Result<()> {
         if fen.contains(' ') {
             return Err(anyhow::Error::msg("Not supported for now"));
@@ -294,15 +311,206 @@ impl Board {
         }
     }
 
-    fn calculate_material(&self) {
-        let mut material = 0;
-        for piece in self.positions.all_pieces.iter().flatten() {
-            material += piece.into();
+    fn calculate_material(&mut self) {
+        // Reset material counts
+        self.material = [0; 2];
+
+        // Calculate material for each side
+        for side in [Side::White, Side::Black] {
+            let side_index = side.index();
+            for piece in Piece::colored_pieces(side) {
+                let piece_bb = self.positions.all_pieces[side_index][piece.index()];
+                let piece_count = piece_bb.0.count_ones() as u64;
+                let piece_value: u64 = u8::from(piece) as u64;
+                self.material[side_index] += piece_count * piece_value;
+            }
         }
-        self.material = material;
     }
 
     fn is_insufficient_material(&self) -> bool {
-        todo!()
+        let white_pieces = self.positions.all_sides[Side::White.index()];
+        let black_pieces = self.positions.all_sides[Side::Black.index()];
+
+        let mut white_counts = [0; 6];
+        let mut black_counts = [0; 6];
+
+        for piece in Piece::PIECES.iter() {
+            white_counts[piece.index()] = self.positions.all_pieces[Side::White.index()]
+                [piece.index()]
+            .get_set_bits()
+            .len();
+            black_counts[piece.index()] = self.positions.all_pieces[Side::Black.index()]
+                [piece.index()]
+            .get_set_bits()
+            .len();
+        }
+
+        if white_pieces.0.count_ones() == 1 && black_pieces.0.count_ones() == 1 {
+            return true;
+        }
+        // King and Bishop vs King
+        if (white_counts[Piece::King.index()] == 1
+            && white_counts[Piece::Bishop.index()] == 1
+            && white_pieces.0.count_ones() == 2
+            && black_counts[Piece::King.index()] == 1
+            && black_pieces.0.count_ones() == 1)
+            || (black_counts[Piece::King.index()] == 1
+                && black_counts[Piece::Bishop.index()] == 1
+                && black_pieces.0.count_ones() == 2
+                && white_counts[Piece::King.index()] == 1
+                && white_pieces.0.count_ones() == 1)
+        {
+            return true;
+        }
+
+        // King and Knight vs King
+        if (white_counts[Piece::King.index()] == 1
+            && white_counts[Piece::Knight.index()] == 1
+            && white_pieces.0.count_ones() == 2
+            && black_counts[Piece::King.index()] == 1
+            && black_pieces.0.count_ones() == 1)
+            || (black_counts[Piece::King.index()] == 1
+                && black_counts[Piece::Knight.index()] == 1
+                && black_pieces.0.count_ones() == 2
+                && white_counts[Piece::King.index()] == 1
+                && white_pieces.0.count_ones() == 1)
+        {
+            return true;
+        }
+
+        // King and Bishop vs King and Bishop (same colored squares)
+        if white_counts[Piece::King.index()] == 1
+            && white_counts[Piece::Bishop.index()] == 1
+            && black_counts[Piece::King.index()] == 1
+            && black_counts[Piece::Bishop.index()] == 1
+            && self.same_colored_bishops()
+        {
+            return true;
+        }
+
+        false
+    }
+
+    fn same_colored_bishops(&self) -> bool {
+        let white_bishop = self.positions.all_pieces[Side::White.index()][Piece::Bishop.index()];
+        let black_bishop = self.positions.all_pieces[Side::Black.index()][Piece::Bishop.index()];
+
+        if let (Some(white_sq), Some(black_sq)) = (
+            white_bishop.get_set_bits().first(),
+            black_bishop.get_set_bits().first(),
+        ) {
+            // Bishops are on same colored squares if sum of their coordinates is even/odd same
+            let (white_file, white_rank) = Square::new(*white_sq).unwrap().coords();
+            let (black_file, black_rank) = Square::new(*black_sq).unwrap().coords();
+
+            (white_file + white_rank) % 2 == (black_file + black_rank) % 2
+        } else {
+            false
+        }
+    }
+}
+
+#[cfg(test)]
+mod material_tests {
+
+    use super::*;
+
+    #[test]
+    fn test_initial_material_balance() {
+        let mut board = Board::new();
+        board.calculate_material();
+        // Initial material for each side should be:
+        // 8 pawns (8 * 1 = 8)
+        // 2 knights (2 * 3 = 6)
+        // 2 bishops (2 * 3 = 6)
+        // 2 rooks (2 * 5 = 10)
+        // 1 queen (1 * 9 = 9)
+        // 1 king (1 * 1 = 1)
+        // Total: 40
+        assert_eq!(board.material[Side::White.index()], 40);
+        assert_eq!(board.material[Side::Black.index()], 40);
+    }
+
+    #[test]
+    fn test_material_after_capture() {
+        let mut board = Board::new();
+
+        // Simulate capturing a pawn
+        board.positions.all_pieces[Side::White.index()][Piece::Pawn.index()].capture(8);
+        board.calculate_material();
+
+        assert_eq!(board.material[Side::White.index()], 39); // 40 - 1 = 39
+        assert_eq!(board.material[Side::Black.index()], 40);
+    }
+
+    fn create_empty_board() -> Board {
+        let mut board = Board::default();
+        board.stm = Side::White;
+        board.castling_rights = CastlingRights::empty();
+        board.enpassant_square = None;
+        board.halfmove_clock = 0;
+        board.fullmove_counter = 1;
+        board
+    }
+
+    #[test]
+    fn test_king_vs_king() {
+        let mut board = create_empty_board();
+
+        // Place only kings
+        board.positions.all_pieces[Side::White.index()][Piece::King.index()].set(4); // E1
+        board.positions.all_pieces[Side::Black.index()][Piece::King.index()].set(60); // E8
+
+        assert!(board.is_insufficient_material());
+    }
+
+    #[test]
+    fn test_king_and_bishop_vs_king() {
+        let mut board = create_empty_board();
+
+        // Place kings and one bishop
+        board.positions.all_pieces[Side::White.index()][Piece::King.index()].set(4); // E1
+        board.positions.all_pieces[Side::White.index()][Piece::Bishop.index()].set(5); // F1
+        board.positions.all_pieces[Side::Black.index()][Piece::King.index()].set(60); // E8
+
+        assert!(board.is_insufficient_material());
+    }
+
+    #[test]
+    fn test_king_and_knight_vs_king() {
+        let mut board = create_empty_board();
+
+        // Place kings and one knight
+        board.positions.all_pieces[Side::White.index()][Piece::King.index()].set(4); // E1
+        board.positions.all_pieces[Side::White.index()][Piece::Knight.index()].set(6); // G1
+        board.positions.all_pieces[Side::Black.index()][Piece::King.index()].set(60); // E8
+
+        assert!(board.is_insufficient_material());
+    }
+
+    #[test]
+    fn test_kings_and_same_colored_bishops() {
+        let mut board = create_empty_board();
+
+        // Place kings and bishops on same colored squares
+        board.positions.all_pieces[Side::White.index()][Piece::King.index()].set(4); // E1
+        board.positions.all_pieces[Side::White.index()][Piece::Bishop.index()].set(2); // C1 (light square)
+        board.positions.all_pieces[Side::Black.index()][Piece::King.index()].set(60); // E8
+        board.positions.all_pieces[Side::Black.index()][Piece::Bishop.index()].set(58); // C8 (light square)
+
+        assert!(board.is_insufficient_material());
+    }
+
+    #[test]
+    fn test_sufficient_material() {
+        let mut board = create_empty_board();
+
+        // Place kings, bishop and pawn
+        board.positions.all_pieces[Side::White.index()][Piece::King.index()].set(4); // E1
+        board.positions.all_pieces[Side::White.index()][Piece::Bishop.index()].set(5); // F1
+        board.positions.all_pieces[Side::White.index()][Piece::Pawn.index()].set(12); // E2
+        board.positions.all_pieces[Side::Black.index()][Piece::King.index()].set(60); // E8
+
+        assert!(!board.is_insufficient_material());
     }
 }
