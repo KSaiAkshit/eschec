@@ -26,16 +26,101 @@ impl Moves {
     /// First 4 are orhtogonal, rest are diagonal
     ///                                (N, S, W, E, NW, SE, NE, SW)
     pub fn new(piece: Piece) -> Self {
-        let moves = Self::default();
         match piece {
-            Piece::Knight => moves.gen_knight_moves(),
-            Piece::Rook => moves.gen_rook_moves(),
-            Piece::Bishop => moves.gen_bishop_moves(),
+            Piece::Knight => Self::gen_knight_moves(),
+            Piece::Rook => Self::gen_rook_moves(),
+            Piece::Bishop => Self::gen_bishop_moves(),
+            Piece::Queen => Self::gen_queen_moves(),
+            Piece::Pawn => Self::gen_pawn_moves(),
             _ => Moves::default(),
         }
     }
 
-    pub fn gen_bishop_moves(self) -> Self {
+    pub fn gen_pawn_moves() -> Self {
+        let white_moves = Self::gen_white_pawn_moves();
+        let black_moves = Self::gen_black_pawn_moves();
+
+        let attack_bb = [white_moves, black_moves].concat();
+
+        Self {
+            piece: Piece::Pawn,
+            attack_bb,
+        }
+    }
+
+    fn gen_white_pawn_moves() -> Vec<BitBoard> {
+        let mut attack_bb = vec![BitBoard(0); 64];
+        (0..64).for_each(|index| {
+            let square = Square(index);
+            let mut white_pawn_moves = BitBoard(0);
+            let (file, _rank) = square.coords();
+            if file == 0 {
+                attack_bb[index] = BitBoard(0);
+            }
+            if file == 1 {
+                for &offset in &[8, 16] {
+                    let target_index = index + offset;
+                    let target_bb = BitBoard(1 << target_index);
+                    white_pawn_moves = white_pawn_moves | target_bb;
+                }
+                attack_bb[index] = white_pawn_moves;
+            } else {
+                let target_index = index + 8;
+                if target_index < 64 {
+                    let target_bb = BitBoard(1 << target_index);
+                    white_pawn_moves = white_pawn_moves | target_bb;
+                    attack_bb[index] = white_pawn_moves;
+                }
+            }
+        });
+        attack_bb
+    }
+
+    fn gen_black_pawn_moves() -> Vec<BitBoard> {
+        let mut attack_bb = vec![BitBoard(0); 64];
+        (0..64).for_each(|index| {
+            let square = Square(index);
+            let mut black_pawn_moves = BitBoard(0);
+            let (file, _rank) = square.coords();
+            if file == 7 || file == 0 {
+                attack_bb[index] = BitBoard(0);
+            }
+            if file == 6 {
+                for &offset in &[8, 16] {
+                    let target_index = index as i8 - offset;
+                    if target_index.is_positive() {
+                        let target_bb = BitBoard(1 << target_index);
+                        black_pawn_moves = black_pawn_moves | target_bb;
+                    }
+                }
+                attack_bb[index] = black_pawn_moves;
+            } else {
+                let target_index = index as i8 - 8;
+                if (8..48).contains(&target_index) {
+                    let target_bb = BitBoard(1 << target_index);
+                    black_pawn_moves = black_pawn_moves | target_bb;
+                    attack_bb[index] = black_pawn_moves;
+                }
+            }
+        });
+        attack_bb
+    }
+
+    pub fn gen_queen_moves() -> Self {
+        let mut attack_bb = vec![BitBoard(0); 64];
+        let bishop_moves = Self::gen_bishop_moves().attack_bb;
+        let rook_moves = Self::gen_rook_moves().attack_bb;
+        (0..64).for_each(|index| {
+            // let queen_moves: BitBoard = BitBoard(0);
+            attack_bb[index] = bishop_moves[index] | rook_moves[index];
+        });
+        Self {
+            piece: Piece::Queen,
+            attack_bb,
+        }
+    }
+
+    pub fn gen_bishop_moves() -> Self {
         let mut attack_bb = vec![BitBoard(0); 64];
         (0..64).for_each(|index| {
             let square = Square(index);
@@ -67,7 +152,7 @@ impl Moves {
         }
     }
 
-    pub fn gen_rook_moves(self) -> Self {
+    pub fn gen_rook_moves() -> Self {
         let mut attack_bb = vec![BitBoard(0); 64];
         (0..64).for_each(|index| {
             let square = Square(index);
@@ -100,7 +185,7 @@ impl Moves {
         }
     }
 
-    pub fn gen_knight_moves(self) -> Self {
+    pub fn gen_knight_moves() -> Self {
         let mut attack_bb = vec![BitBoard(0); 64];
         let knight_offsets: [i8; 8] = [-17, -15, -10, -6, 6, 10, 15, 17];
 
