@@ -1,6 +1,9 @@
-use eschec::board::Positions;
+use eschec::board::Board;
 
 fn main() {
-    let size = std::mem::size_of::<Positions>();
-    dbg!(size);
+    let _board = Board::new();
+    let rights = eschec::board::CastlingRights(0b1101);
+
+    println!("{}", rights);
+    // dbg!(rights);
 }
