@@ -32,7 +32,7 @@ impl Moves {
             Piece::Bishop => Self::gen_bishop_moves(stm),
             Piece::Queen => Self::gen_queen_moves(stm),
             Piece::Pawn => Self::gen_pawn_moves(stm),
-            _ => Moves::default(),
+            Piece::King => Self::gen_king_moves(stm),
         }
     }
 
@@ -171,13 +171,12 @@ impl Moves {
             for f in 0..8 {
                 if f != file {
                     let target_index = f * 8 + rank;
-                    // dbg!(index, f, rank, target_index);
                     let target_bb = BitBoard(1 << target_index);
                     rook_moves = rook_moves | target_bb;
                 }
             }
 
-            // // Horizontal
+            // Horizontal
             for r in 0..8 {
                 if r != rank {
                     let target_index = r + file * 8;
@@ -189,6 +188,38 @@ impl Moves {
         });
         Self {
             piece: Piece::Rook,
+            attack_bb,
+        }
+    }
+
+    pub fn gen_king_moves(_stm: Side) -> Self {
+        let mut attack_bb = vec![BitBoard(0); 64];
+        (0..64).for_each(|index| {
+            let square = Square::new(index).expect("Get a valid index");
+            let mut king_moves = BitBoard(0);
+            let (file, _rank) = square.coords();
+
+            for delta in [-9, -7, 7, 9] {
+                let target_index = index as i8 + delta;
+                if target_index < 64 && 0 < target_index {
+                    let target_bb = BitBoard(1 << target_index);
+                    king_moves = king_moves | target_bb;
+                }
+            }
+
+            for f in [1, 8, -8i8, -1i8] {
+                if f != file as i8 {
+                    let target_index = index as i8 + f;
+                    if target_index < 64 && 0 < target_index {
+                        let target_bb = BitBoard(1 << target_index);
+                        king_moves = king_moves | target_bb;
+                    }
+                }
+            }
+            attack_bb[index] = king_moves;
+        });
+        Self {
+            piece: Piece::King,
             attack_bb,
         }
     }
@@ -222,15 +253,130 @@ impl Moves {
 
                         // Add the target square bitboard to knight_moves
                         knight_moves = knight_moves | target_bb;
-                    } // // Generate a bitboard with only the target square set
+                    }
                 }
             }
             attack_bb[index] = knight_moves;
         });
 
         Moves {
-            piece: Piece::Knight, // Assuming you have a Piece enum
+            piece: Piece::Knight,
             attack_bb,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_pawn_moves_white() {
+        let stm = Side::White;
+        let moves = Moves::gen_pawn_moves(stm);
+
+        let square_index = 8;
+        let expected = BitBoard(1 << 16) | BitBoard(1 << 24);
+        assert_eq!(moves.attack_bb[square_index], expected);
+    }
+
+    #[test]
+    fn test_pawn_moves_black() {
+        let stm = Side::Black;
+        let moves = Moves::gen_pawn_moves(stm);
+
+        let square_index = 48;
+        let expected = BitBoard(1 << 40) | BitBoard(1 << 32);
+        assert_eq!(moves.attack_bb[square_index], expected);
+    }
+
+    #[test]
+    fn test_knight_moves() {
+        let stm = Side::White;
+        let moves = Moves::gen_knight_moves(stm);
+
+        let square = Square::new(1).unwrap(); // A2 square
+        let expected_moves = BitBoard(1 << 18) | BitBoard(1 << 16) | BitBoard(1 << 11); // B1, C3, and A3 are valid moves
+        assert_eq!(moves.attack_bb[square.index()], expected_moves);
+    }
+
+    #[test]
+    fn test_rook_moves() {
+        let stm = Side::White;
+        let moves = Moves::gen_rook_moves(stm);
+
+        let square_index = 0; // A1 square
+        let mut expected_moves = (0..8)
+            .map(|r| BitBoard(1 << r) | BitBoard(1 << (r * 8)))
+            .fold(BitBoard(0), |acc, bb| acc | bb);
+        expected_moves.capture(0);
+        assert_eq!(moves.attack_bb[square_index], expected_moves);
+    }
+
+    #[test]
+    fn test_bishop_moves() {
+        let stm = Side::White;
+        let moves = Moves::gen_bishop_moves(stm);
+
+        let square_index = 18; // C3 square
+        let expected_moves = BitBoard(9241421692918565393);
+
+        println!("expected: \n{}", expected_moves.print_bitboard());
+        assert_eq!(moves.attack_bb[square_index], expected_moves);
+    }
+
+    #[test]
+    fn test_queen_moves() {
+        let stm = Side::White;
+        let moves = Moves::gen_queen_moves(stm);
+
+        let square_index = 0; // A1 square
+        let expected_moves = Moves::gen_rook_moves(stm).attack_bb[square_index]
+            | Moves::gen_bishop_moves(stm).attack_bb[square_index];
+        assert_eq!(moves.attack_bb[square_index], expected_moves);
+    }
+
+    #[test]
+    fn test_king_moves() {
+        let stm = Side::White;
+        let moves = Moves::gen_king_moves(stm);
+
+        let square_index = 36; // E4 square
+        let expected_moves = BitBoard(1 << 27)
+            | BitBoard(1 << 28)
+            | BitBoard(1 << 29)
+            | BitBoard(1 << 35)
+            | BitBoard(1 << 37)
+            | BitBoard(1 << 43)
+            | BitBoard(1 << 44)
+            | BitBoard(1 << 45);
+        assert_eq!(moves.attack_bb[square_index], expected_moves);
+    }
+
+    #[test]
+    fn test_all_legal_moves() {
+        let moves = Moves::all_legal_moves();
+
+        // Ensure the correct number of moves are generated
+        assert_eq!(moves.len(), 12);
+    }
+
+    #[test]
+    fn test_piece_move_generation() {
+        let white_pawn_moves = Moves::gen_pawn_moves(Side::White);
+        let black_pawn_moves = Moves::gen_pawn_moves(Side::Black);
+        let knight_moves = Moves::gen_knight_moves(Side::White);
+        let rook_moves = Moves::gen_rook_moves(Side::White);
+        let bishop_moves = Moves::gen_bishop_moves(Side::White);
+        let queen_moves = Moves::gen_queen_moves(Side::White);
+        let king_moves = Moves::gen_king_moves(Side::White);
+
+        assert!(!white_pawn_moves.attack_bb.is_empty());
+        assert!(!black_pawn_moves.attack_bb.is_empty());
+        assert!(!knight_moves.attack_bb.is_empty());
+        assert!(!rook_moves.attack_bb.is_empty());
+        assert!(!bishop_moves.attack_bb.is_empty());
+        assert!(!queen_moves.attack_bb.is_empty());
+        assert!(!king_moves.attack_bb.is_empty());
     }
 }

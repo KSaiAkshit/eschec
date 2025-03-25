@@ -4,6 +4,7 @@ use components::Square;
 use eschec::{board::*, clear_screen};
 
 fn main() -> anyhow::Result<()> {
+    color_backtrace::install();
     let mut board = Board::new();
 
     let stdin: io::Stdin = io::stdin();

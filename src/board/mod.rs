@@ -215,7 +215,6 @@ impl Board {
         // 3. Generate legal moves for the piece
         let moves = Moves::new(piece, self.stm);
         let legal_squares = moves.attack_bb[from.index()];
-        println!("{}", legal_squares.print_bitboard());
 
         // 4. Check if the 'to' square is a legal square for the piece
         if !legal_squares.contains_square(to.index()) {
@@ -225,8 +224,7 @@ impl Board {
         // 5. Check if the move puts own king in check
         let mut board = *self;
         board.try_move(from, to);
-        // Ok(!board.is_in_check(self.stm))
-        Ok(true)
+        Ok(!board.is_in_check(self.stm))
     }
 
     fn try_move(&mut self, from: Square, to: Square) {
@@ -654,7 +652,6 @@ mod material_tests {
     fn test_kings_and_same_colored_bishops() {
         // Bishops on the same color squares (both on light squares)
         let board = Board::from_fen("2b1k3/8/8/8/8/8/8/2B1K3 w - - 0 1");
-        println!("{board}");
 
         assert!(board.is_insufficient_material());
     }
