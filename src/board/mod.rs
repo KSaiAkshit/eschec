@@ -1,3 +1,4 @@
+use rand::prelude::*;
 use std::{collections::HashMap, fmt::Display};
 
 use moves::Moves;
@@ -106,6 +107,7 @@ impl Display for Board {
     }
 }
 
+#[allow(dead_code)]
 impl Board {
     /// Use to initialize a default board
     pub fn new() -> Self {
@@ -273,6 +275,50 @@ impl Board {
 
     pub fn is_draw(&self) -> bool {
         self.is_stalemate(self.stm) || self.halfmove_clock >= 100 || self.is_insufficient_material()
+    }
+
+    pub fn suggest_rand_move(&self) -> anyhow::Result<(Square, Square)> {
+        let mut rng = rand::rng();
+        let mut possible_end_bits: Vec<usize> = Vec::default();
+        let mut from = Square::default();
+        let mut to = Square::default();
+        while possible_end_bits.is_empty() {
+            let (piece, _) = Piece::all()
+                .choose(&mut rng)
+                .expect("Should be able to choose at random");
+            println!("{:?}", piece);
+            let mut moves = Moves::new(piece, self.stm, self.positions);
+
+            moves.make_legal(&self.stm, &self.positions);
+            let piece_state = self.positions.all_pieces[self.stm.index()][piece.index()];
+            let piece_idx = piece_state.get_set_bits();
+
+            let piece_choice = piece_idx
+                .choose(&mut rng)
+                .expect("Should be able to get a random piece idx");
+            let m = moves.attack_bb[*piece_choice];
+            possible_end_bits = m.get_set_bits();
+            if possible_end_bits.is_empty() {
+                continue;
+            }
+            println!("{:?}", piece_choice);
+            from = Square::new(*piece_choice).expect("Should be valid piece choice");
+            let end_bit = possible_end_bits
+                .choose(&mut rng)
+                .expect("Should be able to get random to square");
+            to = Square::new(*end_bit).expect("Should be valid square");
+        }
+        Ok((from, to))
+    }
+
+    fn evaluate_position(&self) -> i32 {
+        // let material_score = self.evaluate_material();
+        // let position_score = self.evaluate_piece_position();
+        //
+        let white_material = self.material[Side::White.index()] as i32;
+        let black_material = self.material[Side::Black.index()] as i32;
+
+        white_material - black_material
     }
 
     // NOTE: Older Implementation without support for full length FEN strings

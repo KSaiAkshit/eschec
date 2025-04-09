@@ -15,44 +15,24 @@ pub fn clear_screen() -> anyhow::Result<()> {
 pub fn get_input(input: &str) -> anyhow::Result<(Square, Square)> {
     // Remove any trailing newline or spaces
     let trimmed = input.trim();
-    if trimmed.is_empty() {
-        anyhow::bail!("Empty input given");
-    }
 
-    let (from, to) = match trimmed.split_once(' ') {
-        Some((f, t)) => (f, t),
-        None => {
-            anyhow::bail!("Invalid input format. Expected 'from to', got: {input}");
-        }
-    };
+    anyhow::ensure!(!trimmed.is_empty(), "Empty input given");
 
-    let from_pos: usize = match from.parse() {
-        Ok(num) => num,
-        Err(_) => {
-            anyhow::bail!("Invalid 'from' position: {}", from);
-        }
-    };
+    let mut parts = trimmed.split_whitespace();
+    let from = parts.next().context("Missing 'from' square")?;
+    let to = parts.next().context("Missing 'to' square")?;
 
-    let to_pos: usize = match to.parse() {
-        Ok(num) => num,
-        Err(_) => {
-            anyhow::bail!("Invalid 'to' position: {}", to);
-        }
-    };
+    let from_pos: usize = from
+        .parse()
+        .with_context(|| format!("Invalid 'from' position: {}", from))?;
+    let to_pos: usize = to
+        .parse()
+        .with_context(|| format!("Invalid 'to' position: {}", to))?;
 
-    let from_square = match Square::new(from_pos) {
-        Some(square) => square,
-        None => {
-            anyhow::bail!("Invalid 'from' square: {}", from_pos);
-        }
-    };
-
-    let to_square = match Square::new(to_pos) {
-        Some(square) => square,
-        None => {
-            anyhow::bail!("Invalid 'to' square: {}", to_pos);
-        }
-    };
+    let from_square = Square::new(from_pos)
+        .with_context(|| format!("'from' Square out of bounds: {}", from_pos))?;
+    let to_square =
+        Square::new(to_pos).with_context(|| format!("'to' Square out of bounds: {}", to_pos))?;
 
     Ok((from_square, to_square))
 }

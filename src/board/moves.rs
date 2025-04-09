@@ -60,10 +60,9 @@ impl Moves {
 
     /// Generate all possible moves for all pieces and all sides
     /// Does contain pseudo legal moves.
-    pub fn all_possible_moves() -> Vec<Self> {
+    pub fn all_possible_moves(state: BoardState) -> Vec<Self> {
         let mut moves: Vec<Moves> = Vec::new();
-        Piece::all()
-            .for_each(|(piece, stm)| moves.push(Moves::new(piece, stm, BoardState::default())));
+        Piece::all().for_each(|(piece, stm)| moves.push(Moves::new(piece, stm, state)));
 
         moves
     }
