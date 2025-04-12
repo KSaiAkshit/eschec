@@ -103,6 +103,12 @@ pub enum Side {
     Black,
 }
 
+impl From<Side> for bool {
+    fn from(value: Side) -> Self {
+        value == Side::White
+    }
+}
+
 impl Display for Side {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self {
@@ -147,6 +153,18 @@ pub enum Piece {
     Queen,
     King,
 }
+impl Display for Piece {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match &self {
+            Piece::Pawn => writeln!(f, "Pawn"),
+            Piece::Bishop => writeln!(f, "Bishop"),
+            Piece::Knight => writeln!(f, "Knight"),
+            Piece::Rook => writeln!(f, "Rook"),
+            Piece::Queen => writeln!(f, "Queen"),
+            Piece::King => writeln!(f, "King"),
+        }
+    }
+}
 impl Piece {
     pub const PIECES: [Piece; 6] = [
         Piece::Pawn,
@@ -167,27 +185,77 @@ impl Piece {
         Self::PIECES.iter().copied()
     }
 
+    pub fn icon(&self, stm: Side) -> char {
+        match &self {
+            Piece::Pawn => {
+                if stm.into() {
+                    '♜'
+                } else {
+                    '♖'
+                }
+            }
+            Piece::Bishop => {
+                if stm.into() {
+                    '♝'
+                } else {
+                    '♗'
+                }
+            }
+            Piece::Knight => {
+                if stm.into() {
+                    '♞'
+                } else {
+                    '♘'
+                }
+            }
+            Piece::Rook => {
+                if stm.into() {
+                    '♜'
+                } else {
+                    '♖'
+                }
+            }
+            Piece::Queen => {
+                if stm.into() {
+                    '♛'
+                } else {
+                    '♕'
+                }
+            }
+            Piece::King => {
+                if stm.into() {
+                    '♚'
+                } else {
+                    '♔'
+                }
+            }
+        }
+    }
+
     pub fn index(&self) -> usize {
         match self {
             Piece::Pawn => 0,
-            Piece::Bishop => 1,
-            Piece::Knight => 2,
+            Piece::Knight => 1,
+            Piece::Bishop => 2,
             Piece::Rook => 3,
             Piece::Queen => 4,
             Piece::King => 5,
         }
     }
+    pub fn value(&self) -> u32 {
+        u32::from(*self)
+    }
 }
 
-impl From<Piece> for u8 {
+impl From<Piece> for u32 {
     fn from(value: Piece) -> Self {
         match value {
-            Piece::Pawn => 1,
-            Piece::Bishop => 3,
-            Piece::Knight => 3,
-            Piece::Rook => 5,
-            Piece::Queen => 9,
-            Piece::King => 1,
+            Piece::Pawn => 100,
+            Piece::Knight => 320,
+            Piece::Bishop => 330,
+            Piece::Rook => 500,
+            Piece::Queen => 900,
+            Piece::King => 20000,
         }
     }
 }

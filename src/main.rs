@@ -1,8 +1,7 @@
 use std::io::{self, Write};
 
-use eschec::{board::*, clear_screen, get_input};
+use eschec::{board::*, *};
 
-#[allow(dead_code)]
 fn main() -> anyhow::Result<()> {
     color_backtrace::install();
     let mut board = Board::new();

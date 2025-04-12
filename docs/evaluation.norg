@@ -1,0 +1,44 @@
+@document.meta
+title: evaluation
+authors: akira
+categories: [
+  chess
+]
+tags: [
+  chess
+]
+created: 12 Apr 2025 05:38
+updated: 12 Apr 2025 05:38
+version: 1.1.1
+@end
+
+* Evaluation
+  This will tell us how good a potential move is.
+
+** Material Evaluation
+   4 rules of thumb. Also called piece-value
+   ~ Avoid expaching one minor piece for 3 pawns
+   ~ Encourage engine to have the bishop pair
+   ~ Avoid exchanging 2 minor pieces for a rook and a pawn
+   ~ Stick to human chess experience
+
+   Final Equations:
+   @math
+   B > N > 3P
+   B + N = R + 1.5P
+   Q + P = 2R
+   @end
+** Position Evaluation
+   3 rules. Also called PST (Piece Square table)
+   ~ Bonuses for good squares
+   ~ Penalties for bad squares
+   ~ Neutral Value of 0 for other squares
+
+   > Currenlty, PST and piece-value remain seperated, just so we can fine tune
+     engine
+
+
+   ___
+   ===
+^ Sources
+[Simplified Evaluation]{https://www.chessprogramming.org/Simplified_Evaluation_Function}

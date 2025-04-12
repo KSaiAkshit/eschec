@@ -380,7 +380,7 @@ mod tests {
 
     #[test]
     fn test_all_possible_moves() {
-        let moves = Moves::all_possible_moves();
+        let moves = Moves::all_possible_moves(BoardState::default());
 
         // Ensure the correct number of moves are generated
         assert_eq!(moves.len(), 12);

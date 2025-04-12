@@ -12,7 +12,7 @@ use super::{
 /// Determine the corresponding position on the board for each piece based on its rank and file. The rank
 /// and file are represented by the row and column of the chessboard, respectively.
 /// Update the bb_pieces array in the Position struct to reflect the positions of the pieces for each side.
-/// You'll need to update the appropriate BitBoard for each piece type and side.
+/// We'll need to update the appropriate BitBoard for each piece type and side.
 /// Ensure that the bb_sides array in the Position struct is updated accordingly to reflect the presence of pieces on each side of the board.
 /// Initialize the Board struct with the Position struct containing the updated piece positions.
 pub fn parse_fen(fen: &str) -> anyhow::Result<Board> {

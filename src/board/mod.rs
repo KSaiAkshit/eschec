@@ -6,6 +6,7 @@ use moves::Moves;
 use self::components::{BoardState, CastlingRights, Piece, Side, Square};
 
 pub mod components;
+pub mod evaluation;
 mod fen;
 pub mod moves;
 
@@ -31,12 +32,6 @@ pub struct Board {
 
 impl Display for Board {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        // Define Unicode chess pieces
-        let piece_chars = [
-            ['♙', '♗', '♘', '♖', '♕', '♔'], // White pieces
-            ['♟', '♝', '♞', '♜', '♛', '♚'], // Black pieces
-        ];
-
         // Create top border with file labels
         writeln!(f, "  +---+---+---+---+---+---+---+---+")?;
 
@@ -58,7 +53,7 @@ impl Display for Board {
 
                     if self.positions.all_pieces[side_idx][piece_idx].contains_square(square_idx) {
                         // Draw the piece using Unicode chess piece
-                        write!(f, " {} |", piece_chars[side_idx][piece_idx])?;
+                        write!(f, " {} |", piece_type.icon(side))?;
                         piece_found = true;
                         break;
                     }
@@ -154,10 +149,7 @@ impl Board {
                     let targets = attack_bb.get_set_bits();
                     targets.into_iter().for_each(|target_index| {
                         let target_square = Square::new(target_index).expect("Get a valid index");
-                        if self
-                            .is_move_legal(square, target_square)
-                            .expect("Should be able to check if it is a legal move")
-                        {
+                        if self.is_move_legal(square, target_square) {
                             legal_moves.push((square, target_square));
                         }
                     });
@@ -168,7 +160,7 @@ impl Board {
     }
 
     pub fn make_move(&mut self, from: Square, to: Square) -> anyhow::Result<()> {
-        if !self.is_move_legal(from, to)? {
+        if !self.is_move_legal(from, to) {
             anyhow::bail!("Illegal move from {} to {}", from, to);
         }
         if let Some(piece) = self.get_piece_at(from) {
@@ -188,18 +180,19 @@ impl Board {
         }
     }
 
-    pub fn is_move_legal(&self, from: Square, to: Square) -> anyhow::Result<bool> {
+    pub fn is_move_legal(&self, from: Square, to: Square) -> bool {
         // NOTE: Is this correct? seems like something is missing
         // Check if there is a piece at the 'from' square
         let piece = match self.get_piece_at(from) {
             Some(p) => p,
-            None => return Ok(false),
+            None => return false,
         };
         let state = self.positions;
 
         // Check if the piece belongs to the current side to move
         if !self.positions.all_sides[self.stm.index()].contains_square(from.index()) {
-            return Ok(false);
+            dbg!("Here1");
+            return false;
         }
 
         // Generate legal moves for the piece
@@ -209,13 +202,14 @@ impl Board {
 
         // Check if the 'to' square is a legal square for the piece
         if !legal_squares.contains_square(to.index()) {
-            return Ok(false);
+            dbg!("Here2");
+            return false;
         }
 
         // Check if the move puts own king in check
         let mut board = *self;
         board.try_move(from, to);
-        Ok(!board.is_in_check(self.stm))
+        !board.is_in_check(self.stm)
     }
 
     fn try_move(&mut self, from: Square, to: Square) {
@@ -283,13 +277,16 @@ impl Board {
         let mut from = Square::default();
         let mut to = Square::default();
         while possible_end_bits.is_empty() {
+            // Choose a piece at random
             let (piece, _) = Piece::all()
                 .choose(&mut rng)
                 .expect("Should be able to choose at random");
             println!("{:?}", piece);
+            // Generate moves for the randomly selected piece
             let mut moves = Moves::new(piece, self.stm, self.positions);
-
             moves.make_legal(&self.stm, &self.positions);
+
+            // Get the position of the Piece on the current board
             let piece_state = self.positions.all_pieces[self.stm.index()][piece.index()];
             let piece_idx = piece_state.get_set_bits();
 
@@ -301,7 +298,16 @@ impl Board {
             if possible_end_bits.is_empty() {
                 continue;
             }
-            println!("{:?}", piece_choice);
+            println!(
+                "Squre: {} at {:?}",
+                Square::new(*piece_choice).unwrap(),
+                piece_choice
+            );
+            println!(
+                "{}, \nPossible moves: \n{}",
+                self.positions.all_pieces[self.stm.index()][piece.index()].print_bitboard(),
+                m.print_bitboard()
+            );
             from = Square::new(*piece_choice).expect("Should be valid piece choice");
             let end_bit = possible_end_bits
                 .choose(&mut rng)
@@ -326,19 +332,19 @@ impl Board {
         if fen.contains(' ') {
             return Err(anyhow::Error::msg("Not supported for now"));
         }
-        let lookup_table: HashMap<char, (usize, usize)> = [
-            ('P', (Piece::Pawn as usize, Side::White as usize)),
-            ('p', (Piece::Pawn as usize, Side::Black as usize)),
-            ('B', (Piece::Bishop as usize, Side::White as usize)),
-            ('b', (Piece::Bishop as usize, Side::Black as usize)),
-            ('N', (Piece::Knight as usize, Side::White as usize)),
-            ('n', (Piece::Knight as usize, Side::Black as usize)),
-            ('R', (Piece::Rook as usize, Side::White as usize)),
-            ('r', (Piece::Rook as usize, Side::Black as usize)),
-            ('Q', (Piece::Queen as usize, Side::White as usize)),
-            ('q', (Piece::Queen as usize, Side::Black as usize)),
-            ('K', (Piece::King as usize, Side::White as usize)),
-            ('k', (Piece::King as usize, Side::Black as usize)),
+        let lookup_table: HashMap<char, (Piece, Side)> = [
+            ('P', (Piece::Pawn, Side::White)),
+            ('p', (Piece::Pawn, Side::Black)),
+            ('B', (Piece::Bishop, Side::White)),
+            ('b', (Piece::Bishop, Side::Black)),
+            ('N', (Piece::Knight, Side::White)),
+            ('n', (Piece::Knight, Side::Black)),
+            ('R', (Piece::Rook, Side::White)),
+            ('r', (Piece::Rook, Side::Black)),
+            ('Q', (Piece::Queen, Side::White)),
+            ('q', (Piece::Queen, Side::Black)),
+            ('K', (Piece::King, Side::White)),
+            ('k', (Piece::King, Side::Black)),
         ]
         .into_iter()
         .collect();
@@ -366,10 +372,10 @@ impl Board {
                     if let Some((piece, side)) = lookup_table.get(&c) {
                         // dbg!(piece, side);
                         // dbg!(rank, file);
-                        self.positions.all_pieces[*side][*piece].set(rank * 8 + file);
+                        self.positions.all_pieces[side.index()][piece.index()].set(rank * 8 + file);
                         file += 1;
                     } else {
-                        return Err(anyhow::Error::msg("Invalid Fen Character"));
+                        anyhow::bail!("Invalid Fen Character")
                     }
                 }
             }
@@ -462,7 +468,7 @@ impl Board {
             for piece in Piece::colored_pieces(side) {
                 let piece_bb = self.positions.all_pieces[side_index][piece.index()];
                 let piece_count = piece_bb.0.count_ones() as u64;
-                let piece_value: u64 = u8::from(piece) as u64;
+                let piece_value: u64 = u32::from(piece) as u64;
                 self.material[side_index] += piece_count * piece_value;
             }
         }
