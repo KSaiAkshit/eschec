@@ -129,6 +129,12 @@ impl Not for Side {
 impl Side {
     pub const SIDES: [Side; 2] = [Side::White, Side::Black];
     // TODO: Should this consume self?
+    pub fn white() -> usize {
+        Side::White.index()
+    }
+    pub fn black() -> usize {
+        Side::Black.index()
+    }
     pub fn flip(&self) -> Self {
         match self {
             Side::White => Side::Black,
@@ -179,6 +185,10 @@ impl Piece {
         Self::SIDES
             .iter()
             .flat_map(move |&side| Self::PIECES.iter().map(move |&piece| (piece, side)))
+    }
+
+    pub fn all_pieces() -> impl Iterator<Item = Piece> {
+        Self::PIECES.iter().copied()
     }
 
     pub fn colored_pieces(_side: Side) -> impl Iterator<Item = Piece> {
@@ -425,17 +435,17 @@ impl Square {
         }
         None
     }
-    pub fn enpassant_from_index(file: char, rank: char) -> anyhow::Result<Self> {
+    pub fn enpassant_from_index(file: char, rank: char) -> miette::Result<Self> {
         let file = file.to_ascii_lowercase();
         if !('a'..='g').contains(&file) {
             return Err(
-                anyhow::Error::msg("given file isn't valid. Valid file = ['a'..='g']")
+                miette::Error::msg("given file isn't valid. Valid file = ['a'..='g']")
                     .context(format!("input file: {}", file)),
             );
         }
         if rank != '3' && rank != '6' {
             return Err(
-                anyhow::Error::msg("given rank isn't valid. Valid rank = '3' or '6'")
+                miette::Error::msg("given rank isn't valid. Valid rank = '3' or '6'")
                     .context(format!("input rank: {}", rank)),
             );
         }

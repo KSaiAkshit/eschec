@@ -22,7 +22,7 @@ impl MaterialEvaluator {
 }
 
 impl Evalutor for MaterialEvaluator {
-    fn evaluate(&self, board: &mut Board) -> i32 {
+    fn evaluate(&self, board: &Board) -> i32 {
         // Source: https://www.chessprogramming.org/Simplified_Evaluation_Function
         // 4 rules of thumb
         // 1.) Avoid expaching one minor piece for 3 pawns

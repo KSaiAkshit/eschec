@@ -1,4 +1,4 @@
-use anyhow::Context;
+use miette::{Context, IntoDiagnostic};
 
 use super::{
     components::{CastlingRights, Side, Square},
@@ -15,11 +15,11 @@ use super::{
 /// We'll need to update the appropriate BitBoard for each piece type and side.
 /// Ensure that the bb_sides array in the Position struct is updated accordingly to reflect the presence of pieces on each side of the board.
 /// Initialize the Board struct with the Position struct containing the updated piece positions.
-pub fn parse_fen(fen: &str) -> anyhow::Result<Board> {
+pub fn parse_fen(fen: &str) -> miette::Result<Board> {
     let parts: Vec<&str> = fen.split_whitespace().collect();
     let mut board = Board::default();
     if parts.len() != 6 {
-        return Err(anyhow::Error::msg(
+        return Err(miette::Error::msg(
             "Not enough segments in given FEN string",
         ));
     }
@@ -38,23 +38,25 @@ pub fn parse_fen(fen: &str) -> anyhow::Result<Board> {
     let half_move = parts[4];
     board.halfmove_clock = half_move
         .parse::<u8>()
+        .into_diagnostic()
         .with_context(|| format!("attempt to parse {} to u8", half_move))?;
     let full_move = parts[5];
     board.fullmove_counter = full_move
         .parse::<u8>()
+        .into_diagnostic()
         .with_context(|| format!("attempt to parse {} to u8", full_move))?;
     Ok(board)
 }
 
-fn parse_stm(stm: &str) -> anyhow::Result<Side> {
+fn parse_stm(stm: &str) -> miette::Result<Side> {
     match stm {
         "w" => Ok(Side::White),
         "b" => Ok(Side::Black),
-        _ => Err(anyhow::Error::msg("Invalid stm")),
+        _ => Err(miette::Error::msg("Invalid stm")),
     }
 }
 
-fn parse_castle(castle: &str) -> anyhow::Result<CastlingRights> {
+fn parse_castle(castle: &str) -> miette::Result<CastlingRights> {
     let mut res = 0b0u8;
     for c in castle.chars() {
         match c {
@@ -64,7 +66,7 @@ fn parse_castle(castle: &str) -> anyhow::Result<CastlingRights> {
             'q' => res |= CastlingRights::BLACK_000,
             '-' => res = CastlingRights::NO_CASTLING,
             _ => {
-                return Err(anyhow::Error::msg(
+                return Err(miette::Error::msg(
                     "Unexpected character while parsing CastlingRights",
                 ))
             }
@@ -73,18 +75,18 @@ fn parse_castle(castle: &str) -> anyhow::Result<CastlingRights> {
     Ok(CastlingRights(res))
 }
 
-fn parse_enpassant(enpassant: &str) -> anyhow::Result<Option<Square>> {
+fn parse_enpassant(enpassant: &str) -> miette::Result<Option<Square>> {
     if enpassant == "-" {
         Ok(None)
     } else {
         let file = enpassant
             .chars()
             .next()
-            .ok_or_else(|| anyhow::Error::msg("Missing en passant file"))?;
+            .ok_or_else(|| miette::Error::msg("Missing en passant file"))?;
         let rank = enpassant
             .chars()
             .nth(1)
-            .ok_or_else(|| anyhow::Error::msg("Missing enpassant file"))?;
+            .ok_or_else(|| miette::Error::msg("Missing enpassant file"))?;
         let square = Square::enpassant_from_index(file, rank)?;
         Ok(Some(square))
     }

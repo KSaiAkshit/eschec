@@ -137,7 +137,7 @@ impl Board {
         }
     }
 
-    pub fn generate_legal_moves(&self) -> anyhow::Result<Vec<(Square, Square)>> {
+    pub fn generate_legal_moves(&self) -> miette::Result<Vec<(Square, Square)>> {
         // NOTE: Is this correct as well?
         let mut legal_moves = Vec::new();
         let state = self.positions;
@@ -159,9 +159,9 @@ impl Board {
         Ok(legal_moves)
     }
 
-    pub fn make_move(&mut self, from: Square, to: Square) -> anyhow::Result<()> {
+    pub fn make_move(&mut self, from: Square, to: Square) -> miette::Result<()> {
         if !self.is_move_legal(from, to) {
-            anyhow::bail!("Illegal move from {} to {}", from, to);
+            miette::bail!("Illegal move from {} to {}", from, to);
         }
         if let Some(piece) = self.get_piece_at(from) {
             self.positions
@@ -176,7 +176,7 @@ impl Board {
             }
             Ok(())
         } else {
-            anyhow::bail!("No piece at from Square");
+            miette::bail!("No piece at from Square");
         }
     }
 
@@ -212,6 +212,7 @@ impl Board {
         !board.is_in_check(self.stm)
     }
 
+    // To be used on a copy of the board
     fn try_move(&mut self, from: Square, to: Square) {
         if let Some(piece) = self.get_piece_at(from) {
             self.positions
@@ -271,7 +272,7 @@ impl Board {
         self.is_stalemate(self.stm) || self.halfmove_clock >= 100 || self.is_insufficient_material()
     }
 
-    pub fn suggest_rand_move(&self) -> anyhow::Result<(Square, Square)> {
+    pub fn suggest_rand_move(&self) -> miette::Result<(Square, Square)> {
         let mut rng = rand::rng();
         let mut possible_end_bits: Vec<usize> = Vec::default();
         let mut from = Square::default();
@@ -281,7 +282,6 @@ impl Board {
             let (piece, _) = Piece::all()
                 .choose(&mut rng)
                 .expect("Should be able to choose at random");
-            println!("{:?}", piece);
             // Generate moves for the randomly selected piece
             let mut moves = Moves::new(piece, self.stm, self.positions);
             moves.make_legal(&self.stm, &self.positions);
@@ -298,16 +298,6 @@ impl Board {
             if possible_end_bits.is_empty() {
                 continue;
             }
-            println!(
-                "Squre: {} at {:?}",
-                Square::new(*piece_choice).unwrap(),
-                piece_choice
-            );
-            println!(
-                "{}, \nPossible moves: \n{}",
-                self.positions.all_pieces[self.stm.index()][piece.index()].print_bitboard(),
-                m.print_bitboard()
-            );
             from = Square::new(*piece_choice).expect("Should be valid piece choice");
             let end_bit = possible_end_bits
                 .choose(&mut rng)
@@ -328,9 +318,9 @@ impl Board {
     }
 
     // NOTE: Older Implementation without support for full length FEN strings
-    fn place_pieces(&mut self, fen: &str) -> anyhow::Result<()> {
+    fn place_pieces(&mut self, fen: &str) -> miette::Result<()> {
         if fen.contains(' ') {
-            return Err(anyhow::Error::msg("Not supported for now"));
+            return Err(miette::Error::msg("Not supported for now"));
         }
         let lookup_table: HashMap<char, (Piece, Side)> = [
             ('P', (Piece::Pawn, Side::White)),
@@ -375,7 +365,7 @@ impl Board {
                         self.positions.all_pieces[side.index()][piece.index()].set(rank * 8 + file);
                         file += 1;
                     } else {
-                        anyhow::bail!("Invalid Fen Character")
+                        miette::bail!("Invalid Fen Character")
                     }
                 }
             }
@@ -401,7 +391,7 @@ impl Board {
         let index = square.index();
 
         for (piece_type, side) in Piece::all() {
-            let piece_bb = self.positions.all_pieces[side as usize][piece_type as usize];
+            let piece_bb = self.positions.all_pieces[side.index()][piece_type.index()];
             if piece_bb.contains_square(index) {
                 return Some(piece_type);
             }

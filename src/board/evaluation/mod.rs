@@ -5,7 +5,7 @@ pub mod material;
 pub mod position;
 
 pub trait Evalutor {
-    fn evaluate(&self, board: &mut Board) -> i32;
+    fn evaluate(&self, board: &Board) -> i32;
     fn name(&self) -> &str;
 }
 
@@ -32,7 +32,7 @@ impl CompositeEvaluator {
 }
 
 impl Evalutor for CompositeEvaluator {
-    fn evaluate(&self, board: &mut Board) -> i32 {
+    fn evaluate(&self, board: &Board) -> i32 {
         self.evaluators
             .iter()
             .zip(self.weights.iter())

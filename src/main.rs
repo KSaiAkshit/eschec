@@ -1,8 +1,9 @@
 use std::io::{self, Write};
 
 use eschec::{board::*, *};
+use miette::IntoDiagnostic;
 
-fn main() -> anyhow::Result<()> {
+fn main() -> miette::Result<()> {
     color_backtrace::install();
     let mut board = Board::new();
 
@@ -12,7 +13,7 @@ fn main() -> anyhow::Result<()> {
 
         let mut s = String::new();
         print!("{} >> ", board.stm);
-        io::stdout().flush()?;
+        io::stdout().flush().into_diagnostic()?;
         stdin.read_line(&mut s).unwrap();
         clear_screen()?;
 
@@ -25,7 +26,7 @@ fn main() -> anyhow::Result<()> {
         };
 
         if let Err(e) = board.make_move(from_square, to_square) {
-            eprintln!("Failed to make move: {}", e);
+            eprintln!("{:?}", e);
             continue;
         }
 
@@ -36,7 +37,7 @@ fn main() -> anyhow::Result<()> {
         );
 
         if let Err(e) = board.make_move(computer_move.0, computer_move.1) {
-            eprintln!("Failed to make move: {}", e);
+            eprintln!("{:?}", e);
             continue;
         }
 

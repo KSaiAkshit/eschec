@@ -4,6 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anyhow = "1.0.83"
 color-backtrace = "0.7.0"
+miette = { version = "7.5.0", features = ["fancy"] }
 rand = "0.9.0"
