@@ -1,11 +1,20 @@
 use std::io::{self, Write};
 
 use eschec::{board::*, *};
+use evaluation::{
+    material::MaterialEvaluator, mobility::MobilityEvaluator, position::PositionEvaluator,
+    CompositeEvaluator,
+};
 use miette::IntoDiagnostic;
 
 fn main() -> miette::Result<()> {
     color_backtrace::install();
     let mut board = Board::new();
+    let mut evaluator = CompositeEvaluator::new("CompositeEvaluator");
+    evaluator
+        .add_evaluator(Box::new(MaterialEvaluator::new()), 0.3)
+        .add_evaluator(Box::new(PositionEvaluator::new()), 0.3)
+        .add_evaluator(Box::new(MobilityEvaluator::new()), 0.2);
 
     let stdin: io::Stdin = io::stdin();
     loop {
@@ -29,6 +38,9 @@ fn main() -> miette::Result<()> {
             eprintln!("{:?}", e);
             continue;
         }
+
+        let score = board.evaluate_position(&evaluator);
+        println!("Score: {}", score);
 
         let computer_move = board.suggest_rand_move()?;
         println!(

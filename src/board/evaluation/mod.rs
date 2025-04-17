@@ -2,16 +2,21 @@
 use super::*;
 
 pub mod material;
+pub mod mobility;
 pub mod position;
 
-pub trait Evalutor {
+use material::MaterialEvaluator;
+use mobility::MobilityEvaluator;
+use position::PositionEvaluator;
+
+pub trait Evaluator {
     fn evaluate(&self, board: &Board) -> i32;
     fn name(&self) -> &str;
 }
 
 pub struct CompositeEvaluator {
     name: String,
-    evaluators: Vec<Box<dyn Evalutor>>,
+    evaluators: Vec<Box<dyn Evaluator>>,
     weights: Vec<f32>,
 }
 
@@ -24,14 +29,14 @@ impl CompositeEvaluator {
         }
     }
 
-    pub fn add_evaluator(&mut self, evaluator: Box<dyn Evalutor>, weight: f32) -> &mut Self {
+    pub fn add_evaluator(&mut self, evaluator: Box<dyn Evaluator>, weight: f32) -> &mut Self {
         self.evaluators.push(evaluator);
         self.weights.push(weight);
         self
     }
 }
 
-impl Evalutor for CompositeEvaluator {
+impl Evaluator for CompositeEvaluator {
     fn evaluate(&self, board: &Board) -> i32 {
         self.evaluators
             .iter()
@@ -42,5 +47,28 @@ impl Evalutor for CompositeEvaluator {
 
     fn name(&self) -> &str {
         &self.name
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_composite_evaluator() {
+        let board = Board::new();
+
+        let mut composite = CompositeEvaluator::new("Test Composite");
+        composite
+            .add_evaluator(Box::new(MaterialEvaluator::new()), 0.3)
+            .add_evaluator(Box::new(PositionEvaluator::new()), 0.3)
+            .add_evaluator(Box::new(MobilityEvaluator::new()), 0.1);
+
+        let score = composite.evaluate(&board);
+        dbg!(score);
+
+        // Initial position with our evaluators should be roughly balanced
+        // Allow some small variation from position scoring
+        assert!(score.abs() < 10);
     }
 }

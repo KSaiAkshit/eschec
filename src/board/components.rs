@@ -199,9 +199,9 @@ impl Piece {
         match &self {
             Piece::Pawn => {
                 if stm.into() {
-                    '♜'
+                    '♟'
                 } else {
-                    '♖'
+                    '♙'
                 }
             }
             Piece::Bishop => {

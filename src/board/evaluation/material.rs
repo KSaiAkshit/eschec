@@ -21,7 +21,7 @@ impl MaterialEvaluator {
     }
 }
 
-impl Evalutor for MaterialEvaluator {
+impl Evaluator for MaterialEvaluator {
     fn evaluate(&self, board: &Board) -> i32 {
         // Source: https://www.chessprogramming.org/Simplified_Evaluation_Function
         // 4 rules of thumb

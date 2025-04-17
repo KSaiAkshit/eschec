@@ -1,3 +1,4 @@
+use evaluation::Evaluator;
 use rand::prelude::*;
 use std::{collections::HashMap, fmt::Display};
 
@@ -102,7 +103,6 @@ impl Display for Board {
     }
 }
 
-#[allow(dead_code)]
 impl Board {
     /// Use to initialize a default board
     pub fn new() -> Self {
@@ -191,7 +191,6 @@ impl Board {
 
         // Check if the piece belongs to the current side to move
         if !self.positions.all_sides[self.stm.index()].contains_square(from.index()) {
-            dbg!("Here1");
             return false;
         }
 
@@ -202,7 +201,6 @@ impl Board {
 
         // Check if the 'to' square is a legal square for the piece
         if !legal_squares.contains_square(to.index()) {
-            dbg!("Here2");
             return false;
         }
 
@@ -307,14 +305,8 @@ impl Board {
         Ok((from, to))
     }
 
-    fn evaluate_position(&self) -> i32 {
-        // let material_score = self.evaluate_material();
-        // let position_score = self.evaluate_piece_position();
-        //
-        let white_material = self.material[Side::White.index()] as i32;
-        let black_material = self.material[Side::Black.index()] as i32;
-
-        white_material - black_material
+    pub fn evaluate_position(&self, evaluator: &dyn Evaluator) -> i32 {
+        evaluator.evaluate(self)
     }
 
     // NOTE: Older Implementation without support for full length FEN strings
@@ -638,15 +630,15 @@ mod material_tests {
         let mut board = Board::new();
         board.calculate_material();
         // Initial material for each side should be:
-        // 8 pawns (8 * 1 = 8)
-        // 2 knights (2 * 3 = 6)
-        // 2 bishops (2 * 3 = 6)
-        // 2 rooks (2 * 5 = 10)
-        // 1 queen (1 * 9 = 9)
-        // 1 king (1 * 1 = 1)
-        // Total: 40
-        assert_eq!(board.material[Side::White.index()], 40);
-        assert_eq!(board.material[Side::Black.index()], 40);
+        // 8 pawns (8 * 100 = 800)
+        // 2 knights (2 * 320 = 640)
+        // 2 bishops (2 * 330 = 660)
+        // 2 rooks (2 * 500 = 1000)
+        // 1 queen (1 * 900 = 900)
+        // 1 king (1 * 20000 = 20000)
+        // Total: 24000
+        assert_eq!(board.material[Side::White.index()], 24000);
+        assert_eq!(board.material[Side::Black.index()], 24000);
     }
 
     #[test]
@@ -655,8 +647,8 @@ mod material_tests {
         board.calculate_material();
         // Standard position with a missing f2 pawn on white's side
 
-        assert_eq!(board.material[Side::White.index()], 39); // 40 - 1 = 39
-        assert_eq!(board.material[Side::Black.index()], 40);
+        assert_eq!(board.material[Side::White.index()], 23900); // 24000 - 100 = 23900
+        assert_eq!(board.material[Side::Black.index()], 24000);
     }
 
     #[test]
