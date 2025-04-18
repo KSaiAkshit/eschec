@@ -1,23 +1,28 @@
 use std::io::{self, Write};
 
-use eschec::{board::*, *};
-use evaluation::{
-    material::MaterialEvaluator, mobility::MobilityEvaluator, position::PositionEvaluator,
-    CompositeEvaluator,
+use eschec::{
+    board::{search::Search, *},
+    *,
 };
+use evaluation::CompositeEvaluator;
 use miette::IntoDiagnostic;
+use tracing::*;
 
 fn main() -> miette::Result<()> {
     color_backtrace::install();
+    tracing_subscriber::fmt().init();
+    let span = tracing::span!(Level::INFO, "main");
+    let _guard = span.enter();
+    tracing::info!("Hi, game starts");
     let mut board = Board::new();
-    let mut evaluator = CompositeEvaluator::new("CompositeEvaluator");
-    evaluator
-        .add_evaluator(Box::new(MaterialEvaluator::new()), 0.3)
-        .add_evaluator(Box::new(PositionEvaluator::new()), 0.3)
-        .add_evaluator(Box::new(MobilityEvaluator::new()), 0.2);
+    let evaluator = CompositeEvaluator::balanced();
+    let mut search = Search::new(3);
 
     let stdin: io::Stdin = io::stdin();
     loop {
+        let span = tracing::span!(Level::INFO, "loop");
+        let _guard = span.enter();
+        tracing::info!("Inside game loop");
         println!("{}", board);
 
         let mut s = String::new();
@@ -39,21 +44,19 @@ fn main() -> miette::Result<()> {
             continue;
         }
 
+        let res = search.find_best_move(&board, &evaluator);
+
+        let b_move = res.best_move.unwrap();
+        println!("Computed best move: {}, {}", b_move.0, b_move.1);
+
         let score = board.evaluate_position(&evaluator);
         println!("Score: {}", score);
 
-        let computer_move = board.suggest_rand_move()?;
-        println!(
-            "Computed random move: {}, {}",
-            computer_move.0, computer_move.1
-        );
+        println!("Computed best move: {}, {}", b_move.0, b_move.1);
 
-        if let Err(e) = board.make_move(computer_move.0, computer_move.1) {
+        if let Err(e) = board.make_move(b_move.0, b_move.1) {
             eprintln!("{:?}", e);
             continue;
         }
-
-        // Sleep to give some delay
-        std::thread::sleep(std::time::Duration::from_millis(30));
     }
 }

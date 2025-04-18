@@ -1,5 +1,5 @@
-#![allow(unused)]
 use super::*;
+use std::fmt::Debug;
 
 pub mod material;
 pub mod mobility;
@@ -9,11 +9,12 @@ use material::MaterialEvaluator;
 use mobility::MobilityEvaluator;
 use position::PositionEvaluator;
 
-pub trait Evaluator {
+pub trait Evaluator: Debug {
     fn evaluate(&self, board: &Board) -> i32;
     fn name(&self) -> &str;
 }
 
+#[derive(Debug)]
 pub struct CompositeEvaluator {
     name: String,
     evaluators: Vec<Box<dyn Evaluator>>,
@@ -27,6 +28,14 @@ impl CompositeEvaluator {
             evaluators: Vec::new(),
             weights: Vec::new(),
         }
+    }
+    pub fn balanced() -> Self {
+        let mut evaluator = CompositeEvaluator::new("Balanced");
+        evaluator
+            .add_evaluator(Box::new(MaterialEvaluator::new()), 0.3)
+            .add_evaluator(Box::new(PositionEvaluator::new()), 0.3)
+            .add_evaluator(Box::new(MobilityEvaluator::new()), 0.2);
+        evaluator
     }
 
     pub fn add_evaluator(&mut self, evaluator: Box<dyn Evaluator>, weight: f32) -> &mut Self {

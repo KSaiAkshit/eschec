@@ -1,6 +1,8 @@
 use evaluation::Evaluator;
+use miette::Context;
 use rand::prelude::*;
 use std::{collections::HashMap, fmt::Display};
+use tracing::*;
 
 use moves::Moves;
 
@@ -10,6 +12,7 @@ pub mod components;
 pub mod evaluation;
 mod fen;
 pub mod moves;
+pub mod search;
 
 /// Completely encapsulate the game
 #[derive(Default, Debug, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
@@ -139,23 +142,38 @@ impl Board {
 
     pub fn generate_legal_moves(&self) -> miette::Result<Vec<(Square, Square)>> {
         // NOTE: Is this correct as well?
-        let mut legal_moves = Vec::new();
-        let state = self.positions;
-        (0..64).for_each(|index| {
-            let square = Square::new(index).expect("Get a valid index");
-            if let Some(piece) = self.get_piece_at(square) {
-                let moves = Moves::new(piece, self.stm, state);
-                moves.attack_bb.into_iter().for_each(|attack_bb| {
-                    let targets = attack_bb.get_set_bits();
-                    targets.into_iter().for_each(|target_index| {
-                        let target_square = Square::new(target_index).expect("Get a valid index");
-                        if self.is_move_legal(square, target_square) {
-                            legal_moves.push((square, target_square));
-                        }
-                    });
-                });
+        let mut legal_moves = Vec::with_capacity(40);
+        let side_index = self.stm.index();
+        let our_pieces = self.positions.all_sides[side_index];
+
+        let king_pos = self.positions.all_pieces[side_index][Piece::king()]
+            .iter_bits()
+            .next()
+            .wrap_err("King should be alive and gettable")?;
+        let _king_square = Square::new(king_pos)
+            .wrap_err_with(|| format!("king_pos {king_pos} should be valid"))?;
+        for piece_type in Piece::colored_pieces(self.stm) {
+            let piece_bb = self.positions.all_pieces[side_index][piece_type.index()];
+
+            for from_idx in piece_bb.iter_bits() {
+                let from_sq = Square::new(from_idx)
+                    .wrap_err_with(|| format!("king_pos {from_idx} should be valid"))?;
+
+                let moves = Moves::new(piece_type, self.stm, self.positions);
+                let potential_moves = moves.attack_bb[from_idx] & !our_pieces;
+
+                for to_idx in potential_moves.iter_bits() {
+                    let to_sq = Square::new(to_idx)
+                        .wrap_err_with(|| format!("king_pos {to_idx} should be valid"))?;
+                    let mut b_copy = *self;
+                    b_copy.try_move(from_sq, to_sq);
+                    if !b_copy.is_in_check(b_copy.stm) {
+                        legal_moves.push((from_sq, to_sq));
+                    }
+                }
             }
-        });
+        }
+
         Ok(legal_moves)
     }
 
@@ -530,14 +548,11 @@ impl Board {
 
         // Count the pieces for both sides
         for piece in Piece::PIECES.iter() {
-            white_counts[piece.index()] = self.positions.all_pieces[Side::White.index()]
-                [piece.index()]
-            .get_set_bits()
-            .len();
-            black_counts[piece.index()] = self.positions.all_pieces[Side::Black.index()]
-                [piece.index()]
-            .get_set_bits()
-            .len();
+            white_counts[piece.index()] =
+                self.positions.all_pieces[Side::White.index()][piece.index()].pop_count();
+
+            black_counts[piece.index()] =
+                self.positions.all_pieces[Side::Black.index()][piece.index()].pop_count();
         }
 
         // If both sides have only their kings, it's insufficient material
@@ -616,6 +631,132 @@ impl Board {
             a == b
         } else {
             false
+        }
+    }
+
+    #[instrument(skip(self, evaluator), fields(eval_name = evaluator.name()))]
+    pub fn find_best_move(
+        &self,
+        nodes_searched: &mut u64,
+        evaluator: &dyn Evaluator,
+        depth: u8,
+    ) -> miette::Result<(Square, Square)> {
+        info!(side = %self.stm, "Finding best move for");
+
+        info!("getting legal moves");
+        let legal_moves = self.generate_legal_moves()?;
+        if legal_moves.is_empty() {
+            miette::bail!("No legal moves available")
+        }
+        info!(legal_moves.num = legal_moves.len(), "got legal moves: ");
+
+        let mut best_score = i32::MIN;
+        let mut best_move = legal_moves[0];
+        info!(
+            best_score = best_score,
+            from = %best_move.0,
+            to = %best_move.1,
+            "init vals"
+        );
+
+        for (from, to) in legal_moves {
+            let mut board_copy = *self;
+            board_copy.make_move(from, to)?;
+            info!(
+                best_score = best_score,
+                from = %from,
+                to = %to,
+                depth = depth,
+                "currently on move"
+            );
+
+            let score = -self.minimax(
+                &board_copy,
+                nodes_searched,
+                depth - 1,
+                i32::MIN,
+                i32::MAX,
+                false,
+                evaluator,
+            );
+
+            if score > best_score {
+                best_score = score;
+                best_move = (from, to);
+            }
+        }
+        Ok(best_move)
+    }
+
+    #[instrument(skip(self, board, evaluator))]
+    fn minimax(
+        &self,
+        board: &Board,
+        mut nodes_searched: &mut u64,
+        depth: u8,
+        mut alpha: i32,
+        mut beta: i32,
+        maximizing_player: bool,
+        evaluator: &dyn Evaluator,
+    ) -> i32 {
+        trace!("staring minimax search");
+        *nodes_searched += 1;
+        if depth == 0 || board.is_draw() || board.is_checkmate(board.stm) {
+            warn!("got deep");
+            return board.evaluate_position(evaluator);
+        }
+        let legal_moves = match board.generate_legal_moves() {
+            Ok(moves) => moves,
+            Err(_) => return board.evaluate_position(evaluator),
+        };
+        if maximizing_player {
+            let mut max_eval = i32::MIN;
+            for (from, to) in legal_moves {
+                let mut board_copy = *board;
+                if board_copy.make_move(from, to).is_err() {
+                    continue;
+                }
+
+                let eval = self.minimax(
+                    &board_copy,
+                    &mut nodes_searched,
+                    depth - 1,
+                    alpha,
+                    beta,
+                    false,
+                    evaluator,
+                );
+                max_eval = max_eval.max(eval);
+                alpha = alpha.max(eval);
+                if beta <= alpha {
+                    break;
+                }
+            }
+            return max_eval;
+        } else {
+            let mut min_eval = i32::MAX;
+            for (from, to) in legal_moves {
+                let mut board_copy = *board;
+                if board_copy.make_move(from, to).is_err() {
+                    continue;
+                }
+
+                let eval = self.minimax(
+                    &board_copy,
+                    &mut nodes_searched,
+                    depth - 1,
+                    alpha,
+                    beta,
+                    true,
+                    evaluator,
+                );
+                min_eval = min_eval.min(eval);
+                beta = beta.min(eval);
+                if beta <= alpha {
+                    break;
+                }
+            }
+            return min_eval;
         }
     }
 }

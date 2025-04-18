@@ -45,6 +45,10 @@ impl BitBoard {
         self.0 &= !(1 << from_index);
     }
 
+    pub fn pop_count(&self) -> u32 {
+        self.0.count_ones()
+    }
+
     pub fn print_bitboard(&self) -> String {
         const LAST_BIT: u64 = 63;
         let mut out = String::new();
@@ -69,11 +73,13 @@ impl BitBoard {
     }
 
     pub fn pop_lsb(&mut self) -> Option<usize> {
-        let lsb = self.lsb();
-        if let Some(_bit) = lsb {
-            self.0 &= self.0 - 1;
+        if self.0 == 0 {
+            None
+        } else {
+            let idx = self.0.trailing_zeros() as usize;
+            self.0 &= self.0 - 1; // Clear the least significant bit
+            Some(idx)
         }
-        lsb
     }
 
     pub fn get_set_bits(&self) -> Vec<usize> {
@@ -91,8 +97,42 @@ impl BitBoard {
         set_bits
     }
 
+    pub fn iter_bits(&self) -> BitBoardIterator {
+        BitBoardIterator { remaining: self.0 }
+    }
+
     pub fn contains_square(&self, index: usize) -> bool {
         (self.0 & (1 << index)) != 0
+    }
+}
+
+/// Iterator that yields each set bit position in a BitBoard
+pub struct BitBoardIterator {
+    remaining: u64,
+}
+
+impl Iterator for BitBoardIterator {
+    type Item = usize;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.remaining == 0 {
+            None
+        } else {
+            let bit_pos = self.remaining.trailing_zeros() as usize;
+            self.remaining &= self.remaining - 1; // Clear the least significant bit
+            Some(bit_pos)
+        }
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let exact = self.remaining.count_ones() as usize;
+        (exact, Some(exact))
+    }
+}
+
+impl ExactSizeIterator for BitBoardIterator {
+    fn len(&self) -> usize {
+        self.remaining.count_ones() as usize
     }
 }
 
@@ -185,6 +225,25 @@ impl Piece {
         Self::SIDES
             .iter()
             .flat_map(move |&side| Self::PIECES.iter().map(move |&piece| (piece, side)))
+    }
+
+    pub fn king() -> usize {
+        Piece::King.index()
+    }
+    pub fn queen() -> usize {
+        Piece::Queen.index()
+    }
+    pub fn rook() -> usize {
+        Piece::Rook.index()
+    }
+    pub fn bishop() -> usize {
+        Piece::Bishop.index()
+    }
+    pub fn knight() -> usize {
+        Piece::Knight.index()
+    }
+    pub fn pawn() -> usize {
+        Piece::Pawn.index()
     }
 
     pub fn all_pieces() -> impl Iterator<Item = Piece> {

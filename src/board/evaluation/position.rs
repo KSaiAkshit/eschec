@@ -140,7 +140,6 @@ impl Evaluator for PositionEvaluator {
 
 #[cfg(test)]
 mod tests {
-    use crate::*;
 
     use super::*;
 

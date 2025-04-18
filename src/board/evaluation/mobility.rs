@@ -1,7 +1,7 @@
 use super::Evaluator;
-use crate::board::components::Side;
 use crate::board::Board;
 
+#[derive(Debug)]
 pub struct MobilityEvaluator {
     name: String,
 }
