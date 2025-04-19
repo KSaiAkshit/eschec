@@ -82,58 +82,86 @@ impl Moves {
 
     fn gen_white_pawn_moves(&self) -> Vec<BitBoard> {
         let mut attack_bb = vec![BitBoard(0); 64];
+        let enemy_pieces = self.state.all_sides[Side::black()];
+        let ally_pieces = self.state.all_sides[Side::white()];
+        let all_pieces = ally_pieces | enemy_pieces;
         (0..64).for_each(|index| {
-            let square = Square::new(index).expect("Get a valid index");
             let mut white_pawn_moves = BitBoard(0);
-            let (file, _rank) = square.coords();
-            if file == 0 {
-                attack_bb[index] = BitBoard(0);
+            let square = Square::new(index).expect("Get a valid index");
+            let (rank, file) = square.coords();
+
+            if rank == 7 {
+                return; // 'continue' equivalent in closures;
             }
-            if file == 1 {
-                for &offset in &[8, 16] {
-                    let target_index = index + offset;
-                    let target_bb = BitBoard(1 << target_index);
-                    white_pawn_moves = white_pawn_moves | target_bb;
-                }
-                attack_bb[index] = white_pawn_moves;
-            } else {
-                let target_index = index + 8;
-                if target_index < 64 {
-                    let target_bb = BitBoard(1 << target_index);
-                    white_pawn_moves = white_pawn_moves | target_bb;
-                    attack_bb[index] = white_pawn_moves;
+
+            let fwd = index + 8;
+            if fwd < 64 && !all_pieces.contains_square(fwd) {
+                white_pawn_moves.set(fwd);
+
+                if rank == 1 && !all_pieces.contains_square(fwd + 8) {
+                    white_pawn_moves.set(fwd + 8);
                 }
             }
+
+            // Cannot be on leftmost file and still capture to the left
+            if file > 0 {
+                let cap_left = index + 7;
+                if cap_left < 64 && enemy_pieces.contains_square(cap_left) {
+                    white_pawn_moves.set(cap_left);
+                }
+            }
+
+            // Cannot be on rightmost file and still capture to the right
+            if file < 7 {
+                let cap_right = index + 9;
+                if cap_right < 64 && enemy_pieces.contains_square(cap_right) {
+                    white_pawn_moves.set(cap_right);
+                }
+            }
+            attack_bb[index] = white_pawn_moves;
         });
         attack_bb
     }
 
     fn gen_black_pawn_moves(&self) -> Vec<BitBoard> {
         let mut attack_bb = vec![BitBoard(0); 64];
+        let enemy_pieces = self.state.all_sides[Side::white()];
+        let ally_pieces = self.state.all_sides[Side::black()];
+        let all_pieces = ally_pieces | enemy_pieces;
         (0..64).for_each(|index| {
+            let mut white_pawn_moves = BitBoard(0);
             let square = Square::new(index).expect("Get a valid index");
-            let mut black_pawn_moves = BitBoard(0);
-            let (file, _rank) = square.coords();
-            if file == 7 || file == 0 {
-                attack_bb[index] = BitBoard(0);
+            let (rank, file) = square.coords();
+
+            if rank == 0 {
+                return; // 'continue' equivalent in closures;
             }
-            if file == 6 {
-                for &offset in &[8, 16] {
-                    let target_index = index as i8 - offset;
-                    if target_index.is_positive() {
-                        let target_bb = BitBoard(1 << target_index);
-                        black_pawn_moves = black_pawn_moves | target_bb;
-                    }
-                }
-                attack_bb[index] = black_pawn_moves;
-            } else {
-                let target_index = index as i8 - 8;
-                if (8..48).contains(&target_index) {
-                    let target_bb = BitBoard(1 << target_index);
-                    black_pawn_moves = black_pawn_moves | target_bb;
-                    attack_bb[index] = black_pawn_moves;
+
+            let fwd = index - 8;
+            if fwd >= 8 && !all_pieces.contains_square(fwd) {
+                white_pawn_moves.set(fwd);
+
+                if rank == 6 && !all_pieces.contains_square(fwd - 8) {
+                    white_pawn_moves.set(fwd - 8);
                 }
             }
+
+            // Cannot be on leftmost file and still capture to the left
+            if file > 0 {
+                let cap_left = index - 9;
+                if cap_left < 64 && enemy_pieces.contains_square(cap_left) {
+                    white_pawn_moves.set(cap_left);
+                }
+            }
+
+            // Cannot be on rightmost file and still capture to the right
+            if file < 7 {
+                let cap_right = index - 7;
+                if cap_right < 64 && enemy_pieces.contains_square(cap_right) {
+                    white_pawn_moves.set(cap_right);
+                }
+            }
+            attack_bb[index] = white_pawn_moves;
         });
         attack_bb
     }
@@ -150,24 +178,32 @@ impl Moves {
 
     fn gen_bishop_moves(&self, stm: Side) -> Vec<BitBoard> {
         let mut attack_bb = vec![BitBoard(0); 64];
+        let ally_pieces = self.state.all_sides[stm.index()];
+        let enemy_pieces = self.state.all_sides[stm.flip().index()];
+
         (0..64).for_each(|index| {
-            let square = Square::new(index).expect("Get a valid index");
             let mut bishop_moves = BitBoard(0);
-            let (file, rank) = square.coords();
+            let square = Square::new(index).expect("Get a valid index");
+            let (rank, file) = square.coords();
             for &delta in &Direction::DIAG {
                 let mut target_index = index as i8 + delta;
                 while (0..64).contains(&target_index) {
                     let target_square =
                         Square::new(target_index as usize).expect("get a valid index");
-                    if self.state.all_sides[stm.index()].contains_square(target_square.index()) {
+                    // Contains an ally, do not add to possible moves
+                    if ally_pieces.contains_square(target_square.index()) {
                         break;
                     }
-                    let (target_file, target_rank) = target_square.coords();
-                    let file_diff = file as i8 - target_file as i8;
-                    let rank_diff = rank as i8 - target_rank as i8;
+                    let (target_rand, target_file) = target_square.coords();
+                    let file_diff = rank as i8 - target_rand as i8;
+                    let rank_diff = file as i8 - target_file as i8;
                     if file_diff.abs() == rank_diff.abs() {
                         let target_bb = BitBoard(1 << target_index);
                         bishop_moves = bishop_moves | target_bb;
+                    }
+                    // Contains an enemy, add the capture to possible moves
+                    if enemy_pieces.contains_square(target_square.index()) {
+                        break;
                     }
                     if file_diff.abs() != rank_diff.abs() || file_diff == 0 {
                         break;
@@ -182,28 +218,40 @@ impl Moves {
 
     fn gen_rook_moves(&self, stm: Side) -> Vec<BitBoard> {
         let mut attack_bb = vec![BitBoard(0); 64];
+        let ally_pieces = self.state.all_sides[stm.index()];
+        let enemy_pieces = self.state.all_sides[stm.flip().index()];
         (0..64).for_each(|index| {
             let square = Square::new(index).expect("Get a valid index");
             let mut rook_moves = BitBoard(0);
-            let (file, rank) = square.coords();
+            let (rank, file) = square.coords();
             for &delta in &Direction::ORTHO {
-                let mut target_index = index as i8 + delta;
-                while (0..64).contains(&target_index) {
-                    let target_square =
-                        Square::new(target_index as usize).expect("get a valid index");
-                    if self.state.all_sides[stm.index()].contains_square(target_square.index()) {
+                let mut target_index = index as i8;
+                loop {
+                    target_index += delta;
+                    if !(0..64).contains(&target_index) {
                         break;
                     }
-                    let (target_file, target_rank) = target_square.coords();
-                    if target_file != file && target_rank == rank {
-                        let target_bb = BitBoard(1 << target_index);
-                        rook_moves = rook_moves | target_bb;
+                    let target_square =
+                        Square::new(target_index as usize).expect("get a valid index");
+                    let (target_rank, target_file) = target_square.coords();
+
+                    if (delta == Direction::EAST || delta == Direction::WEST) && target_rank != rank
+                    {
+                        break;
                     }
-                    if target_rank != rank && target_file == file {
-                        let target_bb = BitBoard(1 << target_index);
-                        rook_moves = rook_moves | target_bb;
+                    if (delta == Direction::NORTH || delta == Direction::SOUTH)
+                        && target_file != file
+                    {
+                        break;
                     }
-                    target_index += delta;
+                    if ally_pieces.contains_square(target_square.index()) {
+                        break;
+                    }
+                    rook_moves.set(target_index as usize);
+                    if enemy_pieces.contains_square(target_square.index()) {
+                        break;
+                    }
+                    // target_index += delta;
                 }
             }
             attack_bb[index] = rook_moves;
@@ -216,7 +264,7 @@ impl Moves {
         (0..64).for_each(|index| {
             let square = Square::new(index).expect("Get a valid index");
             let mut king_moves = BitBoard(0);
-            let (file, _rank) = square.coords();
+            let (rank, _file) = square.coords();
 
             for delta in &Direction::DIAG {
                 let target_index = index as i8 + delta;
@@ -227,7 +275,7 @@ impl Moves {
             }
 
             for &f in &Direction::ORTHO {
-                if f != file as i8 {
+                if f != rank as i8 {
                     let target_index = index as i8 + f;
                     if target_index < 64 && 0 < target_index {
                         let target_bb = BitBoard(1 << target_index);
@@ -247,7 +295,7 @@ impl Moves {
         (0..64).for_each(|index| {
             let mut knight_moves = BitBoard(0);
             let square = Square::new(index).expect("get a valid index").coords();
-            let (file, rank) = square;
+            let (rank, file) = square;
 
             for &offset in knight_offsets.iter() {
                 let target_index = index as i8 + offset;
@@ -257,8 +305,8 @@ impl Moves {
 
                     // Calculate the maximum coordinate move distance
                     let max_coord_move_dst = i8::max(
-                        (rank as i8 - target_square_x as i8).abs(),
-                        (file as i8 - target_square_y as i8).abs(),
+                        (file as i8 - target_square_x as i8).abs(),
+                        (rank as i8 - target_square_y as i8).abs(),
                     );
 
                     // If the maximum coordinate move distance is 2, the move is valid
