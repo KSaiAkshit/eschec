@@ -344,6 +344,11 @@ impl BoardState {
         let to_index = to.index();
 
         self.all_pieces[side.index()][piece.index()].capture(from_index);
+        if let Some((p, s)) = self.get_piece_at(&to) {
+            if s == side.flip() {
+                self.all_pieces[s.index()][p.index()].capture(to_index);
+            }
+        }
         self.all_pieces[side.index()][piece.index()].set(to_index);
 
         self.update_all_sides();
@@ -363,6 +368,32 @@ impl BoardState {
             | self.all_pieces[1][3]
             | self.all_pieces[1][4]
             | self.all_pieces[1][5];
+    }
+
+    fn get_piece_at(&self, square: &Square) -> Option<(Piece, Side)> {
+        let index = square.index();
+        let square_mask = 1u64 << index;
+
+        // first check if there's any piece at all using all_sides
+        if (self.all_sides[Side::white()] & BitBoard(square_mask)).0 != 0 {
+            for piece_type in Piece::all_pieces() {
+                if (self.all_pieces[Side::black()][piece_type.index()] & BitBoard(square_mask)).0
+                    != 0
+                {
+                    return Some((piece_type, Side::White));
+                }
+            }
+        } else if (self.all_sides[Side::black()] & BitBoard(square_mask)).0 != 0 {
+            for piece_type in Piece::all_pieces() {
+                if (self.all_pieces[Side::black()][piece_type.index()] & BitBoard(square_mask)).0
+                    != 0
+                {
+                    return Some((piece_type, Side::Black));
+                }
+            }
+        }
+
+        None
     }
 }
 

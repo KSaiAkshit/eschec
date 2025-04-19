@@ -11,9 +11,12 @@ use tracing::*;
 fn main() -> miette::Result<()> {
     color_backtrace::install();
     tracing_subscriber::fmt().init();
+
     let span = tracing::span!(Level::INFO, "main");
     let _guard = span.enter();
+
     tracing::info!("Hi, game starts");
+
     let mut board = Board::new();
     let evaluator = CompositeEvaluator::balanced();
     let mut search = Search::new(3);
@@ -47,12 +50,15 @@ fn main() -> miette::Result<()> {
         let res = search.find_best_move(&board, &evaluator);
 
         let b_move = res.best_move.unwrap();
-        println!("Computed best move: {}, {}", b_move.0, b_move.1);
+        println!(
+            "Computed best move: {}, {} in {} ms",
+            b_move.0,
+            b_move.1,
+            res.time_taken.as_millis()
+        );
 
         let score = board.evaluate_position(&evaluator);
         println!("Score: {}", score);
-
-        println!("Computed best move: {}, {}", b_move.0, b_move.1);
 
         if let Err(e) = board.make_move(b_move.0, b_move.1) {
             eprintln!("{:?}", e);
