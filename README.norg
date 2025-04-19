@@ -1,28 +1,30 @@
 * Chess Engine in Rust
 
-** ( )TODO:
+** (-)TODO:
    - (x) move gen
    - ( ) add move generators per given square
-***  ( ) implement basic evaulation
-****  ( ) Material Evaluation:
+***  (x) implement basic evaulation
+****  (x) Material Evaluation:
       expand evaluate material to consider the diff btw White and Black material
-****  ( ) Piece-Squre Tables
-*****  ( ) impl piece-square tables for each piece
-*****  ( ) adjust scores based on piece's position and game state
-*** ( ) enhance evaluation
+****  (x) Piece-Squre Tables
+*****  (x) impl piece-square tables for each piece
+*****  (x) adjust scores based on piece's position and game state
+*** (-) enhance evaluation
 **** ( ) add positional evaluation
      impl `evaluate_piece_postion()` incorporate piece-square tables
 **** ( ) additional evaluation factors
-     - *mobility* : count no. of legal moves for each side and factor it
+     - (x) *mobility* : count no. of legal moves for each side and factor it
      - *king safety*: eval safety of kings (ex: pawn shields, open files near kings)
      - *pawn structure*: account for isolated pawns, doubled pawns, passed pawns and pawn chains
-**** ( ) combine evaluation
+**** (x) combine evaluation
      combine all the above strategies
 
-*** ( ) search algorithm
+*** ( ) make it perft compatible
+
+*** (x) search algorithm
     recursively evaluate moves at different depths
-**** ( ) impl `minimax` search algo
-**** ( ) impl `alpha-beta` search algo
+**** (x) impl `minimax` search algo
+**** (x) impl `alpha-beta` search algo
 *** ( ) improve search efficiency
 **** ( ) move ordering
      order moves (ex: prioritize captures) to improve alpha-beta pruning
