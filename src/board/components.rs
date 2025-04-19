@@ -37,14 +37,17 @@ impl Not for BitBoard {
 }
 
 impl BitBoard {
+    #[inline]
     pub fn set(&mut self, pos: usize) {
         self.0 |= 1 << pos;
     }
 
+    #[inline]
     pub fn capture(&mut self, from_index: usize) {
         self.0 &= !(1 << from_index);
     }
 
+    #[inline]
     pub fn pop_count(&self) -> u32 {
         self.0.count_ones()
     }
@@ -101,6 +104,7 @@ impl BitBoard {
         BitBoardIterator { remaining: self.0 }
     }
 
+    #[inline]
     pub fn contains_square(&self, index: usize) -> bool {
         (self.0 & (1 << index)) != 0
     }
@@ -545,9 +549,9 @@ impl Square {
         Ok(Square(square_index))
     }
     pub fn coords(&self) -> (usize, usize) {
-        let file = self.0 / 8;
-        let rank = self.0 % 8;
-        (file, rank)
+        let rank = self.0 / 8;
+        let file = self.0 % 8;
+        (rank, file)
     }
 
     /// NOTE: Rank is 1 indexed
