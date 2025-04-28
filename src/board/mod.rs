@@ -1,18 +1,12 @@
-use evaluation::Evaluator;
+use crate::{evaluation::Evaluator, moves::Moves};
 use miette::Context;
 use rand::prelude::*;
 use std::{collections::HashMap, fmt::Display};
-use tracing::*;
-
-use moves::Moves;
 
 use self::components::{BoardState, CastlingRights, Piece, Side, Square};
 
 pub mod components;
-pub mod evaluation;
 mod fen;
-pub mod moves;
-pub mod search;
 
 /// Completely encapsulate the game
 #[derive(Default, Debug, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
@@ -141,7 +135,7 @@ impl Board {
     }
 
     pub fn generate_legal_moves(&self) -> miette::Result<Vec<(Square, Square)>> {
-        // NOTE: Is this correct as well?
+        // NOTE: Is this correct as well
         let mut legal_moves = Vec::with_capacity(40);
         let side_index = self.stm.index();
         let our_pieces = self.positions.all_sides[side_index];
@@ -182,10 +176,10 @@ impl Board {
             miette::bail!("Illegal move from {} to {}", from, to);
         }
         if let Some(piece) = self.get_piece_at(from) {
+            println!("{}", from);
+            self.handle_special_rules(from, to)?;
             self.positions
-                .update_piece_position(&piece, &self.stm, from, to);
-
-            self.handle_special_rules(from, to);
+                .update_piece_position(&piece, &self.stm, from, to)?;
             self.calculate_material();
             self.stm = self.stm.flip();
             self.halfmove_clock += 1;
@@ -194,7 +188,7 @@ impl Board {
             }
             Ok(())
         } else {
-            miette::bail!("No piece at from Square");
+            miette::bail!("[make_move] No piece at from Square");
         }
     }
 
@@ -210,8 +204,100 @@ impl Board {
             return false;
         }
 
+        // Castling check
+        if piece == Piece::King {
+            let file_diff = (to.col() as i32) - (from.col() as i32);
+            if file_diff.abs() == 2 {
+                let is_kingside = file_diff.is_positive();
+
+                let required_rights = match (self.stm, is_kingside) {
+                    (Side::White, true) => CastlingRights(CastlingRights::WHITE_00),
+                    (Side::White, false) => CastlingRights(CastlingRights::WHITE_000),
+                    (Side::Black, true) => CastlingRights(CastlingRights::BLACK_00),
+                    (Side::Black, false) => CastlingRights(CastlingRights::BLACK_000),
+                };
+
+                if !self.castling_rights.allows(required_rights) {
+                    return false;
+                }
+
+                // Check if squares btw king and rook are empty
+                // TODO: No need to call funcs for this. King is always at E1 or E8
+                let rank = from.row();
+                let start_file = from.col() as i32;
+                let end_file = if is_kingside { 7 } else { 0 };
+                let step: i32 = if start_file < end_file { 1 } else { -1 };
+
+                for file in (start_file + step)..end_file {
+                    let square_idx = rank * 8 + file as usize;
+                    if self.positions.all_sides[0].contains_square(square_idx)
+                        || self.positions.all_sides[1].contains_square(square_idx)
+                    {
+                        return false; // Path is blocked
+                    }
+                }
+
+                let mut board_copy = *self;
+
+                if board_copy.is_in_check(self.stm) {
+                    return false;
+                }
+                // Check if king passes through check
+                let middle_square =
+                    Square::new((from.index() as i32 + if is_kingside { 1 } else { -1 }) as usize)
+                        .unwrap();
+                board_copy
+                    .positions
+                    .update_piece_position(&piece, &self.stm, from, middle_square)
+                    .unwrap_or_else(|_| ());
+
+                if board_copy.is_in_check(self.stm) {
+                    return false;
+                }
+
+                // Reset and check final position
+                let mut board_copy = *self;
+                board_copy.try_move(from, to);
+
+                return !board_copy.is_in_check(self.stm);
+            }
+        }
+
+        // Special handling for en passant
+        if piece == Piece::Pawn
+            && self.enpassant_square.is_some()
+            && to == self.enpassant_square.unwrap()
+        {
+            let file_diff = (to.col() as i32) - (from.col() as i32);
+
+            // Pawns capture diagonally
+            if file_diff.abs() == 1 {
+                // Check that this is a valid capture (diagonally)
+                if (self.stm == Side::White && to.row() - from.row() == 1)
+                    || (self.stm == Side::Black && from.row() - to.row() == 1)
+                {
+                    // Don't need to check if there's a piece at 'to' because en passant square is empty
+
+                    // Check if move leaves king in check
+                    let mut board_copy = *self;
+                    board_copy.try_move(from, to);
+
+                    // For en passant, also need to remove the captured pawn
+                    let captured_pawn_idx = match self.stm {
+                        Side::White => to.index() - 8,
+                        Side::Black => to.index() + 8,
+                    };
+
+                    board_copy.positions.all_pieces[self.stm.flip().index()][Piece::pawn()]
+                        .capture(captured_pawn_idx);
+                    board_copy.positions.update_all_sides();
+
+                    return !board_copy.is_in_check(self.stm);
+                }
+            }
+        }
         // Generate legal moves for the piece
-        let mut moves = Moves::new(piece, self.stm, &self);
+        let mut moves = Moves::new(piece, self.stm, self);
         moves.make_legal(&self.stm, &self.positions);
         let legal_squares = moves.attack_bb[from.index()];
 
@@ -221,23 +307,24 @@ impl Board {
         }
 
         // Check if the move puts own king in check
-        let mut board = *self;
-        board.try_move(from, to);
-        !board.is_in_check(self.stm)
+        let mut board_copy = *self;
+        board_copy.try_move(from, to);
+        !board_copy.is_in_check(self.stm)
     }
 
     // To be used on a copy of the board
     fn try_move(&mut self, from: Square, to: Square) {
         if let Some(piece) = self.get_piece_at(from) {
-            self.positions
+            let _ = self
+                .positions
                 .update_piece_position(&piece, &self.stm, from, to);
 
-            self.handle_special_rules(from, to);
-            self.calculate_material();
-            self.halfmove_clock += 1;
-            if self.stm == Side::White {
-                self.fullmove_counter += 1;
-            }
+            // let _ = self.handle_special_rules(from, to);
+            // self.calculate_material();
+            // self.halfmove_clock += 1;
+            // if self.stm == Side::White {
+            //     self.fullmove_counter += 1;
+            // }
         }
     }
 
@@ -251,7 +338,7 @@ impl Board {
         let opponent = side.flip();
         for piece in Piece::colored_pieces(opponent) {
             let piece_bb = self.positions.all_pieces[opponent.index()][piece.index()];
-            let moves = Moves::new(piece, self.stm, &self);
+            let moves = Moves::new(piece, self.stm, self);
             // If any opponent piece can attack king's square, king is in check
             if piece_bb
                 .get_set_bits()
@@ -296,7 +383,7 @@ impl Board {
                 .choose(&mut rng)
                 .expect("Should be able to choose at random");
             // Generate moves for the randomly selected piece
-            let mut moves = Moves::new(piece, self.stm, &self);
+            let mut moves = Moves::new(piece, self.stm, self);
             moves.make_legal(&self.stm, &self.positions);
 
             // Get the position of the Piece on the current board
@@ -406,9 +493,10 @@ impl Board {
         None
     }
 
-    pub fn handle_special_rules(&mut self, from: Square, to: Square) {
+    pub fn handle_special_rules(&mut self, from: Square, to: Square) -> miette::Result<()> {
         let old_ep_square = self.enpassant_square;
         self.enpassant_square = None;
+        println!("special {}", from);
 
         if let Some(piece) = self.get_piece_at(from) {
             match piece {
@@ -459,7 +547,7 @@ impl Board {
                         let rook_from_file = if file_diff.is_positive() { 7 } else { 0 }; // kingside or queenside A1/H1
                         let rook_to_file = if file_diff.is_positive() { 5 } else { 3 }; // kingside or queenside C1/F1
 
-                        let rank = from.rank();
+                        let rank = from.row();
                         let rook_from = Square::new(rank * 8 + rook_from_file).unwrap();
                         let rook_to = Square::new(rank * 8 + rook_to_file).unwrap();
 
@@ -468,7 +556,7 @@ impl Board {
                             &self.stm,
                             rook_from,
                             rook_to,
-                        );
+                        )?;
                     }
                 }
                 Piece::Rook => match (self.stm, from.index()) {
@@ -489,6 +577,10 @@ impl Board {
                 _ => {}
             }
         }
+        // else {
+        //     miette::bail!("No piece at from ({from}) square");
+        // }
+        Ok(())
     }
 
     fn calculate_material(&mut self) {
