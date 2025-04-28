@@ -1,12 +1,17 @@
-use crate::board::components::Square;
+use crate::{board::components::Square, CastlingRights};
 
-use super::components::{BitBoard, BoardState, Piece, Side};
+use super::{
+    components::{BitBoard, BoardState, Piece, Side},
+    Board,
+};
 
 #[derive(Default, Debug, PartialEq, Eq, PartialOrd, Clone)]
 pub struct Moves {
     pub piece: Piece,
     pub attack_bb: Vec<BitBoard>,
     state: BoardState,
+    ep_square: Option<Square>,
+    castling: CastlingRights,
 }
 
 /// First 4 are orhtogonal, rest are diagonal
@@ -42,27 +47,29 @@ impl Direction {
 }
 
 impl Moves {
-    pub fn new(piece: Piece, stm: Side, state: BoardState) -> Self {
-        let mut m = Moves::default();
-        m.piece = piece;
-        m.state = state;
-        m.attack_bb = match piece {
-            Piece::Knight => m.gen_knight_moves(stm),
-            Piece::Rook => m.gen_rook_moves(stm),
-            Piece::Bishop => m.gen_bishop_moves(stm),
-            Piece::Queen => m.gen_queen_moves(stm),
-            Piece::Pawn => m.gen_pawn_moves(stm),
-            Piece::King => m.gen_king_moves(stm),
+    pub fn new(piece: Piece, stm: Side, state: &Board) -> Self {
+        let mut moves = Moves::default();
+        moves.piece = piece;
+        moves.state = state.positions;
+        moves.ep_square = state.enpassant_square;
+        moves.castling = state.castling_rights;
+        moves.attack_bb = match piece {
+            Piece::Knight => moves.gen_knight_moves(stm),
+            Piece::Rook => moves.gen_rook_moves(stm),
+            Piece::Bishop => moves.gen_bishop_moves(stm),
+            Piece::Queen => moves.gen_queen_moves(stm),
+            Piece::Pawn => moves.gen_pawn_moves(stm),
+            Piece::King => moves.gen_king_moves(stm),
         };
 
-        m
+        moves
     }
 
     /// Generate all possible moves for all pieces and all sides
     /// Does contain pseudo legal moves.
-    pub fn all_possible_moves(state: BoardState) -> Vec<Self> {
+    pub fn all_possible_moves(state: Board) -> Vec<Self> {
         let mut moves: Vec<Moves> = Vec::new();
-        Piece::all().for_each(|(piece, stm)| moves.push(Moves::new(piece, stm, state)));
+        Piece::all().for_each(|(piece, stm)| moves.push(Moves::new(piece, stm, &state)));
 
         moves
     }
@@ -106,16 +113,24 @@ impl Moves {
             // Cannot be on leftmost file and still capture to the left
             if file > 0 {
                 let cap_left = index + 7;
-                if cap_left < 64 && enemy_pieces.contains_square(cap_left) {
-                    white_pawn_moves.set(cap_left);
+                if cap_left < 64 {
+                    if enemy_pieces.contains_square(cap_left)
+                        || (self.ep_square.map_or(false, |ep| ep.index() == cap_left))
+                    {
+                        white_pawn_moves.set(cap_left);
+                    }
                 }
             }
 
             // Cannot be on rightmost file and still capture to the right
             if file < 7 {
                 let cap_right = index + 9;
-                if cap_right < 64 && enemy_pieces.contains_square(cap_right) {
-                    white_pawn_moves.set(cap_right);
+                if cap_right < 64 {
+                    if enemy_pieces.contains_square(cap_right)
+                        || (self.ep_square.map_or(false, |ep| ep.index() == cap_right))
+                    {
+                        white_pawn_moves.set(cap_right);
+                    }
                 }
             }
             attack_bb[index] = white_pawn_moves;
@@ -149,16 +164,24 @@ impl Moves {
             // Cannot be on leftmost file and still capture to the left
             if file > 0 {
                 let cap_left = index - 9;
-                if cap_left < 64 && enemy_pieces.contains_square(cap_left) {
-                    white_pawn_moves.set(cap_left);
+                if cap_left < 64 {
+                    if enemy_pieces.contains_square(cap_left)
+                        || (self.ep_square.map_or(false, |ep| ep.index() == cap_left))
+                    {
+                        white_pawn_moves.set(cap_left);
+                    }
                 }
             }
 
             // Cannot be on rightmost file and still capture to the right
             if file < 7 {
                 let cap_right = index - 7;
-                if cap_right < 64 && enemy_pieces.contains_square(cap_right) {
-                    white_pawn_moves.set(cap_right);
+                if cap_right < 64 {
+                    if enemy_pieces.contains_square(cap_right)
+                        || (self.ep_square.map_or(false, |ep| ep.index() == cap_right))
+                    {
+                        white_pawn_moves.set(cap_right);
+                    }
                 }
             }
             attack_bb[index] = white_pawn_moves;
@@ -259,30 +282,92 @@ impl Moves {
         attack_bb
     }
 
-    fn gen_king_moves(&self, _stm: Side) -> Vec<BitBoard> {
+    fn gen_king_moves(&self, stm: Side) -> Vec<BitBoard> {
         let mut attack_bb = vec![BitBoard(0); 64];
+        let enemy_pieces = self.state.all_sides[Side::black()];
+        let ally_pieces = self.state.all_sides[Side::white()];
+        let all_pieces = ally_pieces | enemy_pieces;
         (0..64).for_each(|index| {
             let square = Square::new(index).expect("Get a valid index");
             let mut king_moves = BitBoard(0);
-            let (rank, _file) = square.coords();
+            let (rank, file) = square.coords();
 
-            for delta in &Direction::DIAG {
+            for &delta in &Direction::ALL {
                 let target_index = index as i8 + delta;
-                if target_index < 64 && 0 < target_index {
-                    let target_bb = BitBoard(1 << target_index);
-                    king_moves = king_moves | target_bb;
-                }
-            }
+                if (0..64).contains(&target_index) {
+                    let target_square =
+                        Square::new(target_index as usize).expect("Should get a valid index");
+                    let (target_rank, target_file) = target_square.coords();
 
-            for &f in &Direction::ORTHO {
-                if f != rank as i8 {
-                    let target_index = index as i8 + f;
-                    if target_index < 64 && 0 < target_index {
-                        let target_bb = BitBoard(1 << target_index);
-                        king_moves = king_moves | target_bb;
+                    if (file as i8 - target_file as i8).abs() <= 1
+                        && (rank as i8 - target_rank as i8) <= 1
+                    {
+                        if !ally_pieces.contains_square(target_square.index()) {
+                            king_moves.set(target_index as usize);
+                        }
                     }
                 }
             }
+
+            // white king on e1
+            if stm == Side::White && index == 4 {
+                if self
+                    .castling
+                    .allows(CastlingRights(CastlingRights::WHITE_00))
+                {
+                    if !all_pieces.contains_square(5) && !all_pieces.contains_square(6) {
+                        if !self.is_square_attacked(4, stm.flip())
+                            && !self.is_square_attacked(5, stm.flip())
+                            && !self.is_square_attacked(6, stm.flip())
+                        {
+                            king_moves.set(6); // g1
+                        }
+                    }
+                }
+                if self
+                    .castling
+                    .allows(CastlingRights(CastlingRights::WHITE_000))
+                {
+                    if !all_pieces.contains_square(2) && !all_pieces.contains_square(3) {
+                        if !self.is_square_attacked(4, stm.flip())
+                            && !self.is_square_attacked(3, stm.flip())
+                            && !self.is_square_attacked(2, stm.flip())
+                        {
+                            king_moves.set(2); // c1
+                        }
+                    }
+                }
+            }
+            // Black king on e8
+            else if stm == Side::Black && index == 60 {
+                if self
+                    .castling
+                    .allows(CastlingRights(CastlingRights::BLACK_00))
+                {
+                    if !all_pieces.contains_square(5) && !all_pieces.contains_square(6) {
+                        if !self.is_square_attacked(60, stm.flip())
+                            && !self.is_square_attacked(61, stm.flip())
+                            && !self.is_square_attacked(62, stm.flip())
+                        {
+                            king_moves.set(62); // g8
+                        }
+                    }
+                }
+                if self
+                    .castling
+                    .allows(CastlingRights(CastlingRights::BLACK_000))
+                {
+                    if !all_pieces.contains_square(2) && !all_pieces.contains_square(3) {
+                        if !self.is_square_attacked(60, stm.flip())
+                            && !self.is_square_attacked(59, stm.flip())
+                            && !self.is_square_attacked(58, stm.flip())
+                        {
+                            king_moves.set(58); // c8
+                        }
+                    }
+                }
+            }
+
             attack_bb[index] = king_moves;
         });
         attack_bb
@@ -323,6 +408,11 @@ impl Moves {
 
         attack_bb
     }
+
+    fn is_square_attacked(&self, square_index: usize, by_side: Side) -> bool {
+        let square = Square::new(square_index).unwrap();
+        todo!()
+    }
 }
 
 #[cfg(test)]
@@ -333,8 +423,8 @@ mod tests {
     fn test_pawn_moves_white() {
         let stm = Side::White;
         let pawn = Piece::Pawn;
-        let state = BoardState::default();
-        let moves = Moves::new(pawn, stm, state);
+        let state = Board::default();
+        let moves = Moves::new(pawn, stm, &state);
 
         let square_index = 8;
         let expected = BitBoard(1 << 16) | BitBoard(1 << 24);
@@ -345,8 +435,8 @@ mod tests {
     fn test_pawn_moves_black() {
         let stm = Side::Black;
         let pawn = Piece::Pawn;
-        let state = BoardState::default();
-        let moves = Moves::new(pawn, stm, state);
+        let state = Board::default();
+        let moves = Moves::new(pawn, stm, &state);
 
         let square_index = 48;
         let expected = BitBoard(1 << 40) | BitBoard(1 << 32);
@@ -357,8 +447,8 @@ mod tests {
     fn test_knight_moves() {
         let stm = Side::White;
         let knight = Piece::Knight;
-        let state = BoardState::default();
-        let moves = Moves::new(knight, stm, state);
+        let state = Board::default();
+        let moves = Moves::new(knight, stm, &state);
 
         let square = Square::new(1).unwrap(); // A2 square
         let expected_moves = BitBoard(1 << 18) | BitBoard(1 << 16) | BitBoard(1 << 11); // B1, C3, and A3 are valid moves
@@ -369,8 +459,8 @@ mod tests {
     fn test_rook_moves() {
         let stm = Side::White;
         let rook = Piece::Rook;
-        let state = BoardState::default();
-        let moves = Moves::new(rook, stm, state);
+        let state = Board::default();
+        let moves = Moves::new(rook, stm, &state);
 
         let square_index = 0; // A1 square
         let mut expected_moves = (0..8)
@@ -384,8 +474,8 @@ mod tests {
     fn test_bishop_moves() {
         let stm = Side::White;
         let bishop = Piece::Bishop;
-        let state = BoardState::default();
-        let moves = Moves::new(bishop, stm, state);
+        let state = Board::default();
+        let moves = Moves::new(bishop, stm, &state);
 
         let square_index = 18; // C3 square
         let expected_moves = BitBoard(9241421692918565393);
@@ -398,8 +488,8 @@ mod tests {
     fn test_queen_moves() {
         let stm = Side::White;
         let queen = Piece::Queen;
-        let state = BoardState::default();
-        let moves = Moves::new(queen, stm, state);
+        let state = Board::default();
+        let moves = Moves::new(queen, stm, &state);
 
         let square_index = 0; // A1 square
         let expected_moves =
@@ -411,8 +501,8 @@ mod tests {
     fn test_king_moves() {
         let stm = Side::White;
         let king = Piece::King;
-        let state = BoardState::default();
-        let moves = Moves::new(king, stm, state);
+        let state = Board::default();
+        let moves = Moves::new(king, stm, &&state);
 
         let square_index = 36; // E4 square
         let expected_moves = BitBoard(1 << 27)
@@ -428,7 +518,7 @@ mod tests {
 
     #[test]
     fn test_all_possible_moves() {
-        let moves = Moves::all_possible_moves(BoardState::default());
+        let moves = Moves::all_possible_moves(Board::default());
 
         // Ensure the correct number of moves are generated
         assert_eq!(moves.len(), 12);
