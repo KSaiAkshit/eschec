@@ -1,16 +1,16 @@
 use std::io::{self, Write};
 
-use eschec::{
-    board::{search::Search, *},
-    *,
-};
+use eschec::search::Search;
+use eschec::{board::*, *};
 use evaluation::CompositeEvaluator;
 use miette::IntoDiagnostic;
 use tracing::*;
 
 fn main() -> miette::Result<()> {
     color_backtrace::install();
-    tracing_subscriber::fmt().init();
+    tracing_subscriber::fmt()
+        .with_max_level(Level::ERROR)
+        .init();
 
     let span = tracing::span!(Level::INFO, "main");
     let _guard = span.enter();

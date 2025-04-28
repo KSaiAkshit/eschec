@@ -1,7 +1,10 @@
 use std::{
     fmt::Display,
     ops::{BitAnd, BitAndAssign, BitOr, Not},
+    str::FromStr,
 };
+
+use miette::Context;
 
 #[derive(Debug, Default, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
 pub struct BitBoard(pub u64);
@@ -206,12 +209,12 @@ pub enum Piece {
 impl Display for Piece {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self {
-            Piece::Pawn => writeln!(f, "Pawn"),
-            Piece::Bishop => writeln!(f, "Bishop"),
-            Piece::Knight => writeln!(f, "Knight"),
-            Piece::Rook => writeln!(f, "Rook"),
-            Piece::Queen => writeln!(f, "Queen"),
-            Piece::King => writeln!(f, "King"),
+            Piece::Pawn => write!(f, "Pawn"),
+            Piece::Bishop => write!(f, "Bishop"),
+            Piece::Knight => write!(f, "Knight"),
+            Piece::Rook => write!(f, "Rook"),
+            Piece::Queen => write!(f, "Queen"),
+            Piece::King => write!(f, "King"),
         }
     }
 }
@@ -343,9 +346,20 @@ pub struct BoardState {
     pub all_pieces: [[BitBoard; 6]; 2],
 }
 impl BoardState {
-    pub fn update_piece_position(&mut self, piece: &Piece, side: &Side, from: Square, to: Square) {
+    pub fn update_piece_position(
+        &mut self,
+        piece: &Piece,
+        side: &Side,
+        from: Square,
+        to: Square,
+    ) -> miette::Result<()> {
         let from_index = from.index();
         let to_index = to.index();
+
+        miette::ensure!(
+            !self.get_piece_at(&from).is_none(),
+            "[update_piece_position] No {piece} piece at from ( {from} ) square"
+        );
 
         self.all_pieces[side.index()][piece.index()].capture(from_index);
         if let Some((p, s)) = self.get_piece_at(&to) {
@@ -356,6 +370,25 @@ impl BoardState {
         self.all_pieces[side.index()][piece.index()].set(to_index);
 
         self.update_all_sides();
+        Ok(())
+    }
+
+    pub fn capture(
+        &mut self,
+        side_to_capture: &Side,
+        piece_to_capture: &Piece,
+        index_to_capture: usize,
+    ) -> miette::Result<()> {
+        miette::ensure!(
+            !self.get_piece_at(&index_to_capture.into()).is_none(),
+            "[update_piece_position] No {piece_to_capture} piece at from ( {} ) square",
+            Square::new(index_to_capture).unwrap()
+        );
+
+        self.all_pieces[side_to_capture.index()][piece_to_capture.index()]
+            .capture(index_to_capture);
+        self.update_all_sides();
+        Ok(())
     }
 
     // TODO: do not expose this outside
@@ -382,7 +415,7 @@ impl BoardState {
         // first check if there's any piece at all using all_sides
         if (self.all_sides[Side::white()] & BitBoard(square_mask)).0 != 0 {
             for piece_type in Piece::all_pieces() {
-                if (self.all_pieces[Side::black()][piece_type.index()] & BitBoard(square_mask)).0
+                if (self.all_pieces[Side::white()][piece_type.index()] & BitBoard(square_mask)).0
                     != 0
                 {
                     return Some((piece_type, Side::White));
@@ -452,7 +485,7 @@ impl CastlingRights {
         Self::QUEEN_SIDE
     }
     pub fn remove_right(&mut self, rights: &CastlingRights) {
-        self.0 &= rights.0
+        self.0 &= !rights.0
     }
     pub fn white_only() -> Self {
         Self::WHITE_CASTLING
@@ -560,25 +593,51 @@ impl Square {
     }
 
     pub fn row(&self) -> usize {
-        self.0 % 8
+        self.0 / 8
     }
 
     pub fn col(&self) -> usize {
-        self.0 / 8
+        self.0 % 8
     }
 
     /// NOTE: Rank is 1 indexed
     pub fn rank(&self) -> usize {
-        self.0 % 8 + 1
+        self.0 / 8 + 1
     }
 
     /// NOTE: File is 1 indexed
     pub fn file(&self) -> usize {
-        self.0 / 8 + 1
+        self.0 % 8 + 1
     }
 
     pub fn index(&self) -> usize {
         self.0
+    }
+}
+
+impl From<usize> for Square {
+    fn from(value: usize) -> Self {
+        Self(value)
+    }
+}
+
+impl FromStr for Square {
+    type Err = miette::Report;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        miette::ensure!(
+            s.len() == 2,
+            "Square needs 1 Letter and 1 Number to construct"
+        );
+        let s = s.to_ascii_uppercase();
+        let mut iter = s.chars();
+        let letter = iter.next().context("1st char should be letter")?;
+        let num = iter.next().context("2nd char should be number")?;
+        let file = letter as u8 - b'A';
+        let rank = num as u8 - b'1';
+
+        let idx = (8 * rank + file) as usize;
+        Ok(Self(idx))
     }
 }
 
