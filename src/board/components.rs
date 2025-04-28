@@ -43,8 +43,8 @@ impl BitBoard {
     }
 
     #[inline]
-    pub fn capture(&mut self, from_index: usize) {
-        self.0 &= !(1 << from_index);
+    pub fn capture(&mut self, index: usize) {
+        self.0 &= !(1 << index);
     }
 
     #[inline]
@@ -358,7 +358,8 @@ impl BoardState {
         self.update_all_sides();
     }
 
-    fn update_all_sides(&mut self) {
+    // TODO: do not expose this outside
+    pub fn update_all_sides(&mut self) {
         self.all_sides[0] = self.all_pieces[0][0]
             | self.all_pieces[0][1]
             | self.all_pieces[0][2]
@@ -412,9 +413,13 @@ pub struct CastlingRights(pub u8);
 
 impl CastlingRights {
     pub const NO_CASTLING: u8 = 0;
+    /// White King side castling
     pub const WHITE_00: u8 = 0b00000001;
+    /// White Queen side castling
     pub const WHITE_000: u8 = 0b00000010;
+    /// Black King side castling
     pub const BLACK_00: u8 = 0b00000100;
+    /// Black Queen side castling
     pub const BLACK_000: u8 = 0b00001000;
 
     pub const KING_SIDE: Self = Self(Self::BLACK_00 | Self::WHITE_00);
@@ -446,7 +451,7 @@ impl CastlingRights {
     pub fn queen_side() -> Self {
         Self::QUEEN_SIDE
     }
-    pub fn remove_right(&mut self, rights: CastlingRights) {
+    pub fn remove_right(&mut self, rights: &CastlingRights) {
         self.0 &= rights.0
     }
     pub fn white_only() -> Self {
@@ -552,6 +557,14 @@ impl Square {
         let rank = self.0 / 8;
         let file = self.0 % 8;
         (rank, file)
+    }
+
+    pub fn row(&self) -> usize {
+        self.0 % 8
+    }
+
+    pub fn col(&self) -> usize {
+        self.0 / 8
     }
 
     /// NOTE: Rank is 1 indexed

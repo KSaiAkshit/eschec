@@ -1,11 +1,34 @@
 use std::io::Write;
 
-use board::components::Square;
 use miette::{Context, IntoDiagnostic};
 
 // Bit Boards use 64 bits of true or false, to tell if a given peice is at the location.
 // 12 Bit boards represent where the chess peices are at all times
 pub mod board;
+pub use board::components::*;
+pub use board::*;
+
+// pub struct Game {
+//     board: Board,
+//     evaluator: CompositeEvaluator,
+//     search: Search,
+// }
+
+// impl Game {
+//     pub fn new() -> Self {
+//         Self {
+//             board: Board::new(),
+//             evaluator: CompositeEvaluator::balanced(),
+//             search: Search::new(3),
+//         }
+//     }
+// }
+
+// impl Default for Game {
+//     fn default() -> Self {
+//         Self::new()
+//     }
+// }
 
 pub fn clear_screen() -> miette::Result<()> {
     print!("\x1b[2J\x1b[1H");

@@ -114,7 +114,7 @@ impl Board {
         let mut board = Self {
             positions: BoardState::default(),
             stm: Side::default(),
-            castling_rights: CastlingRights::default(),
+            castling_rights: CastlingRights::all(),
             enpassant_square: Option::default(),
             halfmove_clock: u8::default(),
             fullmove_counter: u8::default(),
@@ -159,7 +159,7 @@ impl Board {
                 let from_sq = Square::new(from_idx)
                     .wrap_err_with(|| format!("king_pos {from_idx} should be valid"))?;
 
-                let moves = Moves::new(piece_type, self.stm, self.positions);
+                let moves = Moves::new(piece_type, self.stm, self);
                 let potential_moves = moves.attack_bb[from_idx] & !our_pieces;
 
                 for to_idx in potential_moves.iter_bits() {
@@ -205,15 +205,13 @@ impl Board {
             Some(p) => p,
             None => return false,
         };
-        let state = self.positions;
-
         // Check if the piece belongs to the current side to move
         if !self.positions.all_sides[self.stm.index()].contains_square(from.index()) {
             return false;
         }
 
         // Generate legal moves for the piece
-        let mut moves = Moves::new(piece, self.stm, state);
+        let mut moves = Moves::new(piece, self.stm, &self);
         moves.make_legal(&self.stm, &self.positions);
         let legal_squares = moves.attack_bb[from.index()];
 
@@ -251,10 +249,9 @@ impl Board {
 
         // 2. Generate oppponent's attacks
         let opponent = side.flip();
-        let state = self.positions;
         for piece in Piece::colored_pieces(opponent) {
             let piece_bb = self.positions.all_pieces[opponent.index()][piece.index()];
-            let moves = Moves::new(piece, self.stm, state);
+            let moves = Moves::new(piece, self.stm, &self);
             // If any opponent piece can attack king's square, king is in check
             if piece_bb
                 .get_set_bits()
@@ -299,7 +296,7 @@ impl Board {
                 .choose(&mut rng)
                 .expect("Should be able to choose at random");
             // Generate moves for the randomly selected piece
-            let mut moves = Moves::new(piece, self.stm, self.positions);
+            let mut moves = Moves::new(piece, self.stm, &self);
             moves.make_legal(&self.stm, &self.positions);
 
             // Get the position of the Piece on the current board
@@ -410,51 +407,86 @@ impl Board {
     }
 
     pub fn handle_special_rules(&mut self, from: Square, to: Square) {
-        // Handle castling
-        if let Some(Piece::King) = self.get_piece_at(from) {
-            // Update castling rights
-            match self.stm {
-                Side::White => self
-                    .castling_rights
-                    .remove_right(CastlingRights::WHITE_CASTLING),
-                Side::Black => self
-                    .castling_rights
-                    .remove_right(CastlingRights::BLACK_CASTLING),
-            }
-            // Move rook if castling
-            // TODO: Implement castling logic
-        }
+        let old_ep_square = self.enpassant_square;
+        self.enpassant_square = None;
 
-        // Handle en passant
-        if let Some(Piece::Pawn) = self.get_piece_at(from) {
-            // Set en passant square if double pawn push
-            // A double pawn push moves two squares forward from starting position
-            let is_double_push = match self.stm {
-                Side::White => from.index() / 8 == 1 && to.index() / 8 == 3,
-                Side::Black => from.index() / 8 == 6 && to.index() / 8 == 4,
-            };
+        if let Some(piece) = self.get_piece_at(from) {
+            match piece {
+                Piece::Pawn => {
+                    if let Some(ep_square) = old_ep_square {
+                        if to == ep_square {
+                            let captured_pawn_square = Square::new(match self.stm {
+                                Side::White => ep_square.index() - 8,
+                                Side::Black => ep_square.index() + 8,
+                            })
+                            .unwrap();
 
-            // If double push detected, set en passant square to the skipped square
-            if is_double_push {
-                let skipped_square = Square::new(match self.stm {
-                    Side::White => from.index() + 8,
-                    Side::Black => from.index() - 8,
-                })
-                .unwrap();
-                self.enpassant_square = Some(skipped_square);
-            }
+                            self.positions.all_pieces[self.stm.flip().index()][Piece::pawn()]
+                                .capture(captured_pawn_square.index());
 
-            // If moving to en passant square, capture the enemy pawn
-            if let Some(ep_square) = self.enpassant_square {
-                if to == ep_square {
-                    let captured_pawn_square = Square::new(match self.stm {
-                        Side::White => ep_square.index() - 8,
-                        Side::Black => ep_square.index() + 8,
-                    })
-                    .unwrap();
-                    self.positions.all_pieces[self.stm.flip().index()][Piece::Pawn.index()]
-                        .capture(captured_pawn_square.index());
+                            self.positions.update_all_sides();
+                        }
+                    }
+
+                    let is_double_push = match self.stm {
+                        Side::White => from.index() / 8 == 1 && to.index() / 8 == 3,
+                        Side::Black => from.index() / 8 == 6 && to.index() / 8 == 4,
+                    };
+
+                    if is_double_push {
+                        let skipped_square = Square::new(match self.stm {
+                            Side::White => from.index() + 8,
+                            Side::Black => from.index() - 8,
+                        })
+                        .expect("Should be able to construct a valid skipped square");
+                        self.enpassant_square = Some(skipped_square);
+                    }
+
+                    self.halfmove_clock = 0;
                 }
+                Piece::King => {
+                    match self.stm {
+                        Side::White => self
+                            .castling_rights
+                            .remove_right(&CastlingRights::WHITE_CASTLING),
+                        Side::Black => self
+                            .castling_rights
+                            .remove_right(&CastlingRights::BLACK_CASTLING),
+                    }
+                    let file_diff = (to.col() as i8) - (from.col() as i8);
+                    if file_diff.abs() == 2 {
+                        // this is a castling move
+                        let rook_from_file = if file_diff.is_positive() { 7 } else { 0 }; // kingside or queenside A1/H1
+                        let rook_to_file = if file_diff.is_positive() { 5 } else { 3 }; // kingside or queenside C1/F1
+
+                        let rank = from.rank();
+                        let rook_from = Square::new(rank * 8 + rook_from_file).unwrap();
+                        let rook_to = Square::new(rank * 8 + rook_to_file).unwrap();
+
+                        self.positions.update_piece_position(
+                            &Piece::Rook,
+                            &self.stm,
+                            rook_from,
+                            rook_to,
+                        );
+                    }
+                }
+                Piece::Rook => match (self.stm, from.index()) {
+                    (Side::White, 0) => self
+                        .castling_rights
+                        .remove_right(&CastlingRights(CastlingRights::WHITE_000)),
+                    (Side::White, 7) => self
+                        .castling_rights
+                        .remove_right(&CastlingRights(CastlingRights::WHITE_00)),
+                    (Side::Black, 56) => self
+                        .castling_rights
+                        .remove_right(&CastlingRights(CastlingRights::BLACK_000)),
+                    (Side::Black, 63) => self
+                        .castling_rights
+                        .remove_right(&CastlingRights(CastlingRights::BLACK_00)),
+                    _ => {}
+                },
+                _ => {}
             }
         }
     }
@@ -634,131 +666,131 @@ impl Board {
         }
     }
 
-    #[instrument(skip(self, evaluator), fields(eval_name = evaluator.name()))]
-    pub fn find_best_move(
-        &self,
-        nodes_searched: &mut u64,
-        evaluator: &dyn Evaluator,
-        depth: u8,
-    ) -> miette::Result<(Square, Square)> {
-        info!(side = %self.stm, "Finding best move for");
+    // #[instrument(skip(self, evaluator), fields(eval_name = evaluator.name()))]
+    // pub fn find_best_move(
+    //     &self,
+    //     nodes_searched: &mut u64,
+    //     evaluator: &dyn Evaluator,
+    //     depth: u8,
+    // ) -> miette::Result<(Square, Square)> {
+    //     info!(side = %self.stm, "Finding best move for");
 
-        info!("getting legal moves");
-        let legal_moves = self.generate_legal_moves()?;
-        if legal_moves.is_empty() {
-            miette::bail!("No legal moves available")
-        }
-        info!(legal_moves.num = legal_moves.len(), "got legal moves: ");
+    //     info!("getting legal moves");
+    //     let legal_moves = self.generate_legal_moves()?;
+    //     if legal_moves.is_empty() {
+    //         miette::bail!("No legal moves available")
+    //     }
+    //     info!(legal_moves.num = legal_moves.len(), "got legal moves: ");
 
-        let mut best_score = i32::MIN;
-        let mut best_move = legal_moves[0];
-        info!(
-            best_score = best_score,
-            from = %best_move.0,
-            to = %best_move.1,
-            "init vals"
-        );
+    //     let mut best_score = i32::MIN;
+    //     let mut best_move = legal_moves[0];
+    //     info!(
+    //         best_score = best_score,
+    //         from = %best_move.0,
+    //         to = %best_move.1,
+    //         "init vals"
+    //     );
 
-        for (from, to) in legal_moves {
-            let mut board_copy = *self;
-            board_copy.make_move(from, to)?;
-            info!(
-                best_score = best_score,
-                from = %from,
-                to = %to,
-                depth = depth,
-                "currently on move"
-            );
+    //     for (from, to) in legal_moves {
+    //         let mut board_copy = *self;
+    //         board_copy.make_move(from, to)?;
+    //         info!(
+    //             best_score = best_score,
+    //             from = %from,
+    //             to = %to,
+    //             depth = depth,
+    //             "currently on move"
+    //         );
 
-            let score = -self.minimax(
-                &board_copy,
-                nodes_searched,
-                depth - 1,
-                i32::MIN,
-                i32::MAX,
-                false,
-                evaluator,
-            );
+    //         let score = -self.minimax(
+    //             &board_copy,
+    //             nodes_searched,
+    //             depth - 1,
+    //             i32::MIN,
+    //             i32::MAX,
+    //             false,
+    //             evaluator,
+    //         );
 
-            if score > best_score {
-                best_score = score;
-                best_move = (from, to);
-            }
-        }
-        Ok(best_move)
-    }
+    //         if score > best_score {
+    //             best_score = score;
+    //             best_move = (from, to);
+    //         }
+    //     }
+    //     Ok(best_move)
+    // }
 
-    #[instrument(skip(self, board, evaluator))]
-    fn minimax(
-        &self,
-        board: &Board,
-        mut nodes_searched: &mut u64,
-        depth: u8,
-        mut alpha: i32,
-        mut beta: i32,
-        maximizing_player: bool,
-        evaluator: &dyn Evaluator,
-    ) -> i32 {
-        trace!("staring minimax search");
-        *nodes_searched += 1;
-        if depth == 0 || board.is_draw() || board.is_checkmate(board.stm) {
-            warn!("got deep");
-            return board.evaluate_position(evaluator);
-        }
-        let legal_moves = match board.generate_legal_moves() {
-            Ok(moves) => moves,
-            Err(_) => return board.evaluate_position(evaluator),
-        };
-        if maximizing_player {
-            let mut max_eval = i32::MIN;
-            for (from, to) in legal_moves {
-                let mut board_copy = *board;
-                if board_copy.make_move(from, to).is_err() {
-                    continue;
-                }
+    // #[instrument(skip(self, board, evaluator))]
+    // fn minimax(
+    //     &self,
+    //     board: &Board,
+    //     mut nodes_searched: &mut u64,
+    //     depth: u8,
+    //     mut alpha: i32,
+    //     mut beta: i32,
+    //     maximizing_player: bool,
+    //     evaluator: &dyn Evaluator,
+    // ) -> i32 {
+    //     trace!("staring minimax search");
+    //     *nodes_searched += 1;
+    //     if depth == 0 || board.is_draw() || board.is_checkmate(board.stm) {
+    //         warn!("got deep");
+    //         return board.evaluate_position(evaluator);
+    //     }
+    //     let legal_moves = match board.generate_legal_moves() {
+    //         Ok(moves) => moves,
+    //         Err(_) => return board.evaluate_position(evaluator),
+    //     };
+    //     if maximizing_player {
+    //         let mut max_eval = i32::MIN;
+    //         for (from, to) in legal_moves {
+    //             let mut board_copy = *board;
+    //             if board_copy.make_move(from, to).is_err() {
+    //                 continue;
+    //             }
 
-                let eval = self.minimax(
-                    &board_copy,
-                    &mut nodes_searched,
-                    depth - 1,
-                    alpha,
-                    beta,
-                    false,
-                    evaluator,
-                );
-                max_eval = max_eval.max(eval);
-                alpha = alpha.max(eval);
-                if beta <= alpha {
-                    break;
-                }
-            }
-            return max_eval;
-        } else {
-            let mut min_eval = i32::MAX;
-            for (from, to) in legal_moves {
-                let mut board_copy = *board;
-                if board_copy.make_move(from, to).is_err() {
-                    continue;
-                }
+    //             let eval = self.minimax(
+    //                 &board_copy,
+    //                 &mut nodes_searched,
+    //                 depth - 1,
+    //                 alpha,
+    //                 beta,
+    //                 false,
+    //                 evaluator,
+    //             );
+    //             max_eval = max_eval.max(eval);
+    //             alpha = alpha.max(eval);
+    //             if beta <= alpha {
+    //                 break;
+    //             }
+    //         }
+    //         return max_eval;
+    //     } else {
+    //         let mut min_eval = i32::MAX;
+    //         for (from, to) in legal_moves {
+    //             let mut board_copy = *board;
+    //             if board_copy.make_move(from, to).is_err() {
+    //                 continue;
+    //             }
 
-                let eval = self.minimax(
-                    &board_copy,
-                    &mut nodes_searched,
-                    depth - 1,
-                    alpha,
-                    beta,
-                    true,
-                    evaluator,
-                );
-                min_eval = min_eval.min(eval);
-                beta = beta.min(eval);
-                if beta <= alpha {
-                    break;
-                }
-            }
-            return min_eval;
-        }
-    }
+    //             let eval = self.minimax(
+    //                 &board_copy,
+    //                 &mut nodes_searched,
+    //                 depth - 1,
+    //                 alpha,
+    //                 beta,
+    //                 true,
+    //                 evaluator,
+    //             );
+    //             min_eval = min_eval.min(eval);
+    //             beta = beta.min(eval);
+    //             if beta <= alpha {
+    //                 break;
+    //             }
+    //         }
+    //         return min_eval;
+    //     }
+    // }
 }
 
 #[cfg(test)]
