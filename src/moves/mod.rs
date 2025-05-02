@@ -1,4 +1,5 @@
 use crate::{board::components::Square, CastlingRights};
+use tracing::warn;
 
 use super::{
     components::{BitBoard, BoardState, Piece, Side},
@@ -75,6 +76,7 @@ impl Moves {
     }
 
     pub fn make_legal(&mut self, stm: &Side, board: &BoardState) {
+        warn!("Do not use this. Moves generated are already pseaudo-legal");
         let own_pieces = board.all_sides[stm.index()];
 
         self.attack_bb.iter_mut().for_each(|b| *b &= !own_pieces);
@@ -513,10 +515,13 @@ impl Moves {
 mod tests {
     use std::str::FromStr;
 
+    use crate::init;
+
     use super::*;
 
     #[test]
     fn test_pawn_moves_white() {
+        init();
         let stm = Side::White;
         let pawn = Piece::Pawn;
         let state = Board::default();
@@ -529,6 +534,7 @@ mod tests {
 
     #[test]
     fn test_pawn_moves_black() {
+        init();
         let stm = Side::Black;
         let pawn = Piece::Pawn;
         let state = Board::default();
@@ -541,6 +547,7 @@ mod tests {
 
     #[test]
     fn test_knight_moves() {
+        init();
         let stm = Side::White;
         let knight = Piece::Knight;
         let state = Board::default();
@@ -553,6 +560,7 @@ mod tests {
 
     #[test]
     fn test_rook_moves() {
+        init();
         let stm = Side::White;
         let rook = Piece::Rook;
         let state = Board::default();
@@ -568,6 +576,7 @@ mod tests {
 
     #[test]
     fn test_bishop_moves() {
+        init();
         let stm = Side::White;
         let bishop = Piece::Bishop;
         let state = Board::default();
@@ -582,6 +591,7 @@ mod tests {
 
     #[test]
     fn test_queen_moves() {
+        init();
         let stm = Side::White;
         let queen = Piece::Queen;
         let state = Board::default();
@@ -595,6 +605,7 @@ mod tests {
 
     #[test]
     fn test_king_moves() {
+        init();
         let stm = Side::White;
         let king = Piece::King;
         let state = Board::default();
@@ -614,6 +625,7 @@ mod tests {
 
     #[test]
     fn test_all_possible_moves() {
+        init();
         let moves = Moves::all_possible_moves(Board::default());
 
         // Ensure the correct number of moves are generated
@@ -622,6 +634,7 @@ mod tests {
 
     #[test]
     fn test_piece_move_generation() {
+        init();
         let m = Moves::default();
         let white_pawn_moves = Moves::gen_pawn_moves(&m, Side::White);
         let black_pawn_moves = Moves::gen_pawn_moves(&m, Side::Black);
@@ -641,6 +654,7 @@ mod tests {
     }
     #[test]
     fn test_square_not_attacked() {
+        init();
         // Initial position, e3 is not attacked by either side
         let board = Board::new();
         let moves = Moves::new(Piece::Pawn, Side::White, &board);
@@ -652,6 +666,7 @@ mod tests {
 
     #[test]
     fn test_pawn_attacks() {
+        init();
         // Create a position where pawns attack squares
         let board = Board::from_fen("8/8/8/8/3p4/8/2P5/8 w - - 0 1");
         let moves = Moves::new(Piece::Pawn, Side::White, &board);
@@ -669,6 +684,7 @@ mod tests {
 
     #[test]
     fn test_knight_attacks() {
+        init();
         // Create a position with knights
         let board = Board::from_fen("8/8/8/3n4/8/8/3N4/8 w - - 0 1");
         let moves = Moves::new(Piece::Knight, Side::White, &board);
@@ -687,6 +703,7 @@ mod tests {
 
     #[test]
     fn test_bishop_attacks() {
+        init();
         // Create a position with bishops
         let board = Board::from_fen("8/8/8/3b4/8/8/3B4/8 w - - 0 1");
         let moves = Moves::new(Piece::Bishop, Side::White, &board);
@@ -705,6 +722,7 @@ mod tests {
 
     #[test]
     fn test_rook_attacks() {
+        init();
         // Create a position with rooks
         let board = Board::from_fen("8/8/8/3r4/8/8/3R4/8 w - - 0 1");
         let moves = Moves::new(Piece::Rook, Side::White, &board);
@@ -723,6 +741,7 @@ mod tests {
 
     #[test]
     fn test_queen_attacks() {
+        init();
         // Create a position with queens
         let board = Board::from_fen("8/8/8/3q4/8/8/3Q4/8 w - - 0 1");
         let moves = Moves::new(Piece::Queen, Side::White, &board);
@@ -747,6 +766,7 @@ mod tests {
 
     #[test]
     fn test_king_attacks() {
+        init();
         // Create a position with kings
         let board = Board::from_fen("8/8/8/3k4/8/8/3K4/8 w - - 0 1");
         let moves = Moves::new(Piece::King, Side::White, &board);
@@ -765,6 +785,7 @@ mod tests {
 
     #[test]
     fn test_multiple_attackers() {
+        init();
         // Position with multiple attackers on the same square
         let board = Board::from_fen("8/8/8/2bn4/8/4N3/8/8 w - - 0 1");
         let moves = Moves::new(Piece::Knight, Side::White, &board);
@@ -775,6 +796,7 @@ mod tests {
 
     #[test]
     fn test_blocked_attacks() {
+        init();
         // Create a position where attacks are blocked
         let board = Board::from_fen("8/8/8/3r4/3P4/8/3R4/8 w - - 0 1");
         let moves = Moves::new(Piece::Rook, Side::White, &board);
@@ -791,10 +813,12 @@ mod tests {
     #[cfg(test)]
     mod en_passant_tests {
         use super::*;
+        use crate::init;
         use std::str::FromStr;
 
         #[test]
         fn test_white_en_passant_capture_right() {
+            init();
             // Set up position where white can en passant capture to the right
             let mut board = Board::from_fen("8/8/8/8/4p3/8/3P4/8 w - - 0 1");
 
@@ -802,7 +826,7 @@ mod tests {
             let from_d2 = Square::from_str("d2").unwrap();
             let to_d4 = Square::from_str("d4").unwrap();
 
-            board.make_move(from_d2, to_d4).unwrap();
+            board.try_move(from_d2, to_d4).unwrap();
 
             // Verify en passant square is set correctly
             assert_eq!(
@@ -818,7 +842,7 @@ mod tests {
 
             assert!(board.is_move_legal(from_e4, to_d3));
 
-            board.make_move(from_e4, to_d3).unwrap();
+            board.try_move(from_e4, to_d3).unwrap();
 
             // Verify the white pawn was captured
             assert!(!board.positions.all_pieces[Side::white()][Piece::pawn()]
@@ -834,6 +858,7 @@ mod tests {
 
         #[test]
         fn test_white_en_passant_capture_left() {
+            init();
             // Set up position where white can en passant capture to the left
             let mut board = Board::from_fen("8/8/8/8/4p3/8/5P2/8 w - - 0 1");
 
@@ -841,7 +866,7 @@ mod tests {
             let from_f2 = Square::from_str("f2").unwrap();
             let to_f4 = Square::from_str("f4").unwrap();
 
-            board.make_move(from_f2, to_f4).unwrap();
+            board.try_move(from_f2, to_f4).unwrap();
 
             // Verify en passant square is set correctly
             assert_eq!(
@@ -857,7 +882,7 @@ mod tests {
 
             assert!(board.is_move_legal(from_e4, to_f3));
 
-            board.make_move(from_e4, to_f3).unwrap();
+            board.try_move(from_e4, to_f3).unwrap();
 
             // Verify the white pawn was captured
             assert!(!board.positions.all_pieces[Side::white()][Piece::pawn()]
@@ -873,14 +898,17 @@ mod tests {
 
         #[test]
         fn test_black_en_passant_capture_right() {
+            init();
             // Set up position where black can en passant capture to the right
-            let mut board = Board::from_fen("8/3p4/8/8/8/8/8/8 b - - 0 1");
+            let mut board = Board::from_fen("8/3p4/8/4P3/8/8/8/8 b - - 0 1");
+            println!("{board}");
 
             // Move black pawn from d7 to d5 (double push)
             let from_d7 = Square::from_str("d7").unwrap();
             let to_d5 = Square::from_str("d5").unwrap();
 
-            board.make_move(from_d7, to_d5).unwrap();
+            board.try_move(from_d7, to_d5).unwrap();
+            println!("{board}");
 
             // Verify en passant square is set correctly
             assert_eq!(
@@ -891,17 +919,13 @@ mod tests {
             // Move white pawn to capture en passant
             board.stm = Side::White; // Make sure it's white's turn
 
-            // Place a white pawn at e5
-            board.positions.all_pieces[Side::white()][Piece::pawn()]
-                .set(Square::from_str("e5").unwrap().index());
-            board.positions.update_all_sides();
-
             let from_e5 = Square::from_str("e5").unwrap();
             let to_d6 = Square::from_str("d6").unwrap(); // en passant square
 
             assert!(board.is_move_legal(from_e5, to_d6));
 
-            board.make_move(from_e5, to_d6).unwrap();
+            board.try_move(from_e5, to_d6).unwrap();
+            println!("{board}");
 
             // Verify the black pawn was captured
             assert!(!board.positions.all_pieces[Side::black()][Piece::pawn()]
@@ -917,14 +941,16 @@ mod tests {
 
         #[test]
         fn test_black_en_passant_capture_left() {
+            init();
             // Set up position where black can en passant capture to the left
             let mut board = Board::from_fen("8/5p2/8/8/8/8/8/8 b - - 0 1");
+            println!("{board}");
 
             // Move black pawn from f7 to f5 (double push)
             let from_f7 = Square::from_str("f7").unwrap();
             let to_f5 = Square::from_str("f5").unwrap();
 
-            board.make_move(from_f7, to_f5).unwrap();
+            board.try_move(from_f7, to_f5).unwrap();
 
             // Verify en passant square is set correctly
             assert_eq!(
@@ -945,7 +971,7 @@ mod tests {
 
             assert!(board.is_move_legal(from_e5, to_f6));
 
-            board.make_move(from_e5, to_f6).unwrap();
+            board.try_move(from_e5, to_f6).unwrap();
 
             // Verify the black pawn was captured
             assert!(!board.positions.all_pieces[Side::black()][Piece::pawn()]
@@ -961,6 +987,7 @@ mod tests {
 
         #[test]
         fn test_en_passant_opportunity_expires() {
+            init();
             // Set up position where black can en passant capture
             let mut board = Board::from_fen("8/8/8/8/8/8/2P5/8 w - - 0 1");
 
@@ -968,7 +995,7 @@ mod tests {
             let from_c2 = Square::from_str("c2").unwrap();
             let to_c4 = Square::from_str("c4").unwrap();
 
-            board.make_move(from_c2, to_c4).unwrap();
+            board.try_move(from_c2, to_c4).unwrap();
 
             // Verify en passant square is set correctly
             assert_eq!(
@@ -986,7 +1013,7 @@ mod tests {
             let other_from = Square::from_str("d4").unwrap();
             let other_to = Square::from_str("d3").unwrap();
 
-            board.make_move(other_from, other_to).unwrap();
+            board.try_move(other_from, other_to).unwrap();
 
             // En passant opportunity should expire
             assert_eq!(board.enpassant_square, None);
@@ -996,7 +1023,7 @@ mod tests {
             let from = Square::from_str("c4").unwrap();
             let to = Square::from_str("c5").unwrap();
 
-            board.make_move(from, to).unwrap();
+            board.try_move(from, to).unwrap();
 
             // Now black shouldn't be able to capture en passant since opportunity expired
             board.stm = Side::Black;
@@ -1014,8 +1041,10 @@ mod tests {
 
         #[test]
         fn test_en_passant_doesnt_leave_king_in_check() {
+            init();
             // Set up position where en passant would leave king in check from a rook
-            let board = Board::from_fen("8/8/8/8/k1pP4/8/8/4K2r b - d3 0 1");
+            let board = Board::from_fen("4k2R/8/8/8/2pP4/8/8/4K2r b - d3 0 1");
+            println!("{board}");
 
             // Try to capture en passant
             let from_c4 = Square::from_str("c4").unwrap();
@@ -1034,6 +1063,7 @@ mod tests {
 
         #[test]
         fn test_white_kingside_castling() {
+            init();
             // Position where white can castle kingside
             let mut board = Board::from_fen("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1");
 
@@ -1045,7 +1075,7 @@ mod tests {
             assert!(board.is_move_legal(from, to));
 
             // Make the move
-            board.make_move(from, to).unwrap();
+            board.try_move(from, to).unwrap();
 
             // Verify king and rook positions after castling
             assert!(board.positions.all_pieces[Side::white()][Piece::king()]
@@ -1064,7 +1094,7 @@ mod tests {
 
         #[test]
         fn test_white_queenside_castling() {
-            color_backtrace::install();
+            init();
             // Position where white can castle queenside
             let mut board = Board::from_fen("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1");
 
@@ -1080,7 +1110,7 @@ mod tests {
 
             // Make the move
             board
-                .make_move(from, to)
+                .try_move(from, to)
                 .inspect_err(|e| println!("{}", e))
                 .expect("yo");
 
@@ -1102,7 +1132,7 @@ mod tests {
 
         #[test]
         fn test_black_kingside_castling() {
-            color_backtrace::install();
+            init();
             // Position where black can castle kingside
             let mut board = Board::from_fen("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R b KQkq - 0 1");
             board.stm = Side::Black;
@@ -1116,7 +1146,7 @@ mod tests {
 
             // Make the move
             board
-                .make_move(from, to)
+                .try_move(from, to)
                 .inspect_err(|e| println!("{}", e))
                 .expect("yo");
 
@@ -1137,6 +1167,7 @@ mod tests {
 
         #[test]
         fn test_black_queenside_castling() {
+            init();
             // Position where black can castle queenside
             let mut board = Board::from_fen("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R b KQkq - 0 1");
 
@@ -1148,7 +1179,7 @@ mod tests {
             assert!(board.is_move_legal(from, to));
 
             // Make the move
-            board.make_move(from, to).unwrap();
+            board.try_move(from, to).unwrap();
 
             // Verify king and rook positions after castling
             assert!(board.positions.all_pieces[Side::black()][Piece::king()]
@@ -1167,8 +1198,10 @@ mod tests {
 
         #[test]
         fn test_castling_through_check() {
+            init();
             // Position where white cannot castle through check
-            let board = Board::from_fen("r3k2r/pppppppp/8/8/8/3q4/PPPPPPPP/R3K2R w KQkq - 0 1");
+            let board = Board::from_fen("r3k2r/pppppppp/8/8/8/4n3/PPPPPPPP/R3K2R w KQkq - 0 1");
+            println!("{board}");
 
             // King from e1 to g1 (would castle through check on f1)
             let from = Square::from_str("e1").unwrap();
@@ -1180,29 +1213,31 @@ mod tests {
 
         #[test]
         fn test_castling_out_of_check() {
+            init();
             // Position where white is in check and cannot castle
-            let board = Board::from_fen("r3k2r/ppp1pppp/8/3q4/8/8/PPPPPPPP/R3K2R w KQkq - 0 1");
+            let mut board = Board::from_fen("r3k2r/ppp1pppp/8/8/8/8/PPPPqPPP/R3K2R w KQkq - 0 1");
+            board.stm = Side::Black;
 
             // King from e1 to g1
             let from = Square::from_str("e1").unwrap();
             let to = Square::from_str("g1").unwrap();
+            let res = board.is_move_legal(from, to);
 
             // Ensure the move is illegal
-            assert!(!board.is_move_legal(from, to));
+            assert!(!res);
         }
 
         #[test]
         fn test_castling_into_check() {
-            color_backtrace::install();
+            init();
             // Position where white cannot castle into check
-            let board = Board::from_fen("r3k2r/pppppppp/8/8/8/5q2/PPPPPPPP/R3K2R w KQkq - 0 1");
+            let board = Board::from_fen("r3k2r/pppppppp/8/8/8/5n2/PPPPPPPP/R3K2R w KQkq - 0 1");
 
             // King from e1 to g1 (would end up in check on g1)
             let from = Square::from_str("e1").unwrap();
             let to = Square::from_str("g1").unwrap();
 
             let res = board.is_move_legal(from, to);
-            dbg!(res);
 
             // Ensure the move is illegal
             assert!(!res);
@@ -1210,8 +1245,10 @@ mod tests {
 
         #[test]
         fn test_castling_with_blocked_squares() {
+            init();
             // Position where castling is blocked by pieces
             let board = Board::from_fen("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R1N1K2R w KQkq - 0 1");
+            println!("{board}");
 
             // King from e1 to c1 (blocked by knight on c1)
             let from = Square::from_str("e1").unwrap();
@@ -1223,14 +1260,15 @@ mod tests {
 
         #[test]
         fn test_castling_rights_after_king_move() {
+            init();
             // Position with all castling rights
             let mut board = Board::from_fen("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1");
 
             // Move king without castling
             let from = Square::from_str("e1").unwrap();
-            let to = Square::from_str("e2").unwrap();
+            let to = Square::from_str("f1").unwrap();
 
-            board.make_move(from, to).unwrap();
+            board.try_move(from, to).unwrap();
 
             // Verify castling rights are removed for white
             assert!(!board
@@ -1251,14 +1289,15 @@ mod tests {
 
         #[test]
         fn test_castling_rights_after_rook_move() {
+            init();
             // Position with all castling rights
             let mut board = Board::from_fen("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1");
 
             // Move kingside rook
-            let from = Square::new(7).unwrap(); // h1
-            let to = Square::new(15).unwrap(); // h2
+            let from = Square::from_str("h1").unwrap(); // h1
+            let to = Square::from_str("g1").unwrap(); // h2
 
-            board.make_move(from, to).unwrap();
+            board.try_move(from, to).unwrap();
 
             // Verify kingside castling right is removed for white
             assert!(!board

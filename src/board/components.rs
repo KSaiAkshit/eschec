@@ -697,6 +697,7 @@ mod tests {
 
     #[test]
     fn test_make_move() {
+        crate::init();
         let out = "0 0 0 0 0 0 0 0
 0 0 0 0 0 0 0 0
 0 0 0 0 0 0 0 0
@@ -708,7 +709,7 @@ mod tests {
 ";
         let mut board = Board::new();
         assert!(board
-            .make_move(Square::new(8).unwrap(), Square::new(16).unwrap())
+            .try_move(Square::new(8).unwrap(), Square::new(16).unwrap())
             .is_ok());
         let o = board.positions.all_sides[0].print_bitboard();
         assert_eq!(out, o);
