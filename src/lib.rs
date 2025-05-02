@@ -1,3 +1,4 @@
+use std::cell::OnceCell;
 use std::io::Write;
 
 use miette::{Context, IntoDiagnostic};
@@ -11,6 +12,7 @@ pub mod search;
 
 pub use board::components::*;
 pub use board::*;
+use tracing::Level;
 
 // pub struct Game {
 //     board: Board,
@@ -67,4 +69,18 @@ pub fn get_input(input: &str) -> miette::Result<(Square, Square)> {
         Square::new(to_pos).with_context(|| format!("'to' Square out of bounds: {}", to_pos))?;
 
     Ok((from_square, to_square))
+}
+
+pub fn init() {
+    let init: OnceCell<bool> = OnceCell::new();
+    init.get_or_init(|| {
+        color_backtrace::install();
+        tracing_subscriber::fmt()
+            .with_max_level(Level::DEBUG)
+            .init();
+        true
+    });
+    if !init.get().unwrap() {
+        panic!("Backtrace and/or tracing_subscriber not initialized");
+    }
 }

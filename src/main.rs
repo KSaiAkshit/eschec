@@ -42,7 +42,7 @@ fn main() -> miette::Result<()> {
             }
         };
 
-        if let Err(e) = board.make_move(from_square, to_square) {
+        if let Err(e) = board.try_move(from_square, to_square) {
             eprintln!("{:?}", e);
             continue;
         }
@@ -60,7 +60,7 @@ fn main() -> miette::Result<()> {
         let score = board.evaluate_position(&evaluator);
         println!("Score: {}", score);
 
-        if let Err(e) = board.make_move(b_move.0, b_move.1) {
+        if let Err(e) = board.try_move(b_move.0, b_move.1) {
             eprintln!("{:?}", e);
             continue;
         }

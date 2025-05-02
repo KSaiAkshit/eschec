@@ -69,7 +69,7 @@ impl Search {
 
         for (from, to) in legal_moves {
             let mut board_copy = *board;
-            if board_copy.make_move(from, to).is_err() {
+            if board_copy.try_move(from, to).is_err() {
                 continue;
             }
 
@@ -130,7 +130,7 @@ impl Search {
 
         for (from, to) in legal_moves {
             let mut board_copy = *board;
-            if board_copy.make_move(from, to).is_err() {
+            if board_copy.try_move(from, to).is_err() {
                 continue;
             }
 
