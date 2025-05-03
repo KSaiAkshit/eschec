@@ -8,9 +8,7 @@ use tracing::*;
 
 fn main() -> miette::Result<()> {
     color_backtrace::install();
-    tracing_subscriber::fmt()
-        .with_max_level(Level::ERROR)
-        .init();
+    tracing_subscriber::fmt().init();
 
     let span = tracing::span!(Level::INFO, "main");
     let _guard = span.enter();
