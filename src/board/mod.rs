@@ -491,6 +491,7 @@ impl Board {
     }
 
     pub fn suggest_rand_move(&self) -> miette::Result<(Square, Square)> {
+        info!("This is RNGesus");
         let mut rng = rand::rng();
         let mut possible_end_bits: Vec<usize> = Vec::default();
         let mut from = Square::default();
@@ -614,87 +615,88 @@ impl Board {
         let old_ep_square = self.enpassant_square;
         self.enpassant_square = None;
 
-        if let Some(piece) = self.get_piece_at(from) {
-            match piece {
-                Piece::Pawn => {
-                    if let Some(ep_square) = old_ep_square {
-                        if to == ep_square {
-                            let captured_pawn_square = Square::new(match self.stm {
-                                Side::White => ep_square.index() - 8,
-                                Side::Black => ep_square.index() + 8,
-                            })
-                            .unwrap();
-
-                            self.positions.capture(
-                                &self.stm.flip(),
-                                &Piece::Pawn,
-                                captured_pawn_square.index(),
-                            )?;
-                        }
-                    }
-
-                    let is_double_push = match self.stm {
-                        Side::White => from.index() / 8 == 1 && to.index() / 8 == 3,
-                        Side::Black => from.index() / 8 == 6 && to.index() / 8 == 4,
-                    };
-
-                    if is_double_push {
-                        let skipped_square = Square::new(match self.stm {
-                            Side::White => from.index() + 8,
-                            Side::Black => from.index() - 8,
+        match self.get_piece_at(from) {
+            Some(Piece::Pawn) => {
+                match old_ep_square {
+                    // Enpassant capture
+                    Some(ep_square) if to == ep_square => {
+                        let captured_pawn_square = Square::new(match self.stm {
+                            Side::White => ep_square.index() - 8,
+                            Side::Black => ep_square.index() + 8,
                         })
-                        .expect("Should be able to construct a valid skipped square");
-                        self.enpassant_square = Some(skipped_square);
-                    }
+                        .unwrap();
 
-                    self.halfmove_clock = 0;
-                }
-                Piece::King => {
-                    match self.stm {
-                        Side::White => self
-                            .castling_rights
-                            .remove_right(&CastlingRights::WHITE_CASTLING),
-                        Side::Black => self
-                            .castling_rights
-                            .remove_right(&CastlingRights::BLACK_CASTLING),
-                    }
-                    let file_diff = (to.col() as i8) - (from.col() as i8);
-                    if file_diff.abs() == 2 {
-                        // this is a castling move
-                        let rook_from_file = if file_diff.is_positive() { 7 } else { 0 }; // kingside or queenside A1/H1
-                        let rook_to_file = if file_diff.is_positive() { 5 } else { 3 }; // kingside or queenside C1/F1
-
-                        let rank = from.row();
-                        let rook_from = Square::new(rank * 8 + rook_from_file).unwrap();
-                        let rook_to = Square::new(rank * 8 + rook_to_file).unwrap();
-
-                        self.positions.update_piece_position(
-                            &Piece::Rook,
-                            &self.stm,
-                            rook_from,
-                            rook_to,
+                        self.positions.capture(
+                            &self.stm.flip(),
+                            &Piece::Pawn,
+                            captured_pawn_square.index(),
                         )?;
                     }
-                }
-                Piece::Rook => match (self.stm, from.index()) {
-                    (Side::White, 0) => self
-                        .castling_rights
-                        .remove_right(&CastlingRights(CastlingRights::WHITE_000)),
-                    (Side::White, 7) => self
-                        .castling_rights
-                        .remove_right(&CastlingRights(CastlingRights::WHITE_00)),
-                    (Side::Black, 56) => self
-                        .castling_rights
-                        .remove_right(&CastlingRights(CastlingRights::BLACK_000)),
-                    (Side::Black, 63) => self
-                        .castling_rights
-                        .remove_right(&CastlingRights(CastlingRights::BLACK_00)),
                     _ => {}
-                },
-                _ => {}
+                }
+
+                let is_double_push = match self.stm {
+                    Side::White => from.index() / 8 == 1 && to.index() / 8 == 3,
+                    Side::Black => from.index() / 8 == 6 && to.index() / 8 == 4,
+                };
+
+                if is_double_push {
+                    let skipped_square = Square::new(match self.stm {
+                        Side::White => from.index() + 8,
+                        Side::Black => from.index() - 8,
+                    })
+                    .expect("Should be able to construct a valid skipped square");
+                    self.enpassant_square = Some(skipped_square);
+                }
+
+                self.halfmove_clock = 0;
             }
-        } else {
-            miette::bail!("No piece at from ({from}) square");
+            Some(Piece::King) => {
+                match self.stm {
+                    Side::White => self
+                        .castling_rights
+                        .remove_right(&CastlingRights::WHITE_CASTLING),
+                    Side::Black => self
+                        .castling_rights
+                        .remove_right(&CastlingRights::BLACK_CASTLING),
+                }
+                let file_diff = (to.col() as i8) - (from.col() as i8);
+                if file_diff.abs() == 2 {
+                    // this is a castling move
+                    let rook_from_file = if file_diff.is_positive() { 7 } else { 0 }; // kingside or queenside A1/H1
+                    let rook_to_file = if file_diff.is_positive() { 5 } else { 3 }; // kingside or queenside C1/F1
+
+                    let rank = from.row();
+                    let rook_from = Square::new(rank * 8 + rook_from_file).unwrap();
+                    let rook_to = Square::new(rank * 8 + rook_to_file).unwrap();
+
+                    self.positions.update_piece_position(
+                        &Piece::Rook,
+                        &self.stm,
+                        rook_from,
+                        rook_to,
+                    )?;
+                }
+            }
+            Some(Piece::Rook) => match (self.stm, from.index()) {
+                (Side::White, 0) => self
+                    .castling_rights
+                    .remove_right(&CastlingRights(CastlingRights::WHITE_000)),
+                (Side::White, 7) => self
+                    .castling_rights
+                    .remove_right(&CastlingRights(CastlingRights::WHITE_00)),
+                (Side::Black, 56) => self
+                    .castling_rights
+                    .remove_right(&CastlingRights(CastlingRights::BLACK_000)),
+                (Side::Black, 63) => self
+                    .castling_rights
+                    .remove_right(&CastlingRights(CastlingRights::BLACK_00)),
+                _ => {}
+            },
+            None => {
+                miette::bail!("No piece at from ({from}) square");
+            }
+            _ => {}
         }
         Ok(())
     }
@@ -809,132 +811,6 @@ impl Board {
             false
         }
     }
-
-    // #[instrument(skip(self, evaluator), fields(eval_name = evaluator.name()))]
-    // pub fn find_best_move(
-    //     &self,
-    //     nodes_searched: &mut u64,
-    //     evaluator: &dyn Evaluator,
-    //     depth: u8,
-    // ) -> miette::Result<(Square, Square)> {
-    //     info!(side = %self.stm, "Finding best move for");
-
-    //     info!("getting legal moves");
-    //     let legal_moves = self.generate_legal_moves()?;
-    //     if legal_moves.is_empty() {
-    //         miette::bail!("No legal moves available")
-    //     }
-    //     info!(legal_moves.num = legal_moves.len(), "got legal moves: ");
-
-    //     let mut best_score = i32::MIN;
-    //     let mut best_move = legal_moves[0];
-    //     info!(
-    //         best_score = best_score,
-    //         from = %best_move.0,
-    //         to = %best_move.1,
-    //         "init vals"
-    //     );
-
-    //     for (from, to) in legal_moves {
-    //         let mut board_copy = *self;
-    //         board_copy.make_move(from, to)?;
-    //         info!(
-    //             best_score = best_score,
-    //             from = %from,
-    //             to = %to,
-    //             depth = depth,
-    //             "currently on move"
-    //         );
-
-    //         let score = -self.minimax(
-    //             &board_copy,
-    //             nodes_searched,
-    //             depth - 1,
-    //             i32::MIN,
-    //             i32::MAX,
-    //             false,
-    //             evaluator,
-    //         );
-
-    //         if score > best_score {
-    //             best_score = score;
-    //             best_move = (from, to);
-    //         }
-    //     }
-    //     Ok(best_move)
-    // }
-
-    // #[instrument(skip(self, board, evaluator))]
-    // fn minimax(
-    //     &self,
-    //     board: &Board,
-    //     mut nodes_searched: &mut u64,
-    //     depth: u8,
-    //     mut alpha: i32,
-    //     mut beta: i32,
-    //     maximizing_player: bool,
-    //     evaluator: &dyn Evaluator,
-    // ) -> i32 {
-    //     trace!("staring minimax search");
-    //     *nodes_searched += 1;
-    //     if depth == 0 || board.is_draw() || board.is_checkmate(board.stm) {
-    //         warn!("got deep");
-    //         return board.evaluate_position(evaluator);
-    //     }
-    //     let legal_moves = match board.generate_legal_moves() {
-    //         Ok(moves) => moves,
-    //         Err(_) => return board.evaluate_position(evaluator),
-    //     };
-    //     if maximizing_player {
-    //         let mut max_eval = i32::MIN;
-    //         for (from, to) in legal_moves {
-    //             let mut board_copy = *board;
-    //             if board_copy.make_move(from, to).is_err() {
-    //                 continue;
-    //             }
-
-    //             let eval = self.minimax(
-    //                 &board_copy,
-    //                 &mut nodes_searched,
-    //                 depth - 1,
-    //                 alpha,
-    //                 beta,
-    //                 false,
-    //                 evaluator,
-    //             );
-    //             max_eval = max_eval.max(eval);
-    //             alpha = alpha.max(eval);
-    //             if beta <= alpha {
-    //                 break;
-    //             }
-    //         }
-    //         return max_eval;
-    //     } else {
-    //         let mut min_eval = i32::MAX;
-    //         for (from, to) in legal_moves {
-    //             let mut board_copy = *board;
-    //             if board_copy.make_move(from, to).is_err() {
-    //                 continue;
-    //             }
-
-    //             let eval = self.minimax(
-    //                 &board_copy,
-    //                 &mut nodes_searched,
-    //                 depth - 1,
-    //                 alpha,
-    //                 beta,
-    //                 true,
-    //                 evaluator,
-    //             );
-    //             min_eval = min_eval.min(eval);
-    //             beta = beta.min(eval);
-    //             if beta <= alpha {
-    //                 break;
-    //             }
-    //         }
-    //         return min_eval;
-    //     }
-    // }
 }
 
 #[cfg(test)]
