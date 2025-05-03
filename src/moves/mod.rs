@@ -1,10 +1,11 @@
 use crate::{board::components::Square, CastlingRights};
-use tracing::warn;
 
 use super::{
     components::{BitBoard, BoardState, Piece, Side},
     Board,
 };
+
+pub mod move_info;
 
 #[derive(Default, Debug, PartialEq, Eq, PartialOrd, Clone)]
 pub struct Moves {
@@ -75,8 +76,8 @@ impl Moves {
         moves
     }
 
+    #[deprecated(note = "Moves generated are already pseudo-legal. This doesn't acheive anything")]
     pub fn make_legal(&mut self, stm: &Side, board: &BoardState) {
-        warn!("Do not use this. Moves generated are already pseaudo-legal");
         let own_pieces = board.all_sides[stm.index()];
 
         self.attack_bb.iter_mut().for_each(|b| *b &= !own_pieces);
@@ -962,9 +963,14 @@ mod tests {
             board.stm = Side::White; // Make sure it's white's turn
 
             // Place a white pawn at e5
-            board.positions.all_pieces[Side::white()][Piece::pawn()]
-                .set(Square::from_str("e5").unwrap().index());
-            board.positions.update_all_sides();
+            board
+                .positions
+                .set(
+                    &Side::White,
+                    &Piece::Pawn,
+                    Square::from_str("e5").unwrap().index(),
+                )
+                .unwrap();
 
             let from_e5 = Square::from_str("e5").unwrap();
             let to_f6 = Square::from_str("f6").unwrap(); // en passant square
@@ -1004,9 +1010,14 @@ mod tests {
             );
 
             // Place a black pawn at d4
-            board.positions.all_pieces[Side::black()][Piece::pawn()]
-                .set(Square::from_str("d4").unwrap().index());
-            board.positions.update_all_sides();
+            board
+                .positions
+                .set(
+                    &Side::Black,
+                    &Piece::Pawn,
+                    Square::from_str("d4").unwrap().index(),
+                )
+                .unwrap();
 
             // Make a different move with black instead of capturing en passant
             board.stm = Side::Black;
@@ -1029,9 +1040,14 @@ mod tests {
             board.stm = Side::Black;
 
             // Place a black pawn at b4
-            board.positions.all_pieces[Side::black()][Piece::pawn()]
-                .set(Square::from_str("b4").unwrap().index());
-            board.positions.update_all_sides();
+            board
+                .positions
+                .set(
+                    &Side::Black,
+                    &Piece::Pawn,
+                    Square::from_str("b4").unwrap().index(),
+                )
+                .unwrap();
 
             let en_passant_from = Square::from_str("b4").unwrap();
             let en_passant_to = Square::from_str("c3").unwrap(); // former en passant square

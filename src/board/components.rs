@@ -70,6 +70,7 @@ impl BitBoard {
         out
     }
 
+    #[inline]
     pub fn lsb(&self) -> Option<usize> {
         if self.0 == 0 {
             None
@@ -78,6 +79,7 @@ impl BitBoard {
         }
     }
 
+    #[inline]
     pub fn pop_lsb(&mut self) -> Option<usize> {
         if self.0 == 0 {
             None
@@ -175,7 +177,7 @@ impl Not for Side {
 
 impl Side {
     pub const SIDES: [Side; 2] = [Side::White, Side::Black];
-    // TODO: Should this consume self?
+
     pub fn white() -> usize {
         Side::White.index()
     }
@@ -357,7 +359,7 @@ impl BoardState {
         let to_index = to.index();
 
         miette::ensure!(
-            !self.get_piece_at(&from).is_none(),
+            self.get_piece_at(&from).is_some(),
             "[update_piece_position] No {piece} piece at from ( {from} ) square"
         );
 
@@ -373,6 +375,22 @@ impl BoardState {
         Ok(())
     }
 
+    pub fn set(
+        &mut self,
+        side_to_set: &Side,
+        piece_to_set: &Piece,
+        index_to_set: usize,
+    ) -> miette::Result<()> {
+        miette::ensure!(
+            self.get_piece_at(&index_to_set.into()).is_none(),
+            "[update_piece_position] Some piece already exists at from ( {} ) square",
+            Square::new(index_to_set).unwrap()
+        );
+        self.all_pieces[side_to_set.index()][piece_to_set.index()].set(index_to_set);
+        self.update_all_sides();
+        Ok(())
+    }
+
     pub fn capture(
         &mut self,
         side_to_capture: &Side,
@@ -380,7 +398,7 @@ impl BoardState {
         index_to_capture: usize,
     ) -> miette::Result<()> {
         miette::ensure!(
-            !self.get_piece_at(&index_to_capture.into()).is_none(),
+            self.get_piece_at(&index_to_capture.into()).is_some(),
             "[update_piece_position] No {piece_to_capture} piece at from ( {} ) square",
             Square::new(index_to_capture).unwrap()
         );
@@ -392,7 +410,7 @@ impl BoardState {
     }
 
     // TODO: do not expose this outside
-    pub fn update_all_sides(&mut self) {
+    fn update_all_sides(&mut self) {
         self.all_sides[0] = self.all_pieces[0][0]
             | self.all_pieces[0][1]
             | self.all_pieces[0][2]

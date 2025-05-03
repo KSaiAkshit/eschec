@@ -1,4 +1,7 @@
-use crate::{evaluation::Evaluator, moves::Moves};
+use crate::{
+    evaluation::Evaluator,
+    moves::{move_info::Move, Moves},
+};
 use miette::Context;
 use rand::prelude::*;
 use std::{collections::HashMap, fmt::Display};
@@ -121,18 +124,21 @@ impl Board {
                 eprintln!("Error initializing board: {}", e);
             }
         }
+        board.calculate_material();
         board
     }
     /// Use this to construct a board from fen
     pub fn from_fen(fen: &str) -> Self {
         let parsed = fen::parse_fen(fen);
-        match parsed {
+        let mut b = match parsed {
             Ok(b) => b,
             Err(e) => {
                 eprintln!("Got error while parsing given fen: {}", e);
                 panic!("very bad fen")
             }
-        }
+        };
+        b.calculate_material();
+        b
     }
 
     pub fn generate_legal_moves(&self) -> miette::Result<Vec<(Square, Square)>> {
@@ -190,6 +196,88 @@ impl Board {
         } else {
             miette::bail!("[make_move] No piece at from Square");
         }
+    }
+
+    pub fn try_move_with_info(&mut self, from: Square, to: Square) -> miette::Result<Move> {
+        let piece = self
+            .get_piece_at(from)
+            .wrap_err_with(|| format!("[try_move_with_info] No piece at from '{from}' Square"))?;
+
+        // Store current state before making the move
+        let mut move_data = Move::new(from, to);
+        move_data.piece_moved = piece;
+        move_data.captured_piece = self.get_piece_at(to);
+        move_data.castle_rights = self.castling_rights;
+        move_data.enpassant_square = self.enpassant_square;
+        move_data.halfmove_clock = self.halfmove_clock;
+
+        // Check for special move types
+        if piece == Piece::King && (to.index() as i8 - from.index() as i8).abs() == 2 {
+            move_data.is_castling = true;
+        }
+
+        if piece == Piece::Pawn
+            && self.enpassant_square.is_some()
+            && to == self.enpassant_square.unwrap()
+        {
+            move_data.is_en_passant = true;
+        }
+
+        self.try_move(from, to)?;
+
+        Ok(move_data)
+    }
+
+    pub fn unmake_move(&mut self, move_data: &Move) -> miette::Result<()> {
+        self.positions.update_piece_position(
+            &move_data.piece_moved,
+            &self.stm.flip(),
+            move_data.to,
+            move_data.from,
+        )?;
+
+        if let Some(captured) = move_data.captured_piece {
+            if move_data.is_en_passant {
+                // for en passant, the captured piece is not the 'to' square
+                let captured_idx = match self.stm {
+                    // NOTE: This seems iffy, it should be in reverse because stm is already flipped
+                    Side::White => move_data.to.index() + 8, // White made move, Black's pawn below
+                    Side::Black => move_data.to.index() - 8, // Black made move, White's pawn above
+                };
+                self.positions.set(&self.stm, &captured, captured_idx)?;
+            } else {
+                self.positions
+                    .set(&self.stm, &captured, move_data.to.index())?;
+            }
+        }
+
+        if move_data.is_castling {
+            let (rook_from, rook_to) = match (self.stm.flip(), move_data.to.index()) {
+                (Side::White, 6) => (5, 7),    // White kingside
+                (Side::White, 2) => (3, 0),    // White queenside
+                (Side::Black, 62) => (61, 63), // Black kingside
+                (Side::Black, 58) => (59, 56), // Black queenside
+                _ => unreachable!("[unmake_move] Invalid castling move"),
+            };
+
+            let rook_from_sq = Square::new(rook_from).unwrap();
+            let rook_to_sq = Square::new(rook_to).unwrap();
+
+            self.positions.update_piece_position(
+                &Piece::Rook,
+                &self.stm.flip(),
+                rook_from_sq,
+                rook_to_sq,
+            )?;
+        }
+
+        self.castling_rights = move_data.castle_rights;
+        self.enpassant_square = move_data.enpassant_square;
+        self.halfmove_clock = move_data.halfmove_clock;
+        self.stm = self.stm.flip();
+        self.calculate_material();
+
+        Ok(())
     }
 
     pub fn is_move_legal(&self, from: Square, to: Square) -> bool {
@@ -304,9 +392,11 @@ impl Board {
                         Side::Black => to.index() + 8,
                     };
 
-                    board_copy.positions.all_pieces[self.stm.flip().index()][Piece::pawn()]
-                        .capture(captured_pawn_idx);
-                    board_copy.positions.update_all_sides();
+                    let _ = board_copy.positions.capture(
+                        &self.stm.flip(),
+                        &Piece::Pawn,
+                        captured_pawn_idx,
+                    );
 
                     return !board_copy.is_in_check(self.stm);
                 }
@@ -318,8 +408,7 @@ impl Board {
             }
         }
         // Generate legal moves for the piece
-        let mut moves = Moves::new(piece, self.stm, self);
-        moves.make_legal(&self.stm, &self.positions);
+        let moves = Moves::new(piece, self.stm, self);
         let legal_squares = moves.attack_bb[from.index()];
 
         // Check if the 'to' square is a legal square for the piece
@@ -412,8 +501,7 @@ impl Board {
                 .choose(&mut rng)
                 .expect("Should be able to choose at random");
             // Generate moves for the randomly selected piece
-            let mut moves = Moves::new(piece, self.stm, self);
-            moves.make_legal(&self.stm, &self.positions);
+            let moves = Moves::new(piece, self.stm, self);
 
             // Get the position of the Piece on the current board
             let piece_state = self.positions.all_pieces[self.stm.index()][piece.index()];
@@ -537,10 +625,11 @@ impl Board {
                             })
                             .unwrap();
 
-                            self.positions.all_pieces[self.stm.flip().index()][Piece::pawn()]
-                                .capture(captured_pawn_square.index());
-
-                            self.positions.update_all_sides();
+                            self.positions.capture(
+                                &self.stm.flip(),
+                                &Piece::Pawn,
+                                captured_pawn_square.index(),
+                            )?;
                         }
                     }
 
@@ -619,7 +708,7 @@ impl Board {
             for piece in Piece::colored_pieces(side) {
                 let piece_bb = self.positions.all_pieces[side_index][piece.index()];
                 let piece_count = piece_bb.0.count_ones() as u64;
-                let piece_value: u64 = u32::from(piece) as u64;
+                let piece_value: u64 = piece.value().into();
                 self.material[side_index] += piece_count * piece_value;
             }
         }
@@ -851,8 +940,48 @@ impl Board {
 #[cfg(test)]
 mod material_tests {
 
+    use std::str::FromStr;
+
+    use crate::init;
+
     use super::*;
 
+    #[test]
+    fn test_make_unmake_move() {
+        init();
+        let mut board = Board::new();
+        let orig_board = board;
+
+        let from = Square::from_str("e2").unwrap();
+        let to = Square::from_str("e4").unwrap();
+
+        let move_data = board.try_move_with_info(from, to).unwrap();
+
+        assert_ne!(board, orig_board);
+
+        board.unmake_move(&move_data).unwrap();
+
+        assert_eq!(board, orig_board);
+    }
+
+    #[test]
+    fn test_make_unmake_capture() {
+        init();
+        let mut board =
+            Board::from_fen("rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1");
+        let orig_board = board;
+
+        let from = Square::from_str("e4").unwrap();
+        let to = Square::from_str("d5").unwrap();
+
+        let move_data = board.try_move_with_info(from, to).unwrap();
+
+        assert_ne!(board, orig_board);
+
+        board.unmake_move(&move_data).unwrap();
+
+        assert_eq!(board, orig_board);
+    }
     #[test]
     fn test_initial_material_balance() {
         let mut board = Board::new();

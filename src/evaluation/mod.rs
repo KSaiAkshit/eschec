@@ -74,7 +74,6 @@ mod tests {
             .add_evaluator(Box::new(MobilityEvaluator::new()), 0.1);
 
         let score = composite.evaluate(&board);
-        dbg!(score);
 
         // Initial position with our evaluators should be roughly balanced
         // Allow some small variation from position scoring
