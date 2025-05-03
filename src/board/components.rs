@@ -16,7 +16,7 @@ impl BitAndAssign for BitBoard {
 }
 
 impl BitOr for BitBoard {
-    type Output = BitBoard;
+    type Output = Self;
 
     fn bitor(self, rhs: Self) -> Self::Output {
         Self(self.0 | rhs.0)
@@ -24,7 +24,7 @@ impl BitOr for BitBoard {
 }
 
 impl BitAnd for BitBoard {
-    type Output = BitBoard;
+    type Output = Self;
 
     fn bitand(self, rhs: Self) -> Self::Output {
         Self(self.0 & rhs.0)
@@ -32,7 +32,7 @@ impl BitAnd for BitBoard {
 }
 
 impl Not for BitBoard {
-    type Output = BitBoard;
+    type Output = Self;
 
     fn not(self) -> Self::Output {
         Self(!self.0)
