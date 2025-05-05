@@ -8,6 +8,7 @@ use miette::{Context, IntoDiagnostic};
 pub mod board;
 pub mod evaluation;
 pub mod moves;
+pub mod perft;
 pub mod search;
 
 pub use board::components::*;

@@ -229,9 +229,18 @@ impl Board {
     }
 
     pub fn unmake_move(&mut self, move_data: &Move) -> miette::Result<()> {
+        if move_data.to.index() == 8 && move_data.from.index() == 24 {
+            println!(
+                "[unmake_move] from={}, to={} piece={} \n{self}",
+                move_data.to.index(),
+                move_data.from.index(),
+                move_data.piece_moved
+            );
+        }
+        self.stm = self.stm.flip();
         self.positions.update_piece_position(
             &move_data.piece_moved,
-            &self.stm.flip(),
+            &self.stm,
             move_data.to,
             move_data.from,
         )?;
@@ -240,19 +249,19 @@ impl Board {
             if move_data.is_en_passant {
                 // for en passant, the captured piece is not the 'to' square
                 let captured_idx = match self.stm {
-                    // NOTE: This seems iffy, it should be in reverse because stm is already flipped
                     Side::White => move_data.to.index() + 8, // White made move, Black's pawn below
                     Side::Black => move_data.to.index() - 8, // Black made move, White's pawn above
                 };
-                self.positions.set(&self.stm, &captured, captured_idx)?;
+                self.positions
+                    .set(&self.stm.flip(), &captured, captured_idx)?;
             } else {
                 self.positions
-                    .set(&self.stm, &captured, move_data.to.index())?;
+                    .set(&self.stm.flip(), &captured, move_data.to.index())?;
             }
         }
 
         if move_data.is_castling {
-            let (rook_from, rook_to) = match (self.stm.flip(), move_data.to.index()) {
+            let (rook_from, rook_to) = match (self.stm, move_data.to.index()) {
                 (Side::White, 6) => (5, 7),    // White kingside
                 (Side::White, 2) => (3, 0),    // White queenside
                 (Side::Black, 62) => (61, 63), // Black kingside
@@ -265,7 +274,7 @@ impl Board {
 
             self.positions.update_piece_position(
                 &Piece::Rook,
-                &self.stm.flip(),
+                &self.stm,
                 rook_from_sq,
                 rook_to_sq,
             )?;
@@ -274,7 +283,9 @@ impl Board {
         self.castling_rights = move_data.castle_rights;
         self.enpassant_square = move_data.enpassant_square;
         self.halfmove_clock = move_data.halfmove_clock;
-        self.stm = self.stm.flip();
+        if self.stm == Side::Black {
+            self.fullmove_counter -= 1;
+        }
         self.calculate_material();
 
         Ok(())
@@ -846,6 +857,7 @@ mod material_tests {
         let mut board =
             Board::from_fen("rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1");
         let orig_board = board;
+        println!("{board}");
 
         let from = Square::from_str("e4").unwrap();
         let to = Square::from_str("d5").unwrap();
