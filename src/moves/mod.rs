@@ -78,9 +78,9 @@ impl Moves {
 
     #[deprecated(note = "Moves generated are already pseudo-legal. This doesn't acheive anything")]
     pub fn make_legal(&mut self, stm: &Side, board: &BoardState) {
-        let own_pieces = board.all_sides[stm.index()];
+        let own_pieces = board.get_side_bb(stm);
 
-        self.attack_bb.iter_mut().for_each(|b| *b &= !own_pieces);
+        self.attack_bb.iter_mut().for_each(|b| *b &= !*own_pieces);
     }
 
     fn gen_pawn_moves(&self, stm: Side) -> Vec<BitBoard> {
@@ -92,8 +92,8 @@ impl Moves {
 
     fn gen_white_pawn_moves(&self) -> Vec<BitBoard> {
         let mut attack_bb = vec![BitBoard(0); 64];
-        let enemy_pieces = self.state.all_sides[Side::black()];
-        let ally_pieces = self.state.all_sides[Side::white()];
+        let enemy_pieces = self.state.get_side_bb(&Side::Black);
+        let ally_pieces = self.state.get_side_bb(&Side::White);
         let all_pieces = ally_pieces | enemy_pieces;
         (0..64).for_each(|index| {
             let mut white_pawn_moves = BitBoard(0);
@@ -141,8 +141,8 @@ impl Moves {
 
     fn gen_black_pawn_moves(&self) -> Vec<BitBoard> {
         let mut attack_bb = vec![BitBoard(0); 64];
-        let enemy_pieces = self.state.all_sides[Side::white()];
-        let ally_pieces = self.state.all_sides[Side::black()];
+        let enemy_pieces = self.state.get_side_bb(&Side::Black);
+        let ally_pieces = self.state.get_side_bb(&Side::White);
         let all_pieces = ally_pieces | enemy_pieces;
         (0..64).for_each(|index| {
             let mut white_pawn_moves = BitBoard(0);
@@ -200,8 +200,8 @@ impl Moves {
 
     fn gen_bishop_moves(&self, stm: Side) -> Vec<BitBoard> {
         let mut attack_bb = vec![BitBoard(0); 64];
-        let ally_pieces = self.state.all_sides[stm.index()];
-        let enemy_pieces = self.state.all_sides[stm.flip().index()];
+        let enemy_pieces = self.state.get_side_bb(&stm);
+        let ally_pieces = self.state.get_side_bb(&stm.flip());
 
         (0..64).for_each(|index| {
             let mut bishop_moves = BitBoard(0);
@@ -240,8 +240,8 @@ impl Moves {
 
     fn gen_rook_moves(&self, stm: Side) -> Vec<BitBoard> {
         let mut attack_bb = vec![BitBoard(0); 64];
-        let ally_pieces = self.state.all_sides[stm.index()];
-        let enemy_pieces = self.state.all_sides[stm.flip().index()];
+        let ally_pieces = self.state.get_side_bb(&stm);
+        let enemy_pieces = self.state.get_side_bb(&stm.flip());
         (0..64).for_each(|index| {
             let square = Square::new(index).expect("Get a valid index");
             let mut rook_moves = BitBoard(0);
@@ -283,8 +283,8 @@ impl Moves {
 
     fn gen_king_moves(&self, stm: Side) -> Vec<BitBoard> {
         let mut attack_bb = vec![BitBoard(0); 64];
-        let enemy_pieces = self.state.all_sides[Side::black()];
-        let ally_pieces = self.state.all_sides[Side::white()];
+        let enemy_pieces = self.state.get_side_bb(&stm);
+        let ally_pieces = self.state.get_side_bb(&stm.flip());
         let all_pieces = ally_pieces | enemy_pieces;
         (0..64).for_each(|index| {
             let square = Square::new(index).expect("Get a valid index");
@@ -400,7 +400,6 @@ impl Moves {
     }
 
     fn is_square_attacked(&self, square_index: usize, by_side: Side) -> bool {
-        let side_index = by_side.index();
         let pawn_attackw = if by_side == Side::White {
             // White pawns attack diagonally up
             let up_left = square_index.wrapping_sub(9);
@@ -409,12 +408,12 @@ impl Moves {
             let is_not_leftmost = square_index % 8 != 0;
             let is_not_rightmost = square_index % 8 != 0;
 
-            let attacked_by_left = is_not_leftmost
-                && square_index > 8
-                && self.state.all_pieces[side_index][Piece::pawn()].contains_square(up_left);
-            let attacked_by_right = is_not_rightmost
-                && square_index > 8
-                && self.state.all_pieces[side_index][Piece::pawn()].contains_square(up_right);
+            let pawn_bb = self.state.get_piece_bb(&by_side, &Piece::Pawn);
+
+            let attacked_by_left =
+                is_not_leftmost && square_index > 8 && pawn_bb.contains_square(up_left);
+            let attacked_by_right =
+                is_not_rightmost && square_index > 8 && pawn_bb.contains_square(up_right);
             attacked_by_left || attacked_by_right
         } else {
             // Black pawns attack diagonally down-left and down-right
@@ -424,13 +423,12 @@ impl Moves {
             let is_not_leftmost = square_index % 8 != 0;
             let is_not_rightmost = square_index % 8 != 7;
 
-            let attacked_by_left = is_not_rightmost
-                && square_index < 56
-                && self.state.all_pieces[by_side.index()][Piece::pawn()].contains_square(down_left);
-            let attacked_by_right = is_not_leftmost
-                && square_index < 56
-                && self.state.all_pieces[by_side.index()][Piece::pawn()]
-                    .contains_square(down_right);
+            let pawn_bb = self.state.get_piece_bb(&by_side, &Piece::Pawn);
+
+            let attacked_by_left =
+                is_not_rightmost && square_index < 56 && pawn_bb.contains_square(down_left);
+            let attacked_by_right =
+                is_not_leftmost && square_index < 56 && pawn_bb.contains_square(down_right);
 
             attacked_by_left || attacked_by_right
         };
@@ -448,7 +446,7 @@ impl Moves {
                 ..Default::default()
             },
         );
-        let knight_bb = self.state.all_pieces[by_side.index()][Piece::knight()];
+        let knight_bb = self.state.get_piece_bb(&by_side, &Piece::Knight);
 
         for knight_idx in knight_bb.iter_bits() {
             if knight_moves.attack_bb[knight_idx].contains_square(square_index) {
@@ -465,8 +463,8 @@ impl Moves {
                 ..Default::default()
             },
         );
-        let bishop_bb = self.state.all_pieces[by_side.index()][Piece::bishop()];
-        let queen_bb = self.state.all_pieces[by_side.index()][Piece::queen()];
+        let bishop_bb = self.state.get_piece_bb(&by_side, &Piece::Bishop);
+        let queen_bb = self.state.get_piece_bb(&by_side, &Piece::Queen);
 
         for bishop_idx in bishop_bb.iter_bits().chain(queen_bb.iter_bits()) {
             if bishop_moves.attack_bb[bishop_idx].contains_square(square_index) {
@@ -483,7 +481,7 @@ impl Moves {
                 ..Default::default()
             },
         );
-        let rook_bb = self.state.all_pieces[by_side.index()][Piece::rook()];
+        let rook_bb = self.state.get_piece_bb(&by_side, &Piece::Rook);
 
         for rook_idx in rook_bb.iter_bits().chain(queen_bb.iter_bits()) {
             if rook_moves.attack_bb[rook_idx].contains_square(square_index) {
@@ -500,7 +498,7 @@ impl Moves {
                 ..Default::default()
             },
         );
-        let king_bb = self.state.all_pieces[by_side.index()][Piece::king()];
+        let king_bb = self.state.get_piece_bb(&by_side, &Piece::King);
 
         for king_idx in king_bb.iter_bits() {
             if king_moves.attack_bb[king_idx].contains_square(square_index) {
@@ -846,11 +844,15 @@ mod tests {
             board.try_move(from_e4, to_d3).unwrap();
 
             // Verify the white pawn was captured
-            assert!(!board.positions.all_pieces[Side::white()][Piece::pawn()]
+            assert!(!board
+                .positions
+                .get_piece_bb(&Side::White, &Piece::Pawn)
                 .contains_square(to_d4.index())); // d4 should be empty
 
             // Verify black pawn moved to d3
-            assert!(board.positions.all_pieces[Side::black()][Piece::pawn()]
+            assert!(board
+                .positions
+                .get_piece_bb(&Side::Black, &Piece::Pawn)
                 .contains_square(to_d3.index())); // Black pawn at d3
 
             // En passant square should be reset
@@ -886,11 +888,15 @@ mod tests {
             board.try_move(from_e4, to_f3).unwrap();
 
             // Verify the white pawn was captured
-            assert!(!board.positions.all_pieces[Side::white()][Piece::pawn()]
+            assert!(!board
+                .positions
+                .get_piece_bb(&Side::White, &Piece::Pawn)
                 .contains_square(to_f4.index())); // f4 should be empty
 
             // Verify black pawn moved to f3
-            assert!(board.positions.all_pieces[Side::black()][Piece::pawn()]
+            assert!(board
+                .positions
+                .get_piece_bb(&Side::Black, &Piece::Pawn)
                 .contains_square(to_f3.index())); // Black pawn at f3
 
             // En passant square should be reset
@@ -929,11 +935,15 @@ mod tests {
             println!("{board}");
 
             // Verify the black pawn was captured
-            assert!(!board.positions.all_pieces[Side::black()][Piece::pawn()]
+            assert!(!board
+                .positions
+                .get_piece_bb(&Side::Black, &Piece::Pawn)
                 .contains_square(to_d5.index())); // d5 should be empty
 
             // Verify white pawn moved to d6
-            assert!(board.positions.all_pieces[Side::white()][Piece::pawn()]
+            assert!(board
+                .positions
+                .get_piece_bb(&Side::White, &Piece::Pawn)
                 .contains_square(to_d6.index())); // White pawn at d6
 
             // En passant square should be reset
@@ -980,11 +990,15 @@ mod tests {
             board.try_move(from_e5, to_f6).unwrap();
 
             // Verify the black pawn was captured
-            assert!(!board.positions.all_pieces[Side::black()][Piece::pawn()]
+            assert!(!board
+                .positions
+                .get_piece_bb(&Side::Black, &Piece::Pawn)
                 .contains_square(to_f5.index())); // f5 should be empty
 
             // Verify white pawn moved to f6
-            assert!(board.positions.all_pieces[Side::white()][Piece::pawn()]
+            assert!(board
+                .positions
+                .get_piece_bb(&Side::White, &Piece::Pawn)
                 .contains_square(to_f6.index())); // White pawn at f6
 
             // En passant square should be reset
@@ -1094,9 +1108,13 @@ mod tests {
             board.try_move(from, to).unwrap();
 
             // Verify king and rook positions after castling
-            assert!(board.positions.all_pieces[Side::white()][Piece::king()]
+            assert!(board
+                .positions
+                .get_piece_bb(&Side::White, &Piece::King)
                 .contains_square(Square::from_str("g1").unwrap().index())); // King at g1
-            assert!(board.positions.all_pieces[Side::white()][Piece::rook()]
+            assert!(board
+                .positions
+                .get_piece_bb(&Side::White, &Piece::Rook)
                 .contains_square(Square::from_str("f1").unwrap().index())); // Rook at f1
 
             // Verify castling rights are updated
@@ -1132,9 +1150,13 @@ mod tests {
 
             println!("after move {board}");
             // Verify king and rook positions after castling
-            assert!(board.positions.all_pieces[Side::white()][Piece::king()]
+            assert!(board
+                .positions
+                .get_piece_bb(&Side::White, &Piece::King)
                 .contains_square(Square::from_str("c1").unwrap().index())); // King at c1
-            assert!(board.positions.all_pieces[Side::white()][Piece::rook()]
+            assert!(board
+                .positions
+                .get_piece_bb(&Side::White, &Piece::Rook)
                 .contains_square(Square::from_str("d1").unwrap().index())); // Rook at d1
 
             // Verify castling rights are updated
@@ -1167,9 +1189,13 @@ mod tests {
                 .expect("yo");
 
             // Verify king and rook positions after castling
-            assert!(board.positions.all_pieces[Side::black()][Piece::king()]
+            assert!(board
+                .positions
+                .get_piece_bb(&Side::Black, &Piece::King)
                 .contains_square(Square::from_str("g8").unwrap().index())); // King at g8
-            assert!(board.positions.all_pieces[Side::black()][Piece::rook()]
+            assert!(board
+                .positions
+                .get_piece_bb(&Side::Black, &Piece::Rook)
                 .contains_square(Square::from_str("f8").unwrap().index())); // Rook at f8
 
             // Verify castling rights are updated
@@ -1198,9 +1224,13 @@ mod tests {
             board.try_move(from, to).unwrap();
 
             // Verify king and rook positions after castling
-            assert!(board.positions.all_pieces[Side::black()][Piece::king()]
+            assert!(board
+                .positions
+                .get_piece_bb(&Side::Black, &Piece::King)
                 .contains_square(Square::from_str("c8").unwrap().index())); // King at c8
-            assert!(board.positions.all_pieces[Side::black()][Piece::rook()]
+            assert!(board
+                .positions
+                .get_piece_bb(&Side::Black, &Piece::Rook)
                 .contains_square(Square::from_str("d8").unwrap().index())); // Rook at d8
 
             // Verify castling rights are updated

@@ -9,10 +9,10 @@ use tracing::*;
 fn main() -> miette::Result<()> {
     init();
 
-    let span = tracing::span!(Level::INFO, "main");
+    let span = span!(Level::INFO, "main");
     let _guard = span.enter();
 
-    tracing::info!("Hi, game starts");
+    info!("Hi, game starts");
 
     let mut board = Board::new();
     let evaluator = CompositeEvaluator::balanced();
@@ -20,7 +20,7 @@ fn main() -> miette::Result<()> {
 
     let stdin: io::Stdin = io::stdin();
     loop {
-        let span = tracing::span!(Level::INFO, "loop");
+        let span = span!(Level::INFO, "loop");
         let _guard = span.enter();
         tracing::info!("Inside game loop");
         println!("{}", board);

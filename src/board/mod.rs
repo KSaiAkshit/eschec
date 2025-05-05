@@ -50,10 +50,11 @@ impl Display for Board {
                 let mut piece_found = false;
 
                 for (piece_type, side) in Piece::all() {
-                    let side_idx = side.index();
-                    let piece_idx = piece_type.index();
-
-                    if self.positions.all_pieces[side_idx][piece_idx].contains_square(square_idx) {
+                    if self
+                        .positions
+                        .get_piece_bb(&side, &piece_type)
+                        .contains_square(square_idx)
+                    {
                         // Draw the piece using Unicode chess piece
                         write!(f, " {} |", piece_type.icon(side))?;
                         piece_found = true;
@@ -144,24 +145,26 @@ impl Board {
     pub fn generate_legal_moves(&self) -> miette::Result<Vec<(Square, Square)>> {
         // NOTE: Is this correct as well
         let mut legal_moves = Vec::with_capacity(40);
-        let side_index = self.stm.index();
-        let our_pieces = self.positions.all_sides[side_index];
+        let _side_index = self.stm.index();
+        let our_pieces = self.positions.get_side_bb(&self.stm);
 
-        let king_pos = self.positions.all_pieces[side_index][Piece::king()]
+        let king_pos = self
+            .positions
+            .get_piece_bb(&self.stm, &Piece::King)
             .iter_bits()
             .next()
             .wrap_err("King should be alive and gettable")?;
         let _king_square = Square::new(king_pos)
             .wrap_err_with(|| format!("king_pos {king_pos} should be valid"))?;
         for piece_type in Piece::colored_pieces(self.stm) {
-            let piece_bb = self.positions.all_pieces[side_index][piece_type.index()];
+            let piece_bb = self.positions.get_piece_bb(&self.stm, &piece_type);
 
             for from_idx in piece_bb.iter_bits() {
                 let from_sq = Square::new(from_idx)
                     .wrap_err_with(|| format!("king_pos {from_idx} should be valid"))?;
 
                 let moves = Moves::new(piece_type, self.stm, self);
-                let potential_moves = moves.attack_bb[from_idx] & !our_pieces;
+                let potential_moves = moves.attack_bb[from_idx] & !*our_pieces;
 
                 for to_idx in potential_moves.iter_bits() {
                     let to_sq = Square::new(to_idx)
@@ -285,13 +288,17 @@ impl Board {
 
     pub fn is_move_legal(&self, from: Square, to: Square) -> bool {
         // NOTE: Is this correct? seems like something is missing
+        //
         // Check if there is a piece at the 'from' square
         let piece = match self.get_piece_at(from) {
             Some(p) => p,
-            None => return false,
+            None => {
+                debug!("No piece at from");
+                return false;
+            }
         };
         // Check if the piece belongs to the current side to move
-        if !self.positions.all_sides[self.stm.index()].contains_square(from.index()) {
+        if !self.positions.square_belongs_to(&self.stm, from.index()) {
             debug!("Piece on square {from} does not belong to {}", self.stm);
             return false;
         }
@@ -330,8 +337,8 @@ impl Board {
                 };
                 for file in range_start..range_end {
                     let square_idx = rank * 8 + file as usize;
-                    if self.positions.all_sides[0].contains_square(square_idx)
-                        || self.positions.all_sides[1].contains_square(square_idx)
+                    if self.positions.square_belongs_to(&Side::White, square_idx)
+                        || self.positions.square_belongs_to(&Side::Black, square_idx)
                     {
                         debug!("Path is blocked at {}", Square::new(square_idx).unwrap());
                         return false; // Path is blocked
@@ -407,6 +414,7 @@ impl Board {
             let mut board_copy = *self;
             board_copy.make_move(from, to);
             if is_king_in_check_now && !self.is_in_check(self.stm) {
+                debug!("Move saves king, move is legal");
                 return true;
             }
         }
@@ -444,7 +452,7 @@ impl Board {
 
     pub fn is_in_check(&self, side: Side) -> bool {
         // 1. Find king's position
-        let king_bb = self.positions.all_pieces[side.index()][Piece::King.index()];
+        let king_bb = self.positions.get_piece_bb(&side, &Piece::King);
         let king_pos = king_bb.get_set_bits();
 
         if king_pos.is_empty() {
@@ -457,7 +465,7 @@ impl Board {
         // 2. Generate oppponent's attacks
         let opponent = side.flip();
         for piece in Piece::colored_pieces(opponent) {
-            let piece_bb = self.positions.all_pieces[opponent.index()][piece.index()];
+            let piece_bb = self.positions.get_piece_bb(&opponent, &piece);
             let moves = Moves::new(piece, opponent, self);
 
             // If any opponent piece can attack king's square, king is in check
@@ -508,7 +516,7 @@ impl Board {
             let moves = Moves::new(piece, self.stm, self);
 
             // Get the position of the Piece on the current board
-            let piece_state = self.positions.all_pieces[self.stm.index()][piece.index()];
+            let piece_state = self.positions.get_piece_bb(&self.stm, &piece);
             let piece_idx = piece_state.get_set_bits();
 
             let piece_choice = piece_idx
@@ -577,7 +585,7 @@ impl Board {
                     if let Some((piece, side)) = lookup_table.get(&c) {
                         // dbg!(piece, side);
                         // dbg!(rank, file);
-                        self.positions.all_pieces[side.index()][piece.index()].set(rank * 8 + file);
+                        self.positions.set(side, piece, rank * 8 + file)?;
                         file += 1;
                     } else {
                         miette::bail!("Invalid Fen Character")
@@ -586,19 +594,19 @@ impl Board {
             }
         }
         // updte all_sides too
-        self.positions.all_sides[0] = self.positions.all_pieces[0][0]
-            | self.positions.all_pieces[0][1]
-            | self.positions.all_pieces[0][2]
-            | self.positions.all_pieces[0][3]
-            | self.positions.all_pieces[0][4]
-            | self.positions.all_pieces[0][5];
-
-        self.positions.all_sides[1] = self.positions.all_pieces[1][0]
-            | self.positions.all_pieces[1][1]
-            | self.positions.all_pieces[1][2]
-            | self.positions.all_pieces[1][3]
-            | self.positions.all_pieces[1][4]
-            | self.positions.all_pieces[1][5];
+        // self.positions.all_sides[0] = self.positions.all_pieces[0][0]
+        //     | self.positions.all_pieces[0][1]
+        //     | self.positions.all_pieces[0][2]
+        //     | self.positions.all_pieces[0][3]
+        //     | self.positions.all_pieces[0][4]
+        //     | self.positions.all_pieces[0][5];
+        //
+        // self.positions.all_sides[1] = self.positions.all_pieces[1][0]
+        //     | self.positions.all_pieces[1][1]
+        //     | self.positions.all_pieces[1][2]
+        //     | self.positions.all_pieces[1][3]
+        //     | self.positions.all_pieces[1][4]
+        //     | self.positions.all_pieces[1][5];
         Ok(())
     }
 
@@ -606,7 +614,7 @@ impl Board {
         let index = square.index();
 
         for (piece_type, side) in Piece::all() {
-            let piece_bb = self.positions.all_pieces[side.index()][piece_type.index()];
+            let piece_bb = self.positions.get_piece_bb(&side, &piece_type);
             if piece_bb.contains_square(index) {
                 return Some(piece_type);
             }
@@ -711,7 +719,7 @@ impl Board {
         for side in [Side::White, Side::Black] {
             let side_index = side.index();
             for piece in Piece::colored_pieces(side) {
-                let piece_bb = self.positions.all_pieces[side_index][piece.index()];
+                let piece_bb = self.positions.get_piece_bb(&side, &piece);
                 let piece_count = piece_bb.0.count_ones() as u64;
                 let piece_value: u64 = piece.value().into();
                 self.material[side_index] += piece_count * piece_value;
@@ -720,8 +728,8 @@ impl Board {
     }
 
     fn is_insufficient_material(&self) -> bool {
-        let white_pieces = self.positions.all_sides[Side::White.index()];
-        let black_pieces = self.positions.all_sides[Side::Black.index()];
+        let white_pieces = self.positions.get_side_bb(&Side::White);
+        let black_pieces = self.positions.get_side_bb(&Side::Black);
 
         // Arrays to store the counts of each piece type
         let mut white_counts = [0; 6];
@@ -730,10 +738,10 @@ impl Board {
         // Count the pieces for both sides
         for piece in Piece::PIECES.iter() {
             white_counts[piece.index()] =
-                self.positions.all_pieces[Side::White.index()][piece.index()].pop_count();
+                self.positions.get_piece_bb(&Side::White, piece).pop_count();
 
             black_counts[piece.index()] =
-                self.positions.all_pieces[Side::Black.index()][piece.index()].pop_count();
+                self.positions.get_piece_bb(&Side::Black, piece).pop_count();
         }
 
         // If both sides have only their kings, it's insufficient material
@@ -796,8 +804,8 @@ impl Board {
     }
 
     fn same_colored_bishops(&self) -> bool {
-        let white_bishop = self.positions.all_pieces[Side::White.index()][Piece::Bishop.index()];
-        let black_bishop = self.positions.all_pieces[Side::Black.index()][Piece::Bishop.index()];
+        let white_bishop = self.positions.get_piece_bb(&Side::White, &Piece::Bishop);
+        let black_bishop = self.positions.get_piece_bb(&Side::Black, &Piece::Bishop);
 
         if let (Some(white_sq), Some(black_sq)) = (
             white_bishop.get_set_bits().first(),
