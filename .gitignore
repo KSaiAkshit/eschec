@@ -3,3 +3,5 @@ thinking.md
 Session.vim
 heaprack**
 .gdb**
+*heaptrack*
+*.data
