@@ -37,13 +37,17 @@ impl Evaluator for MaterialEvaluator {
         // Q + P = 2R
         // ```
 
-        let white_material = board.positions.all_pieces[Side::White.index()]
+        let white_material = board
+            .positions
+            .get_colored_pieces(&Side::White)
             .iter()
             .zip(Piece::colored_pieces(Side::White))
             .map(|(piece_bb, piece)| (piece_bb.0.count_ones() * piece.value()) as i32)
             .sum::<i32>();
 
-        let black_material = board.positions.all_pieces[Side::Black.index()]
+        let black_material = board
+            .positions
+            .get_colored_pieces(&Side::Black)
             .iter()
             .zip(Piece::colored_pieces(Side::Black))
             .map(|(piece_bb, piece)| (piece_bb.0.count_ones() * piece.value()) as i32)

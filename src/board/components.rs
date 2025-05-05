@@ -39,6 +39,30 @@ impl Not for BitBoard {
     }
 }
 
+impl BitOr for &BitBoard {
+    type Output = BitBoard;
+
+    fn bitor(self, rhs: Self) -> Self::Output {
+        BitBoard(self.0 | rhs.0)
+    }
+}
+
+impl BitAnd for &BitBoard {
+    type Output = BitBoard;
+
+    fn bitand(self, rhs: Self) -> Self::Output {
+        BitBoard(self.0 & rhs.0)
+    }
+}
+
+impl Not for &BitBoard {
+    type Output = BitBoard;
+
+    fn not(self) -> Self::Output {
+        BitBoard(!self.0)
+    }
+}
+
 impl BitBoard {
     #[inline]
     pub fn set(&mut self, pos: usize) {
@@ -331,10 +355,10 @@ impl From<Piece> for u32 {
 #[derive(Debug, Default, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
 pub struct BoardState {
     /// Boards for all peices of white and black sides
-    pub all_sides: [BitBoard; 2],
+    all_sides: [BitBoard; 2],
     /// Boards for all peices, of both colors
     /// [Pawn, Bishop, Knight, Rook, Queen, King]
-    pub all_pieces: [[BitBoard; 6]; 2],
+    all_pieces: [[BitBoard; 6]; 2],
 }
 impl BoardState {
     pub fn update_piece_position(
@@ -375,12 +399,32 @@ impl BoardState {
         Ok(())
     }
 
-    pub fn get_bb(&self, side: &Side, piece: &Piece) -> &BitBoard {
+    pub fn get_piece_bb(&self, side: &Side, piece: &Piece) -> &BitBoard {
         &self.all_pieces[side.index()][piece.index()]
     }
 
-    pub fn get_bb_mut(&mut self, side: &Side, piece: &Piece) -> &mut BitBoard {
+    pub fn get_piece_bb_mut(&mut self, side: &Side, piece: &Piece) -> &mut BitBoard {
         &mut self.all_pieces[side.index()][piece.index()]
+    }
+
+    pub fn get_colored_pieces(&self, side: &Side) -> &[BitBoard; 6] {
+        &self.all_pieces[side.index()]
+    }
+
+    pub fn get_colored_pieces_mut(&mut self, side: &Side) -> &mut [BitBoard; 6] {
+        &mut self.all_pieces[side.index()]
+    }
+
+    pub fn get_side_bb(&self, side: &Side) -> &BitBoard {
+        &self.all_sides[side.index()]
+    }
+
+    pub fn get_side_bb_mut(&mut self, side: &Side) -> &mut BitBoard {
+        &mut self.all_sides[side.index()]
+    }
+
+    pub fn square_belongs_to(&self, side: &Side, square: usize) -> bool {
+        self.all_sides[side.index()].contains_square(square)
     }
 
     pub fn set(
@@ -736,7 +780,7 @@ mod tests {
         assert!(board
             .try_move(Square::new(8).unwrap(), Square::new(16).unwrap())
             .is_ok());
-        let o = board.positions.all_sides[0].print_bitboard();
+        let o = board.positions.get_side_bb(&Side::White).print_bitboard();
         assert_eq!(out, o);
     }
 }

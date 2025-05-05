@@ -122,10 +122,18 @@ impl Evaluator for PositionEvaluator {
         for piece in Piece::all_pieces() {
             let piece_idx = piece.index();
             let piece_table = &self.piece_square_tables[piece_idx];
-            for idx in &board.positions.all_pieces[Side::white()][piece_idx].get_set_bits() {
+            for idx in &board
+                .positions
+                .get_piece_bb(&Side::White, &piece)
+                .get_set_bits()
+            {
                 score += piece_table[*idx];
             }
-            for idx in &board.positions.all_pieces[Side::black()][piece_idx].get_set_bits() {
+            for idx in &board
+                .positions
+                .get_piece_bb(&Side::Black, &piece)
+                .get_set_bits()
+            {
                 let mirrored_idx = 63 - idx;
                 score -= piece_table[mirrored_idx];
             }
