@@ -358,9 +358,20 @@ impl BoardState {
         let from_index = from.index();
         let to_index = to.index();
 
+        if self.get_piece_at(&from).is_none() {
+            println!("{side} {piece} not available at {from}");
+            println!(
+                "{side} Side: \n{}",
+                self.all_sides[side.index()].print_bitboard()
+            );
+            println!(
+                "{piece}: \n{}",
+                self.all_pieces[side.index()][piece.index()].print_bitboard()
+            );
+        }
         miette::ensure!(
             self.get_piece_at(&from).is_some(),
-            "[update_piece_position] No {piece} piece at from ( {from} ) square"
+            "[update_piece_position] No {side} {piece} piece at from ( {from} ) square"
         );
 
         self.all_pieces[side.index()][piece.index()].capture(from_index);
@@ -383,7 +394,7 @@ impl BoardState {
     ) -> miette::Result<()> {
         miette::ensure!(
             self.get_piece_at(&index_to_set.into()).is_none(),
-            "[update_piece_position] Some piece already exists at from ( {} ) square",
+            "[set] Some piece already exists at from ( {} ) square",
             Square::new(index_to_set).unwrap()
         );
         self.all_pieces[side_to_set.index()][piece_to_set.index()].set(index_to_set);
@@ -399,7 +410,7 @@ impl BoardState {
     ) -> miette::Result<()> {
         miette::ensure!(
             self.get_piece_at(&index_to_capture.into()).is_some(),
-            "[update_piece_position] No {piece_to_capture} piece at from ( {} ) square",
+            "[capture] No {piece_to_capture} piece at from ( {} ) square",
             Square::new(index_to_capture).unwrap()
         );
 

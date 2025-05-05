@@ -19,9 +19,10 @@ pub fn parse_fen(fen: &str) -> miette::Result<Board> {
     let parts: Vec<&str> = fen.split_whitespace().collect();
     let mut board = Board::default();
     if parts.len() != 6 {
-        return Err(miette::Error::msg(
-            "Not enough segments in given FEN string",
-        ));
+        miette::bail!(
+            "Not enough segments in given FEN string, need 6, got: {}",
+            parts.len()
+        );
     }
     let piece_placement = parts[0];
     board
