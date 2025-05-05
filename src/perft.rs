@@ -1,3 +1,5 @@
+use tracing::*;
+
 use crate::*;
 use std::time::{Duration, Instant};
 
@@ -76,11 +78,6 @@ pub fn perft(board: &mut Board, depth: u8, divide: bool) -> PerftResult {
             Ok(data) => data,
             Err(_) => continue,
         };
-
-        if from.index() == 8 && to.index() == 24 {
-            println!("move_made successfully");
-            println!("{board}");
-        }
 
         let sub_nodes = if depth == 1 {
             1

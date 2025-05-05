@@ -229,14 +229,6 @@ impl Board {
     }
 
     pub fn unmake_move(&mut self, move_data: &Move) -> miette::Result<()> {
-        if move_data.to.index() == 8 && move_data.from.index() == 24 {
-            println!(
-                "[unmake_move] from={}, to={} piece={} \n{self}",
-                move_data.to.index(),
-                move_data.from.index(),
-                move_data.piece_moved
-            );
-        }
         self.stm = self.stm.flip();
         self.positions.update_piece_position(
             &move_data.piece_moved,
