@@ -91,18 +91,7 @@ impl BitBoard {
     }
 
     pub fn get_set_bits(&self) -> Vec<usize> {
-        let mut set_bits = Vec::new();
-        let mut bb = self.0;
-        let mut bit_position = 0;
-
-        while bb > 0 {
-            if bb & 1 == 1 {
-                set_bits.push(bit_position);
-            }
-            bit_position += 1;
-            bb >>= 1;
-        }
-        set_bits
+        (0..64).filter(|&i| (self.0 & (1 << i) != 0)).collect()
     }
 
     pub fn iter_bits(&self) -> BitBoardIterator {
@@ -386,6 +375,14 @@ impl BoardState {
         Ok(())
     }
 
+    pub fn get_bb(&self, side: &Side, piece: &Piece) -> &BitBoard {
+        &self.all_pieces[side.index()][piece.index()]
+    }
+
+    pub fn get_bb_mut(&mut self, side: &Side, piece: &Piece) -> &mut BitBoard {
+        &mut self.all_pieces[side.index()][piece.index()]
+    }
+
     pub fn set(
         &mut self,
         side_to_set: &Side,
@@ -420,7 +417,6 @@ impl BoardState {
         Ok(())
     }
 
-    // TODO: do not expose this outside
     fn update_all_sides(&mut self) {
         self.all_sides[0] = self.all_pieces[0][0]
             | self.all_pieces[0][1]
