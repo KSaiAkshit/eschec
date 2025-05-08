@@ -77,6 +77,7 @@ pub fn init() {
     init.get_or_init(|| {
         color_backtrace::install();
         tracing_subscriber::fmt()
+            .without_time()
             .with_max_level(Level::TRACE)
             .init();
         true

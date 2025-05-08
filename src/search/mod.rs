@@ -29,9 +29,11 @@ impl Search {
         }
     }
 
-    #[allow(unused_mut)]
-    #[instrument(skip_all)]
+    #[allow(unused)]
+    // #[instrument(skip_all)]
     pub fn find_best_move(&mut self, board: &Board, evaluator: &dyn Evaluator) -> SearchResult {
+        let span = info_span!("search_root");
+        let _guard = span.enter();
         self.nodes_searched = 0;
         self.start_time = Instant::now();
 
@@ -41,17 +43,20 @@ impl Search {
 
         let legal_moves = match board.generate_legal_moves() {
             Ok(moves) => moves,
-            Err(_) => {
+            Err(e) => {
+                error!("Error generating legal moves");
+                eprintln!("Error: {:?}", e);
                 return SearchResult {
                     best_move: None,
                     score: 0,
                     depth: self.max_depth,
                     nodes_searched: 0,
                     time_taken: Duration::from_secs(0),
-                }
+                };
             }
         };
         if legal_moves.is_empty() {
+            debug!("No legal moves");
             return SearchResult {
                 best_move: None,
                 score: if board.is_in_check(board.stm) {
@@ -73,6 +78,7 @@ impl Search {
                 continue;
             }
 
+            info!("Evaluating from: {}, to: {}", from, to);
             let score = -self.alpha_beta(&board_copy, self.max_depth - 1, -beta, -alpha, evaluator);
 
             if score > best_score {
@@ -82,11 +88,13 @@ impl Search {
 
             alpha = max(alpha, best_score);
             if alpha >= beta {
+                warn!("alpha > beta; {alpha} {beta}");
                 break;
             }
         }
         let time_taken = self.start_time.elapsed();
 
+        info!("alpha: {alpha} beta: {beta}");
         SearchResult {
             best_move,
             score: best_score,
@@ -97,7 +105,7 @@ impl Search {
     }
 
     #[allow(unused_mut)]
-    #[instrument(skip_all)]
+    // #[instrument(skip(self, board, evaluator))]
     fn alpha_beta(
         &mut self,
         board: &Board,
@@ -106,10 +114,13 @@ impl Search {
         mut beta: i32,
         evaluator: &dyn Evaluator,
     ) -> i32 {
+        let span = info_span!("alpha_beta");
+        let _guard = span.enter();
         self.nodes_searched += 1;
         info!(self.nodes_searched);
 
         if depth == 0 {
+            debug!("Depth is 0. Returning static eval");
             return evaluator.evaluate(board);
         }
 

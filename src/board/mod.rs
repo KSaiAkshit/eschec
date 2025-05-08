@@ -1,8 +1,9 @@
 use crate::{
     evaluation::Evaluator,
-    moves::{move_info::Move, Moves},
+    moves::{Moves, move_info::Move},
 };
 use miette::Context;
+#[cfg(feature = "rand")]
 use rand::prelude::*;
 use std::{collections::HashMap, fmt::Display};
 use tracing::*;
@@ -501,6 +502,7 @@ impl Board {
         self.is_stalemate(self.stm) || self.halfmove_clock >= 100 || self.is_insufficient_material()
     }
 
+    #[cfg(feature = "rand")]
     pub fn suggest_rand_move(&self) -> miette::Result<(Square, Square)> {
         info!("This is RNGesus");
         let mut rng = rand::rng();
