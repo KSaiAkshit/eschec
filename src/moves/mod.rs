@@ -216,8 +216,8 @@ impl Moves {
                     if ally_pieces.contains_square(target_square.index()) {
                         break;
                     }
-                    let (target_rand, target_file) = target_square.coords();
-                    let file_diff = rank as i8 - target_rand as i8;
+                    let (target_rank, target_file) = target_square.coords();
+                    let file_diff = rank as i8 - target_rank as i8;
                     let rank_diff = file as i8 - target_file as i8;
                     if file_diff.abs() == rank_diff.abs() {
                         let target_bb = BitBoard(1 << target_index);

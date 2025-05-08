@@ -10,7 +10,7 @@
 *****  (x) impl piece-square tables for each piece
 *****  (x) adjust scores based on piece's position and game state
 *** (-) enhance evaluation
-**** ( ) add positional evaluation
+**** (x) add positional evaluation
      impl `evaluate_piece_postion()` incorporate piece-square tables
 **** ( ) additional evaluation factors
      - (x) *mobility* : count no. of legal moves for each side and factor it
@@ -19,7 +19,7 @@
 **** (x) combine evaluation
      combine all the above strategies
 
-*** ( ) make it perft compatible
+*** (x) make it perft compatible
 
 *** (x) search algorithm
     recursively evaluate moves at different depths
@@ -48,5 +48,3 @@
     - ( ) *test evaluation*: regularly test the evaluation function with known positions and ensure it behaves as expected.
     - ( ) *unit tests*: write tests for move generation, evaluation, and search algorithm to ensure correctness.
 
-    ===
-- ( ) next: https://paste.rs/6uwqv

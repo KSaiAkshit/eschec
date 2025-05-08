@@ -9,7 +9,7 @@ use tracing::*;
 fn main() -> miette::Result<()> {
     init();
 
-    let span = span!(Level::INFO, "main");
+    let span = span!(Level::DEBUG, "main");
     let _guard = span.enter();
 
     info!("Hi, game starts");
@@ -20,9 +20,9 @@ fn main() -> miette::Result<()> {
 
     let stdin: io::Stdin = io::stdin();
     loop {
-        let span = span!(Level::INFO, "loop");
+        let span = span!(Level::DEBUG, "loop");
         let _guard = span.enter();
-        tracing::info!("Inside game loop");
+        debug!("Inside game loop");
         println!("{}", board);
 
         let mut s = String::new();
@@ -34,7 +34,7 @@ fn main() -> miette::Result<()> {
         let (from_square, to_square) = match get_input(&s) {
             Ok(f) => (f.0, f.1),
             Err(e) => {
-                eprintln!("Error: {}", e);
+                eprintln!("{:?}", e);
                 continue;
             }
         };
