@@ -7,6 +7,7 @@ use miette::{Context, IntoDiagnostic};
 // 12 Bit boards represent where the chess peices are at all times
 pub mod board;
 pub mod evaluation;
+pub mod game;
 pub mod moves;
 pub mod perft;
 pub mod search;
