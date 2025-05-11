@@ -1,14 +1,14 @@
-use crate::{board::components::Square, CastlingRights};
+use crate::{CastlingRights, board::components::Square};
 
 use super::{
-    components::{BitBoard, BoardState, Piece, Side},
     Board,
+    components::{BitBoard, BoardState, Piece, Side},
 };
 
 pub mod move_info;
 
 #[derive(Default, Debug, PartialEq, Eq, PartialOrd, Clone)]
-pub struct Moves {
+pub struct MoveGen {
     pub piece: Piece,
     pub attack_bb: Vec<BitBoard>,
     state: BoardState,
@@ -48,9 +48,9 @@ impl Direction {
     ];
 }
 
-impl Moves {
+impl MoveGen {
     pub fn new(piece: Piece, stm: Side, state: &Board) -> Self {
-        let mut moves = Moves::default();
+        let mut moves = MoveGen::default();
         moves.piece = piece;
         moves.state = state.positions;
         moves.ep_square = state.enpassant_square;
@@ -70,8 +70,8 @@ impl Moves {
     /// Generate all possible moves for all pieces and all sides
     /// Does contain pseudo legal moves.
     pub fn all_possible_moves(state: Board) -> Vec<Self> {
-        let mut moves: Vec<Moves> = Vec::new();
-        Piece::all().for_each(|(piece, stm)| moves.push(Moves::new(piece, stm, &state)));
+        let mut moves: Vec<MoveGen> = Vec::new();
+        Piece::all().for_each(|(piece, stm)| moves.push(MoveGen::new(piece, stm, &state)));
 
         moves
     }
@@ -438,7 +438,7 @@ impl Moves {
         }
 
         // Check if square is attacked by knights
-        let knight_moves = Moves::new(
+        let knight_moves = MoveGen::new(
             Piece::Knight,
             by_side,
             &Board {
@@ -455,7 +455,7 @@ impl Moves {
         }
 
         // Check if square is attacked by bishops or queens (diagonal attacks)
-        let bishop_moves = Moves::new(
+        let bishop_moves = MoveGen::new(
             Piece::Bishop,
             by_side,
             &Board {
@@ -473,7 +473,7 @@ impl Moves {
         }
 
         // Check if square is attacked by rooks or queens (orthogonal attacks)
-        let rook_moves = Moves::new(
+        let rook_moves = MoveGen::new(
             Piece::Rook,
             by_side,
             &Board {
@@ -490,7 +490,7 @@ impl Moves {
         }
 
         // Check if square is attacked by king (adjacent squares)
-        let king_moves = Moves::new(
+        let king_moves = MoveGen::new(
             Piece::King,
             by_side,
             &Board {
@@ -524,7 +524,7 @@ mod tests {
         let stm = Side::White;
         let pawn = Piece::Pawn;
         let state = Board::default();
-        let moves = Moves::new(pawn, stm, &state);
+        let moves = MoveGen::new(pawn, stm, &state);
 
         let square_index = 8;
         let expected = BitBoard(1 << 16) | BitBoard(1 << 24);
@@ -537,7 +537,7 @@ mod tests {
         let stm = Side::Black;
         let pawn = Piece::Pawn;
         let state = Board::default();
-        let moves = Moves::new(pawn, stm, &state);
+        let moves = MoveGen::new(pawn, stm, &state);
 
         let square_index = 48;
         let expected = BitBoard(1 << 40) | BitBoard(1 << 32);
@@ -550,7 +550,7 @@ mod tests {
         let stm = Side::White;
         let knight = Piece::Knight;
         let state = Board::default();
-        let moves = Moves::new(knight, stm, &state);
+        let moves = MoveGen::new(knight, stm, &state);
 
         let square = Square::new(1).unwrap(); // A2 square
         let expected_moves = BitBoard(1 << 18) | BitBoard(1 << 16) | BitBoard(1 << 11); // B1, C3, and A3 are valid moves
@@ -563,7 +563,7 @@ mod tests {
         let stm = Side::White;
         let rook = Piece::Rook;
         let state = Board::default();
-        let moves = Moves::new(rook, stm, &state);
+        let moves = MoveGen::new(rook, stm, &state);
 
         let square_index = 0; // A1 square
         let mut expected_moves = (0..8)
@@ -579,7 +579,7 @@ mod tests {
         let stm = Side::White;
         let bishop = Piece::Bishop;
         let state = Board::default();
-        let moves = Moves::new(bishop, stm, &state);
+        let moves = MoveGen::new(bishop, stm, &state);
 
         let square_index = 18; // C3 square
         let expected_moves = BitBoard(9241421692918565393);
@@ -594,7 +594,7 @@ mod tests {
         let stm = Side::White;
         let queen = Piece::Queen;
         let state = Board::default();
-        let moves = Moves::new(queen, stm, &state);
+        let moves = MoveGen::new(queen, stm, &state);
 
         let square_index = 0; // A1 square
         let expected_moves =
@@ -608,7 +608,7 @@ mod tests {
         let stm = Side::White;
         let king = Piece::King;
         let state = Board::default();
-        let moves = Moves::new(king, stm, &state);
+        let moves = MoveGen::new(king, stm, &state);
 
         let square_index = 36; // E4 square
         let expected_moves = BitBoard(1 << 27)
@@ -625,7 +625,7 @@ mod tests {
     #[test]
     fn test_all_possible_moves() {
         init();
-        let moves = Moves::all_possible_moves(Board::default());
+        let moves = MoveGen::all_possible_moves(Board::default());
 
         // Ensure the correct number of moves are generated
         assert_eq!(moves.len(), 12);
@@ -634,14 +634,14 @@ mod tests {
     #[test]
     fn test_piece_move_generation() {
         init();
-        let m = Moves::default();
-        let white_pawn_moves = Moves::gen_pawn_moves(&m, Side::White);
-        let black_pawn_moves = Moves::gen_pawn_moves(&m, Side::Black);
-        let knight_moves = Moves::gen_knight_moves(&m, Side::White);
-        let rook_moves = Moves::gen_rook_moves(&m, Side::White);
-        let bishop_moves = Moves::gen_bishop_moves(&m, Side::White);
-        let queen_moves = Moves::gen_queen_moves(&m, Side::White);
-        let king_moves = Moves::gen_king_moves(&m, Side::White);
+        let m = MoveGen::default();
+        let white_pawn_moves = MoveGen::gen_pawn_moves(&m, Side::White);
+        let black_pawn_moves = MoveGen::gen_pawn_moves(&m, Side::Black);
+        let knight_moves = MoveGen::gen_knight_moves(&m, Side::White);
+        let rook_moves = MoveGen::gen_rook_moves(&m, Side::White);
+        let bishop_moves = MoveGen::gen_bishop_moves(&m, Side::White);
+        let queen_moves = MoveGen::gen_queen_moves(&m, Side::White);
+        let king_moves = MoveGen::gen_king_moves(&m, Side::White);
 
         assert!(!white_pawn_moves.is_empty());
         assert!(!black_pawn_moves.is_empty());
@@ -656,7 +656,7 @@ mod tests {
         init();
         // Initial position, e3 is not attacked by either side
         let board = Board::new();
-        let moves = Moves::new(Piece::Pawn, Side::White, &board);
+        let moves = MoveGen::new(Piece::Pawn, Side::White, &board);
         println!("{board}");
 
         assert!(!moves.is_square_attacked(Square::from_str("e5").unwrap().index(), Side::White));
@@ -668,7 +668,7 @@ mod tests {
         init();
         // Create a position where pawns attack squares
         let board = Board::from_fen("8/8/8/8/3p4/8/2P5/8 w - - 0 1");
-        let moves = Moves::new(Piece::Pawn, Side::White, &board);
+        let moves = MoveGen::new(Piece::Pawn, Side::White, &board);
 
         println!("{board}");
 
@@ -686,7 +686,7 @@ mod tests {
         init();
         // Create a position with knights
         let board = Board::from_fen("8/8/8/3n4/8/8/3N4/8 w - - 0 1");
-        let moves = Moves::new(Piece::Knight, Side::White, &board);
+        let moves = MoveGen::new(Piece::Knight, Side::White, &board);
         println!("{board}");
 
         // White knight at d2 attacks various squares
@@ -705,7 +705,7 @@ mod tests {
         init();
         // Create a position with bishops
         let board = Board::from_fen("8/8/8/3b4/8/8/3B4/8 w - - 0 1");
-        let moves = Moves::new(Piece::Bishop, Side::White, &board);
+        let moves = MoveGen::new(Piece::Bishop, Side::White, &board);
         println!("{board}");
 
         // White bishop at d2 attacks various squares
@@ -724,7 +724,7 @@ mod tests {
         init();
         // Create a position with rooks
         let board = Board::from_fen("8/8/8/3r4/8/8/3R4/8 w - - 0 1");
-        let moves = Moves::new(Piece::Rook, Side::White, &board);
+        let moves = MoveGen::new(Piece::Rook, Side::White, &board);
         println!("{board}");
 
         // White rook at d2 attacks various squares
@@ -743,7 +743,7 @@ mod tests {
         init();
         // Create a position with queens
         let board = Board::from_fen("8/8/8/3q4/8/8/3Q4/8 w - - 0 1");
-        let moves = Moves::new(Piece::Queen, Side::White, &board);
+        let moves = MoveGen::new(Piece::Queen, Side::White, &board);
         println!("{board}");
 
         // White queen at d2 attacks various squares (bishop-like)
@@ -768,7 +768,7 @@ mod tests {
         init();
         // Create a position with kings
         let board = Board::from_fen("8/8/8/3k4/8/8/3K4/8 w - - 0 1");
-        let moves = Moves::new(Piece::King, Side::White, &board);
+        let moves = MoveGen::new(Piece::King, Side::White, &board);
         println!("{board}");
 
         // White king at d2 attacks adjacent squares
@@ -787,7 +787,7 @@ mod tests {
         init();
         // Position with multiple attackers on the same square
         let board = Board::from_fen("8/8/8/2bn4/8/4N3/8/8 w - - 0 1");
-        let moves = Moves::new(Piece::Knight, Side::White, &board);
+        let moves = MoveGen::new(Piece::Knight, Side::White, &board);
 
         // e3 square is attacked by both black bishop at c5 and black knight at d5
         assert!(moves.is_square_attacked(Square::from_str("e3").unwrap().index(), Side::Black));
@@ -798,7 +798,7 @@ mod tests {
         init();
         // Create a position where attacks are blocked
         let board = Board::from_fen("8/8/8/3r4/3P4/8/3R4/8 w - - 0 1");
-        let moves = Moves::new(Piece::Rook, Side::White, &board);
+        let moves = MoveGen::new(Piece::Rook, Side::White, &board);
 
         // White rook at d2 attacks d3 but not d5 (blocked by d4 pawn)
         assert!(moves.is_square_attacked(Square::from_str("d3").unwrap().index(), Side::White));
@@ -844,16 +844,20 @@ mod tests {
             board.try_move(from_e4, to_d3).unwrap();
 
             // Verify the white pawn was captured
-            assert!(!board
-                .positions
-                .get_piece_bb(&Side::White, &Piece::Pawn)
-                .contains_square(to_d4.index())); // d4 should be empty
+            assert!(
+                !board
+                    .positions
+                    .get_piece_bb(&Side::White, &Piece::Pawn)
+                    .contains_square(to_d4.index())
+            ); // d4 should be empty
 
             // Verify black pawn moved to d3
-            assert!(board
-                .positions
-                .get_piece_bb(&Side::Black, &Piece::Pawn)
-                .contains_square(to_d3.index())); // Black pawn at d3
+            assert!(
+                board
+                    .positions
+                    .get_piece_bb(&Side::Black, &Piece::Pawn)
+                    .contains_square(to_d3.index())
+            ); // Black pawn at d3
 
             // En passant square should be reset
             assert_eq!(board.enpassant_square, None);
@@ -888,16 +892,20 @@ mod tests {
             board.try_move(from_e4, to_f3).unwrap();
 
             // Verify the white pawn was captured
-            assert!(!board
-                .positions
-                .get_piece_bb(&Side::White, &Piece::Pawn)
-                .contains_square(to_f4.index())); // f4 should be empty
+            assert!(
+                !board
+                    .positions
+                    .get_piece_bb(&Side::White, &Piece::Pawn)
+                    .contains_square(to_f4.index())
+            ); // f4 should be empty
 
             // Verify black pawn moved to f3
-            assert!(board
-                .positions
-                .get_piece_bb(&Side::Black, &Piece::Pawn)
-                .contains_square(to_f3.index())); // Black pawn at f3
+            assert!(
+                board
+                    .positions
+                    .get_piece_bb(&Side::Black, &Piece::Pawn)
+                    .contains_square(to_f3.index())
+            ); // Black pawn at f3
 
             // En passant square should be reset
             assert_eq!(board.enpassant_square, None);
@@ -935,16 +943,20 @@ mod tests {
             println!("{board}");
 
             // Verify the black pawn was captured
-            assert!(!board
-                .positions
-                .get_piece_bb(&Side::Black, &Piece::Pawn)
-                .contains_square(to_d5.index())); // d5 should be empty
+            assert!(
+                !board
+                    .positions
+                    .get_piece_bb(&Side::Black, &Piece::Pawn)
+                    .contains_square(to_d5.index())
+            ); // d5 should be empty
 
             // Verify white pawn moved to d6
-            assert!(board
-                .positions
-                .get_piece_bb(&Side::White, &Piece::Pawn)
-                .contains_square(to_d6.index())); // White pawn at d6
+            assert!(
+                board
+                    .positions
+                    .get_piece_bb(&Side::White, &Piece::Pawn)
+                    .contains_square(to_d6.index())
+            ); // White pawn at d6
 
             // En passant square should be reset
             assert_eq!(board.enpassant_square, None);
@@ -990,16 +1002,20 @@ mod tests {
             board.try_move(from_e5, to_f6).unwrap();
 
             // Verify the black pawn was captured
-            assert!(!board
-                .positions
-                .get_piece_bb(&Side::Black, &Piece::Pawn)
-                .contains_square(to_f5.index())); // f5 should be empty
+            assert!(
+                !board
+                    .positions
+                    .get_piece_bb(&Side::Black, &Piece::Pawn)
+                    .contains_square(to_f5.index())
+            ); // f5 should be empty
 
             // Verify white pawn moved to f6
-            assert!(board
-                .positions
-                .get_piece_bb(&Side::White, &Piece::Pawn)
-                .contains_square(to_f6.index())); // White pawn at f6
+            assert!(
+                board
+                    .positions
+                    .get_piece_bb(&Side::White, &Piece::Pawn)
+                    .contains_square(to_f6.index())
+            ); // White pawn at f6
 
             // En passant square should be reset
             assert_eq!(board.enpassant_square, None);
@@ -1108,22 +1124,30 @@ mod tests {
             board.try_move(from, to).unwrap();
 
             // Verify king and rook positions after castling
-            assert!(board
-                .positions
-                .get_piece_bb(&Side::White, &Piece::King)
-                .contains_square(Square::from_str("g1").unwrap().index())); // King at g1
-            assert!(board
-                .positions
-                .get_piece_bb(&Side::White, &Piece::Rook)
-                .contains_square(Square::from_str("f1").unwrap().index())); // Rook at f1
+            assert!(
+                board
+                    .positions
+                    .get_piece_bb(&Side::White, &Piece::King)
+                    .contains_square(Square::from_str("g1").unwrap().index())
+            ); // King at g1
+            assert!(
+                board
+                    .positions
+                    .get_piece_bb(&Side::White, &Piece::Rook)
+                    .contains_square(Square::from_str("f1").unwrap().index())
+            ); // Rook at f1
 
             // Verify castling rights are updated
-            assert!(!board
-                .castling_rights
-                .allows(CastlingRights(CastlingRights::WHITE_00)));
-            assert!(!board
-                .castling_rights
-                .allows(CastlingRights(CastlingRights::WHITE_000)));
+            assert!(
+                !board
+                    .castling_rights
+                    .allows(CastlingRights(CastlingRights::WHITE_00))
+            );
+            assert!(
+                !board
+                    .castling_rights
+                    .allows(CastlingRights(CastlingRights::WHITE_000))
+            );
         }
 
         #[test]
@@ -1150,22 +1174,30 @@ mod tests {
 
             println!("after move {board}");
             // Verify king and rook positions after castling
-            assert!(board
-                .positions
-                .get_piece_bb(&Side::White, &Piece::King)
-                .contains_square(Square::from_str("c1").unwrap().index())); // King at c1
-            assert!(board
-                .positions
-                .get_piece_bb(&Side::White, &Piece::Rook)
-                .contains_square(Square::from_str("d1").unwrap().index())); // Rook at d1
+            assert!(
+                board
+                    .positions
+                    .get_piece_bb(&Side::White, &Piece::King)
+                    .contains_square(Square::from_str("c1").unwrap().index())
+            ); // King at c1
+            assert!(
+                board
+                    .positions
+                    .get_piece_bb(&Side::White, &Piece::Rook)
+                    .contains_square(Square::from_str("d1").unwrap().index())
+            ); // Rook at d1
 
             // Verify castling rights are updated
-            assert!(!board
-                .castling_rights
-                .allows(CastlingRights(CastlingRights::WHITE_00)));
-            assert!(!board
-                .castling_rights
-                .allows(CastlingRights(CastlingRights::WHITE_000)));
+            assert!(
+                !board
+                    .castling_rights
+                    .allows(CastlingRights(CastlingRights::WHITE_00))
+            );
+            assert!(
+                !board
+                    .castling_rights
+                    .allows(CastlingRights(CastlingRights::WHITE_000))
+            );
         }
 
         #[test]
@@ -1189,22 +1221,30 @@ mod tests {
                 .expect("yo");
 
             // Verify king and rook positions after castling
-            assert!(board
-                .positions
-                .get_piece_bb(&Side::Black, &Piece::King)
-                .contains_square(Square::from_str("g8").unwrap().index())); // King at g8
-            assert!(board
-                .positions
-                .get_piece_bb(&Side::Black, &Piece::Rook)
-                .contains_square(Square::from_str("f8").unwrap().index())); // Rook at f8
+            assert!(
+                board
+                    .positions
+                    .get_piece_bb(&Side::Black, &Piece::King)
+                    .contains_square(Square::from_str("g8").unwrap().index())
+            ); // King at g8
+            assert!(
+                board
+                    .positions
+                    .get_piece_bb(&Side::Black, &Piece::Rook)
+                    .contains_square(Square::from_str("f8").unwrap().index())
+            ); // Rook at f8
 
             // Verify castling rights are updated
-            assert!(!board
-                .castling_rights
-                .allows(CastlingRights(CastlingRights::BLACK_00)));
-            assert!(!board
-                .castling_rights
-                .allows(CastlingRights(CastlingRights::BLACK_000)));
+            assert!(
+                !board
+                    .castling_rights
+                    .allows(CastlingRights(CastlingRights::BLACK_00))
+            );
+            assert!(
+                !board
+                    .castling_rights
+                    .allows(CastlingRights(CastlingRights::BLACK_000))
+            );
         }
 
         #[test]
@@ -1224,22 +1264,30 @@ mod tests {
             board.try_move(from, to).unwrap();
 
             // Verify king and rook positions after castling
-            assert!(board
-                .positions
-                .get_piece_bb(&Side::Black, &Piece::King)
-                .contains_square(Square::from_str("c8").unwrap().index())); // King at c8
-            assert!(board
-                .positions
-                .get_piece_bb(&Side::Black, &Piece::Rook)
-                .contains_square(Square::from_str("d8").unwrap().index())); // Rook at d8
+            assert!(
+                board
+                    .positions
+                    .get_piece_bb(&Side::Black, &Piece::King)
+                    .contains_square(Square::from_str("c8").unwrap().index())
+            ); // King at c8
+            assert!(
+                board
+                    .positions
+                    .get_piece_bb(&Side::Black, &Piece::Rook)
+                    .contains_square(Square::from_str("d8").unwrap().index())
+            ); // Rook at d8
 
             // Verify castling rights are updated
-            assert!(!board
-                .castling_rights
-                .allows(CastlingRights(CastlingRights::BLACK_00)));
-            assert!(!board
-                .castling_rights
-                .allows(CastlingRights(CastlingRights::BLACK_000)));
+            assert!(
+                !board
+                    .castling_rights
+                    .allows(CastlingRights(CastlingRights::BLACK_00))
+            );
+            assert!(
+                !board
+                    .castling_rights
+                    .allows(CastlingRights(CastlingRights::BLACK_000))
+            );
         }
 
         #[test]
@@ -1317,20 +1365,28 @@ mod tests {
             board.try_move(from, to).unwrap();
 
             // Verify castling rights are removed for white
-            assert!(!board
-                .castling_rights
-                .allows(CastlingRights(CastlingRights::WHITE_00)));
-            assert!(!board
-                .castling_rights
-                .allows(CastlingRights(CastlingRights::WHITE_000)));
+            assert!(
+                !board
+                    .castling_rights
+                    .allows(CastlingRights(CastlingRights::WHITE_00))
+            );
+            assert!(
+                !board
+                    .castling_rights
+                    .allows(CastlingRights(CastlingRights::WHITE_000))
+            );
 
             // Black castling rights should still be intact
-            assert!(board
-                .castling_rights
-                .allows(CastlingRights(CastlingRights::BLACK_00)));
-            assert!(board
-                .castling_rights
-                .allows(CastlingRights(CastlingRights::BLACK_000)));
+            assert!(
+                board
+                    .castling_rights
+                    .allows(CastlingRights(CastlingRights::BLACK_00))
+            );
+            assert!(
+                board
+                    .castling_rights
+                    .allows(CastlingRights(CastlingRights::BLACK_000))
+            );
         }
 
         #[test]
@@ -1346,14 +1402,18 @@ mod tests {
             board.try_move(from, to).unwrap();
 
             // Verify kingside castling right is removed for white
-            assert!(!board
-                .castling_rights
-                .allows(CastlingRights(CastlingRights::WHITE_00)));
+            assert!(
+                !board
+                    .castling_rights
+                    .allows(CastlingRights(CastlingRights::WHITE_00))
+            );
 
             // Queenside castling right for white should still be intact
-            assert!(board
-                .castling_rights
-                .allows(CastlingRights(CastlingRights::WHITE_000)));
+            assert!(
+                board
+                    .castling_rights
+                    .allows(CastlingRights(CastlingRights::WHITE_000))
+            );
         }
     }
 }

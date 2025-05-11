@@ -1,9 +1,9 @@
 use crate::{
     evaluation::Evaluator,
-    moves::{Moves, move_info::Move},
+    moves::{MoveGen, move_info::Move},
 };
 use miette::Context;
-#[cfg(feature = "rand")]
+#[cfg(feature = "random")]
 use rand::prelude::*;
 use std::{collections::HashMap, fmt::Display};
 use tracing::*;
@@ -164,7 +164,7 @@ impl Board {
                 let from_sq = Square::new(from_idx)
                     .wrap_err_with(|| format!("king_pos {from_idx} should be valid"))?;
 
-                let moves = Moves::new(piece_type, self.stm, self);
+                let moves = MoveGen::new(piece_type, self.stm, self);
                 let potential_moves = moves.attack_bb[from_idx] & !*our_pieces;
 
                 for to_idx in potential_moves.iter_bits() {
@@ -420,7 +420,7 @@ impl Board {
             }
         }
         // Generate legal moves for the piece
-        let moves = Moves::new(piece, self.stm, self);
+        let moves = MoveGen::new(piece, self.stm, self);
         let legal_squares = moves.attack_bb[from.index()];
 
         // Check if the 'to' square is a legal square for the piece
@@ -467,7 +467,7 @@ impl Board {
         let opponent = side.flip();
         for piece in Piece::colored_pieces(opponent) {
             let piece_bb = self.positions.get_piece_bb(&opponent, &piece);
-            let moves = Moves::new(piece, opponent, self);
+            let moves = MoveGen::new(piece, opponent, self);
 
             // If any opponent piece can attack king's square, king is in check
             if piece_bb
@@ -502,7 +502,7 @@ impl Board {
         self.is_stalemate(self.stm) || self.halfmove_clock >= 100 || self.is_insufficient_material()
     }
 
-    #[cfg(feature = "rand")]
+    #[cfg(feature = "random")]
     pub fn suggest_rand_move(&self) -> miette::Result<(Square, Square)> {
         info!("This is RNGesus");
         let mut rng = rand::rng();
@@ -515,7 +515,7 @@ impl Board {
                 .choose(&mut rng)
                 .expect("Should be able to choose at random");
             // Generate moves for the randomly selected piece
-            let moves = Moves::new(piece, self.stm, self);
+            let moves = MoveGen::new(piece, self.stm, self);
 
             // Get the position of the Piece on the current board
             let piece_state = self.positions.get_piece_bb(&self.stm, &piece);

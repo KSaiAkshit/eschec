@@ -14,6 +14,7 @@ pub struct SearchResult {
     pub time_taken: Duration,
 }
 
+#[derive(Debug)]
 pub struct Search {
     max_depth: u8,
     nodes_searched: u64,
