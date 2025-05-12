@@ -110,7 +110,6 @@ impl Board {
     /// Use to initialize a default board
     pub fn new() -> Self {
         const START_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
-        // const START_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
         let mut board = Self {
             positions: BoardState::default(),
             stm: Side::default(),

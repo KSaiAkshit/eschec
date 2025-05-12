@@ -1,3 +1,4 @@
+#![allow(unused)]
 use std::{
     io::BufRead,
     sync::{Arc, Mutex, atomic::AtomicBool},

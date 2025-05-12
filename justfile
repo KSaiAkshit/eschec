@@ -5,8 +5,8 @@ export RUST_BACKTRACE := "full"
 
 default: run
 
-run:
-    cargo run --bin eschec {{ flags }}
+run *args:
+    cargo run --bin eschec {{ flags }} {{ args }}
 
 
 [positional-arguments]

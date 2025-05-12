@@ -690,6 +690,14 @@ impl From<usize> for Square {
     }
 }
 
+impl TryFrom<String> for Square {
+    type Error = miette::Report;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        Square::from_str(&value)
+    }
+}
+
 impl FromStr for Square {
     type Err = miette::Report;
 
@@ -777,9 +785,11 @@ mod tests {
 1 1 1 1 1 1 1 1
 ";
         let mut board = Board::new();
-        assert!(board
-            .try_move(Square::new(8).unwrap(), Square::new(16).unwrap())
-            .is_ok());
+        assert!(
+            board
+                .try_move(Square::new(8).unwrap(), Square::new(16).unwrap())
+                .is_ok()
+        );
         let o = board.positions.get_side_bb(&Side::White).print_bitboard();
         assert_eq!(out, o);
     }
