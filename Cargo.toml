@@ -7,11 +7,13 @@ edition = "2024"
 debug = true
 
 [dependencies]
+clap = { version = "4.5.38", features = ["derive"] }
 color-backtrace = "0.7.0"
 miette = { version = "7.5.0", features = ["fancy"] }
 rand = { version = "0.9.0", optional = true }
+shell-words = "1.1.0"
 tracing = "0.1.41"
-tracing-subscriber = "0.3.19"
+tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 
 [features]
 default = []

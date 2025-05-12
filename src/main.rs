@@ -1,5 +1,6 @@
 use std::io::{self, Write};
 
+use clap::Parser;
 use eschec::search::Search;
 use eschec::{board::*, *};
 use evaluation::CompositeEvaluator;
@@ -7,6 +8,28 @@ use miette::IntoDiagnostic;
 use tracing::*;
 
 fn main() -> miette::Result<()> {
+    init();
+
+    let span = span!(Level::DEBUG, "main");
+    let _guard = span.enter();
+    match cli::Cli::parse().command {
+        Some(cmd) => match cmd {
+            cli::Commands::Play { fen, depth } => {
+                println!("Starting game with fen: {:?}, depth: {:?}", fen, depth);
+                game_loop(fen.unwrap_or(START_FEN.to_owned()), depth.unwrap_or(5))?;
+            }
+            cli::Commands::Perft { fen, depth } => {
+                println!("Running perft with fen: {:?}, depth: {:?}", fen, depth);
+            }
+        },
+        None => {
+            println!("Starting default game");
+        }
+    }
+    Ok(())
+}
+
+fn main2() -> miette::Result<()> {
     init();
 
     let span = span!(Level::DEBUG, "main");
