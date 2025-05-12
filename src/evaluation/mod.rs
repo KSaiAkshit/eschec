@@ -9,7 +9,7 @@ use material::MaterialEvaluator;
 use mobility::MobilityEvaluator;
 use position::PositionEvaluator;
 
-pub trait Evaluator: Debug {
+pub trait Evaluator: Debug + Send + Sync {
     fn evaluate(&self, board: &Board) -> i32;
     fn name(&self) -> &str;
 }
@@ -19,6 +19,16 @@ pub struct CompositeEvaluator {
     name: String,
     evaluators: Vec<Box<dyn Evaluator>>,
     weights: Vec<f32>,
+}
+
+impl Default for CompositeEvaluator {
+    fn default() -> Self {
+        Self {
+            name: String::default(),
+            evaluators: Vec::default(),
+            weights: Vec::default(),
+        }
+    }
 }
 
 impl CompositeEvaluator {
