@@ -4,6 +4,8 @@ use clap::{Parser, Subcommand};
 use shell_words;
 use tracing::info;
 
+use crate::START_FEN;
+
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 pub struct Cli {
@@ -19,20 +21,20 @@ pub enum Commands {
     /// Start game with given FEN and depth, or use default fen
     Play {
         /// FEN string for starting position
-        #[arg(short, long)]
+        #[arg(short, long, default_value = START_FEN)]
         fen: Option<String>,
         /// set search depth
-        #[arg(short, long)]
+        #[arg(short, long, default_value = "5")]
         depth: Option<u8>,
     },
 
     /// Perft game with given FEN and depth, or use default fen
     Perft {
         /// FEN string for starting position
-        #[arg(short, long)]
+        #[arg(short, long, default_value = START_FEN)]
         fen: Option<String>,
         /// set search depth
-        #[arg(short, long)]
+        #[arg(short, long, default_value = "5")]
         depth: Option<u8>,
     },
 }
@@ -46,10 +48,19 @@ pub struct GameCommand {
 
 #[derive(Subcommand, Debug)]
 pub enum GameSubcommand {
+    /// Make a move on the board
+    #[clap(visible_alias = "m")]
     Move { from: String, to: String },
+    /// Print the current board state
+    #[clap(visible_alias = "p")]
     Print,
-    Perft { depth: u8 },
-    Reset,
+    /// Run a perft test with given depth [default: 5]
+    #[clap(visible_alias = "pe")]
+    Perft { depth: Option<u8> },
+    /// Restart game with same fen
+    #[clap(visible_alias = "r")]
     Restart,
+    /// Quit game
+    #[clap(visible_alias = "q")]
     Quit,
 }
