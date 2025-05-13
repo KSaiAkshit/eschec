@@ -16,12 +16,13 @@ fn main() -> miette::Result<()> {
     match cli::Cli::parse().command {
         Some(cmd) => match cmd {
             cli::Commands::Play { fen, depth } => {
-                debug!("Starting game with fen: {:?}, depth: {:?}", fen, depth);
+                trace!("Starting game with fen: {:?}, depth: {:?}", fen, depth);
                 game_loop(fen.unwrap(), depth.unwrap())?;
             }
             cli::Commands::Perft { fen, depth } => {
-                debug!("Running perft with fen: {:?}, depth: {:?}", fen, depth);
+                trace!("Running perft with fen: {:?}, depth: {:?}", fen, depth);
                 let mut board = Board::from_fen(&fen.unwrap());
+                println!("{}", board);
                 perft::perft_divide(&mut board, depth.unwrap());
             }
         },
