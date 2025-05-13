@@ -106,6 +106,7 @@ pub fn perft(board: &mut Board, depth: u8, divide: bool) -> PerftResult {
 
 /// Performs a Perft test and prints a detailed breakdown
 pub fn perft_divide(board: &mut Board, depth: u8) -> PerftResult {
+    println!("Starting perft...");
     let result = perft(board, depth, true);
 
     if let Some(ref move_counts) = result.move_counts {

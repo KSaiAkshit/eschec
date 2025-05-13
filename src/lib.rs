@@ -1,3 +1,4 @@
+#![allow(unused)]
 use std::cell::OnceCell;
 use std::io::Write;
 
@@ -109,6 +110,7 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
             Ok(game_cmd) => match game_cmd.cmd {
                 GameSubcommand::Move { from, to } => {
                     info!("Moving from {} to {}", from, to);
+
                     let (from_square, to_square) = match parse_move_input(from, to) {
                         Ok(f) => (f.0, f.1),
                         Err(e) => {
@@ -126,10 +128,9 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
                     println!("{}", board);
                 }
                 GameSubcommand::Perft { depth } => {
-                    info!("Running perft to depth {}", depth);
-                }
-                GameSubcommand::Reset => {
-                    info!("Resetting game...");
+                    info!("Running perft to depth {}", depth.unwrap_or(5));
+                    let mut board_copy = board;
+                    perft::run_perft_suite(&mut board_copy, depth.unwrap_or(5));
                 }
                 GameSubcommand::Restart => {
                     info!("Restarting game...");

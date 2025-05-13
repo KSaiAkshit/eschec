@@ -1,3 +1,4 @@
+#![allow(unused)]
 use std::io::{self, Write};
 
 use clap::Parser;
@@ -15,11 +16,13 @@ fn main() -> miette::Result<()> {
     match cli::Cli::parse().command {
         Some(cmd) => match cmd {
             cli::Commands::Play { fen, depth } => {
-                println!("Starting game with fen: {:?}, depth: {:?}", fen, depth);
-                game_loop(fen.unwrap_or(START_FEN.to_owned()), depth.unwrap_or(5))?;
+                debug!("Starting game with fen: {:?}, depth: {:?}", fen, depth);
+                game_loop(fen.unwrap(), depth.unwrap())?;
             }
             cli::Commands::Perft { fen, depth } => {
-                println!("Running perft with fen: {:?}, depth: {:?}", fen, depth);
+                debug!("Running perft with fen: {:?}, depth: {:?}", fen, depth);
+                let mut board = Board::from_fen(&fen.unwrap());
+                perft::perft_divide(&mut board, depth.unwrap());
             }
         },
         None => {
@@ -29,60 +32,60 @@ fn main() -> miette::Result<()> {
     Ok(())
 }
 
-fn main2() -> miette::Result<()> {
-    init();
+// fn main2() -> miette::Result<()> {
+//     init();
 
-    let span = span!(Level::DEBUG, "main");
-    let _guard = span.enter();
+//     let span = span!(Level::DEBUG, "main");
+//     let _guard = span.enter();
 
-    info!("Hi, game starts");
+//     info!("Hi, game starts");
 
-    let mut board = Board::new();
-    let evaluator = CompositeEvaluator::balanced();
-    let mut search = Search::new(3);
+//     let mut board = Board::new();
+//     let evaluator = CompositeEvaluator::balanced();
+//     let mut search = Search::new(3);
 
-    let stdin: io::Stdin = io::stdin();
-    loop {
-        let span = span!(Level::DEBUG, "loop");
-        let _guard = span.enter();
-        debug!("Inside game loop");
-        println!("{}", board);
+//     let stdin: io::Stdin = io::stdin();
+//     loop {
+//         let span = span!(Level::DEBUG, "loop");
+//         let _guard = span.enter();
+//         debug!("Inside game loop");
+//         println!("{}", board);
 
-        let mut s = String::new();
-        print!("{} >> ", board.stm);
-        io::stdout().flush().into_diagnostic()?;
-        stdin.read_line(&mut s).unwrap();
-        clear_screen()?;
+//         let mut s = String::new();
+//         print!("{} >> ", board.stm);
+//         io::stdout().flush().into_diagnostic()?;
+//         stdin.read_line(&mut s).unwrap();
+//         clear_screen()?;
 
-        let (from_square, to_square) = match get_input(&s) {
-            Ok(f) => (f.0, f.1),
-            Err(e) => {
-                eprintln!("{:?}", e);
-                continue;
-            }
-        };
+//         let (from_square, to_square) = match get_input(&s) {
+//             Ok(f) => (f.0, f.1),
+//             Err(e) => {
+//                 eprintln!("{:?}", e);
+//                 continue;
+//             }
+//         };
 
-        if let Err(e) = board.try_move(from_square, to_square) {
-            eprintln!("{:?}", e);
-            continue;
-        }
+//         if let Err(e) = board.try_move(from_square, to_square) {
+//             eprintln!("{:?}", e);
+//             continue;
+//         }
 
-        let res = search.find_best_move(&board, &evaluator);
+//         let res = search.find_best_move(&board, &evaluator);
 
-        let b_move = res.best_move.unwrap();
-        println!(
-            "Computed best move: {}, {} in {} ms",
-            b_move.0,
-            b_move.1,
-            res.time_taken.as_millis()
-        );
+//         let b_move = res.best_move.unwrap();
+//         println!(
+//             "Computed best move: {}, {} in {} ms",
+//             b_move.0,
+//             b_move.1,
+//             res.time_taken.as_millis()
+//         );
 
-        let score = board.evaluate_position(&evaluator);
-        println!("Score: {}", score);
+//         let score = board.evaluate_position(&evaluator);
+//         println!("Score: {}", score);
 
-        if let Err(e) = board.try_move(b_move.0, b_move.1) {
-            eprintln!("{:?}", e);
-            continue;
-        }
-    }
-}
+//         if let Err(e) = board.try_move(b_move.0, b_move.1) {
+//             eprintln!("{:?}", e);
+//             continue;
+//         }
+//     }
+// }
