@@ -30,6 +30,10 @@ impl Search {
         }
     }
 
+    pub fn change_depth(&mut self, new_max_depth: u8) {
+        self.max_depth = new_max_depth;
+    }
+
     #[allow(unused)]
     // #[instrument(skip_all)]
     pub fn find_best_move(&mut self, board: &Board, evaluator: &dyn Evaluator) -> SearchResult {

@@ -7,7 +7,7 @@ use cli::{GameCommand, GameSubcommand};
 use evaluation::CompositeEvaluator;
 use miette::{Context, IntoDiagnostic};
 use search::Search;
-use tracing::{debug, info, span};
+use tracing::{debug, info, span, trace};
 
 // Bit Boards use 64 bits of true or false, to tell if a given peice is at the location.
 // 12 Bit boards represent where the chess peices are at all times
@@ -22,6 +22,7 @@ pub mod search;
 pub use board::components::*;
 pub use board::*;
 use tracing::Level;
+use tracing_subscriber::EnvFilter;
 
 pub const START_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -68,7 +69,7 @@ fn parse_move_input(from: String, to: String) -> miette::Result<(Square, Square)
 }
 
 pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
-    info!("Starting game loop with FEN: {} and depth: {}", fen, depth);
+    let inp_depth = depth;
 
     let mut board = Board::from_fen(&fen);
     let evaluator = CompositeEvaluator::balanced();
@@ -76,15 +77,14 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
 
     let stdin = std::io::stdin();
 
+    println!("{}", board);
     loop {
         let span = span!(Level::DEBUG, "game_loop");
         let _guard = span.enter();
 
-        debug!("inside game_loop");
+        trace!("inside game_loop");
 
-        println!("{}", board);
-
-        print!("{} > ", board.stm);
+        print!("{} >> ", board.stm);
         std::io::stdout().flush().unwrap();
 
         let mut input = String::new();
@@ -139,6 +139,26 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
                     info!("Exiting game loop...");
                     break;
                 }
+                GameSubcommand::Undo => todo!(),
+                GameSubcommand::Save { filename } => todo!(),
+                GameSubcommand::Hint => {
+                    info!("Here's a Hint. Support for multiple hints coming soon");
+                    let result = search.find_best_move(&board, &evaluator);
+                    if let Some((from, to)) = result.best_move {
+                        println!("Best move: {} to {} (score: {})", from, to, result.score);
+                    } else {
+                        println!("No legal moves available");
+                    }
+                }
+                GameSubcommand::Depth { depth } => {
+                    info!("Changing search depth from {} to {}", inp_depth, depth);
+                    search.change_depth(depth);
+                }
+                GameSubcommand::Evaluate => {
+                    info!("Evaluating the current board state");
+                    let score = board.evaluate_position(&evaluator);
+                    println!("Score: {score}");
+                }
             },
             Err(e) => {
                 // println!("{}", e.render());
@@ -156,7 +176,7 @@ pub fn init() {
         color_backtrace::install();
         tracing_subscriber::fmt()
             .without_time()
-            .with_max_level(Level::TRACE)
+            .with_env_filter(EnvFilter::from_default_env().add_directive(Level::TRACE.into()))
             .init();
         true
     });
