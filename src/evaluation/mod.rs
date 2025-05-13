@@ -14,21 +14,11 @@ pub trait Evaluator: Debug + Send + Sync {
     fn name(&self) -> &str;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct CompositeEvaluator {
     name: String,
     evaluators: Vec<Box<dyn Evaluator>>,
     weights: Vec<f32>,
-}
-
-impl Default for CompositeEvaluator {
-    fn default() -> Self {
-        Self {
-            name: String::default(),
-            evaluators: Vec::default(),
-            weights: Vec::default(),
-        }
-    }
 }
 
 impl CompositeEvaluator {

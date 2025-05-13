@@ -19,6 +19,8 @@ pub struct Search {
     max_depth: u8,
     nodes_searched: u64,
     start_time: Instant,
+    max_time: Option<Duration>,
+    nodes_limit: Option<u64>,
 }
 
 impl Search {
@@ -27,6 +29,18 @@ impl Search {
             max_depth,
             nodes_searched: 0,
             start_time: Instant::now(),
+            max_time: None,
+            nodes_limit: None,
+        }
+    }
+
+    pub fn with_time_control(max_depth: u8, max_time_ms: u64) -> Self {
+        Self {
+            max_depth,
+            nodes_searched: 0,
+            start_time: Instant::now(),
+            max_time: Some(Duration::from_millis(max_time_ms)),
+            nodes_limit: None,
         }
     }
 
@@ -41,10 +55,6 @@ impl Search {
         let _guard = span.enter();
         self.nodes_searched = 0;
         self.start_time = Instant::now();
-
-        let mut best_move = None;
-        let mut alpha = i32::MIN + 1;
-        let mut beta = i32::MAX;
 
         let legal_moves = match board.generate_legal_moves() {
             Ok(moves) => moves,
@@ -75,42 +85,63 @@ impl Search {
             };
         }
 
+        let mut best_move = None;
         let mut best_score = i32::MIN + 1;
+        let mut completed_depth = 0;
 
-        for (from, to) in legal_moves {
-            let mut board_copy = *board;
-            if board_copy.try_move(from, to).is_err() {
-                continue;
+        for depth in 1..=self.max_depth {
+            let mut local_best_move: Option<(Square, Square)> = None;
+            let mut local_best_score = i32::MIN + 1;
+            let mut alpha = i32::MIN + 1;
+            let beta = i32::MAX;
+            for (from, to) in &legal_moves {
+                if self.is_time_up() {
+                    return SearchResult {
+                        best_move,
+                        score: best_score,
+                        depth: completed_depth,
+                        nodes_searched: self.nodes_searched,
+                        time_taken: self.start_time.elapsed(),
+                    };
+                }
+                let mut board_copy = *board;
+                if board_copy.try_move(*from, *to).is_err() {
+                    continue;
+                }
+
+                info!("Evaluating from: {}, to: {}", from, to);
+                let score = -self.alpha_beta(&board_copy, depth - 1, -beta, -alpha, evaluator);
+
+                if score > local_best_score {
+                    local_best_score = score;
+                    local_best_move = Some((*from, *to));
+                }
+
+                alpha = max(alpha, local_best_score);
+                if alpha >= beta {
+                    warn!("alpha {alpha} > beta {beta}");
+                    break;
+                }
             }
 
-            info!("Evaluating from: {}, to: {}", from, to);
-            let score = -self.alpha_beta(&board_copy, self.max_depth - 1, -beta, -alpha, evaluator);
-
-            if score > best_score {
-                best_score = score;
-                best_move = Some((from, to));
-            }
-
-            alpha = max(alpha, best_score);
-            if alpha >= beta {
-                warn!("alpha > beta; {alpha} {beta}");
-                break;
+            if local_best_move.is_some() {
+                best_move = local_best_move;
+                best_score = local_best_score;
+                completed_depth = depth;
             }
         }
-        let time_taken = self.start_time.elapsed();
 
-        info!("alpha: {alpha} beta: {beta}");
         SearchResult {
             best_move,
             score: best_score,
             depth: self.max_depth,
             nodes_searched: self.nodes_searched,
-            time_taken,
+            time_taken: self.start_time.elapsed(),
         }
     }
 
     #[allow(unused_mut)]
-    // #[instrument(skip(self, board, evaluator))]
+    #[instrument(skip_all)]
     fn alpha_beta(
         &mut self,
         board: &Board,
@@ -119,8 +150,9 @@ impl Search {
         mut beta: i32,
         evaluator: &dyn Evaluator,
     ) -> i32 {
-        let span = info_span!("alpha_beta");
-        let _guard = span.enter();
+        if self.is_time_up() {
+            return alpha;
+        }
         self.nodes_searched += 1;
         info!(self.nodes_searched);
 
@@ -160,5 +192,13 @@ impl Search {
             }
         }
         best_score
+    }
+
+    fn is_time_up(&self) -> bool {
+        if let Some(max_time) = self.max_time {
+            self.start_time.elapsed() >= max_time
+        } else {
+            false
+        }
     }
 }

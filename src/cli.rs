@@ -7,7 +7,7 @@ use tracing::info;
 use crate::START_FEN;
 
 #[derive(Parser)]
-#[command(version, about, long_about = None)]
+#[command(name = env!("CARGO_PKG_NAME"), version = env!("CARGO_PKG_VERSION"), about = env!("CARGO_PKG_DESCRIPTION") )]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Option<Commands>,
@@ -28,7 +28,7 @@ pub enum Commands {
         depth: Option<u8>,
     },
 
-    /// Perft game with given FEN and depth, or use default fen
+    /// Run perft on game with given FEN and depth, or use default fen
     Perft {
         /// FEN string for starting position
         #[arg(short, long, default_value = START_FEN)]
