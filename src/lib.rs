@@ -73,7 +73,8 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
 
     let mut board = Board::from_fen(&fen);
     let evaluator = CompositeEvaluator::balanced();
-    let mut search = Search::new(depth);
+    let mut search = Search::with_time_control(depth, 5_000);
+    // let mut search = Search::new(depth);
 
     let stdin = std::io::stdin();
 
@@ -145,7 +146,12 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
                     info!("Here's a Hint. Support for multiple hints coming soon");
                     let result = search.find_best_move(&board, &evaluator);
                     if let Some((from, to)) = result.best_move {
-                        println!("Best move: {} to {} (score: {})", from, to, result.score);
+                        println!("Best move: {} to {} ", from, to);
+                        println!(
+                            "score: {}, time_taken: {} ms",
+                            result.score,
+                            result.time_taken.as_millis()
+                        );
                     } else {
                         println!("No legal moves available");
                     }
