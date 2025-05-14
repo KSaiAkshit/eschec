@@ -70,6 +70,7 @@ fn parse_move_input(from: String, to: String) -> miette::Result<(Square, Square)
 
 pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
     let inp_depth = depth;
+    let inp_fen = fen.clone();
 
     let mut board = Board::from_fen(&fen);
     let evaluator = CompositeEvaluator::balanced();
@@ -135,6 +136,7 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
                 }
                 GameSubcommand::Restart => {
                     info!("Restarting game...");
+                    board = Board::from_fen(&inp_fen);
                 }
                 GameSubcommand::Quit => {
                     info!("Exiting game loop...");
@@ -164,6 +166,10 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
                     info!("Evaluating the current board state");
                     let score = board.evaluate_position(&evaluator);
                     println!("Score: {score}");
+                }
+                GameSubcommand::Clear => {
+                    info!("Clearing screen");
+                    clear_screen()?;
                 }
             },
             Err(e) => {

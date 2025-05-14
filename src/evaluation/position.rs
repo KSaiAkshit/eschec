@@ -90,7 +90,7 @@ impl PositionEvaluator {
             -30,-40,-40,-50,-50,-40,-40,-30,
             -20,-30,-30,-40,-40,-30,-30,-20,
             -10,-20,-20,-20,-20,-20,-20,-10,
-             20, 20,  0,  0,  0,  0, 20, 20,
+             20, 20,-10,-10,-10,-10, 20, 20,
              20, 30, 10,  0,  0, 10, 30, 20
         ];
 
@@ -138,7 +138,13 @@ impl Evaluator for PositionEvaluator {
                 score -= piece_table[mirrored_idx];
             }
         }
-        score
+        
+        // Convert to side-to-move perspective
+        if board.stm == Side::White {
+            score
+        } else {
+            -score
+        }
     }
 
     fn name(&self) -> &str {

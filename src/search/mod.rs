@@ -21,6 +21,7 @@ pub struct Search {
     start_time: Instant,
     max_time: Option<Duration>,
     nodes_limit: Option<u64>,
+    pruned_nodes: u64,
 }
 
 impl Search {
@@ -31,6 +32,7 @@ impl Search {
             start_time: Instant::now(),
             max_time: None,
             nodes_limit: None,
+            pruned_nodes: 0,
         }
     }
 
@@ -41,6 +43,7 @@ impl Search {
             start_time: Instant::now(),
             max_time: Some(Duration::from_millis(max_time_ms)),
             nodes_limit: None,
+            pruned_nodes: 0,
         }
     }
 
@@ -188,6 +191,7 @@ impl Search {
             alpha = max(alpha, best_score);
 
             if alpha >= beta {
+                self.pruned_nodes += 1;
                 break;
             }
         }

@@ -211,7 +211,7 @@ impl Side {
     }
 }
 
-#[derive(Default, PartialEq, Eq, Debug, PartialOrd, Clone, Copy)]
+#[derive(Default, PartialEq, Eq, Debug, PartialOrd, Clone, Copy, Hash)]
 pub enum Piece {
     #[default]
     Pawn,

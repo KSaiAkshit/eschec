@@ -143,9 +143,7 @@ impl Board {
     }
 
     pub fn generate_legal_moves(&self) -> miette::Result<Vec<(Square, Square)>> {
-        // NOTE: Is this correct as well
         let mut legal_moves = Vec::with_capacity(40);
-        let _side_index = self.stm.index();
         let our_pieces = self.positions.get_side_bb(&self.stm);
 
         let king_pos = self
@@ -175,6 +173,50 @@ impl Board {
                         legal_moves.push((from_sq, to_sq));
                     }
                 }
+            }
+        }
+
+        Ok(legal_moves)
+    }
+
+    pub fn generate_piecewise_legal_moves(
+        &self,
+    ) -> miette::Result<HashMap<Piece, Vec<(Square, Square)>>> {
+        let mut legal_moves = HashMap::with_capacity(40);
+        let our_pieces = self.positions.get_side_bb(&self.stm);
+
+        let king_pos = self
+            .positions
+            .get_piece_bb(&self.stm, &Piece::King)
+            .iter_bits()
+            .next()
+            .wrap_err("King should be alive and gettable")?;
+        let _king_square = Square::new(king_pos)
+            .wrap_err_with(|| format!("king_pos {king_pos} should be valid"))?;
+        for piece_type in Piece::colored_pieces(self.stm) {
+            let piece_bb = self.positions.get_piece_bb(&self.stm, &piece_type);
+
+            let mut piece_moves = Vec::new();
+
+            for from_idx in piece_bb.iter_bits() {
+                let from_sq = Square::new(from_idx)
+                    .wrap_err_with(|| format!("king_pos {from_idx} should be valid"))?;
+
+                let moves = MoveGen::new(piece_type, self.stm, self);
+                let potential_moves = moves.attack_bb[from_idx] & !*our_pieces;
+
+                for to_idx in potential_moves.iter_bits() {
+                    let to_sq = Square::new(to_idx)
+                        .wrap_err_with(|| format!("king_pos {to_idx} should be valid"))?;
+                    let mut b_copy = *self;
+                    b_copy.make_move(from_sq, to_sq);
+                    if !b_copy.is_in_check(b_copy.stm) {
+                        piece_moves.push((from_sq, to_sq));
+                    }
+                }
+            }
+            if !piece_moves.is_empty() {
+                legal_moves.insert(piece_type, piece_moves);
             }
         }
 
