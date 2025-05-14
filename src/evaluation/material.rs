@@ -53,7 +53,14 @@ impl Evaluator for MaterialEvaluator {
             .map(|(piece_bb, piece)| (piece_bb.0.count_ones() * piece.value()) as i32)
             .sum::<i32>();
 
-        white_material - black_material
+        let score = white_material - black_material;
+        
+        // Convert to side-to-move perspective
+        if board.stm == Side::White {
+            score
+        } else {
+            -score
+        }
     }
 
     fn name(&self) -> &str {

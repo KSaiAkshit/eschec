@@ -3,7 +3,10 @@ set unstable
 flags := "--release"
 export RUST_BACKTRACE := "full"
 
-default: run
+default: play
+
+play:
+    cargo run --bin eschec {{ flags }} -- play
 
 run *args:
     cargo run --bin eschec {{ flags }} {{ args }}

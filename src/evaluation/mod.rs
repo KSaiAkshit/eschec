@@ -32,8 +32,8 @@ impl CompositeEvaluator {
     pub fn balanced() -> Self {
         let mut evaluator = CompositeEvaluator::new("Balanced");
         evaluator
-            .add_evaluator(Box::new(MaterialEvaluator::new()), 0.3)
-            .add_evaluator(Box::new(PositionEvaluator::new()), 0.3)
+            .add_evaluator(Box::new(MaterialEvaluator::new()), 0.4)
+            .add_evaluator(Box::new(PositionEvaluator::new()), 0.4)
             .add_evaluator(Box::new(MobilityEvaluator::new()), 0.2);
         evaluator
     }
@@ -57,6 +57,31 @@ impl Evaluator for CompositeEvaluator {
     fn name(&self) -> &str {
         &self.name
     }
+
+    // fn evaluate(&self, board: &Board) -> i32 {
+    //     let mut score = 0;
+    //     let mut per_eval_score = Vec::new();
+    //     for (eval, weight) in self.evaluators.iter().zip(self.weights.iter()) {
+    //         let s = eval.evaluate(board) as f32;
+    //         let weighted_score = (s * weight);
+    //         per_eval_score.push(weighted_score);
+    //         score += weighted_score as i32;
+    //     }
+    //     per_eval_score
+    //         .iter()
+    //         .zip(self.evaluators.iter())
+    //         .zip(self.weights.iter())
+    //         .for_each(|((sc, eval), weigth)| {
+    //             println!(
+    //                 "{}: contribution: {}, weight: {}, score: {}",
+    //                 eval.name(),
+    //                 (sc / score as f32) * 100.0,
+    //                 weigth,
+    //                 sc
+    //             )
+    //         });
+    //     score
+    // }
 }
 
 #[cfg(test)]

@@ -80,6 +80,10 @@ pub enum GameSubcommand {
     #[clap(visible_alias = "pe")]
     Perft { depth: Option<u8> },
 
+    /// Clear screen
+    #[clap(visible_alias = "c")]
+    Clear,
+
     /// Restart game with same fen
     #[clap(visible_alias = "r")]
     Restart,
