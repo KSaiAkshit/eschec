@@ -1,8 +1,4 @@
-use std::io::Write;
-
 use clap::{Parser, Subcommand};
-use shell_words;
-use tracing::info;
 
 use crate::START_FEN;
 
@@ -41,7 +37,7 @@ pub enum Commands {
     /// Run headless to play with GUI, optionally selecting a protocol
     Headless {
         #[arg(short, long, default_value = "uci")]
-        proto: Option<String>,
+        protocol: Option<String>,
     },
 }
 

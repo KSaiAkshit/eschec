@@ -27,13 +27,13 @@ fn main() -> miette::Result<()> {
                     perft::run_perft_suite(&mut board, depth);
                 }
             }
-            cli::Commands::Headless { proto } => {
-                trace!("Running headless with protocol: {:?}", proto);
+            cli::Commands::Headless { protocol } => {
+                trace!("Running headless with protocol: {:?}", protocol);
                 uci::play()?;
             }
         },
         None => {
-            println!("Starting default game");
+            todo!("Start default game");
         }
     }
     Ok(())

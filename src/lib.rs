@@ -1,13 +1,12 @@
-#![allow(unused)]
 use std::cell::OnceCell;
-use std::io::Write;
+use std::io::{Write, stderr};
 
 use clap::Parser;
 use cli::{GameCommand, GameSubcommand};
 use evaluation::CompositeEvaluator;
 use miette::{Context, IntoDiagnostic};
 use search::Search;
-use tracing::{debug, info, span, trace};
+use tracing::{error, info, span, trace};
 
 // Bit Boards use 64 bits of true or false, to tell if a given peice is at the location.
 // 12 Bit boards represent where the chess peices are at all times
@@ -142,20 +141,24 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
                     info!("Exiting game loop...");
                     break;
                 }
-                GameSubcommand::Undo => todo!(),
-                GameSubcommand::Save { filename } => todo!(),
+                GameSubcommand::Undo => {
+                    todo!("Undo last state")
+                }
+                GameSubcommand::Save { filename } => {
+                    todo!("Saving to file: {filename}");
+                }
                 GameSubcommand::Hint => {
                     info!("Here's a Hint. Support for multiple hints coming soon");
                     let result = search.find_best_move(&board, &evaluator);
                     if let Some((from, to)) = result.best_move {
-                        println!("Best move: {} to {} ", from, to);
-                        println!(
+                        info!("Best move: {} to {} ", from, to);
+                        info!(
                             "score: {}, time_taken: {} ms",
                             result.score,
                             result.time_taken.as_millis()
                         );
                     } else {
-                        println!("No legal moves available");
+                        error!("No legal moves available");
                     }
                 }
                 GameSubcommand::Depth { depth } => {
@@ -165,7 +168,7 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
                 GameSubcommand::Evaluate => {
                     info!("Evaluating the current board state");
                     let score = board.evaluate_position(&evaluator);
-                    println!("Score: {score}");
+                    info!("Score: {score}");
                 }
                 GameSubcommand::Clear => {
                     info!("Clearing screen");
@@ -188,6 +191,7 @@ pub fn init() {
         color_backtrace::install();
         tracing_subscriber::fmt()
             .without_time()
+            .with_writer(stderr)
             .with_env_filter(EnvFilter::from_default_env().add_directive(Level::TRACE.into()))
             .init();
         true
