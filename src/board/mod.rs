@@ -14,7 +14,7 @@ pub mod components;
 mod fen;
 
 /// Completely encapsulate the game
-#[derive(Default, Debug, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
+#[derive(Default, Debug, PartialEq, Eq, Clone, Hash, PartialOrd, Copy)]
 pub struct Board {
     // Snapshot of current board
     pub positions: BoardState,

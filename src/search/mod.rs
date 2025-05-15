@@ -51,7 +51,6 @@ impl Search {
         self.max_depth = new_max_depth;
     }
 
-    #[allow(unused)]
     // #[instrument(skip_all)]
     pub fn find_best_move(&mut self, board: &Board, evaluator: &dyn Evaluator) -> SearchResult {
         let span = info_span!("search_root");
@@ -98,7 +97,7 @@ impl Search {
             let mut alpha = i32::MIN + 1;
             let beta = i32::MAX;
             for (from, to) in &legal_moves {
-                if self.is_time_up() {
+                if self.is_time_up() || self.node_limit_reached() {
                     return SearchResult {
                         best_move,
                         score: best_score,
@@ -143,25 +142,25 @@ impl Search {
         }
     }
 
-    #[allow(unused_mut)]
     #[instrument(skip_all)]
     fn alpha_beta(
         &mut self,
         board: &Board,
         depth: u8,
         mut alpha: i32,
-        mut beta: i32,
+        beta: i32,
         evaluator: &dyn Evaluator,
     ) -> i32 {
-        if self.is_time_up() {
+        if self.is_time_up() || self.node_limit_reached() {
             return alpha;
         }
         self.nodes_searched += 1;
         info!(self.nodes_searched);
 
         if depth == 0 {
-            debug!("Depth is 0. Returning static eval");
-            return evaluator.evaluate(board);
+            let score = evaluator.evaluate(board);
+            trace!("Returning static eval: {}", score);
+            return score;
         }
 
         let legal_moves = match board.generate_legal_moves() {
@@ -204,5 +203,10 @@ impl Search {
         } else {
             false
         }
+    }
+
+    fn node_limit_reached(&self) -> bool {
+        // NOTE: Is this required?
+        self.nodes_limit.is_some_and(|l| self.nodes_searched >= l)
     }
 }

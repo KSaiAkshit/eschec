@@ -1,7 +1,11 @@
+#![allow(unused)]
 use std::{
     io::BufRead,
-    sync::{Arc, Mutex, atomic::AtomicBool},
-    thread,
+    sync::{
+        Arc, Mutex,
+        atomic::{AtomicBool, Ordering},
+    },
+    thread::{self, spawn},
 };
 
 use crate::{
@@ -17,7 +21,7 @@ pub struct UciState {
     evaluator: Arc<dyn Evaluator>,
     search_running: Arc<AtomicBool>,
     best_move: Arc<Mutex<Option<(Square, Square)>>>,
-    search_thread: Option<thread::JoinHandle<()>>,
+    search_thread: Option<thread::JoinHandle<Search>>,
 }
 
 impl Default for UciState {
@@ -33,15 +37,25 @@ impl Default for UciState {
     }
 }
 
+impl Drop for UciState {
+    fn drop(&mut self) {
+        self.search_running.store(false, Ordering::Relaxed);
+        if let Some(jh) = self.search_thread.take() {
+            jh.join().unwrap();
+        }
+    }
+}
+
 impl UciState {
-    pub fn new() -> Self {
+    pub fn new(depth: Option<u8>) -> Self {
+        let depth = depth.unwrap_or(5);
         Self {
             board: Board::new(),
-            search_depth: 5,
+            search_depth: depth,
             evaluator: Arc::new(CompositeEvaluator::balanced()),
             search_running: Arc::new(AtomicBool::new(false)),
             best_move: Arc::new(Mutex::new(None)),
-            search_thread: None,
+            search_thread: Some(thread::spawn(move || Search::new(depth))),
         }
     }
 
@@ -52,7 +66,7 @@ impl UciState {
 }
 
 pub fn play() -> miette::Result<()> {
-    let mut state = UciState::new();
+    let mut state = UciState::new(None);
 
     let stdin = std::io::stdin();
     let mut lines = stdin.lock().lines();
@@ -100,7 +114,10 @@ fn cmd_go(state: &mut UciState, parts: &[&str]) {
 }
 
 fn cmd_stop(state: &mut UciState) {
-    todo!()
+    state.search_running.store(false, Ordering::Relaxed);
+    if let Some(handle) = state.search_thread.take() {
+        let _ = handle.join();
+    }
 }
 
 fn cmd_isready() {
