@@ -1,4 +1,3 @@
-#![allow(unused)]
 use std::{
     io::BufRead,
     sync::{Arc, Mutex, atomic::AtomicBool},
@@ -53,8 +52,6 @@ impl UciState {
 }
 
 pub fn play() -> miette::Result<()> {
-    crate::init();
-
     let mut state = UciState::new();
 
     let stdin = std::io::stdin();
@@ -107,10 +104,11 @@ fn cmd_stop(state: &mut UciState) {
 }
 
 fn cmd_isready() {
-    todo!()
+    println!("readyok");
 }
 
 fn cmd_uci() {
-    println!("id name Eschec");
-    println!("id author Akira");
+    println!("id name {}", env!("CARGO_PKG_NAME"));
+    println!("id author {}", env!("CARGO_PKG_AUTHORS"));
+    println!("uciok");
 }

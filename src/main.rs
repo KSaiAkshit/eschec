@@ -1,12 +1,7 @@
-#![allow(unused)]
-use std::io::{self, Write};
-
 use clap::Parser;
-use eschec::search::Search;
+use eschec::comms::uci;
 use eschec::{board::*, *};
-use evaluation::CompositeEvaluator;
-use miette::IntoDiagnostic;
-use tracing::*;
+use tracing::{Level, span, trace};
 
 fn main() -> miette::Result<()> {
     init();
@@ -19,11 +14,22 @@ fn main() -> miette::Result<()> {
                 trace!("Starting game with fen: {:?}, depth: {:?}", fen, depth);
                 game_loop(fen.unwrap(), depth.unwrap())?;
             }
-            cli::Commands::Perft { fen, depth } => {
-                trace!("Running perft with fen: {:?}, depth: {:?}", fen, depth);
+            cli::Commands::Perft { fen, depth, divide } => {
+                trace!(
+                    "Running perft with fen: {:?}, depth: {:?}, divide: {:?}",
+                    fen, depth, divide
+                );
                 let mut board = Board::from_fen(&fen.unwrap());
                 println!("{}", board);
-                perft::perft_divide(&mut board, depth.unwrap());
+                if divide {
+                    perft::perft_divide(&mut board, depth);
+                } else {
+                    perft::run_perft_suite(&mut board, depth);
+                }
+            }
+            cli::Commands::Headless { proto } => {
+                trace!("Running headless with protocol: {:?}", proto);
+                uci::play()?;
             }
         },
         None => {
@@ -32,61 +38,3 @@ fn main() -> miette::Result<()> {
     }
     Ok(())
 }
-
-// fn main2() -> miette::Result<()> {
-//     init();
-
-//     let span = span!(Level::DEBUG, "main");
-//     let _guard = span.enter();
-
-//     info!("Hi, game starts");
-
-//     let mut board = Board::new();
-//     let evaluator = CompositeEvaluator::balanced();
-//     let mut search = Search::new(3);
-
-//     let stdin: io::Stdin = io::stdin();
-//     loop {
-//         let span = span!(Level::DEBUG, "loop");
-//         let _guard = span.enter();
-//         debug!("Inside game loop");
-//         println!("{}", board);
-
-//         let mut s = String::new();
-//         print!("{} >> ", board.stm);
-//         io::stdout().flush().into_diagnostic()?;
-//         stdin.read_line(&mut s).unwrap();
-//         clear_screen()?;
-
-//         let (from_square, to_square) = match get_input(&s) {
-//             Ok(f) => (f.0, f.1),
-//             Err(e) => {
-//                 eprintln!("{:?}", e);
-//                 continue;
-//             }
-//         };
-
-//         if let Err(e) = board.try_move(from_square, to_square) {
-//             eprintln!("{:?}", e);
-//             continue;
-//         }
-
-//         let res = search.find_best_move(&board, &evaluator);
-
-//         let b_move = res.best_move.unwrap();
-//         println!(
-//             "Computed best move: {}, {} in {} ms",
-//             b_move.0,
-//             b_move.1,
-//             res.time_taken.as_millis()
-//         );
-
-//         let score = board.evaluate_position(&evaluator);
-//         println!("Score: {}", score);
-
-//         if let Err(e) = board.try_move(b_move.0, b_move.1) {
-//             eprintln!("{:?}", e);
-//             continue;
-//         }
-//     }
-// }
