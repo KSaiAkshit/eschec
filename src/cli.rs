@@ -11,9 +11,6 @@ use crate::START_FEN;
 pub struct Cli {
     #[command(subcommand)]
     pub command: Option<Commands>,
-
-    #[arg(short, long)]
-    pub comms: bool,
 }
 
 #[derive(Subcommand)]
@@ -35,7 +32,16 @@ pub enum Commands {
         fen: Option<String>,
         /// set search depth
         #[arg(short, long, default_value = "5")]
-        depth: Option<u8>,
+        depth: u8,
+        /// set divide flag
+        #[arg(long, default_value = "false")]
+        divide: bool,
+    },
+
+    /// Run headless to play with GUI, optionally selecting a protocol
+    Headless {
+        #[arg(short, long, default_value = "uci")]
+        proto: Option<String>,
     },
 }
 

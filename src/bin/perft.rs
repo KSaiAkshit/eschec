@@ -29,8 +29,10 @@ fn main() {
     };
 
     if depth == 0 {
+        println!("running suite");
         run_perft_suite(&mut board, 5); // Run suite up to depth 5 by default
     } else {
+        println!("running divide");
         perft_divide(&mut board, depth);
     }
 }
