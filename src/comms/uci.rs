@@ -11,6 +11,7 @@ use std::{
 use crate::{
     Board, Square,
     evaluation::{CompositeEvaluator, Evaluator},
+    moves::move_info::Move,
     search::Search,
 };
 
@@ -22,6 +23,7 @@ pub struct UciState {
     search_running: Arc<AtomicBool>,
     best_move: Arc<Mutex<Option<(Square, Square)>>>,
     search_thread: Option<thread::JoinHandle<Search>>,
+    move_history: Vec<Move>,
 }
 
 impl Default for UciState {
@@ -33,6 +35,7 @@ impl Default for UciState {
             search_running: Arc::default(),
             best_move: Arc::default(),
             search_thread: None,
+            move_history: Vec::default(),
         }
     }
 }
@@ -56,6 +59,7 @@ impl UciState {
             search_running: Arc::new(AtomicBool::new(false)),
             best_move: Arc::new(Mutex::new(None)),
             search_thread: Some(thread::spawn(move || Search::new(depth))),
+            move_history: Vec::new(),
         }
     }
 
