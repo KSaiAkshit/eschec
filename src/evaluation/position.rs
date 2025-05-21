@@ -138,7 +138,7 @@ impl Evaluator for PositionEvaluator {
                 score -= piece_table[mirrored_idx];
             }
         }
-        
+
         // Convert to side-to-move perspective
         if board.stm == Side::White {
             score
@@ -164,7 +164,7 @@ mod tests {
         board.stm = board.stm.flip();
         let eval = PositionEvaluator::new();
         let score = eval.evaluate(&board);
-        assert_eq!(score, 400);
+        assert_eq!(score, -400);
     }
     #[test]
     fn test_default_board() {

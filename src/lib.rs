@@ -1,27 +1,27 @@
 use std::cell::OnceCell;
 use std::io::{Write, stderr};
 
+// Bit Boards use 64 bits of true or false, to tell if a given peice is at the location.
+// 12 Bit boards represent where the chess peices are at all times
+pub mod board;
+pub mod comms;
+pub mod evaluation;
+pub mod moves;
+pub mod search;
+pub mod utils;
+
+pub use board::components::*;
+pub use board::*;
+use tracing_subscriber::EnvFilter;
+pub use utils::cli;
+pub use utils::perft;
+
 use clap::Parser;
 use cli::{GameCommand, GameSubcommand};
 use evaluation::CompositeEvaluator;
 use miette::{Context, IntoDiagnostic};
 use search::Search;
-use tracing::{error, info, span, trace};
-
-// Bit Boards use 64 bits of true or false, to tell if a given peice is at the location.
-// 12 Bit boards represent where the chess peices are at all times
-pub mod board;
-pub mod cli;
-pub mod comms;
-pub mod evaluation;
-pub mod moves;
-pub mod perft;
-pub mod search;
-
-pub use board::components::*;
-pub use board::*;
-use tracing::Level;
-use tracing_subscriber::EnvFilter;
+use tracing::{Level, error, info, span, trace};
 
 pub const START_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -185,6 +185,7 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
     Ok(())
 }
 
+/// Initialize tracing and backtrace
 pub fn init() {
     let init: OnceCell<bool> = OnceCell::new();
     init.get_or_init(|| {
