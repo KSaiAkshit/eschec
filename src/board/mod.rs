@@ -11,7 +11,7 @@ use tracing::*;
 use self::components::{BoardState, CastlingRights, Piece, Side, Square};
 
 pub mod components;
-mod fen;
+pub mod fen;
 
 /// Completely encapsulate the game
 #[derive(Default, Debug, PartialEq, Eq, Clone, Hash, PartialOrd, Copy)]
@@ -477,7 +477,7 @@ impl Board {
     }
 
     // To be used on a copy of the board
-    fn make_move(&mut self, from: Square, to: Square) {
+    pub fn make_move(&mut self, from: Square, to: Square) {
         if let Some(piece) = self.get_piece_at(from) {
             let _ = self
                 .positions
@@ -588,22 +588,6 @@ impl Board {
         if fen.contains(' ') {
             return Err(miette::Error::msg("Not supported for now"));
         }
-        let lookup_table: HashMap<char, (Piece, Side)> = [
-            ('P', (Piece::Pawn, Side::White)),
-            ('p', (Piece::Pawn, Side::Black)),
-            ('B', (Piece::Bishop, Side::White)),
-            ('b', (Piece::Bishop, Side::Black)),
-            ('N', (Piece::Knight, Side::White)),
-            ('n', (Piece::Knight, Side::Black)),
-            ('R', (Piece::Rook, Side::White)),
-            ('r', (Piece::Rook, Side::Black)),
-            ('Q', (Piece::Queen, Side::White)),
-            ('q', (Piece::Queen, Side::Black)),
-            ('K', (Piece::King, Side::White)),
-            ('k', (Piece::King, Side::Black)),
-        ]
-        .into_iter()
-        .collect();
         // rank [7,0]
         let mut rank = 7;
         // file [0,7]
@@ -625,7 +609,7 @@ impl Board {
                     // dbg!(rank, file);
                 }
                 _ => {
-                    if let Some((piece, side)) = lookup_table.get(&c) {
+                    if let Some((piece, side)) = fen::PIECE_CHAR_LOOKUP_TABLE.get(&c) {
                         // dbg!(piece, side);
                         // dbg!(rank, file);
                         self.positions.set(side, piece, rank * 8 + file)?;

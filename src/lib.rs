@@ -128,14 +128,28 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
                     info!("Printing board..");
                     println!("{}", board);
                 }
-                GameSubcommand::Perft { depth } => {
-                    info!("Running perft to depth {}", depth.unwrap_or(5));
+                GameSubcommand::Perft { depth, divide } => {
+                    info!(
+                        "Running perft to depth {}, with divide: {}",
+                        depth.unwrap_or(5),
+                        divide // .unwrap_or(false)
+                    );
                     let mut board_copy = board;
-                    perft::run_perft_suite(&mut board_copy, depth.unwrap_or(5));
+                    if divide
+                    // .is_some_and(|d| d)
+                    {
+                        perft::perft_divide(&mut board, depth.unwrap_or(5));
+                    } else {
+                        perft::run_perft_suite(&mut board_copy, depth.unwrap_or(5));
+                    }
                 }
                 GameSubcommand::Restart => {
                     info!("Restarting game...");
                     board = Board::from_fen(&inp_fen);
+                }
+                GameSubcommand::Fen => {
+                    info!("Printing fen...");
+                    println!("{}", fen::to_fen(&board)?);
                 }
                 GameSubcommand::Quit => {
                     info!("Exiting game loop...");

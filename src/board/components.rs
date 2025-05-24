@@ -242,6 +242,11 @@ impl Piece {
         Piece::Queen,
         Piece::King,
     ];
+
+    pub const PIECE_CHARS: [[char; 6]; 2] = [
+        ['P', 'B', 'N', 'R', 'Q', 'K'], // White
+        ['p', 'b', 'n', 'r', 'q', 'k'], // Black
+    ];
     const SIDES: [Side; 2] = [Side::White, Side::Black];
     pub fn all() -> impl Iterator<Item = (Piece, Side)> {
         Self::SIDES
@@ -361,6 +366,38 @@ pub struct BoardState {
     all_pieces: [[BitBoard; 6]; 2],
 }
 impl BoardState {
+    pub fn to_fen_pieces(&self) -> String {
+        let mut fen = String::new();
+
+        for rank in (0..8).rev() {
+            let mut empty_count = 0;
+            for file in 0..8 {
+                let square_index = rank * 8 + file;
+                let square = Square::new(square_index).unwrap();
+
+                if let Some((piece, side)) = self.get_piece_at(&square) {
+                    if empty_count > 0 {
+                        fen.push_str(&empty_count.to_string());
+                        empty_count = 0;
+                    }
+                    let piece_char = Piece::PIECE_CHARS[side.index()][piece.index()];
+                    fen.push(piece_char);
+                } else {
+                    empty_count += 1;
+                }
+            }
+
+            if empty_count > 0 {
+                fen.push_str(&empty_count.to_string());
+            }
+
+            if rank > 0 {
+                fen.push('/');
+            }
+        }
+
+        fen
+    }
     pub fn update_piece_position(
         &mut self,
         piece: &Piece,

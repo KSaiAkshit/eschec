@@ -1,9 +1,59 @@
+use std::{collections::HashMap, sync::LazyLock};
+
 use miette::{Context, IntoDiagnostic};
 
+use crate::Piece;
+
 use super::{
-    components::{CastlingRights, Side, Square},
     Board,
+    components::{CastlingRights, Side, Square},
 };
+pub static PIECE_CHAR_LOOKUP_TABLE: LazyLock<HashMap<char, (Piece, Side)>> = LazyLock::new(|| {
+    [
+        ('P', (Piece::Pawn, Side::White)),
+        ('p', (Piece::Pawn, Side::Black)),
+        ('B', (Piece::Bishop, Side::White)),
+        ('b', (Piece::Bishop, Side::Black)),
+        ('N', (Piece::Knight, Side::White)),
+        ('n', (Piece::Knight, Side::Black)),
+        ('R', (Piece::Rook, Side::White)),
+        ('r', (Piece::Rook, Side::Black)),
+        ('Q', (Piece::Queen, Side::White)),
+        ('q', (Piece::Queen, Side::Black)),
+        ('K', (Piece::King, Side::White)),
+        ('k', (Piece::King, Side::Black)),
+    ]
+    .into()
+});
+
+pub fn to_fen(board: &Board) -> miette::Result<String> {
+    let mut fen = String::new();
+    let piece_placement: &str = &board.positions.to_fen_pieces();
+    let stm: &str = match &board.stm {
+        Side::White => "w",
+        Side::Black => "b",
+    };
+    let castling_rights: &str = &board.castling_rights.to_string();
+    let enpassent_square: &str = match board.enpassant_square {
+        Some(sq) => &sq.to_string().to_ascii_lowercase(),
+        None => "-",
+    };
+    let halfmove_clock: &str = &board.halfmove_clock.to_string();
+    let fullmove_clock: &str = &board.fullmove_counter.to_string();
+
+    fen.push_str(piece_placement);
+    fen.push(' ');
+    fen.push_str(stm);
+    fen.push(' ');
+    fen.push_str(castling_rights);
+    fen.push(' ');
+    fen.push_str(enpassent_square);
+    fen.push(' ');
+    fen.push_str(halfmove_clock);
+    fen.push(' ');
+    fen.push_str(fullmove_clock);
+    Ok(fen)
+}
 
 /// Parse the FEN string to extract the piece placement part. This part of the FEN string represents the positions of the pieces on the board.
 /// Iterate over each character of the piece placement part of the FEN string.
@@ -69,7 +119,7 @@ fn parse_castle(castle: &str) -> miette::Result<CastlingRights> {
             _ => {
                 return Err(miette::Error::msg(
                     "Unexpected character while parsing CastlingRights",
-                ))
+                ));
             }
         };
     }
