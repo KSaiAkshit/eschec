@@ -6,6 +6,7 @@ use super::{
 };
 
 pub mod move_info;
+pub mod precomputed;
 
 #[derive(Default, Debug, PartialEq, Eq, PartialOrd, Clone)]
 pub struct MoveGen {
@@ -200,8 +201,8 @@ impl MoveGen {
 
     fn gen_bishop_moves(&self, stm: Side) -> Vec<BitBoard> {
         let mut attack_bb = vec![BitBoard(0); 64];
-        let enemy_pieces = self.state.get_side_bb(&stm);
-        let ally_pieces = self.state.get_side_bb(&stm.flip());
+        let ally_pieces = self.state.get_side_bb(&stm);
+        let enemy_pieces = self.state.get_side_bb(&stm.flip());
 
         (0..64).for_each(|index| {
             let mut bishop_moves = BitBoard(0);
@@ -283,8 +284,8 @@ impl MoveGen {
 
     fn gen_king_moves(&self, stm: Side) -> Vec<BitBoard> {
         let mut attack_bb = vec![BitBoard(0); 64];
-        let enemy_pieces = self.state.get_side_bb(&stm);
-        let ally_pieces = self.state.get_side_bb(&stm.flip());
+        let ally_pieces = self.state.get_side_bb(&stm);
+        let enemy_pieces = self.state.get_side_bb(&stm.flip());
         let all_pieces = ally_pieces | enemy_pieces;
         (0..64).for_each(|index| {
             let square = Square::new(index).expect("Get a valid index");

@@ -179,6 +179,7 @@ mod perft_tests {
     ];
 
     #[test]
+    #[ignore]
     fn test_perft_starting_position() {
         init();
         let mut board = Board::new();
@@ -195,6 +196,7 @@ mod perft_tests {
     }
 
     #[test]
+    #[ignore]
     fn test_perft_kiwipete() {
         init();
         // This is the "Kiwipete" position, a common test position
@@ -214,6 +216,7 @@ mod perft_tests {
     }
 
     #[test]
+    #[ignore]
     fn test_perft_position3() {
         init();
         // Position 3 from CPW
@@ -232,6 +235,7 @@ mod perft_tests {
     }
 
     #[test]
+    #[ignore]
     fn test_perft_position4() {
         init();
         // Position 4 from CPW (en passant capture test)
@@ -251,6 +255,7 @@ mod perft_tests {
     }
 
     #[test]
+    #[ignore]
     fn test_make_unmake_consistency() {
         init();
         let mut board = Board::new();

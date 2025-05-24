@@ -78,9 +78,17 @@ pub enum GameSubcommand {
     #[clap(visible_alias = "e")]
     Evaluate,
 
+    /// Show the current fen of the board
+    #[clap(visible_alias = "f")]
+    Fen,
+
     /// Run a perft test with given depth [default: 5]
     #[clap(visible_alias = "pe")]
-    Perft { depth: Option<u8> },
+    Perft {
+        depth: Option<u8>,
+        #[arg(short, default_value = "false")]
+        divide: bool,
+    },
 
     /// Clear screen
     #[clap(visible_alias = "c")]
