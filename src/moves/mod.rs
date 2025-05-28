@@ -140,13 +140,13 @@ impl MoveGen {
         attack_bb
     }
 
-    fn gen_black_pawn_moves(&self) -> Vec<BitBoard> {
+    pub fn gen_black_pawn_moves(&self) -> Vec<BitBoard> {
         let mut attack_bb = vec![BitBoard(0); 64];
-        let enemy_pieces = self.state.get_side_bb(&Side::Black);
-        let ally_pieces = self.state.get_side_bb(&Side::White);
+        let enemy_pieces = self.state.get_side_bb(&Side::White);
+        let ally_pieces = self.state.get_side_bb(&Side::Black);
         let all_pieces = ally_pieces | enemy_pieces;
         (0..64).for_each(|index| {
-            let mut white_pawn_moves = BitBoard(0);
+            let mut black_pawn_moves = BitBoard(0);
             let square = Square::new(index).expect("Get a valid index");
             let (rank, file) = square.coords();
 
@@ -156,10 +156,10 @@ impl MoveGen {
 
             let fwd = index - 8;
             if fwd >= 8 && !all_pieces.contains_square(fwd) {
-                white_pawn_moves.set(fwd);
+                black_pawn_moves.set(fwd);
 
                 if rank == 6 && !all_pieces.contains_square(fwd - 8) {
-                    white_pawn_moves.set(fwd - 8);
+                    black_pawn_moves.set(fwd - 8);
                 }
             }
 
@@ -170,7 +170,7 @@ impl MoveGen {
                     && (enemy_pieces.contains_square(cap_left)
                         || self.ep_square.is_some_and(|ep| ep.index() == cap_left))
                 {
-                    white_pawn_moves.set(cap_left);
+                    black_pawn_moves.set(cap_left);
                 }
             }
 
@@ -181,10 +181,10 @@ impl MoveGen {
                     && (enemy_pieces.contains_square(cap_right)
                         || self.ep_square.is_some_and(|ep| ep.index() == cap_right))
                 {
-                    white_pawn_moves.set(cap_right);
+                    black_pawn_moves.set(cap_right);
                 }
             }
-            attack_bb[index] = white_pawn_moves;
+            attack_bb[index] = black_pawn_moves;
         });
         attack_bb
     }
