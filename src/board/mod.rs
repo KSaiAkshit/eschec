@@ -1,6 +1,6 @@
 use crate::{
     evaluation::Evaluator,
-    moves::{MoveGen, move_info::Move},
+    moves::{move_gen::MoveGen, move_info::Move},
 };
 use miette::Context;
 #[cfg(feature = "random")]
