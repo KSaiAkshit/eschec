@@ -5,3 +5,4 @@ heaprack**
 .gdb**
 *heaptrack*
 *.data
+/src/bin/test.rs
