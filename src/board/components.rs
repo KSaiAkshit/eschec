@@ -65,7 +65,7 @@ impl Not for &BitBoard {
 
 impl BitBoard {
     #[inline]
-    pub fn set(&mut self, pos: usize) {
+    pub const fn set(&mut self, pos: usize) {
         self.0 |= 1 << pos;
     }
 
@@ -95,22 +95,22 @@ impl BitBoard {
     }
 
     #[inline]
-    pub fn lsb(&self) -> Option<usize> {
+    pub const fn lsb(&self) -> Option<u64> {
         if self.0 == 0 {
             None
         } else {
-            Some(self.0.trailing_zeros() as usize)
+            Some(self.0.trailing_zeros() as u64)
         }
     }
 
     #[inline]
-    pub fn pop_lsb(&mut self) -> Option<usize> {
+    pub const fn pop_lsb(&mut self) -> Option<u64> {
         if self.0 == 0 {
             None
         } else {
-            let idx = self.0.trailing_zeros() as usize;
+            let idx = self.0.trailing_zeros();
             self.0 &= self.0 - 1; // Clear the least significant bit
-            Some(idx)
+            Some(idx as u64)
         }
     }
 
@@ -118,12 +118,12 @@ impl BitBoard {
         (0..64).filter(|&i| (self.0 & (1 << i) != 0)).collect()
     }
 
-    pub fn iter_bits(&self) -> BitBoardIterator {
+    pub const fn iter_bits(&self) -> BitBoardIterator {
         BitBoardIterator { remaining: self.0 }
     }
 
     #[inline]
-    pub fn contains_square(&self, index: usize) -> bool {
+    pub const fn contains_square(&self, index: usize) -> bool {
         (self.0 & (1 << index)) != 0
     }
 }
