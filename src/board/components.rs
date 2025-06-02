@@ -436,31 +436,31 @@ impl BoardState {
         Ok(())
     }
 
-    pub fn get_piece_bb(&self, side: &Side, piece: &Piece) -> &BitBoard {
+    pub fn get_piece_bb(&self, side: Side, piece: Piece) -> &BitBoard {
         &self.all_pieces[side.index()][piece.index()]
     }
 
-    pub fn get_piece_bb_mut(&mut self, side: &Side, piece: &Piece) -> &mut BitBoard {
+    pub fn get_piece_bb_mut(&mut self, side: Side, piece: Piece) -> &mut BitBoard {
         &mut self.all_pieces[side.index()][piece.index()]
     }
 
-    pub fn get_colored_pieces(&self, side: &Side) -> &[BitBoard; 6] {
+    pub fn get_colored_pieces(&self, side: Side) -> &[BitBoard; 6] {
         &self.all_pieces[side.index()]
     }
 
-    pub fn get_colored_pieces_mut(&mut self, side: &Side) -> &mut [BitBoard; 6] {
+    pub fn get_colored_pieces_mut(&mut self, side: Side) -> &mut [BitBoard; 6] {
         &mut self.all_pieces[side.index()]
     }
 
-    pub fn get_side_bb(&self, side: &Side) -> &BitBoard {
+    pub fn get_side_bb(&self, side: Side) -> &BitBoard {
         &self.all_sides[side.index()]
     }
 
-    pub fn get_side_bb_mut(&mut self, side: &Side) -> &mut BitBoard {
+    pub fn get_side_bb_mut(&mut self, side: Side) -> &mut BitBoard {
         &mut self.all_sides[side.index()]
     }
 
-    pub fn square_belongs_to(&self, side: &Side, square: usize) -> bool {
+    pub fn square_belongs_to(&self, side: Side, square: usize) -> bool {
         self.all_sides[side.index()].contains_square(square)
     }
 
@@ -827,7 +827,7 @@ mod tests {
                 .try_move(Square::new(8).unwrap(), Square::new(16).unwrap())
                 .is_ok()
         );
-        let o = board.positions.get_side_bb(&Side::White).print_bitboard();
+        let o = board.positions.get_side_bb(Side::White).print_bitboard();
         assert_eq!(out, o);
     }
 }

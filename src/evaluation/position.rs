@@ -124,14 +124,14 @@ impl Evaluator for PositionEvaluator {
             let piece_table = &self.piece_square_tables[piece_idx];
             for idx in &board
                 .positions
-                .get_piece_bb(&Side::White, &piece)
+                .get_piece_bb(Side::White, piece)
                 .get_set_bits()
             {
                 score += piece_table[*idx];
             }
             for idx in &board
                 .positions
-                .get_piece_bb(&Side::Black, &piece)
+                .get_piece_bb(Side::Black, piece)
                 .get_set_bits()
             {
                 let mirrored_idx = 63 - idx;

@@ -1,5 +1,7 @@
 use crate::{BitBoard, Board, BoardState, CastlingRights, Piece, Side, board::components::Square};
 
+use super::{move_info::Move, precomputed::MOVE_TABLES};
+
 #[derive(Default, Debug, PartialEq, Eq, PartialOrd, Clone)]
 pub struct MoveGen {
     pub piece: Piece,
@@ -41,6 +43,26 @@ impl Direction {
     ];
 }
 
+pub fn gen_knight_moves(board: &BoardState, side: Side, move_list: &mut Vec<Move>) {
+    let knights = board.get_piece_bb(side, Piece::Knight);
+    let ally_pieces = board.get_side_bb(side);
+    let enemy_pieces = board.get_side_bb(side.flip());
+
+    let mut knights_bb  = *knights;
+    while let Some(from_sq) = knights_bb.pop_lsb() {
+        let mut attacks = MOVE_TABLES.knight_moves[from_sq as usize] & !ally_pieces;
+        while let Some(to_sq) = attacks.pop_lsb() {
+            let is_capture = enemy_pieces.contains_square(to_sq as usize);
+            let flag = if is_capture {
+                Move::CAPTURE
+            } else {
+                Move::QUIET
+            };
+            move_list.push(Move::new(from_sq as u8, to_sq as u8, flag));
+        }
+    }
+}
+
 impl MoveGen {
     pub fn new(piece: Piece, stm: Side, state: &Board) -> Self {
         let mut moves = MoveGen::default();
@@ -70,7 +92,7 @@ impl MoveGen {
     }
 
     #[deprecated(note = "Moves generated are already pseudo-legal. This doesn't acheive anything")]
-    pub fn make_legal(&mut self, stm: &Side, board: &BoardState) {
+    pub fn make_legal(&mut self, stm: Side, board: &BoardState) {
         let own_pieces = board.get_side_bb(stm);
 
         self.attack_bb.iter_mut().for_each(|b| *b &= !*own_pieces);
@@ -85,8 +107,8 @@ impl MoveGen {
 
     fn gen_white_pawn_moves(&self) -> Vec<BitBoard> {
         let mut attack_bb = vec![BitBoard(0); 64];
-        let enemy_pieces = self.state.get_side_bb(&Side::Black);
-        let ally_pieces = self.state.get_side_bb(&Side::White);
+        let enemy_pieces = self.state.get_side_bb(Side::Black);
+        let ally_pieces = self.state.get_side_bb(Side::White);
         let all_pieces = ally_pieces | enemy_pieces;
         (0..64).for_each(|index| {
             let mut white_pawn_moves = BitBoard(0);
@@ -134,8 +156,8 @@ impl MoveGen {
 
     pub fn gen_black_pawn_moves(&self) -> Vec<BitBoard> {
         let mut attack_bb = vec![BitBoard(0); 64];
-        let enemy_pieces = self.state.get_side_bb(&Side::White);
-        let ally_pieces = self.state.get_side_bb(&Side::Black);
+        let enemy_pieces = self.state.get_side_bb(Side::White);
+        let ally_pieces = self.state.get_side_bb(Side::Black);
         let all_pieces = ally_pieces | enemy_pieces;
         (0..64).for_each(|index| {
             let mut black_pawn_moves = BitBoard(0);
@@ -193,8 +215,8 @@ impl MoveGen {
 
     fn gen_bishop_moves(&self, stm: Side) -> Vec<BitBoard> {
         let mut attack_bb = vec![BitBoard(0); 64];
-        let ally_pieces = self.state.get_side_bb(&stm);
-        let enemy_pieces = self.state.get_side_bb(&stm.flip());
+        let ally_pieces = self.state.get_side_bb(stm);
+        let enemy_pieces = self.state.get_side_bb(stm.flip());
 
         (0..64).for_each(|index| {
             let mut bishop_moves = BitBoard(0);
@@ -233,8 +255,8 @@ impl MoveGen {
 
     fn gen_rook_moves(&self, stm: Side) -> Vec<BitBoard> {
         let mut attack_bb = vec![BitBoard(0); 64];
-        let ally_pieces = self.state.get_side_bb(&stm);
-        let enemy_pieces = self.state.get_side_bb(&stm.flip());
+        let ally_pieces = self.state.get_side_bb(stm);
+        let enemy_pieces = self.state.get_side_bb(stm.flip());
         (0..64).for_each(|index| {
             let square = Square::new(index).expect("Get a valid index");
             let mut rook_moves = BitBoard(0);
@@ -276,8 +298,8 @@ impl MoveGen {
 
     fn gen_king_moves(&self, stm: Side) -> Vec<BitBoard> {
         let mut attack_bb = vec![BitBoard(0); 64];
-        let ally_pieces = self.state.get_side_bb(&stm);
-        let enemy_pieces = self.state.get_side_bb(&stm.flip());
+        let ally_pieces = self.state.get_side_bb(stm);
+        let enemy_pieces = self.state.get_side_bb(stm.flip());
         let all_pieces = ally_pieces | enemy_pieces;
         (0..64).for_each(|index| {
             let square = Square::new(index).expect("Get a valid index");
@@ -401,7 +423,7 @@ impl MoveGen {
             let is_not_leftmost = square_index % 8 != 0;
             let is_not_rightmost = square_index % 8 != 0;
 
-            let pawn_bb = self.state.get_piece_bb(&by_side, &Piece::Pawn);
+            let pawn_bb = self.state.get_piece_bb(by_side, Piece::Pawn);
 
             let attacked_by_left =
                 is_not_leftmost && square_index > 8 && pawn_bb.contains_square(up_left);
@@ -416,7 +438,7 @@ impl MoveGen {
             let is_not_leftmost = square_index % 8 != 0;
             let is_not_rightmost = square_index % 8 != 7;
 
-            let pawn_bb = self.state.get_piece_bb(&by_side, &Piece::Pawn);
+            let pawn_bb = self.state.get_piece_bb(by_side, Piece::Pawn);
 
             let attacked_by_left =
                 is_not_rightmost && square_index < 56 && pawn_bb.contains_square(down_left);
@@ -439,7 +461,7 @@ impl MoveGen {
                 ..Default::default()
             },
         );
-        let knight_bb = self.state.get_piece_bb(&by_side, &Piece::Knight);
+        let knight_bb = self.state.get_piece_bb(by_side, Piece::Knight);
 
         for knight_idx in knight_bb.iter_bits() {
             if knight_moves.attack_bb[knight_idx].contains_square(square_index) {
@@ -456,8 +478,8 @@ impl MoveGen {
                 ..Default::default()
             },
         );
-        let bishop_bb = self.state.get_piece_bb(&by_side, &Piece::Bishop);
-        let queen_bb = self.state.get_piece_bb(&by_side, &Piece::Queen);
+        let bishop_bb = self.state.get_piece_bb(by_side, Piece::Bishop);
+        let queen_bb = self.state.get_piece_bb(by_side, Piece::Queen);
 
         for bishop_idx in bishop_bb.iter_bits().chain(queen_bb.iter_bits()) {
             if bishop_moves.attack_bb[bishop_idx].contains_square(square_index) {
@@ -474,7 +496,7 @@ impl MoveGen {
                 ..Default::default()
             },
         );
-        let rook_bb = self.state.get_piece_bb(&by_side, &Piece::Rook);
+        let rook_bb = self.state.get_piece_bb(by_side, Piece::Rook);
 
         for rook_idx in rook_bb.iter_bits().chain(queen_bb.iter_bits()) {
             if rook_moves.attack_bb[rook_idx].contains_square(square_index) {
@@ -491,7 +513,7 @@ impl MoveGen {
                 ..Default::default()
             },
         );
-        let king_bb = self.state.get_piece_bb(&by_side, &Piece::King);
+        let king_bb = self.state.get_piece_bb(by_side, Piece::King);
 
         for king_idx in king_bb.iter_bits() {
             if king_moves.attack_bb[king_idx].contains_square(square_index) {
@@ -840,7 +862,7 @@ mod tests {
             assert!(
                 !board
                     .positions
-                    .get_piece_bb(&Side::White, &Piece::Pawn)
+                    .get_piece_bb(Side::White, Piece::Pawn)
                     .contains_square(to_d4.index())
             ); // d4 should be empty
 
@@ -848,7 +870,7 @@ mod tests {
             assert!(
                 board
                     .positions
-                    .get_piece_bb(&Side::Black, &Piece::Pawn)
+                    .get_piece_bb(Side::Black, Piece::Pawn)
                     .contains_square(to_d3.index())
             ); // Black pawn at d3
 
@@ -888,7 +910,7 @@ mod tests {
             assert!(
                 !board
                     .positions
-                    .get_piece_bb(&Side::White, &Piece::Pawn)
+                    .get_piece_bb(Side::White, Piece::Pawn)
                     .contains_square(to_f4.index())
             ); // f4 should be empty
 
@@ -896,7 +918,7 @@ mod tests {
             assert!(
                 board
                     .positions
-                    .get_piece_bb(&Side::Black, &Piece::Pawn)
+                    .get_piece_bb(Side::Black, Piece::Pawn)
                     .contains_square(to_f3.index())
             ); // Black pawn at f3
 
@@ -939,7 +961,7 @@ mod tests {
             assert!(
                 !board
                     .positions
-                    .get_piece_bb(&Side::Black, &Piece::Pawn)
+                    .get_piece_bb(Side::Black, Piece::Pawn)
                     .contains_square(to_d5.index())
             ); // d5 should be empty
 
@@ -947,7 +969,7 @@ mod tests {
             assert!(
                 board
                     .positions
-                    .get_piece_bb(&Side::White, &Piece::Pawn)
+                    .get_piece_bb(Side::White, Piece::Pawn)
                     .contains_square(to_d6.index())
             ); // White pawn at d6
 
@@ -998,7 +1020,7 @@ mod tests {
             assert!(
                 !board
                     .positions
-                    .get_piece_bb(&Side::Black, &Piece::Pawn)
+                    .get_piece_bb(Side::Black, Piece::Pawn)
                     .contains_square(to_f5.index())
             ); // f5 should be empty
 
@@ -1006,7 +1028,7 @@ mod tests {
             assert!(
                 board
                     .positions
-                    .get_piece_bb(&Side::White, &Piece::Pawn)
+                    .get_piece_bb(Side::White, Piece::Pawn)
                     .contains_square(to_f6.index())
             ); // White pawn at f6
 
@@ -1120,13 +1142,13 @@ mod tests {
             assert!(
                 board
                     .positions
-                    .get_piece_bb(&Side::White, &Piece::King)
+                    .get_piece_bb(Side::White, Piece::King)
                     .contains_square(Square::from_str("g1").unwrap().index())
             ); // King at g1
             assert!(
                 board
                     .positions
-                    .get_piece_bb(&Side::White, &Piece::Rook)
+                    .get_piece_bb(Side::White, Piece::Rook)
                     .contains_square(Square::from_str("f1").unwrap().index())
             ); // Rook at f1
 
@@ -1170,13 +1192,13 @@ mod tests {
             assert!(
                 board
                     .positions
-                    .get_piece_bb(&Side::White, &Piece::King)
+                    .get_piece_bb(Side::White, Piece::King)
                     .contains_square(Square::from_str("c1").unwrap().index())
             ); // King at c1
             assert!(
                 board
                     .positions
-                    .get_piece_bb(&Side::White, &Piece::Rook)
+                    .get_piece_bb(Side::White, Piece::Rook)
                     .contains_square(Square::from_str("d1").unwrap().index())
             ); // Rook at d1
 
@@ -1217,13 +1239,13 @@ mod tests {
             assert!(
                 board
                     .positions
-                    .get_piece_bb(&Side::Black, &Piece::King)
+                    .get_piece_bb(Side::Black, Piece::King)
                     .contains_square(Square::from_str("g8").unwrap().index())
             ); // King at g8
             assert!(
                 board
                     .positions
-                    .get_piece_bb(&Side::Black, &Piece::Rook)
+                    .get_piece_bb(Side::Black, Piece::Rook)
                     .contains_square(Square::from_str("f8").unwrap().index())
             ); // Rook at f8
 
@@ -1260,13 +1282,13 @@ mod tests {
             assert!(
                 board
                     .positions
-                    .get_piece_bb(&Side::Black, &Piece::King)
+                    .get_piece_bb(Side::Black, Piece::King)
                     .contains_square(Square::from_str("c8").unwrap().index())
             ); // King at c8
             assert!(
                 board
                     .positions
-                    .get_piece_bb(&Side::Black, &Piece::Rook)
+                    .get_piece_bb(Side::Black, Piece::Rook)
                     .contains_square(Square::from_str("d8").unwrap().index())
             ); // Rook at d8
 
