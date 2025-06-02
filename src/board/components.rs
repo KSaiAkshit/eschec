@@ -657,7 +657,7 @@ pub struct Square(usize);
 impl Square {
     /// Returns a Square from a given index. Will return None if index is out of bounds
     /// index should be [0, 63]
-    pub fn new(index: usize) -> Option<Self> {
+    pub const fn new(index: usize) -> Option<Self> {
         if index < 64 {
             return Some(Self(index));
         }
@@ -667,7 +667,7 @@ impl Square {
     /// Returns a Square from a given File and Rank.
     /// Will return None if either File or Rank are out of bounds.
     /// Rank < 7, File < 8
-    pub fn from_coords(file: usize, rank: usize) -> Option<Self> {
+    pub const fn from_coords(file: usize, rank: usize) -> Option<Self> {
         if file < 7 && rank < 8 {
             return Some(Square(rank * 8 + file));
         }
@@ -692,31 +692,31 @@ impl Square {
         let square_index = row_index * 8 + col_index;
         Ok(Square(square_index))
     }
-    pub fn coords(&self) -> (usize, usize) {
+    pub const fn coords(&self) -> (usize, usize) {
         let rank = self.0 / 8;
         let file = self.0 % 8;
         (rank, file)
     }
 
-    pub fn row(&self) -> usize {
+    pub const fn row(&self) -> usize {
         self.0 / 8
     }
 
-    pub fn col(&self) -> usize {
+    pub const fn col(&self) -> usize {
         self.0 % 8
     }
 
     /// NOTE: Rank is 1 indexed
-    pub fn rank(&self) -> usize {
+    pub const fn rank(&self) -> usize {
         self.0 / 8 + 1
     }
 
     /// NOTE: File is 1 indexed
-    pub fn file(&self) -> usize {
+    pub const fn file(&self) -> usize {
         self.0 % 8 + 1
     }
 
-    pub fn index(&self) -> usize {
+    pub const fn index(&self) -> usize {
         self.0
     }
 }

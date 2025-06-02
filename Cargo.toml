@@ -6,7 +6,11 @@ description = "A chess suite written in rust"
 authors = [ "Akira" ]
 
 [profile.release]
-debug = true
+# debug = true
+lto = true
+codegen-units = 1
+panic = "abort"
+opt-level = 3
 
 [dependencies]
 clap = { version = "4.5.38", features = ["derive"] }

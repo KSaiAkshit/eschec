@@ -229,7 +229,7 @@ impl MoveTables {
             if rank > 0 {
                 black_pushes.set((rank - 1) * 8 + file);
             }
-            self.white_pawn_pushes[index] = black_pushes;
+            self.black_pawn_pushes[index] = black_pushes;
 
             // White pawn single pushes
             let mut white_double_pushes = BitBoard(0);
