@@ -1,6 +1,6 @@
 use crate::{
     evaluation::Evaluator,
-    moves::{move_gen::MoveGen, move_info::Move},
+    moves::{move_gen::MoveGen, move_info::MoveInfo},
 };
 use miette::Context;
 #[cfg(feature = "random")]
@@ -243,13 +243,13 @@ impl Board {
         }
     }
 
-    pub fn try_move_with_info(&mut self, from: Square, to: Square) -> miette::Result<Move> {
+    pub fn try_move_with_info(&mut self, from: Square, to: Square) -> miette::Result<MoveInfo> {
         let piece = self
             .get_piece_at(from)
             .wrap_err_with(|| format!("[try_move_with_info] No piece at from '{from}' Square"))?;
 
         // Store current state before making the move
-        let mut move_data = Move::new(from, to);
+        let mut move_data = MoveInfo::new(from, to);
         move_data.piece_moved = piece;
         move_data.captured_piece = self.get_piece_at(to);
         move_data.castle_rights = self.castling_rights;
@@ -273,7 +273,7 @@ impl Board {
         Ok(move_data)
     }
 
-    pub fn unmake_move(&mut self, move_data: &Move) -> miette::Result<()> {
+    pub fn unmake_move(&mut self, move_data: &MoveInfo) -> miette::Result<()> {
         self.stm = self.stm.flip();
         self.positions.update_piece_position(
             &move_data.piece_moved,
