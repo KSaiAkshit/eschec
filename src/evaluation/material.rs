@@ -39,7 +39,7 @@ impl Evaluator for MaterialEvaluator {
 
         let white_material = board
             .positions
-            .get_colored_pieces(&Side::White)
+            .get_colored_pieces(Side::White)
             .iter()
             .zip(Piece::colored_pieces(Side::White))
             .map(|(piece_bb, piece)| (piece_bb.0.count_ones() * piece.value()) as i32)
@@ -47,7 +47,7 @@ impl Evaluator for MaterialEvaluator {
 
         let black_material = board
             .positions
-            .get_colored_pieces(&Side::Black)
+            .get_colored_pieces(Side::Black)
             .iter()
             .zip(Piece::colored_pieces(Side::Black))
             .map(|(piece_bb, piece)| (piece_bb.0.count_ones() * piece.value()) as i32)
