@@ -1,4 +1,4 @@
-use crate::{BitBoard, Side};
+use crate::{BitBoard, Side, moves::Direction};
 
 #[derive(Debug)]
 pub struct MoveTables {
@@ -26,7 +26,7 @@ pub struct MoveTables {
 }
 
 // pub static MOVE_TABLES: LazyLock<MoveTables> = LazyLock::new(MoveTables::new);
-pub const MOVE_TABLES: MoveTables = MoveTables::const_new();
+pub const MOVE_TABLES: MoveTables = MoveTables::new();
 
 impl Default for MoveTables {
     fn default() -> Self {
@@ -35,34 +35,7 @@ impl Default for MoveTables {
 }
 
 impl MoveTables {
-    pub fn new() -> Self {
-        let mut tables = Self {
-            knight_moves: [BitBoard(0); 64],
-            king_moves: [BitBoard(0); 64],
-            white_pawn_attacks: [BitBoard(0); 64],
-            black_pawn_attacks: [BitBoard(0); 64],
-            white_pawn_pushes: [BitBoard(0); 64],
-            black_pawn_pushes: [BitBoard(0); 64],
-            white_pawn_double_pushes: [BitBoard(0); 64],
-            black_pawn_double_pushes: [BitBoard(0); 64],
-            north_rays: [BitBoard(0); 64],
-            south_rays: [BitBoard(0); 64],
-            east_rays: [BitBoard(0); 64],
-            west_rays: [BitBoard(0); 64],
-            northeast_rays: [BitBoard(0); 64],
-            southeast_rays: [BitBoard(0); 64],
-            southwest_rays: [BitBoard(0); 64],
-            northwest_rays: [BitBoard(0); 64],
-        };
-
-        tables.init_knight_moves();
-        tables.init_king_moves();
-        tables.init_pawn_attackes();
-
-        tables
-    }
-
-    pub const fn const_new() -> Self {
+    pub const fn new() -> Self {
         let mut tables = Self {
             knight_moves: [BitBoard(0); 64],
             king_moves: [BitBoard(0); 64],
@@ -86,7 +59,7 @@ impl MoveTables {
         tables.init_king_moves();
         tables.init_pawn_attackes();
         tables.init_pawn_tables();
-        tables.init_ray_attackes();
+        tables.init_ray_attacks();
 
         tables
     }
@@ -187,6 +160,69 @@ impl MoveTables {
         }
     }
 
+    const fn generate_ray(&self, start_rank: usize, start_file: usize, direction: i8) -> BitBoard {
+        let mut ray = BitBoard(0);
+        let start_index = start_rank * 8 + start_file;
+        let mut current = start_index as i8 + direction;
+
+        while current >= 0 && current < 64 {
+            let current_rank = (current as usize) / 8;
+            let current_file = (current as usize) % 8;
+
+            let rank_diff = (current_rank as i8) - (start_rank as i8);
+            let file_diff = (current_file as i8) - (start_file as i8);
+
+            match direction {
+                Direction::NORTH => {
+                    if rank_diff <= 0 {
+                        break;
+                    }
+                }
+                Direction::SOUTH => {
+                    if rank_diff >= 0 {
+                        break;
+                    }
+                }
+                Direction::EAST => {
+                    if file_diff <= 0 || rank_diff != 0 {
+                        break;
+                    }
+                }
+                Direction::WEST => {
+                    if file_diff >= 0 || rank_diff != 0 {
+                        break;
+                    }
+                }
+                Direction::NORTHEAST => {
+                    if rank_diff != file_diff || rank_diff <= 0 {
+                        break;
+                    }
+                }
+                Direction::SOUTHWEST => {
+                    if rank_diff != file_diff || rank_diff >= 0 {
+                        break;
+                    }
+                }
+                Direction::SOUTHEAST => {
+                    if rank_diff != -file_diff || rank_diff >= 0 {
+                        break;
+                    }
+                }
+                Direction::NORTHWEST => {
+                    if rank_diff != -file_diff || rank_diff <= 0 {
+                        break;
+                    }
+                }
+                _ => break,
+            }
+            ray.set(current as usize);
+
+            current += direction;
+        }
+
+        ray
+    }
+
     const fn init_pawn_tables(&mut self) {
         let mut index = 0;
         while index < 64 {
@@ -248,95 +284,114 @@ impl MoveTables {
         }
     }
 
-    const fn init_ray_attackes(&mut self) {
+    const fn init_ray_attacks(&mut self) {
         let mut index = 0;
         while index < 64 {
             let rank = index / 8;
             let file = index % 8;
 
-            // North ray (up)
-            let mut north = BitBoard(0);
-            let mut r = rank + 1;
-            while r < 8 {
-                north.set(r * 8 + file);
-                r += 1;
-            }
-            self.north_rays[index] = north;
+            self.north_rays[index] = self.generate_ray(rank, file, Direction::NORTH);
+            self.south_rays[index] = self.generate_ray(rank, file, Direction::SOUTH);
+            self.east_rays[index] = self.generate_ray(rank, file, Direction::EAST);
+            self.west_rays[index] = self.generate_ray(rank, file, Direction::WEST);
+            self.northeast_rays[index] = self.generate_ray(rank, file, Direction::NORTHEAST);
+            self.southeast_rays[index] = self.generate_ray(rank, file, Direction::SOUTHEAST);
+            self.southwest_rays[index] = self.generate_ray(rank, file, Direction::SOUTHWEST);
+            self.northwest_rays[index] = self.generate_ray(rank, file, Direction::NORTHWEST);
 
-            // South ray (down)
-            let mut south = BitBoard(0);
-            let mut r = rank as i8 - 1;
-            while r >= 0 {
-                south.set(r as usize * 8 + file);
-                r -= 1;
-            }
-            self.south_rays[index] = south;
-
-            // East ray (right)
-            let mut east = BitBoard(0);
-            let mut f = file + 1;
-            while f < 8 {
-                east.set(rank * 8 + f);
-                f += 1;
-            }
-            self.east_rays[index] = east;
-
-            // West ray (left)
-            let mut west = BitBoard(0);
-            let mut f = file as i8 - 1;
-            while f >= 0 {
-                west.set(rank * 8 + f as usize);
-                f -= 1;
-            }
-            self.west_rays[index] = west;
-
-            // Northeast ray (up-right)
-            let mut northeast = BitBoard(0);
-            let mut r = rank + 1;
-            let mut f = file + 1;
-            while r < 8 && f < 8 {
-                northeast.set(r * 8 + f);
-                r += 1;
-                f += 1;
-            }
-            self.northeast_rays[index] = northeast;
-
-            // Southeast ray (down-right)
-            let mut southeast = BitBoard(0);
-            let mut r = rank as i8 - 1;
-            let mut f = file + 1;
-            while r >= 0 && f < 8 {
-                southeast.set(r as usize * 8 + f);
-                r -= 1;
-                f += 1;
-            }
-            self.southeast_rays[index] = southeast;
-
-            // Southwest ray (down-left)
-            let mut southwest = BitBoard(0);
-            let mut r = rank as i8 - 1;
-            let mut f = file as i8 - 1;
-            while r >= 0 && f >= 0 {
-                southwest.set(r as usize * 8 + f as usize);
-                r -= 1;
-                f -= 1;
-            }
-            self.southwest_rays[index] = southwest;
-
-            // Northwest ray (up-left)
-            let mut northwest = BitBoard(0);
-            let mut r = rank + 1;
-            let mut f = file as i8 - 1;
-            while r < 8 && f >= 0 {
-                northwest.set(r * 8 + f as usize);
-                r += 1;
-                f -= 1;
-            }
-            self.northwest_rays[index] = northwest;
-
-            index += 1;
+            index += 1
         }
     }
+
+    // const fn init_ray_attacks(&mut self) {
+    //     let mut index = 0;
+    //     while index < 64 {
+    //         let rank = index / 8;
+    //         let file = index % 8;
+    //
+    //         // North ray (up)
+    //         let mut north = BitBoard(0);
+    //         let mut r = rank + 1;
+    //         while r < 8 {
+    //             north.set(r * 8 + file);
+    //             r += 1;
+    //         }
+    //         self.north_rays[index] = north;
+    //
+    //         // South ray (down)
+    //         let mut south = BitBoard(0);
+    //         let mut r = rank as i8 - 1;
+    //         while r >= 0 {
+    //             south.set(r as usize * 8 + file);
+    //             r -= 1;
+    //         }
+    //         self.south_rays[index] = south;
+    //
+    //         // East ray (right)
+    //         let mut east = BitBoard(0);
+    //         let mut f = file + 1;
+    //         while f < 8 {
+    //             east.set(rank * 8 + f);
+    //             f += 1;
+    //         }
+    //         self.east_rays[index] = east;
+    //
+    //         // West ray (left)
+    //         let mut west = BitBoard(0);
+    //         let mut f = file as i8 - 1;
+    //         while f >= 0 {
+    //             west.set(rank * 8 + f as usize);
+    //             f -= 1;
+    //         }
+    //         self.west_rays[index] = west;
+    //
+    //         // Northeast ray (up-right)
+    //         let mut northeast = BitBoard(0);
+    //         let mut r = rank + 1;
+    //         let mut f = file + 1;
+    //         while r < 8 && f < 8 {
+    //             northeast.set(r * 8 + f);
+    //             r += 1;
+    //             f += 1;
+    //         }
+    //         self.northeast_rays[index] = northeast;
+    //
+    //         // Southeast ray (down-right)
+    //         let mut southeast = BitBoard(0);
+    //         let mut r = rank as i8 - 1;
+    //         let mut f = file + 1;
+    //         while r >= 0 && f < 8 {
+    //             southeast.set(r as usize * 8 + f);
+    //             r -= 1;
+    //             f += 1;
+    //         }
+    //         self.southeast_rays[index] = southeast;
+    //
+    //         // Southwest ray (down-left)
+    //         let mut southwest = BitBoard(0);
+    //         let mut r = rank as i8 - 1;
+    //         let mut f = file as i8 - 1;
+    //         while r >= 0 && f >= 0 {
+    //             southwest.set(r as usize * 8 + f as usize);
+    //             r -= 1;
+    //             f -= 1;
+    //         }
+    //         self.southwest_rays[index] = southwest;
+    //
+    //         // Northwest ray (up-left)
+    //         let mut northwest = BitBoard(0);
+    //         let mut r = rank + 1;
+    //         let mut f = file as i8 - 1;
+    //         while r < 8 && f >= 0 {
+    //             northwest.set(r * 8 + f as usize);
+    //             r += 1;
+    //             f -= 1;
+    //         }
+    //         self.northwest_rays[index] = northwest;
+    //
+    //         index += 1;
+    //     }
+    // }
 
     pub const fn get_rook_moves(
         &self,

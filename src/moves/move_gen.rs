@@ -225,7 +225,6 @@ pub fn gen_pawn_moves(state: &BoardState, side: Side, move_list: &mut Vec<Move>)
     let pawns = state.get_piece_bb(side, Piece::Pawn);
     let ally_pieces = state.get_side_bb(side);
     let enemy_pieces = state.get_side_bb(side.flip());
-    let occupied = *ally_pieces | *enemy_pieces;
 
     let mut pawns_bb = *pawns;
     while let Some(from_sq) = pawns_bb.pop_lsb() {
