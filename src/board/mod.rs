@@ -1,6 +1,6 @@
 use crate::{
     evaluation::Evaluator,
-    moves::{move_gen::MoveGen, move_info::MoveInfo},
+    moves::{legacy::MoveGen, move_info::MoveInfo},
 };
 use miette::Context;
 #[cfg(feature = "random")]
@@ -768,7 +768,7 @@ impl Board {
                 self.positions.get_piece_bb(Side::White, *piece).pop_count();
 
             black_counts[piece.index()] =
-                self.positions.get_piece_bb(Side::Black,* piece).pop_count();
+                self.positions.get_piece_bb(Side::Black, *piece).pop_count();
         }
 
         // If both sides have only their kings, it's insufficient material
