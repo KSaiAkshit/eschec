@@ -2,7 +2,7 @@ use crate::{
     evaluation::Evaluator,
     moves::{
         legacy::MoveGen,
-        move_gen::{generate_moves_from_square, generate_piece_moves},
+        move_gen::{generate_piece_moves, generate_piece_moves_vec},
         move_info::MoveInfo,
     },
 };
@@ -455,7 +455,7 @@ impl Board {
             &mut moves,
         );
         if !moves.iter().any(|m| to == m.to()) {
-            debug!("{} is not a legal square", to);
+            debug!("{} cannot move from {} to {}", piece, from, to);
             return false;
         }
 
@@ -633,19 +633,20 @@ impl Board {
 
         let king_square = Square::new(king_pos[0]).expect("Should be able to find king");
 
+        // PERF: possible perf improvement here to not gen moves for pieces that are
+        // not on the board, like captured pieces
         let opponent = side.flip();
         for piece in Piece::colored_pieces(opponent) {
-            let attacking_moves = generate_moves_from_square(
+            let attacking_moves = generate_piece_moves_vec(
                 piece,
-                king_square,
                 &self.positions,
-                side,
+                opponent,
                 self.castling_rights,
                 self.enpassant_square,
             );
             if attacking_moves.iter().any(|m| {
-                    if king_square == m.to() {
-                debug!("King square is attacked by move: {}", m.uci());
+                if king_square == m.to() {
+                    debug!("King square is attacked by move: {}", m.uci());
                     true
                 } else {
                     false

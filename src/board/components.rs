@@ -5,7 +5,6 @@ use std::{
 };
 
 use miette::Context;
-use tracing::debug;
 
 #[derive(Debug, Default, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
 pub struct BitBoard(pub u64);
@@ -95,7 +94,6 @@ impl BitBoard {
         out
     }
 
-    /// NOTE: Returns index of the least significant bit
     #[inline]
     pub const fn lsb(&self) -> Option<u64> {
         if self.0 == 0 {
@@ -114,6 +112,41 @@ impl BitBoard {
             self.0 &= self.0 - 1; // Clear the least significant bit
             Some(idx as u64)
         }
+    }
+
+    #[inline]
+    pub const fn msb(&self) -> Option<u64> {
+        if self.0 == 0 {
+            None
+        } else {
+            Some(63 - self.0.leading_zeros() as u64)
+        }
+    }
+
+    #[inline]
+    pub const fn pop_msb(&mut self) -> Option<u64> {
+        if self.0 == 0 {
+            None
+        } else {
+            let idx = 63 - self.0.leading_zeros();
+            self.0 &= !(1u64 << idx); // Clear the most significant bit
+            Some(idx as u64)
+        }
+    }
+
+    #[inline]
+    pub const fn count_ones(&self) -> u32 {
+        self.0.count_ones()
+    }
+
+    #[inline]
+    pub const fn is_empty(&self) -> bool {
+        self.0 == 0
+    }
+
+    #[inline]
+    pub const fn any(&self) -> bool {
+        self.0 != 0
     }
 
     pub fn get_set_bits(&self) -> Vec<usize> {
