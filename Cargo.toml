@@ -15,7 +15,6 @@ opt-level = 3
 [dependencies]
 clap = { version = "4.5.38", features = ["derive"] }
 color-backtrace = "0.7.0"
-const_format = { version = "0.2.34", features = ["fmt"] }
 miette = { version = "7.5.0", features = ["fancy"] }
 rand = { version = "0.9.0", optional = true }
 shell-words = "1.1.0"

@@ -242,16 +242,16 @@ impl MoveTables {
             self.white_pawn_attacks[index] = white_attacks;
 
             // Black pawn attacks
-            let mut black_attakcs = BitBoard(0);
+            let mut black_attacks = BitBoard(0);
             if rank > 0 {
                 if file > 0 {
-                    black_attakcs.set((rank - 1) * 8 + file - 1);
+                    black_attacks.set((rank - 1) * 8 + file - 1);
                 }
                 if file < 7 {
-                    black_attakcs.set((rank - 1) * 8 + file + 1);
+                    black_attacks.set((rank - 1) * 8 + file + 1);
                 }
             }
-            self.black_pawn_attacks[index] = black_attakcs;
+            self.black_pawn_attacks[index] = black_attacks;
 
             // White pawn single pushes
             let mut white_pushes = BitBoard(0);
@@ -402,10 +402,26 @@ impl MoveTables {
         let mut moves = BitBoard(0);
 
         // Use the ray tables and add until blocker logic
-        moves = moves.or(self.ray_until_blocker(self.north_rays[from], ally_pieces, enemy_pieces));
-        moves = moves.or(self.ray_until_blocker(self.south_rays[from], ally_pieces, enemy_pieces));
-        moves = moves.or(self.ray_until_blocker(self.east_rays[from], ally_pieces, enemy_pieces));
-        moves = moves.or(self.ray_until_blocker(self.west_rays[from], ally_pieces, enemy_pieces));
+        moves = moves.or(self.ray_until_blocker(
+            self.north_rays[from],
+            ally_pieces,
+            enemy_pieces,
+            true,
+        ));
+        moves = moves.or(self.ray_until_blocker(
+            self.south_rays[from],
+            ally_pieces,
+            enemy_pieces,
+            false,
+        ));
+        moves =
+            moves.or(self.ray_until_blocker(self.east_rays[from], ally_pieces, enemy_pieces, true));
+        moves = moves.or(self.ray_until_blocker(
+            self.west_rays[from],
+            ally_pieces,
+            enemy_pieces,
+            false,
+        ));
 
         moves
     }
@@ -419,14 +435,30 @@ impl MoveTables {
         let mut moves = BitBoard(0);
 
         // Use the ray tables and add until blocker logic
-        moves =
-            moves.or(self.ray_until_blocker(self.northeast_rays[from], ally_pieces, enemy_pieces));
-        moves =
-            moves.or(self.ray_until_blocker(self.southeast_rays[from], ally_pieces, enemy_pieces));
-        moves =
-            moves.or(self.ray_until_blocker(self.southwest_rays[from], ally_pieces, enemy_pieces));
-        moves =
-            moves.or(self.ray_until_blocker(self.northwest_rays[from], ally_pieces, enemy_pieces));
+        moves = moves.or(self.ray_until_blocker(
+            self.northeast_rays[from],
+            ally_pieces,
+            enemy_pieces,
+            true,
+        ));
+        moves = moves.or(self.ray_until_blocker(
+            self.southeast_rays[from],
+            ally_pieces,
+            enemy_pieces,
+            false,
+        ));
+        moves = moves.or(self.ray_until_blocker(
+            self.southwest_rays[from],
+            ally_pieces,
+            enemy_pieces,
+            false,
+        ));
+        moves = moves.or(self.ray_until_blocker(
+            self.northwest_rays[from],
+            ally_pieces,
+            enemy_pieces,
+            true,
+        ));
 
         moves
     }
@@ -448,6 +480,7 @@ impl MoveTables {
         ray: BitBoard,
         ally_pieces: BitBoard,
         enemy_pieces: BitBoard,
+        forward: bool,
     ) -> BitBoard {
         let blockers = ray.and(ally_pieces.or(enemy_pieces));
 
@@ -456,18 +489,26 @@ impl MoveTables {
             return ray;
         }
 
-        // Find the closest blocker
-        let blocker_index: u64 = blockers.lsb().unwrap();
-        let blocker_mask = 1u64 << blocker_index;
-
-        let is_ally_blocker = (blocker_mask & ally_pieces.0) != 0;
-
-        let before_blocker = ray.0 & (blocker_mask - 1);
-
-        if is_ally_blocker {
-            BitBoard(before_blocker)
+        let maybe_blocker = if forward {
+            blockers.lsb()
         } else {
-            BitBoard(before_blocker | blocker_mask)
+            blockers.msb()
+        };
+        if let Some(index) = maybe_blocker {
+            let blocker_mask = 1u64 << index;
+            let mask_up_to_blocker = if forward {
+                blocker_mask | (blocker_mask - 1)
+            } else {
+                !(blocker_mask - 1)
+            };
+            let ray_up_to_blocker = ray.0 & mask_up_to_blocker;
+            if (blocker_mask & ally_pieces.0) != 0 {
+                BitBoard(ray_up_to_blocker & !blocker_mask)
+            } else {
+                BitBoard(ray_up_to_blocker)
+            }
+        } else {
+            ray
         }
     }
 
@@ -501,7 +542,7 @@ impl MoveTables {
                 }
             }
             Side::Black => {
-                let single_push = self.black_pawn_attacks[from];
+                let single_push = self.black_pawn_pushes[from];
                 if (single_push & occupied).0 == 0 {
                     moves = moves | single_push;
 

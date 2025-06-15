@@ -51,7 +51,6 @@ use crate::{Board, BoardState, CastlingRights, Piece, Side, board::components::S
 
 use super::{move_info::Move, precomputed::MOVE_TABLES};
 
-
 /// Generate all pseudo-legal moves for a side and return them as a new Vec
 pub fn gen_all_moves_vec(board: &Board) -> Vec<Move> {
     let mut moves = Vec::new();
@@ -99,7 +98,14 @@ pub fn generate_moves_from_square(
     en_passant_square: Option<Square>,
 ) -> Vec<Move> {
     let mut moves = Vec::new();
-    generate_piece_moves(piece, state, side, castling_rights, en_passant_square, &mut moves);
+    generate_piece_moves(
+        piece,
+        state,
+        side,
+        castling_rights,
+        en_passant_square,
+        &mut moves,
+    );
     moves
         .into_iter()
         .filter(|m| m.from_sq() as usize == from_square.index())
