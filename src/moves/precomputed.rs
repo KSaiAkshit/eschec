@@ -457,16 +457,17 @@ impl MoveTables {
         }
 
         // Find the closest blocker
-        let blocker_square: u64 = blockers.lsb().unwrap();
+        let blocker_index: u64 = blockers.lsb().unwrap();
+        let blocker_mask = 1u64 << blocker_index;
 
-        let is_ally_blocker = (blocker_square & ally_pieces.0) != 0;
+        let is_ally_blocker = (blocker_mask & ally_pieces.0) != 0;
 
-        let before_blocker = ray.0 & ((blocker_square - 1) ^ blocker_square);
+        let before_blocker = ray.0 & (blocker_mask - 1);
 
         if is_ally_blocker {
             BitBoard(before_blocker)
         } else {
-            BitBoard(before_blocker | blocker_square)
+            BitBoard(before_blocker | blocker_mask)
         }
     }
 

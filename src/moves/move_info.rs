@@ -70,6 +70,18 @@ impl Move {
         ((self.0 & Self::TO_MASK) >> 6) as u8
     }
 
+    /// Extract the from-square index (0..63)
+    #[inline]
+    pub const fn from(&self) -> Square {
+        Square::new((self.0 & Self::FROM_MASK) as usize).unwrap()
+    }
+
+    /// Extract the to-square index (0..63)
+    #[inline]
+    pub const fn to(&self) -> Square {
+        Square::new(((self.0 & Self::TO_MASK) >> 6) as usize).unwrap()
+    }
+
     /// Extract the flags (upper 4 bits)
     #[inline]
     pub const fn flags(&self) -> u16 {
@@ -124,10 +136,9 @@ impl Move {
     pub fn uci(&self) -> String {
         let from = Square::new(self.from_sq().into()).unwrap();
         let to = Square::new(self.to_sq().into()).unwrap_or_default();
-        println!("to_uci: {}", self.to_sq());
         match self.promoted_piece_char() {
             Some(piece) => format!("{}{}{}", from, to, piece),
-            None => format!("from: {}, to: {}, to_n: {}", from, to, self.to_sq()),
+            None => format!("from: {}, to: {},", from, to,),
         }
     }
 

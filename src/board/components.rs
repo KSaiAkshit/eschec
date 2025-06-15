@@ -5,6 +5,7 @@ use std::{
 };
 
 use miette::Context;
+use tracing::debug;
 
 #[derive(Debug, Default, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
 pub struct BitBoard(pub u64);
@@ -70,12 +71,12 @@ impl BitBoard {
     }
 
     #[inline]
-    pub fn capture(&mut self, index: usize) {
+    pub const fn capture(&mut self, index: usize) {
         self.0 &= !(1 << index);
     }
 
     #[inline]
-    pub fn pop_count(&self) -> u32 {
+    pub const fn pop_count(&self) -> u32 {
         self.0.count_ones()
     }
 
@@ -94,6 +95,7 @@ impl BitBoard {
         out
     }
 
+    /// NOTE: Returns index of the least significant bit
     #[inline]
     pub const fn lsb(&self) -> Option<u64> {
         if self.0 == 0 {
@@ -201,19 +203,19 @@ impl Not for Side {
 impl Side {
     pub const SIDES: [Side; 2] = [Side::White, Side::Black];
 
-    pub fn white() -> usize {
+    pub const fn white() -> usize {
         Side::White.index()
     }
-    pub fn black() -> usize {
+    pub const fn black() -> usize {
         Side::Black.index()
     }
-    pub fn flip(&self) -> Self {
+    pub const fn flip(&self) -> Self {
         match self {
             Side::White => Side::Black,
             Side::Black => Side::White,
         }
     }
-    pub fn index(&self) -> usize {
+    pub const fn index(&self) -> usize {
         match self {
             Side::White => 0,
             Side::Black => 1,
@@ -338,7 +340,7 @@ impl Piece {
         }
     }
 
-    pub fn index(&self) -> usize {
+    pub const fn index(&self) -> usize {
         match self {
             Piece::Pawn => 0,
             Piece::Knight => 1,
@@ -408,6 +410,9 @@ impl BoardState {
 
         fen
     }
+
+    /// Primary way to make moves.
+    /// Handles regular captures too, so using just this should be fine
     pub fn update_piece_position(
         &mut self,
         piece: &Piece,
@@ -446,32 +451,37 @@ impl BoardState {
         Ok(())
     }
 
-    pub fn get_piece_bb(&self, side: Side, piece: Piece) -> &BitBoard {
+    pub const fn get_piece_bb(&self, side: Side, piece: Piece) -> &BitBoard {
         &self.all_pieces[side.index()][piece.index()]
     }
 
-    pub fn get_piece_bb_mut(&mut self, side: Side, piece: Piece) -> &mut BitBoard {
+    pub const fn get_piece_bb_mut(&mut self, side: Side, piece: Piece) -> &mut BitBoard {
         &mut self.all_pieces[side.index()][piece.index()]
     }
 
-    pub fn get_colored_pieces(&self, side: Side) -> &[BitBoard; 6] {
+    pub const fn get_colored_pieces(&self, side: Side) -> &[BitBoard; 6] {
         &self.all_pieces[side.index()]
     }
 
-    pub fn get_colored_pieces_mut(&mut self, side: Side) -> &mut [BitBoard; 6] {
+    pub const fn get_colored_pieces_mut(&mut self, side: Side) -> &mut [BitBoard; 6] {
         &mut self.all_pieces[side.index()]
     }
 
-    pub fn get_side_bb(&self, side: Side) -> &BitBoard {
+    pub const fn get_side_bb(&self, side: Side) -> &BitBoard {
         &self.all_sides[side.index()]
     }
 
-    pub fn get_side_bb_mut(&mut self, side: Side) -> &mut BitBoard {
+    pub const fn get_side_bb_mut(&mut self, side: Side) -> &mut BitBoard {
         &mut self.all_sides[side.index()]
     }
 
-    pub fn square_belongs_to(&self, side: Side, square: usize) -> bool {
+    pub const fn square_belongs_to(&self, side: Side, square: usize) -> bool {
         self.all_sides[side.index()].contains_square(square)
+    }
+
+    pub const fn is_occupied(&self, square: usize) -> bool {
+        self.all_sides[Side::White.index()].contains_square(square)
+            || self.all_sides[Side::Black.index()].contains_square(square)
     }
 
     pub fn set(
@@ -492,8 +502,8 @@ impl BoardState {
 
     pub fn capture(
         &mut self,
-        side_to_capture: &Side,
-        piece_to_capture: &Piece,
+        side_to_capture: Side,
+        piece_to_capture: Piece,
         index_to_capture: usize,
     ) -> miette::Result<()> {
         miette::ensure!(
