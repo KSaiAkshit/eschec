@@ -14,6 +14,7 @@
 //! let mut moves = Vec::new();
 //!
 //! // Generate all moves for white
+//! let mut moves = Vec::new()
 //! generate_all_moves(
 //!     &board.positions,
 //!     Side::White,
@@ -46,9 +47,64 @@
 //! These functions generate **pseudo-legal** moves, meaning they don't check if the king
 //! would be in check after the move. Legal move validation should be done at a higher level.
 
-use crate::{BoardState, CastlingRights, Piece, Side, board::components::Square};
+use crate::{Board, BoardState, CastlingRights, Piece, Side, board::components::Square};
 
 use super::{move_info::Move, precomputed::MOVE_TABLES};
+
+
+/// Generate all pseudo-legal moves for a side and return them as a new Vec
+pub fn gen_all_moves_vec(board: &Board) -> Vec<Move> {
+    let mut moves = Vec::new();
+
+    generate_all_moves(
+        &board.positions,
+        board.stm,
+        board.castling_rights,
+        board.enpassant_square,
+        &mut moves,
+    );
+
+    moves
+}
+
+/// Generate all pseudo-legal moves for a piece type and return them as a new Vec
+pub fn generate_piece_moves_vec(
+    piece: Piece,
+    state: &BoardState,
+    side: Side,
+    castling_rights: CastlingRights,
+    en_passant_square: Option<Square>,
+) -> Vec<Move> {
+    let mut moves = Vec::new();
+    generate_piece_moves(
+        piece,
+        state,
+        side,
+        castling_rights,
+        en_passant_square,
+        &mut moves,
+    );
+    moves
+}
+
+/// Generate all pseudo-legal moves for a piece type at a specific square
+/// and return them as a new Vec.
+/// This is a convenience wrapper that filters out only moves from `from_square`.
+pub fn generate_moves_from_square(
+    piece: Piece,
+    from_square: Square,
+    state: &BoardState,
+    side: Side,
+    castling_rights: CastlingRights,
+    en_passant_square: Option<Square>,
+) -> Vec<Move> {
+    let mut moves = Vec::new();
+    generate_piece_moves(piece, state, side, castling_rights, en_passant_square, &mut moves);
+    moves
+        .into_iter()
+        .filter(|m| m.from_sq() as usize == from_square.index())
+        .collect()
+}
 
 /// Comprehensive move generation function that handles all piece types and special moves
 ///
