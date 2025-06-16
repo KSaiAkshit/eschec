@@ -2,7 +2,7 @@ use crate::{
     evaluation::Evaluator,
     moves::{
         legacy::MoveGen,
-        move_gen::{generate_piece_moves, generate_piece_moves_vec},
+        move_gen::{generate_all_moves, generate_piece_moves, generate_piece_moves_vec},
         move_info::MoveInfo,
     },
 };
@@ -146,6 +146,7 @@ impl Board {
         b
     }
 
+    // TODO: Change this to use precomputed tables, also change return type to use Move struct
     pub fn generate_legal_moves(&self) -> miette::Result<Vec<(Square, Square)>> {
         let mut legal_moves = Vec::with_capacity(40);
         let our_pieces = self.positions.get_side_bb(self.stm);

@@ -402,26 +402,11 @@ impl MoveTables {
         let mut moves = BitBoard(0);
 
         // Use the ray tables and add until blocker logic
-        moves = moves.or(self.ray_until_blocker(
-            self.north_rays[from],
-            ally_pieces,
-            enemy_pieces,
-            true,
-        ));
-        moves = moves.or(self.ray_until_blocker(
-            self.south_rays[from],
-            ally_pieces,
-            enemy_pieces,
-            false,
-        ));
-        moves =
-            moves.or(self.ray_until_blocker(self.east_rays[from], ally_pieces, enemy_pieces, true));
-        moves = moves.or(self.ray_until_blocker(
-            self.west_rays[from],
-            ally_pieces,
-            enemy_pieces,
-            false,
-        ));
+        moves = moves
+            .or(self.ray_until_blocker(self.north_rays[from], ally_pieces, enemy_pieces, true))
+            .or(self.ray_until_blocker(self.south_rays[from], ally_pieces, enemy_pieces, false))
+            .or(self.ray_until_blocker(self.east_rays[from], ally_pieces, enemy_pieces, true))
+            .or(self.ray_until_blocker(self.west_rays[from], ally_pieces, enemy_pieces, false));
 
         moves
     }
@@ -435,30 +420,11 @@ impl MoveTables {
         let mut moves = BitBoard(0);
 
         // Use the ray tables and add until blocker logic
-        moves = moves.or(self.ray_until_blocker(
-            self.northeast_rays[from],
-            ally_pieces,
-            enemy_pieces,
-            true,
-        ));
-        moves = moves.or(self.ray_until_blocker(
-            self.southeast_rays[from],
-            ally_pieces,
-            enemy_pieces,
-            false,
-        ));
-        moves = moves.or(self.ray_until_blocker(
-            self.southwest_rays[from],
-            ally_pieces,
-            enemy_pieces,
-            false,
-        ));
-        moves = moves.or(self.ray_until_blocker(
-            self.northwest_rays[from],
-            ally_pieces,
-            enemy_pieces,
-            true,
-        ));
+        moves = moves
+            .or(self.ray_until_blocker(self.northeast_rays[from], ally_pieces, enemy_pieces, true))
+            .or(self.ray_until_blocker(self.southeast_rays[from], ally_pieces, enemy_pieces, false))
+            .or(self.ray_until_blocker(self.southwest_rays[from], ally_pieces, enemy_pieces, false))
+            .or(self.ray_until_blocker(self.northwest_rays[from], ally_pieces, enemy_pieces, true));
 
         moves
     }
@@ -469,10 +435,8 @@ impl MoveTables {
         ally_pieces: BitBoard,
         enemy_pieces: BitBoard,
     ) -> BitBoard {
-        let rook = self.get_rook_moves(from, ally_pieces, enemy_pieces);
-        let bishop = self.get_bishop_moves(from, ally_pieces, enemy_pieces);
-
-        rook.or(bishop)
+        self.get_rook_moves(from, ally_pieces, enemy_pieces)
+            .or(self.get_bishop_moves(from, ally_pieces, enemy_pieces))
     }
 
     pub const fn ray_until_blocker(
