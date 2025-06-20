@@ -6,3 +6,4 @@ heaprack**
 *heaptrack*
 *.data
 /src/bin/test.rs
+dhat-heap.json
