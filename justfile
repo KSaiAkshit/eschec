@@ -11,10 +11,28 @@ play:
     cargo run --bin eschec {{ flags }} -- play
 
 run *args:
-    cargo run --bin eschec {{ flags }} {{ args }}
+    cargo run --bin eschec {{ flags }} -- {{ args }}
 
 record pid:
     perf record --call-graph dwarf -p {{ pid }}
+
+dhat-heap args="":
+    RUSTFLAGS="-Cprofile-use" \
+    DHAT_PROFILE=1 \
+    cargo run --profile release-dhat --features dhat-heap --bin eschec -- {{ args }}
+
+dhat-perft depth=DEPTH fen=FEN:
+    DHAT_PROFILE=1 \
+    cargo run --profile release-dhat --features dhat-heap --bin eschec -- perft -d {{ depth }} --fen "{{ fen }}"
+
+test:
+    cargo test --all-features
+
+lint:
+    cargo clippy --all-targets --all-features -- -D warnings
+
+fmt-check:
+    cargo fmt --all --check
 
 [positional-arguments]
 perft depth=DEPTH fen=FEN:

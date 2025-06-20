@@ -2,7 +2,7 @@ use crate::{
     evaluation::Evaluator,
     moves::{
         legacy::MoveGen,
-        move_gen::{generate_all_moves, generate_piece_moves, generate_piece_moves_vec},
+        move_gen::{generate_piece_moves, generate_piece_moves_vec},
         move_info::MoveInfo,
     },
 };
