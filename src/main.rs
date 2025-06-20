@@ -3,7 +3,13 @@ use eschec::comms::uci;
 use eschec::{board::*, *};
 use tracing::{Level, span, trace};
 
+#[cfg(feature = "dhat-heap")]
+#[global_allocator]
+static ALLOC: dhat::Alloc = dhat::Alloc;
+
 fn main() -> miette::Result<()> {
+    #[cfg(feature = "dhat-heap")]
+    let _profiler = dhat::Profiler::new_heap();
     init();
 
     let span = span!(Level::DEBUG, "main");
