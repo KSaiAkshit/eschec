@@ -37,3 +37,7 @@ fmt-check:
 [positional-arguments]
 perft depth=DEPTH fen=FEN:
     cargo run --bin eschec {{ flags }} -- perft -d {{ depth }} --fen "{{ fen }}"
+
+[positional-arguments]
+perftd depth=DEPTH fen=FEN:
+    cargo run --bin eschec {{ flags }} -- perft -d {{ depth }} --fen "{{ fen }}" --divide

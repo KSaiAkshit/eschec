@@ -1,5 +1,48 @@
 use crate::*;
+use miette::Context;
+use std::io::{BufRead, BufReader, Write};
+use std::process::{Command, Stdio};
+use std::str::FromStr;
 use std::time::{Duration, Instant};
+
+/// Run Stockfish perft divide and return a Vec<(uci_move, count)>
+pub fn stockfish_perft_divide(fen: &str, depth: u8) -> miette::Result<Vec<(String, u64)>> {
+    let mut child = Command::new("stockfish")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .into_diagnostic()
+        .context("Failed to start Stockfish")?;
+
+    let mut stdin = child.stdin.take().unwrap();
+    let stdout = child.stdout.take().unwrap();
+    let mut reader = BufReader::new(stdout);
+
+    writeln!(stdin, "uci").unwrap();
+    writeln!(stdin, "isready").unwrap();
+    writeln!(stdin, "position fen {}", fen).unwrap();
+    println!("position fen {}", fen);
+    writeln!(stdin, "go perft {}", depth).unwrap();
+    println!("go perft {}", depth);
+
+    let mut results = Vec::new();
+    let mut buf = String::new();
+    while reader.read_line(&mut buf).unwrap() > 0 {
+        let line = buf.trim();
+        if let Some((mv, count)) = line.split_once(':') {
+            let mv = mv.trim().to_uppercase().to_string();
+            let count = count.trim().parse::<u64>().unwrap_or(0);
+            results.push((mv, count));
+        }
+        if line.starts_with("Nodes searched") || line.starts_with("bestmove") {
+            break;
+        }
+        buf.clear();
+    }
+    // dbg!(&results);
+
+    Ok(results)
+}
 
 #[derive(Debug)]
 pub struct PerftResult {
@@ -33,6 +76,74 @@ impl PerftResult {
             move_counts,
         }
     }
+}
+
+pub fn perft_divide_uci(board: &mut Board, depth: u8) -> miette::Result<Vec<(String, u64)>> {
+    let result = perft(board, depth, true);
+    let r = result
+        .move_counts
+        .unwrap_or_default()
+        .into_iter()
+        .map(|(from, to, count)| {
+            // Convert to UCI string, e.g. "e2e4"
+            let uci = format!("{}{}", from, to);
+            (uci, count)
+        })
+        .collect();
+    Ok(r)
+}
+
+pub fn debug_perft_vs_stockfish(
+    board: &mut Board,
+    depth: u8,
+    path: Vec<String>,
+) -> miette::Result<()> {
+    let fen = board.to_fen()?;
+    println!("Comparing at depth {} path: {:?}", depth, path);
+
+    let mut our_moves = perft_divide_uci(board, depth)?;
+    let stock_moves = stockfish_perft_divide(&fen, depth)?;
+    our_moves.sort_by(|a, b| a.0.cmp(&b.0));
+    let mut stockfish_moves = stock_moves.clone();
+    stockfish_moves.sort_by(|a, b| a.0.cmp(&b.0));
+
+    dbg!(&our_moves);
+    dbg!(&stock_moves);
+
+    let mut found_mismatch = false;
+
+    for ((our_mv, our_count), (sf_mv, sf_count)) in our_moves.iter().zip(stockfish_moves.iter()) {
+        if our_mv != sf_mv {
+            println!("Move mismatch: our {} vs sf {}", our_mv, sf_mv);
+            found_mismatch = true;
+            break;
+        }
+
+        if our_count != sf_count {
+            println!(
+                "Count mismatch on move {}: our {} vs sf {}",
+                our_mv, our_count, sf_count
+            );
+            // Decend into this move
+            let (from, to) = {
+                let from = Square::from_str(&our_mv[0..2]).unwrap();
+                let to = Square::from_str(&our_mv[2..4]).unwrap();
+                (from, to)
+            };
+            let move_data = board.try_move_with_info(from, to).unwrap();
+            let mut new_path = path.clone();
+            new_path.push(our_mv.clone());
+            debug_perft_vs_stockfish(board, depth - 1, new_path)?;
+            board.unmake_move(&move_data).unwrap();
+            found_mismatch = true;
+            break;
+        }
+    }
+
+    if !found_mismatch {
+        println!("No mimatch at this node (path: {:?}", path);
+    }
+    Ok(())
 }
 
 pub fn perft(board: &mut Board, depth: u8, divide: bool) -> PerftResult {

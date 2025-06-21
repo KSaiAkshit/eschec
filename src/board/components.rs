@@ -705,7 +705,7 @@ impl Default for CastlingRights {
 ///  v A1, B1, C1, D1, E1, F1, G1, H1,  <- h1 (bit 7) // 0
 ///    ^(bit 0)
 ///```
-#[derive(Default, Debug, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
+#[derive(Default, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub struct Square(usize);
 impl Square {
     /// Returns a Square from a given index. Will return None if index is out of bounds

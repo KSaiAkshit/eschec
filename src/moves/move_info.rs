@@ -60,25 +60,25 @@ impl Move {
 
     /// Extract the from-square index (0..63)
     #[inline]
-    pub const fn from_sq(&self) -> u8 {
+    pub const fn from_idx(&self) -> u8 {
         (self.0 & Self::FROM_MASK) as u8
     }
 
     /// Extract the to-square index (0..63)
     #[inline]
-    pub const fn to_sq(&self) -> u8 {
+    pub const fn to_idx(&self) -> u8 {
         ((self.0 & Self::TO_MASK) >> 6) as u8
     }
 
     /// Extract the from-square index (0..63)
     #[inline]
-    pub const fn from(&self) -> Square {
+    pub const fn from_sq(&self) -> Square {
         Square::new((self.0 & Self::FROM_MASK) as usize).unwrap()
     }
 
     /// Extract the to-square index (0..63)
     #[inline]
-    pub const fn to(&self) -> Square {
+    pub const fn to_sq(&self) -> Square {
         Square::new(((self.0 & Self::TO_MASK) >> 6) as usize).unwrap()
     }
 
@@ -134,8 +134,8 @@ impl Move {
 
     /// Utility: returns a 'e2e4', 'e7e8q' etc
     pub fn uci(&self) -> String {
-        let from = Square::new(self.from_sq().into()).unwrap();
-        let to = Square::new(self.to_sq().into()).unwrap_or_default();
+        let from = Square::new(self.from_idx().into()).unwrap();
+        let to = Square::new(self.to_idx().into()).unwrap_or_default();
         match self.promoted_piece_char() {
             Some(piece) => format!("{}{}{}", from, to, piece),
             None => format!("from: {}, to: {},", from, to,),

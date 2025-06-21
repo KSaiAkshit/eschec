@@ -108,7 +108,7 @@ pub fn generate_moves_from_square(
     );
     moves
         .into_iter()
-        .filter(|m| m.from_sq() as usize == from_square.index())
+        .filter(|m| m.from_idx() as usize == from_square.index())
         .collect()
 }
 
