@@ -289,8 +289,8 @@ impl Piece {
     ];
 
     pub const PIECE_CHARS: [[char; 6]; 2] = [
-        ['P', 'B', 'N', 'R', 'Q', 'K'], // White
-        ['p', 'b', 'n', 'r', 'q', 'k'], // Black
+        ['P', 'N', 'B', 'R', 'Q', 'K'], // White
+        ['p', 'n', 'b', 'r', 'q', 'k'], // Black
     ];
     const SIDES: [Side; 2] = [Side::White, Side::Black];
     pub fn all() -> impl Iterator<Item = (Piece, Side)> {
