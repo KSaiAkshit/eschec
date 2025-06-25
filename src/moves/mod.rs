@@ -11,8 +11,8 @@ impl Direction {
     pub const SOUTH: i8 = -8;
     pub const WEST: i8 = -1;
     pub const EAST: i8 = 1;
-    pub const NORTHWEST: i8 = -7;
-    pub const SOUTHEAST: i8 = 7;
+    pub const NORTHWEST: i8 = 7;
+    pub const SOUTHEAST: i8 = -7;
     pub const NORTHEAST: i8 = 9;
     pub const SOUTHWEST: i8 = -9;
 

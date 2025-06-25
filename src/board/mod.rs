@@ -1,8 +1,7 @@
 use crate::{
     evaluation::Evaluator,
     moves::{
-        move_gen::{generate_moves_from_square, generate_piece_moves, generate_piece_moves_vec},
-        move_info::MoveInfo,
+        move_gen::generate_moves_from_square_vec, move_info::MoveInfo, precomputed::MOVE_TABLES,
     },
 };
 use miette::Context;
@@ -160,7 +159,7 @@ impl Board {
                 let from_sq = Square::new(from_idx)
                     .wrap_err_with(|| format!("For {piece_type}, {from_idx} is not be valid"))?;
 
-                let moves = generate_moves_from_square(
+                let moves = generate_moves_from_square_vec(
                     piece_type,
                     from_sq,
                     &self.positions,
@@ -196,7 +195,7 @@ impl Board {
                 let from_sq = Square::new(from_idx)
                     .wrap_err_with(|| format!("king_pos {from_idx} should be valid"))?;
 
-                let moves = generate_moves_from_square(
+                let moves = generate_moves_from_square_vec(
                     piece_type,
                     from_sq,
                     &self.positions,
@@ -413,41 +412,37 @@ impl Board {
         {
             let file_diff = (to.col() as i32) - (from.col() as i32);
 
-            #[allow(clippy::collapsible_if)]
-            if file_diff.abs() == 1 {
-                if (self.stm == Side::White && to.row() - from.row() == 1)
-                    || (self.stm == Side::Black && from.row() - to.row() == 1)
-                {
-                    // Don't need to check if there's a piece at 'to' because enpassant square is
-                    // always empty
+            if file_diff.abs() == 1
+                && ((self.stm == Side::White && to.row() - from.row() == 1)
+                    || (self.stm == Side::Black && from.row() - to.row() == 1))
+            {
+                // Don't need to check if there's a piece at 'to' because enpassant square is
+                // always empty
 
-                    // Check if move leaves king in check
-                    let mut board_copy = *self;
-                    let captured_pawn_idx = match self.stm {
-                        Side::White => to.index() - 8,
-                        Side::Black => to.index() + 8,
-                    };
+                // Check if move leaves king in check
+                let mut board_copy = *self;
+                let captured_pawn_idx = match self.stm {
+                    Side::White => to.index() - 8,
+                    Side::Black => to.index() + 8,
+                };
 
-                    let _ = board_copy.positions.capture(
-                        self.stm.flip(),
-                        Piece::Pawn,
-                        captured_pawn_idx,
-                    );
+                let _ =
+                    board_copy
+                        .positions
+                        .capture(self.stm.flip(), Piece::Pawn, captured_pawn_idx);
 
-                    return !board_copy.is_in_check(self.stm);
-                }
+                return !board_copy.is_in_check(self.stm);
             }
         }
 
         // Generate legal moves for the piece
-        let mut moves = Vec::new();
-        generate_piece_moves(
+        let moves = generate_moves_from_square_vec(
             piece,
+            from,
             &self.positions,
             self.stm,
             self.castling_rights,
             self.enpassant_square,
-            &mut moves,
         );
         if !moves.iter().any(|m| to == m.to_sq()) {
             debug!("{} cannot move from {} to {}", piece, from, to);
@@ -471,70 +466,64 @@ impl Board {
 
     pub fn is_in_check(&self, side: Side) -> bool {
         let king_bb = self.positions.get_piece_bb(side, Piece::King);
-        let king_pos = king_bb.get_set_bits();
+        let king_pos = king_bb.lsb();
 
-        if king_pos.is_empty() {
+        if king_pos.is_none() {
             debug!("{} king is not on board", side);
             return false;
         }
+        let king_sq = king_pos.unwrap() as usize;
 
-        let king_square = Square::new(king_pos[0]).expect("Should be able to find king");
-
-        // PERF: possible perf improvement here to not gen moves for pieces that are
-        // not on the board, like captured pieces
         let opponent = side.flip();
-        for piece in Piece::colored_pieces(opponent) {
-            let attacking_moves = generate_piece_moves_vec(
-                piece,
-                &self.positions,
-                opponent,
-                self.castling_rights,
-                self.enpassant_square,
-            );
-            if attacking_moves.iter().any(|m| {
-                if king_square == m.to_sq() {
-                    debug!("King square is attacked by move: {}", m.uci());
-                    true
-                } else {
-                    false
-                }
-            }) {
-                return true;
-            }
+        let opp_pawns = self.positions.get_piece_bb(opponent, Piece::Pawn);
+        let opp_knights = self.positions.get_piece_bb(opponent, Piece::Knight);
+        let opp_rook_queen = self.positions.get_orhto_sliders_bb(opponent);
+        let opp_bishop_queen = self.positions.get_diag_sliders_bb(opponent);
+        let opp_king = self.positions.get_piece_bb(opponent, Piece::King);
+
+        // Check for pawn attacks
+        // Use attack tables for the *king's side* because we need to look
+        // "backwards" from the king's square to where an enemy pawn would have to be
+        let pawn_attack_bb = match side {
+            Side::White => MOVE_TABLES.black_pawn_attacks[king_sq],
+            Side::Black => MOVE_TABLES.white_pawn_attacks[king_sq],
+        };
+        if (pawn_attack_bb & *opp_pawns).any() {
+            debug!("{} king attacked by pawn.", side);
+            return true;
+        }
+        // Check for kinght attacks
+        if (MOVE_TABLES.knight_moves[king_sq] & *opp_knights).any() {
+            debug!("{} king attacked by knight.", side);
+            return true;
         }
 
+        let all_pieces =
+            self.positions.get_side_bb(Side::White) | self.positions.get_side_bb(Side::Black);
+
+        // Orthogonal checks for rooks & queens
+        let rook_attacks = MOVE_TABLES.get_rook_moves(king_sq, Default::default(), all_pieces);
+        if (rook_attacks & opp_rook_queen).any() {
+            debug!("{} king attacked by rook or queen.", side);
+            return true;
+        }
+
+        // Diagonal checks for rooks & queens
+        let bishop_attacks = MOVE_TABLES.get_bishop_moves(king_sq, Default::default(), all_pieces);
+        if (bishop_attacks & opp_bishop_queen).any() {
+            debug!("{} king attacked by bishop or queen.", side);
+            return true;
+        }
+
+        // Check for king attacks
+        if (MOVE_TABLES.king_moves[king_sq] & *opp_king).any() {
+            debug!("{} king attacked by opp king.", side);
+            return true;
+        }
+
+        // No attackers found
         false
     }
-    // pub fn is_in_check(&self, side: Side) -> bool {
-    //     // 1. Find king's position
-    //     let king_bb = self.positions.get_piece_bb(side, Piece::King);
-    //     let king_pos = king_bb.get_set_bits();
-    //
-    //     if king_pos.is_empty() {
-    //         debug!("{} king is not on board", side);
-    //         return false;
-    //     }
-    //
-    //     let king_square = Square::new(king_pos[0]).expect("Should be able to find king");
-    //
-    //     // 2. Generate oppponent's attacks
-    //     let opponent = side.flip();
-    //     for piece in Piece::colored_pieces(opponent) {
-    //         let piece_bb = self.positions.get_piece_bb(opponent, piece);
-    //         let moves = MoveGen::new(piece, opponent, self);
-    //
-    //         // If any opponent piece can attack king's square, king is in check
-    //         if piece_bb
-    //             .get_set_bits()
-    //             .iter()
-    //             .any(|&from| moves.attack_bb[from].contains_square(king_square.index()))
-    //         {
-    //             return true;
-    //         }
-    //     }
-    //
-    //     false
-    // }
 
     pub fn is_checkmate(&self, side: Side) -> bool {
         self.is_in_check(side)
@@ -633,20 +622,6 @@ impl Board {
                 }
             }
         }
-        // updte all_sides too
-        // self.positions.all_sides[0] = self.positions.all_pieces[0][0]
-        //     | self.positions.all_pieces[0][1]
-        //     | self.positions.all_pieces[0][2]
-        //     | self.positions.all_pieces[0][3]
-        //     | self.positions.all_pieces[0][4]
-        //     | self.positions.all_pieces[0][5];
-        //
-        // self.positions.all_sides[1] = self.positions.all_pieces[1][0]
-        //     | self.positions.all_pieces[1][1]
-        //     | self.positions.all_pieces[1][2]
-        //     | self.positions.all_pieces[1][3]
-        //     | self.positions.all_pieces[1][4]
-        //     | self.positions.all_pieces[1][5];
         Ok(())
     }
 
