@@ -205,7 +205,7 @@ pub fn init() {
         tracing_subscriber::fmt()
             .without_time()
             .with_writer(stderr)
-            .with_env_filter(EnvFilter::from_default_env().add_directive(Level::DEBUG.into()))
+            .with_env_filter(EnvFilter::from_default_env().add_directive(Level::INFO.into()))
             .init();
         true
     });

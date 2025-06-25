@@ -64,17 +64,17 @@ impl Not for &BitBoard {
 }
 
 impl BitBoard {
-    #[inline]
+    #[inline(always)]
     pub const fn set(&mut self, pos: usize) {
         self.0 |= 1 << pos;
     }
 
-    #[inline]
+    #[inline(always)]
     pub const fn capture(&mut self, index: usize) {
         self.0 &= !(1 << index);
     }
 
-    #[inline]
+    #[inline(always)]
     pub const fn pop_count(&self) -> u32 {
         self.0.count_ones()
     }
@@ -94,7 +94,7 @@ impl BitBoard {
         out
     }
 
-    #[inline]
+    #[inline(always)]
     pub const fn lsb(&self) -> Option<u64> {
         if self.0 == 0 {
             None
@@ -103,7 +103,7 @@ impl BitBoard {
         }
     }
 
-    #[inline]
+    #[inline(always)]
     pub const fn pop_lsb(&mut self) -> Option<u64> {
         if self.0 == 0 {
             None
@@ -114,7 +114,7 @@ impl BitBoard {
         }
     }
 
-    #[inline]
+    #[inline(always)]
     pub const fn msb(&self) -> Option<u64> {
         if self.0 == 0 {
             None
@@ -123,7 +123,7 @@ impl BitBoard {
         }
     }
 
-    #[inline]
+    #[inline(always)]
     pub const fn pop_msb(&mut self) -> Option<u64> {
         if self.0 == 0 {
             None
@@ -134,17 +134,17 @@ impl BitBoard {
         }
     }
 
-    #[inline]
+    #[inline(always)]
     pub const fn count_ones(&self) -> u32 {
         self.0.count_ones()
     }
 
-    #[inline]
+    #[inline(always)]
     pub const fn is_empty(&self) -> bool {
         self.0 == 0
     }
 
-    #[inline]
+    #[inline(always)]
     pub const fn any(&self) -> bool {
         self.0 != 0
     }
@@ -157,17 +157,17 @@ impl BitBoard {
         BitBoardIterator { remaining: self.0 }
     }
 
-    #[inline]
+    #[inline(always)]
     pub const fn or(self, rhs: Self) -> Self {
         BitBoard(self.0 | rhs.0)
     }
 
-    #[inline]
+    #[inline(always)]
     pub const fn and(self, rhs: Self) -> Self {
         BitBoard(self.0 & rhs.0)
     }
 
-    #[inline]
+    #[inline(always)]
     pub const fn contains_square(&self, index: usize) -> bool {
         (self.0 & (1 << index)) != 0
     }
@@ -299,22 +299,22 @@ impl Piece {
             .flat_map(move |&side| Self::PIECES.iter().map(move |&piece| (piece, side)))
     }
 
-    pub fn king() -> usize {
+    pub const fn king() -> usize {
         Piece::King.index()
     }
-    pub fn queen() -> usize {
+    pub const fn queen() -> usize {
         Piece::Queen.index()
     }
-    pub fn rook() -> usize {
+    pub const fn rook() -> usize {
         Piece::Rook.index()
     }
-    pub fn bishop() -> usize {
+    pub const fn bishop() -> usize {
         Piece::Bishop.index()
     }
-    pub fn knight() -> usize {
+    pub const fn knight() -> usize {
         Piece::Knight.index()
     }
-    pub fn pawn() -> usize {
+    pub const fn pawn() -> usize {
         Piece::Pawn.index()
     }
 
@@ -508,6 +508,15 @@ impl BoardState {
         &mut self.all_sides[side.index()]
     }
 
+    pub const fn get_orhto_sliders_bb(&self, side: Side) -> BitBoard {
+        self.all_pieces[side.index()][Piece::rook()]
+            .or(self.all_pieces[side.index()][Piece::queen()])
+    }
+
+    pub const fn get_diag_sliders_bb(&self, side: Side) -> BitBoard {
+        self.all_pieces[side.index()][Piece::bishop()]
+            .or(self.all_pieces[side.index()][Piece::queen()])
+    }
     pub const fn square_belongs_to(&self, side: Side, square: usize) -> bool {
         self.all_sides[side.index()].contains_square(square)
     }

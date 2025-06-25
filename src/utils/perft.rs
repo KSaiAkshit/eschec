@@ -63,10 +63,11 @@ impl PerftResult {
         duration: Duration,
         move_counts: Option<Vec<(Square, Square, u64)>>,
     ) -> Self {
-        let nps = if duration.as_secs() > 0 {
-            nodes / duration.as_secs()
+        let nanos = duration.as_nanos();
+        let nps = if nanos > 0 {
+            nodes * 1_000_000_000 / nanos as u64
         } else {
-            nodes * 1_000_000 / duration.as_micros() as u64
+            0
         };
 
         Self {
@@ -247,12 +248,11 @@ pub fn run_perft_suite(board: &mut Board, max_depth: u8) {
         let nodes = perft(board, depth, false).nodes;
         let duration = start.elapsed();
 
-        let nps = if duration.as_secs() > 0 {
-            nodes / duration.as_secs()
-        } else if duration.as_millis() > 0 {
-            nodes * 1000 / duration.as_millis() as u64
+        let nanos = duration.as_nanos();
+        let nps = if nanos > 0 {
+            nodes * 1_000_000_000 / nanos as u64
         } else {
-            nodes * 1_000_000 / duration.as_micros() as u64
+            0
         };
 
         println!(

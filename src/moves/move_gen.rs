@@ -89,7 +89,7 @@ pub fn generate_piece_moves_vec(
 /// Generate all pseudo-legal moves for a piece type at a specific square
 /// and return them as a new Vec.
 /// This is a convenience wrapper that filters out only moves from `from_square`.
-pub fn generate_moves_from_square(
+pub fn generate_moves_from_square_vec(
     piece: Piece,
     from_square: Square,
     state: &BoardState,
