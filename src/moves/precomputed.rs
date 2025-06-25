@@ -57,7 +57,6 @@ impl MoveTables {
 
         tables.init_knight_moves();
         tables.init_king_moves();
-        tables.init_pawn_attackes();
         tables.init_pawn_tables();
         tables.init_ray_attacks();
 
@@ -123,39 +122,6 @@ impl MoveTables {
                 i += 1;
             }
             self.king_moves[index] = king_moves;
-            index += 1;
-        }
-    }
-
-    const fn init_pawn_attackes(&mut self) {
-        let mut index = 0;
-        while index < 64 {
-            let rank = index / 8;
-            let file = index % 8;
-
-            let mut white_attacks = BitBoard(0);
-            let mut black_attacks = BitBoard(0);
-
-            if rank < 7 {
-                if file > 0 {
-                    white_attacks.set((rank + 1) * 8 + file - 1);
-                }
-                if file < 7 {
-                    white_attacks.set((rank + 1) * 8 + file + 1);
-                }
-            }
-
-            if rank > 0 {
-                if file > 0 {
-                    black_attacks.set((rank - 1) * 8 + file - 1);
-                }
-                if file < 7 {
-                    black_attacks.set((rank - 1) * 8 + file + 1);
-                }
-            }
-            self.black_pawn_attacks[index] = black_attacks;
-            self.white_pawn_attacks[index] = white_attacks;
-
             index += 1;
         }
     }

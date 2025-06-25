@@ -730,7 +730,7 @@ impl Square {
     /// Will return None if either File or Rank are out of bounds.
     /// Rank < 7, File < 8
     pub const fn from_coords(file: usize, rank: usize) -> Option<Self> {
-        if file < 7 && rank < 8 {
+        if file < 8 && rank < 8 {
             return Some(Square(rank * 8 + file));
         }
         None
