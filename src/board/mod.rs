@@ -133,15 +133,15 @@ impl Board {
     /// Use this to construct a board from fen
     pub fn from_fen(fen: &str) -> Self {
         let parsed = fen::parse_fen(fen);
-        let mut b = match parsed {
+        let mut board = match parsed {
             Ok(b) => b,
             Err(e) => {
                 eprintln!("Got error while parsing given fen: {}", e);
                 panic!("very bad fen")
             }
         };
-        b.calculate_material();
-        b
+        board.calculate_material();
+        board
     }
 
     pub fn to_fen(&self) -> miette::Result<String> {
@@ -484,9 +484,13 @@ impl Board {
         // Check for pawn attacks
         // Use attack tables for the *king's side* because we need to look
         // "backwards" from the king's square to where an enemy pawn would have to be
+        //
+        // The squares a **white** pawn on square `K` attacks are the *exact same squares*
+        // from which a **black** pawn would need to be to attack square `K`, hence we are checking
+        // same side pawn attacks
         let pawn_attack_bb = match side {
-            Side::White => MOVE_TABLES.black_pawn_attacks[king_sq],
-            Side::Black => MOVE_TABLES.white_pawn_attacks[king_sq],
+            Side::White => MOVE_TABLES.white_pawn_attacks[king_sq],
+            Side::Black => MOVE_TABLES.black_pawn_attacks[king_sq],
         };
         if (pawn_attack_bb & *opp_pawns).any() {
             debug!("{} king attacked by pawn.", side);

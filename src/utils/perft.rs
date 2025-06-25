@@ -108,9 +108,6 @@ pub fn debug_perft_vs_stockfish(
     let mut stockfish_moves = stock_moves.clone();
     stockfish_moves.sort_by(|a, b| a.0.cmp(&b.0));
 
-    dbg!(&our_moves);
-    dbg!(&stock_moves);
-
     let mut found_mismatch = false;
 
     for ((our_mv, our_count), (sf_mv, sf_count)) in our_moves.iter().zip(stockfish_moves.iter()) {
@@ -142,7 +139,7 @@ pub fn debug_perft_vs_stockfish(
     }
 
     if !found_mismatch {
-        println!("No mimatch at this node (path: {:?}", path);
+        println!("No misatch at this node (path: {:?})", path);
     }
     Ok(())
 }
