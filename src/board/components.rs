@@ -4,6 +4,9 @@ use std::{
     str::FromStr,
 };
 
+#[cfg(feature = "simd")]
+use std::simd::{num::SimdUint, u64x4};
+
 use miette::Context;
 
 #[derive(Debug, Default, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
@@ -455,31 +458,36 @@ impl BoardState {
     ) -> miette::Result<()> {
         let from_index = from.index();
         let to_index = to.index();
+        let side_index = side.index();
 
         if self.get_piece_at(&from).is_none() {
             println!("{side} {piece} not available at {from}");
             println!(
                 "{side} Side: \n{}",
-                self.all_sides[side.index()].print_bitboard()
+                self.all_sides[side_index].print_bitboard()
             );
             println!(
                 "{piece}: \n{}",
-                self.all_pieces[side.index()][piece.index()].print_bitboard()
+                self.all_pieces[side_index][piece.index()].print_bitboard()
             );
 
             return Err(miette::miette!(
                 "[update_piece_position] No {side} {piece} piece at from ( {from} ) square"
             ));
         }
-        self.all_pieces[side.index()][piece.index()].capture(from_index);
-        if let Some((p, s)) = self.get_piece_at(&to) {
-            if s == side.flip() {
-                self.all_pieces[s.index()][p.index()].capture(to_index);
+        self.all_pieces[side_index][piece.index()].capture(from_index);
+        if let Some((captured_piece, captured_side)) = self.get_piece_at(&to) {
+            if captured_side == side.flip() {
+                self.all_pieces[captured_side.index()][captured_piece.index()].capture(to_index);
+                self.all_sides[captured_side.index()].capture(to_index);
             }
         }
-        self.all_pieces[side.index()][piece.index()].set(to_index);
 
-        self.update_all_sides();
+        self.all_pieces[side_index][piece.index()].set(to_index);
+
+        self.all_sides[side_index].capture(from_index);
+        self.all_sides[side_index].set(to_index);
+
         Ok(())
     }
 
@@ -537,7 +545,7 @@ impl BoardState {
             Square::new(index_to_set).unwrap()
         );
         self.all_pieces[side_to_set.index()][piece_to_set.index()].set(index_to_set);
-        self.update_all_sides();
+        self.all_sides[side_to_set.index()].set(index_to_set);
         Ok(())
     }
 
@@ -555,24 +563,8 @@ impl BoardState {
 
         self.all_pieces[side_to_capture.index()][piece_to_capture.index()]
             .capture(index_to_capture);
-        self.update_all_sides();
+        self.all_sides[side_to_capture.index()].capture(index_to_capture);
         Ok(())
-    }
-
-    fn update_all_sides(&mut self) {
-        self.all_sides[0] = self.all_pieces[0][0]
-            | self.all_pieces[0][1]
-            | self.all_pieces[0][2]
-            | self.all_pieces[0][3]
-            | self.all_pieces[0][4]
-            | self.all_pieces[0][5];
-
-        self.all_sides[1] = self.all_pieces[1][0]
-            | self.all_pieces[1][1]
-            | self.all_pieces[1][2]
-            | self.all_pieces[1][3]
-            | self.all_pieces[1][4]
-            | self.all_pieces[1][5];
     }
 
     fn get_piece_at(&self, square: &Square) -> Option<(Piece, Side)> {

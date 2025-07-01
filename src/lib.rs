@@ -1,3 +1,4 @@
+#![feature(portable_simd)]
 use std::cell::OnceCell;
 use std::io::{Write, stderr};
 
@@ -207,6 +208,14 @@ pub fn init() {
             .with_writer(stderr)
             .with_env_filter(EnvFilter::from_default_env().add_directive(Level::INFO.into()))
             .init();
+        #[cfg(feature = "simd")]
+        {
+            info!("Using Simd");
+        }
+        #[cfg(not(feature = "simd"))]
+        {
+            info!("Not using Simd");
+        }
         true
     });
     if !init.get().unwrap() {
