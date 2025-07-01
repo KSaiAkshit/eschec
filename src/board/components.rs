@@ -466,12 +466,11 @@ impl BoardState {
                 "{piece}: \n{}",
                 self.all_pieces[side.index()][piece.index()].print_bitboard()
             );
-        }
-        miette::ensure!(
-            self.get_piece_at(&from).is_some(),
-            "[update_piece_position] No {side} {piece} piece at from ( {from} ) square"
-        );
 
+            return Err(miette::miette!(
+                "[update_piece_position] No {side} {piece} piece at from ( {from} ) square"
+            ));
+        }
         self.all_pieces[side.index()][piece.index()].capture(from_index);
         if let Some((p, s)) = self.get_piece_at(&to) {
             if s == side.flip() {
