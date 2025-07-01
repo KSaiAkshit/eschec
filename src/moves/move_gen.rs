@@ -97,7 +97,7 @@ pub fn generate_moves_from_square_vec(
     castling_rights: CastlingRights,
     en_passant_square: Option<Square>,
 ) -> Vec<Move> {
-    let mut moves = Vec::new();
+    let mut moves = Vec::with_capacity(20);
     generate_piece_moves(
         piece,
         state,
