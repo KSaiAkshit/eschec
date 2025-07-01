@@ -124,15 +124,15 @@ pub fn debug_perft_vs_stockfish(
             );
             // Decend into this move
             let (from, to) = {
-                let from = Square::from_str(&our_mv[0..2]).unwrap();
-                let to = Square::from_str(&our_mv[2..4]).unwrap();
+                let from = Square::from_str(&our_mv[0..2])?;
+                let to = Square::from_str(&our_mv[2..4])?;
                 (from, to)
             };
-            let move_data = board.try_move_with_info(from, to).unwrap();
+            let move_data = board.try_move_with_info(from, to)?;
             let mut new_path = path.clone();
             new_path.push(our_mv.clone());
             debug_perft_vs_stockfish(board, depth - 1, new_path)?;
-            board.unmake_move(&move_data).unwrap();
+            board.unmake_move(&move_data)?;
             found_mismatch = true;
             break;
         }

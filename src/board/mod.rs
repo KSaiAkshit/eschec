@@ -249,7 +249,6 @@ impl Board {
         // Store current state before making the move
         let mut move_data = MoveInfo::new(from, to);
         move_data.piece_moved = piece;
-        move_data.captured_piece = self.get_piece_at(to);
         move_data.castle_rights = self.castling_rights;
         move_data.enpassant_square = self.enpassant_square;
         move_data.halfmove_clock = self.halfmove_clock;
@@ -264,6 +263,12 @@ impl Board {
             && to == self.enpassant_square.unwrap()
         {
             move_data.is_en_passant = true;
+            // For an en passant, the captured piece is a pawn of the
+            // opposite color but its not the 'to' square
+            move_data.captured_piece = Some(Piece::Pawn);
+        } else {
+            // For all other moves, captured piece is on 'to' square
+            move_data.captured_piece = self.get_piece_at(to);
         }
 
         self.try_move(from, to)?;
@@ -284,8 +289,8 @@ impl Board {
             if move_data.is_en_passant {
                 // for en passant, the captured piece is not the 'to' square
                 let captured_idx = match self.stm {
-                    Side::White => move_data.to.index() + 8, // White made move, Black's pawn below
-                    Side::Black => move_data.to.index() - 8, // Black made move, White's pawn above
+                    Side::White => move_data.to.index() - 8, // White made move, Black's pawn below
+                    Side::Black => move_data.to.index() + 8, // Black made move, White's pawn above
                 };
                 self.positions
                     .set(&self.stm.flip(), &captured, captured_idx)?;
