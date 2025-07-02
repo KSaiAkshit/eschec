@@ -137,8 +137,8 @@ impl Move {
         let from = Square::new(self.from_idx().into()).unwrap();
         let to = Square::new(self.to_idx().into()).unwrap_or_default();
         match self.promoted_piece_char() {
-            Some(piece) => format!("{}{}{}", from, to, piece),
-            None => format!("from: {}, to: {},", from, to,),
+            Some(piece) => format!("{from}{to}{piece}"),
+            None => format!("from: {from}, to: {to},",),
         }
     }
 
@@ -146,7 +146,7 @@ impl Move {
     pub fn square_to_coord(idx: u8) -> String {
         let file = (b'a' + (idx % 8)) as char;
         let rank = (b'1' + (idx / 8)) as char;
-        format!("{}{}", file, rank)
+        format!("{file}{rank}")
     }
 }
 
@@ -157,9 +157,9 @@ impl Display for Move {
         let to_square = (val >> 6) & 0x3F;
         let from_square = val & 0x3F;
 
-        writeln!(f, "Flags: {:04b}", flags)?;
-        writeln!(f, "To square: {}", to_square)?;
-        writeln!(f, "From square: {}", from_square)?;
+        writeln!(f, "Flags: {flags:04b}")?;
+        writeln!(f, "To square: {to_square}")?;
+        writeln!(f, "From square: {from_square}")?;
 
         Ok(())
     }

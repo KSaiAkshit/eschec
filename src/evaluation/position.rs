@@ -160,7 +160,7 @@ mod tests {
     #[test]
     fn test_pawn() {
         let mut board = Board::from_fen("8/8/8/8/8/8/PPPPPPPP/8 w KQkq - 0 1");
-        println!("{}", board);
+        println!("{board}");
         board.stm = board.stm.flip();
         let eval = PositionEvaluator::new();
         let score = eval.evaluate(&board);

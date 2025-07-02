@@ -26,7 +26,7 @@ fn main() -> miette::Result<()> {
                     fen, depth, divide
                 );
                 let mut board = Board::from_fen(&fen.unwrap());
-                println!("{}", board);
+                println!("{board}");
                 if divide {
                     perft::perft_divide(&mut board, depth);
                 } else {

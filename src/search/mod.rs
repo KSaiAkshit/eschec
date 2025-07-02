@@ -62,7 +62,7 @@ impl Search {
             Ok(moves) => moves,
             Err(e) => {
                 error!("Error generating legal moves");
-                eprintln!("Error: {:?}", e);
+                eprintln!("Error: {e:?}");
                 return SearchResult {
                     best_move: None,
                     score: 0,

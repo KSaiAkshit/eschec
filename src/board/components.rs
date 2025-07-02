@@ -4,9 +4,6 @@ use std::{
     str::FromStr,
 };
 
-#[cfg(feature = "simd")]
-use std::simd::{num::SimdUint, u64x4};
-
 use miette::Context;
 
 #[derive(Debug, Default, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
@@ -476,11 +473,11 @@ impl BoardState {
             ));
         }
         self.all_pieces[side_index][piece.index()].capture(from_index);
-        if let Some((captured_piece, captured_side)) = self.get_piece_at(&to) {
-            if captured_side == side.flip() {
-                self.all_pieces[captured_side.index()][captured_piece.index()].capture(to_index);
-                self.all_sides[captured_side.index()].capture(to_index);
-            }
+        if let Some((captured_piece, captured_side)) = self.get_piece_at(&to)
+            && captured_side == side.flip()
+        {
+            self.all_pieces[captured_side.index()][captured_piece.index()].capture(to_index);
+            self.all_sides[captured_side.index()].capture(to_index);
         }
 
         self.all_pieces[side_index][piece.index()].set(to_index);
@@ -731,13 +728,13 @@ impl Square {
         if !('a'..='g').contains(&file) {
             return Err(
                 miette::Error::msg("given file isn't valid. Valid file = ['a'..='g']")
-                    .context(format!("input file: {}", file)),
+                    .context(format!("input file: {file}")),
             );
         }
         if rank != '3' && rank != '6' {
             return Err(
                 miette::Error::msg("given rank isn't valid. Valid rank = '3' or '6'")
-                    .context(format!("input rank: {}", rank)),
+                    .context(format!("input rank: {rank}")),
             );
         }
         let col_index = file as usize - 'a' as usize;

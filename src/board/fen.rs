@@ -77,25 +77,25 @@ pub fn parse_fen(fen: &str) -> miette::Result<Board> {
     let piece_placement = parts[0];
     board
         .place_pieces(piece_placement)
-        .with_context(|| format!("Placing peices with given fen string {}", piece_placement))?;
+        .with_context(|| format!("Placing peices with given fen string {piece_placement}"))?;
     let stm = parts[1];
-    board.stm = parse_stm(stm).with_context(|| format!("parsed stm input: {}", stm))?;
+    board.stm = parse_stm(stm).with_context(|| format!("parsed stm input: {stm}"))?;
     let castle = parts[2];
     board.castling_rights =
-        parse_castle(castle).with_context(|| format!("parsed input castle: {}", castle))?;
+        parse_castle(castle).with_context(|| format!("parsed input castle: {castle}"))?;
     let enpassant = parts[3];
     board.enpassant_square = parse_enpassant(enpassant)
-        .with_context(|| format!("parsed input enpassant: {}", enpassant))?;
+        .with_context(|| format!("parsed input enpassant: {enpassant}"))?;
     let half_move = parts[4];
     board.halfmove_clock = half_move
         .parse::<u8>()
         .into_diagnostic()
-        .with_context(|| format!("attempt to parse {} to u8", half_move))?;
+        .with_context(|| format!("attempt to parse {half_move} to u8"))?;
     let full_move = parts[5];
     board.fullmove_counter = full_move
         .parse::<u8>()
         .into_diagnostic()
-        .with_context(|| format!("attempt to parse {} to u8", full_move))?;
+        .with_context(|| format!("attempt to parse {full_move} to u8"))?;
     Ok(board)
 }
 

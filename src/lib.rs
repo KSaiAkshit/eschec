@@ -47,16 +47,16 @@ pub fn get_input(input: &str) -> miette::Result<(Square, Square)> {
     let from_pos: usize = from
         .parse()
         .into_diagnostic()
-        .with_context(|| format!("Invalid 'from' position: {}", from))?;
+        .with_context(|| format!("Invalid 'from' position: {from}"))?;
     let to_pos: usize = to
         .parse()
         .into_diagnostic()
-        .with_context(|| format!("Invalid 'to' position: {}", to))?;
+        .with_context(|| format!("Invalid 'to' position: {to}"))?;
 
     let from_square = Square::new(from_pos)
-        .with_context(|| format!("'from' Square out of bounds: {}", from_pos))?;
+        .with_context(|| format!("'from' Square out of bounds: {from_pos}"))?;
     let to_square =
-        Square::new(to_pos).with_context(|| format!("'to' Square out of bounds: {}", to_pos))?;
+        Square::new(to_pos).with_context(|| format!("'to' Square out of bounds: {to_pos}"))?;
 
     Ok((from_square, to_square))
 }
@@ -79,7 +79,7 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
 
     let stdin = std::io::stdin();
 
-    println!("{}", board);
+    println!("{board}");
     loop {
         let span = span!(Level::DEBUG, "game_loop");
         let _guard = span.enter();
@@ -103,7 +103,7 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
         let args = match shell_words::split(input) {
             Ok(tokens) => tokens,
             Err(e) => {
-                eprintln!("Error parsing input: {}", e);
+                eprintln!("Error parsing input: {e}");
                 continue;
             }
         };
@@ -116,18 +116,18 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
                     let (from_square, to_square) = match parse_move_input(from, to) {
                         Ok(f) => (f.0, f.1),
                         Err(e) => {
-                            eprintln!("{:?}", e);
+                            eprintln!("{e:?}");
                             continue;
                         }
                     };
                     if let Err(e) = board.try_move(from_square, to_square) {
-                        eprintln!("{:?}", e);
+                        eprintln!("{e:?}");
                         continue;
                     }
                 }
                 GameSubcommand::Print => {
                     info!("Printing board..");
-                    println!("{}", board);
+                    println!("{board}");
                 }
                 GameSubcommand::Perft { depth, divide } => {
                     info!(
