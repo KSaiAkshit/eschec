@@ -90,7 +90,7 @@ impl Display for Board {
         writeln!(f, "Castling rights: {}", self.castling_rights)?;
 
         if let Some(ep) = self.enpassant_square {
-            writeln!(f, "En passant square: {}", ep)?;
+            writeln!(f, "En passant square: {ep}")?;
         } else {
             writeln!(f, "En passant square: -")?;
         }
@@ -124,7 +124,7 @@ impl Board {
         match board.place_pieces(START_FEN) {
             Ok(_) => {}
             Err(e) => {
-                eprintln!("Error initializing board: {}", e);
+                eprintln!("Error initializing board: {e}");
             }
         }
         board.calculate_material();
@@ -136,7 +136,7 @@ impl Board {
         let mut board = match parsed {
             Ok(b) => b,
             Err(e) => {
-                eprintln!("Got error while parsing given fen: {}", e);
+                eprintln!("Got error while parsing given fen: {e}");
                 panic!("very bad fen")
             }
         };

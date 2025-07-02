@@ -20,10 +20,10 @@ pub fn stockfish_perft_divide(fen: &str, depth: u8) -> miette::Result<Vec<(Strin
 
     writeln!(stdin, "uci").unwrap();
     writeln!(stdin, "isready").unwrap();
-    writeln!(stdin, "position fen {}", fen).unwrap();
-    println!("position fen {}", fen);
-    writeln!(stdin, "go perft {}", depth).unwrap();
-    println!("go perft {}", depth);
+    writeln!(stdin, "position fen {fen}").unwrap();
+    println!("position fen {fen}");
+    writeln!(stdin, "go perft {depth}").unwrap();
+    println!("go perft {depth}");
 
     let mut results = Vec::new();
     let mut buf = String::new();
@@ -87,7 +87,7 @@ pub fn perft_divide_uci(board: &mut Board, depth: u8) -> miette::Result<Vec<(Str
         .into_iter()
         .map(|(from, to, count)| {
             // Convert to UCI string, e.g. "e2e4"
-            let uci = format!("{}{}", from, to);
+            let uci = format!("{from}{to}");
             (uci, count)
         })
         .collect();
@@ -100,7 +100,7 @@ pub fn debug_perft_vs_stockfish(
     path: Vec<String>,
 ) -> miette::Result<()> {
     let fen = board.to_fen()?;
-    println!("Comparing at depth {} path: {:?}", depth, path);
+    println!("Comparing at depth {depth} path: {path:?}");
 
     let mut our_moves = perft_divide_uci(board, depth)?;
     let stock_moves = stockfish_perft_divide(&fen, depth)?;
@@ -112,15 +112,14 @@ pub fn debug_perft_vs_stockfish(
 
     for ((our_mv, our_count), (sf_mv, sf_count)) in our_moves.iter().zip(stockfish_moves.iter()) {
         if our_mv != sf_mv {
-            println!("Move mismatch: our {} vs sf {}", our_mv, sf_mv);
+            println!("Move mismatch: our {our_mv} vs sf {sf_mv}");
             found_mismatch = true;
             break;
         }
 
         if our_count != sf_count {
             println!(
-                "Count mismatch on move {}: our {} vs sf {}",
-                our_mv, our_count, sf_count
+                "Count mismatch on move {our_mv}: our {our_count} vs sf {sf_count}"
             );
             // Decend into this move
             let (from, to) = {
@@ -139,7 +138,7 @@ pub fn debug_perft_vs_stockfish(
     }
 
     if !found_mismatch {
-        println!("No misatch at this node (path: {:?})", path);
+        println!("No misatch at this node (path: {path:?})");
     }
     Ok(())
 }
@@ -197,8 +196,7 @@ pub fn perft(board: &mut Board, depth: u8, divide: bool) -> PerftResult {
             .unmake_move(&move_data)
             .wrap_err_with(|| {
                 format!(
-                    "fucked up at {from} to {to} at {depth} depth. {:?}",
-                    move_data
+                    "fucked up at {from} to {to} at {depth} depth. {move_data:?}"
                 )
             })
             .expect("Should be able to unmake move");
@@ -219,11 +217,11 @@ pub fn perft_divide(board: &mut Board, depth: u8) -> PerftResult {
     let result = perft(board, depth, true);
 
     if let Some(ref move_counts) = result.move_counts {
-        println!("Perft results at depth {}", depth);
+        println!("Perft results at depth {depth}");
         println!("----------------------------");
 
         for (from, to, count) in move_counts {
-            println!("{}{}: {}", from, to, count);
+            println!("{from}{to}: {count}");
         }
 
         println!("----------------------------");
@@ -237,7 +235,7 @@ pub fn perft_divide(board: &mut Board, depth: u8) -> PerftResult {
 
 /// Runs a suite of perft tests for depths 1 through max_depth
 pub fn run_perft_suite(board: &mut Board, max_depth: u8) {
-    println!("Running Perft suite up to depth {}", max_depth);
+    println!("Running Perft suite up to depth {max_depth}");
     println!("----------------------------");
 
     for depth in 1..=max_depth {

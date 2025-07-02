@@ -367,8 +367,8 @@ impl MoveGen {
             let up_left = square_index.wrapping_sub(9);
             let up_right = square_index.wrapping_sub(7);
 
-            let is_not_leftmost = square_index % 8 != 0;
-            let is_not_rightmost = square_index % 8 != 0;
+            let is_not_leftmost = !square_index.is_multiple_of(8);
+            let is_not_rightmost = !square_index.is_multiple_of(8);
 
             let pawn_bb = self.state.get_piece_bb(by_side, Piece::Pawn);
 
@@ -382,7 +382,7 @@ impl MoveGen {
             let down_left = square_index + 7;
             let down_right = square_index + 9;
 
-            let is_not_leftmost = square_index % 8 != 0;
+            let is_not_leftmost = !square_index.is_multiple_of(8);
             let is_not_rightmost = square_index % 8 != 7;
 
             let pawn_bb = self.state.get_piece_bb(by_side, Piece::Pawn);
@@ -1131,7 +1131,7 @@ mod tests {
             // Make the move
             board
                 .try_move(from, to)
-                .inspect_err(|e| println!("{}", e))
+                .inspect_err(|e| println!("{e}"))
                 .expect("yo");
 
             println!("after move {board}");
@@ -1179,7 +1179,7 @@ mod tests {
             // Make the move
             board
                 .try_move(from, to)
-                .inspect_err(|e| println!("{}", e))
+                .inspect_err(|e| println!("{e}"))
                 .expect("yo");
 
             // Verify king and rook positions after castling
