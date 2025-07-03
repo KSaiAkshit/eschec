@@ -1,6 +1,6 @@
 use std::{
     fmt::Display,
-    ops::{BitAnd, BitAndAssign, BitOr, Not},
+    ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, Not},
     str::FromStr,
 };
 
@@ -12,6 +12,12 @@ pub struct BitBoard(pub u64);
 impl BitAndAssign for BitBoard {
     fn bitand_assign(&mut self, rhs: Self) {
         self.0 &= rhs.0
+    }
+}
+
+impl BitOrAssign for BitBoard {
+    fn bitor_assign(&mut self, rhs: Self) {
+        self.0 |= rhs.0
     }
 }
 
@@ -170,6 +176,16 @@ impl BitBoard {
     #[inline(always)]
     pub const fn contains_square(&self, index: usize) -> bool {
         (self.0 & (1 << index)) != 0
+    }
+
+    pub const fn closest_bit(&self, forward: bool) -> Option<u64> {
+        if self.is_empty() {
+            None
+        } else if forward {
+            self.lsb()
+        } else {
+            self.msb()
+        }
     }
 }
 
