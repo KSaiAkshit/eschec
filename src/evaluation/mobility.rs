@@ -53,20 +53,16 @@ impl MobilityEvaluator {
 
 impl Evaluator for MobilityEvaluator {
     fn evaluate(&self, board: &Board) -> i32 {
-        let current_moves = match board.generate_piecewise_legal_moves() {
-            Ok(moves) => self.evaluate_move_by_piece(&moves),
-            Err(_) => 0,
-        };
+        let current_moves_map = board.generate_piecewise_legal_moves();
+        let current_score = self.evaluate_move_by_piece(&current_moves_map);
 
         let mut temp_board = *board;
         temp_board.stm = temp_board.stm.flip();
 
-        let opponent_moves = match temp_board.generate_piecewise_legal_moves() {
-            Ok(moves) => self.evaluate_move_by_piece(&moves),
-            Err(_) => 0,
-        };
+        let opponent_moves_map = temp_board.generate_piecewise_legal_moves();
+        let opponent_score = self.evaluate_move_by_piece(&opponent_moves_map);
 
-        current_moves - opponent_moves
+        current_score - opponent_score
     }
 
     fn name(&self) -> &str {
