@@ -1,5 +1,4 @@
 pub mod attack_data;
-pub mod legacy;
 pub mod move_gen;
 pub mod move_info;
 pub mod precomputed;
