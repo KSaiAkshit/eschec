@@ -950,8 +950,8 @@ mod tests {
             board
                 .positions
                 .set(
-                    &Side::White,
-                    &Piece::Pawn,
+                    Side::White,
+                    Piece::Pawn,
                     Square::from_str("e5").unwrap().index(),
                 )
                 .unwrap();
@@ -1005,8 +1005,8 @@ mod tests {
             board
                 .positions
                 .set(
-                    &Side::Black,
-                    &Piece::Pawn,
+                    Side::Black,
+                    Piece::Pawn,
                     Square::from_str("d4").unwrap().index(),
                 )
                 .unwrap();
@@ -1035,8 +1035,8 @@ mod tests {
             board
                 .positions
                 .set(
-                    &Side::Black,
-                    &Piece::Pawn,
+                    Side::Black,
+                    Piece::Pawn,
                     Square::from_str("b4").unwrap().index(),
                 )
                 .unwrap();

@@ -228,7 +228,7 @@ impl Board {
         if let Some(piece) = self.get_piece_at(from) {
             self.handle_special_rules(from, to)?;
             self.positions
-                .update_piece_position(&piece, &self.stm, from, to)?;
+                .update_piece_position(piece, self.stm, from, to)?;
             self.calculate_material();
             self.stm = self.stm.flip();
             self.halfmove_clock += 1;
@@ -279,8 +279,8 @@ impl Board {
     pub fn unmake_move(&mut self, move_data: &MoveInfo) -> miette::Result<()> {
         self.stm = self.stm.flip();
         self.positions.update_piece_position(
-            &move_data.piece_moved,
-            &self.stm,
+            move_data.piece_moved,
+            self.stm,
             move_data.to,
             move_data.from,
         )?;
@@ -293,10 +293,10 @@ impl Board {
                     Side::Black => move_data.to.index() + 8, // Black made move, White's pawn above
                 };
                 self.positions
-                    .set(&self.stm.flip(), &captured, captured_idx)?;
+                    .set(self.stm.flip(), captured, captured_idx)?;
             } else {
                 self.positions
-                    .set(&self.stm.flip(), &captured, move_data.to.index())?;
+                    .set(self.stm.flip(), captured, move_data.to.index())?;
             }
         }
 
@@ -313,8 +313,8 @@ impl Board {
             let rook_to_sq = Square::new(rook_to).unwrap();
 
             self.positions.update_piece_position(
-                &Piece::Rook,
-                &self.stm,
+                Piece::Rook,
+                self.stm,
                 rook_from_sq,
                 rook_to_sq,
             )?;
@@ -395,7 +395,7 @@ impl Board {
                         .unwrap();
                 board_copy
                     .positions
-                    .update_piece_position(&piece, &self.stm, from, middle_square)
+                    .update_piece_position(piece, self.stm, from, middle_square)
                     .unwrap_or_else(|e| debug!("Error in [is_move_legal]: {e}"));
 
                 if board_copy.is_in_check(self.stm) {
@@ -465,7 +465,7 @@ impl Board {
         if let Some(piece) = self.get_piece_at(from) {
             let _ = self
                 .positions
-                .update_piece_position(&piece, &self.stm, from, to);
+                .update_piece_position(piece, self.stm, from, to);
         }
     }
 
@@ -623,7 +623,7 @@ impl Board {
                     if let Some((piece, side)) = fen::PIECE_CHAR_LOOKUP_TABLE.get(&c) {
                         // dbg!(piece, side);
                         // dbg!(rank, file);
-                        self.positions.set(side, piece, rank * 8 + file)?;
+                        self.positions.set(*side, *piece, rank * 8 + file)?;
                         file += 1;
                     } else {
                         miette::bail!("Invalid Fen Character")
@@ -706,8 +706,8 @@ impl Board {
                     let rook_to = Square::new(rank * 8 + rook_to_file).unwrap();
 
                     self.positions.update_piece_position(
-                        &Piece::Rook,
-                        &self.stm,
+                        Piece::Rook,
+                        self.stm,
                         rook_from,
                         rook_to,
                     )?;
