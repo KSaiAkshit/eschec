@@ -486,4 +486,18 @@ impl MoveTables {
 
         moves
     }
+
+    pub fn get_ray(&self, from: usize, dir: i8) -> BitBoard {
+        match dir {
+            Direction::NORTH => self.north_rays[from],
+            Direction::SOUTH => self.south_rays[from],
+            Direction::EAST => self.east_rays[from],
+            Direction::WEST => self.west_rays[from],
+            Direction::NORTHEAST => self.northeast_rays[from],
+            Direction::SOUTHEAST => self.southeast_rays[from],
+            Direction::SOUTHWEST => self.southwest_rays[from],
+            Direction::NORTHWEST => self.northwest_rays[from],
+            _ => BitBoard(0),
+        }
+    }
 }
