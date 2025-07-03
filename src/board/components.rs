@@ -564,7 +564,7 @@ impl BoardState {
         Ok(())
     }
 
-    fn get_piece_at(&self, square: &Square) -> Option<(Piece, Side)> {
+    pub fn get_piece_at(&self, square: &Square) -> Option<(Piece, Side)> {
         let index = square.index();
         let square_mask = 1u64 << index;
 

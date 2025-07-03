@@ -38,3 +38,7 @@ simd = []
 [[bench]]
 name = "board_benches"
 harness = false
+
+[[bench]]
+name = "engine_benches"
+harness = false
