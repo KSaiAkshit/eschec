@@ -401,15 +401,41 @@ impl From<Piece> for u32 {
     }
 }
 
-/// Snapshot of current board
+/// Compact struct to hold piece and side
 #[derive(Debug, Default, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
+pub struct PieceInfo {
+    pub piece: Piece,
+    pub side: Side,
+}
+
+impl PieceInfo {
+    fn new(piece: Piece, side: Side) -> Self {
+        Self { piece, side }
+    }
+}
+
+/// Snapshot of current board
+#[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
 pub struct BoardState {
     /// Boards for all peices of white and black sides
     all_sides: [BitBoard; 2],
     /// Boards for all peices, of both colors
     /// [Pawn, Bishop, Knight, Rook, Queen, King]
     all_pieces: [[BitBoard; 6]; 2],
+    /// Mailbox for fast-lookup. Maps square to piece info
+    mailbox: [Option<PieceInfo>; 64],
 }
+
+impl Default for BoardState {
+    fn default() -> Self {
+        Self {
+            all_sides: [BitBoard::default(); 2],
+            all_pieces: [[BitBoard::default(); 6]; 2],
+            mailbox: [None; 64],
+        }
+    }
+}
+
 impl BoardState {
     pub fn to_fen_pieces(&self) -> String {
         let mut fen = String::new();
@@ -448,8 +474,8 @@ impl BoardState {
     /// Handles regular captures too, so using just this should be fine
     pub fn update_piece_position(
         &mut self,
-        piece: &Piece,
-        side: &Side,
+        piece: Piece,
+        side: Side,
         from: Square,
         to: Square,
     ) -> miette::Result<()> {
@@ -484,6 +510,9 @@ impl BoardState {
 
         self.all_sides[side_index].capture(from_index);
         self.all_sides[side_index].set(to_index);
+
+        self.mailbox[from_index] = None;
+        self.mailbox[to_index] = Some(PieceInfo::new(piece, side));
 
         Ok(())
     }
@@ -532,8 +561,8 @@ impl BoardState {
 
     pub fn set(
         &mut self,
-        side_to_set: &Side,
-        piece_to_set: &Piece,
+        side_to_set: Side,
+        piece_to_set: Piece,
         index_to_set: usize,
     ) -> miette::Result<()> {
         miette::ensure!(
@@ -543,6 +572,7 @@ impl BoardState {
         );
         self.all_pieces[side_to_set.index()][piece_to_set.index()].set(index_to_set);
         self.all_sides[side_to_set.index()].set(index_to_set);
+        self.mailbox[index_to_set] = Some(PieceInfo::new(piece_to_set, side_to_set));
         Ok(())
     }
 
@@ -561,33 +591,12 @@ impl BoardState {
         self.all_pieces[side_to_capture.index()][piece_to_capture.index()]
             .capture(index_to_capture);
         self.all_sides[side_to_capture.index()].capture(index_to_capture);
+        self.mailbox[index_to_capture] = None;
         Ok(())
     }
 
     pub fn get_piece_at(&self, square: &Square) -> Option<(Piece, Side)> {
-        let index = square.index();
-        let square_mask = 1u64 << index;
-
-        // first check if there's any piece at all using all_sides
-        if (self.all_sides[Side::white()] & BitBoard(square_mask)).0 != 0 {
-            for piece_type in Piece::all_pieces() {
-                if (self.all_pieces[Side::white()][piece_type.index()] & BitBoard(square_mask)).0
-                    != 0
-                {
-                    return Some((piece_type, Side::White));
-                }
-            }
-        } else if (self.all_sides[Side::black()] & BitBoard(square_mask)).0 != 0 {
-            for piece_type in Piece::all_pieces() {
-                if (self.all_pieces[Side::black()][piece_type.index()] & BitBoard(square_mask)).0
-                    != 0
-                {
-                    return Some((piece_type, Side::Black));
-                }
-            }
-        }
-
-        None
+        self.mailbox[square.index()].map(|info| (info.piece, info.side))
     }
 }
 
