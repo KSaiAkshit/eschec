@@ -80,7 +80,11 @@ pub enum GameSubcommand {
 
     /// Show the current fen of the board
     #[clap(visible_alias = "f")]
-    Fen,
+    Fen {
+        set: Option<String>,
+        #[arg(short, default_value = "false")]
+        get: bool,
+    },
 
     /// Run a perft test with given depth [default: 5]
     #[clap(visible_alias = "pe")]

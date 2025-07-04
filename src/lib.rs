@@ -147,9 +147,15 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
                     info!("Restarting game...");
                     board = Board::from_fen(&inp_fen);
                 }
-                GameSubcommand::Fen => {
-                    info!("Printing fen...");
-                    println!("{}", fen::to_fen(&board)?);
+                GameSubcommand::Fen { set, get } => {
+                    if get || set.is_none() {
+                        info!("Printing fen...");
+                        println!("{}", fen::to_fen(&board)?);
+                    }
+                    if let Some(fen) = set {
+                        info!("Setting fen to {fen}");
+                        board = Board::from_fen(&fen);
+                    }
                 }
                 GameSubcommand::Quit => {
                     info!("Exiting game loop...");

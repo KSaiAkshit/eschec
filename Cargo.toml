@@ -7,7 +7,7 @@ authors = ["Akira"]
 
 [profile.release]
 debug = true
-lto = true
+lto = "thin"
 codegen-units = 1
 panic = "abort"
 opt-level = 3

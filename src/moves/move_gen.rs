@@ -249,49 +249,50 @@ fn gen_pawn_moves(
         while let Some(to_sq) = capture_targets.pop_lsb() {
             let to_sq_u = to_sq as usize;
             let capture_dir = Direction::get_dir(from_sq_u, to_sq_u);
-            if pin_dir.is_none() || pin_dir == Some(capture_dir) {
-                if attack_data.check_ray_mask.contains_square(to_sq_u) {
-                    if to_sq_u / 8 == promo_rank {
-                        add_promo_moves(from_sq as u8, to_sq as u8, true, moves);
-                    } else {
-                        moves.push(Move::new(from_sq as u8, to_sq as u8, Move::CAPTURE));
-                    }
+            if pin_dir.is_none()
+                || pin_dir == Some(capture_dir)
+                    && attack_data.check_ray_mask.contains_square(to_sq_u)
+            {
+                if to_sq_u / 8 == promo_rank {
+                    add_promo_moves(from_sq as u8, to_sq as u8, true, moves);
+                } else {
+                    moves.push(Move::new(from_sq as u8, to_sq as u8, Move::CAPTURE));
                 }
             }
         }
 
         // En Passant
-        if let Some(ep_sq) = board.enpassant_square {
-            if (attacks & BitBoard(1 << ep_sq.index())).any() {
-                let ep_dir = Direction::get_dir(from_sq_u, ep_sq.index());
-                if pin_dir.is_none() || pin_dir == Some(ep_dir) {
-                    // En passant check is complex: need to see if removing both pawns opens a check.
-                    let captured_pawn_sq = if side == Side::White {
-                        ep_sq.index() - 8
-                    } else {
-                        ep_sq.index() + 8
-                    };
-                    let occupied_after_ep =
-                        (all_pieces & !BitBoard(1 << from_sq_u) & !BitBoard(1 << captured_pawn_sq))
-                            | BitBoard(1 << ep_sq.index());
-                    let king_sq = attack_data.king_sq;
-                    let rooks_queens = board.positions.get_orhto_sliders_bb(side.flip());
-                    let bishops_queens = board.positions.get_diag_sliders_bb(side.flip());
+        if let Some(ep_sq) = board.enpassant_square
+            && (attacks & BitBoard(1 << ep_sq.index())).any()
+        {
+            let ep_dir = Direction::get_dir(from_sq_u, ep_sq.index());
+            if pin_dir.is_none() || pin_dir == Some(ep_dir) {
+                // En passant check is complex: need to see if removing both pawns opens a check.
+                let captured_pawn_sq = if side == Side::White {
+                    ep_sq.index() - 8
+                } else {
+                    ep_sq.index() + 8
+                };
+                let occupied_after_ep =
+                    (all_pieces & !BitBoard(1 << from_sq_u) & !BitBoard(1 << captured_pawn_sq))
+                        | BitBoard(1 << ep_sq.index());
+                let king_sq = attack_data.king_sq;
+                let rooks_queens = board.positions.get_orhto_sliders_bb(side.flip());
+                let bishops_queens = board.positions.get_diag_sliders_bb(side.flip());
 
-                    let rook_attacks =
-                        MOVE_TABLES.get_rook_moves(king_sq, BitBoard(0), occupied_after_ep);
-                    let bishop_attacks =
-                        MOVE_TABLES.get_bishop_moves(king_sq, BitBoard(0), occupied_after_ep);
+                let rook_attacks =
+                    MOVE_TABLES.get_rook_moves(king_sq, BitBoard(0), occupied_after_ep);
+                let bishop_attacks =
+                    MOVE_TABLES.get_bishop_moves(king_sq, BitBoard(0), occupied_after_ep);
 
-                    if (rook_attacks & rooks_queens).is_empty()
-                        && (bishop_attacks & bishops_queens).is_empty()
-                    {
-                        moves.push(Move::new(
-                            from_sq as u8,
-                            ep_sq.index() as u8,
-                            Move::EN_PASSANT,
-                        ));
-                    }
+                if (rook_attacks & rooks_queens).is_empty()
+                    && (bishop_attacks & bishops_queens).is_empty()
+                {
+                    moves.push(Move::new(
+                        from_sq as u8,
+                        ep_sq.index() as u8,
+                        Move::EN_PASSANT,
+                    ));
                 }
             }
         }

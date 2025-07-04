@@ -4,7 +4,6 @@ use criterion::{Criterion, criterion_group, criterion_main};
 use eschec::{
     Board, KIWIPETE, Square,
     evaluation::{CompositeEvaluator, Evaluator},
-    moves::move_gen,
     search::Search,
 };
 
@@ -26,21 +25,10 @@ fn bench_get_piece_at(c: &mut Criterion) {
 /// This measures the raw speed of move generator.
 fn bench_move_generation(c: &mut Criterion) {
     let board = Board::from_fen(KIWIPETE);
-    let positions = &board.positions;
-    let mut move_list = Vec::with_capacity(256);
 
     c.bench_function("generate_all_moves", |b| {
         b.iter(|| {
-            // Clear the list but reuse the allocation.
-            move_list.clear();
-            move_gen::generate_all_moves(
-                black_box(positions),
-                black_box(board.stm),
-                black_box(board.castling_rights),
-                black_box(board.enpassant_square),
-                &mut move_list,
-            );
-            black_box(&move_list);
+            black_box(board.generate_legal_moves());
         })
     });
 }

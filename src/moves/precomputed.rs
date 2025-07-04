@@ -463,22 +463,22 @@ impl MoveTables {
             Side::White => {
                 let single_push = self.white_pawn_pushes[from];
                 if (single_push & occupied).0 == 0 {
-                    moves = moves | single_push;
+                    moves |= single_push;
 
                     let double_push = self.white_pawn_double_pushes[from];
                     if double_push.0 != 0 && (double_push & occupied).0 == 0 {
-                        moves = moves | double_push;
+                        moves |= double_push;
                     }
                 }
             }
             Side::Black => {
                 let single_push = self.black_pawn_pushes[from];
                 if (single_push & occupied).0 == 0 {
-                    moves = moves | single_push;
+                    moves |= single_push;
 
                     let double_push = self.black_pawn_double_pushes[from];
                     if double_push.0 != 0 && (double_push & occupied).0 == 0 {
-                        moves = moves | double_push;
+                        moves |= double_push;
                     }
                 }
             }
