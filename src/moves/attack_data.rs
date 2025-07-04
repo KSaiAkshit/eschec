@@ -1,6 +1,6 @@
 use crate::{
     BitBoard, Board, Piece, Side,
-    moves::{Direction, attack_data, precomputed::MOVE_TABLES},
+    moves::{Direction, precomputed::MOVE_TABLES},
 };
 
 #[derive(Debug, Clone, Default)]

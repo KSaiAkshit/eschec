@@ -118,9 +118,7 @@ pub fn debug_perft_vs_stockfish(
         }
 
         if our_count != sf_count {
-            println!(
-                "Count mismatch on move {our_mv}: our {our_count} vs sf {sf_count}"
-            );
+            println!("Count mismatch on move {our_mv}: our {our_count} vs sf {sf_count}");
             // Decend into this move
             let (from, to) = {
                 let from = Square::from_str(&our_mv[0..2])?;
@@ -150,10 +148,7 @@ pub fn perft(board: &mut Board, depth: u8, divide: bool) -> PerftResult {
         return PerftResult::new(1, Duration::from_nanos(1), None);
     }
 
-    let legal_moves = match board.generate_legal_moves() {
-        Ok(moves) => moves,
-        Err(_) => return PerftResult::new(0, start_time.elapsed(), None),
-    };
+    let legal_moves = board.generate_legal_moves_for_search();
 
     if depth == 1 {
         return PerftResult::new(
@@ -195,9 +190,7 @@ pub fn perft(board: &mut Board, depth: u8, divide: bool) -> PerftResult {
         board
             .unmake_move(&move_data)
             .wrap_err_with(|| {
-                format!(
-                    "fucked up at {from} to {to} at {depth} depth. {move_data:?}"
-                )
+                format!("fucked up at {from} to {to} at {depth} depth. {move_data:?}")
             })
             .expect("Should be able to unmake move");
 
@@ -285,7 +278,6 @@ mod perft_tests {
     ];
 
     #[test]
-    #[ignore]
     fn test_perft_starting_position() {
         init();
         let mut board = Board::new();
@@ -302,16 +294,13 @@ mod perft_tests {
     }
 
     #[test]
-    #[ignore]
     fn test_perft_kiwipete() {
         init();
         // This is the "Kiwipete" position, a common test position
-        let mut board =
-            Board::from_fen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+        let mut board = Board::from_fen(KIWIPETE);
         println!("{board}");
 
-        for &(depth, expected) in KIWIPETE_PERFT.iter().take(3) {
-            // limit to depth 3 for time
+        for &(depth, expected) in KIWIPETE_PERFT.iter().take(4) {
             let result = perft(&mut board, depth, false);
             assert_eq!(
                 result.nodes, expected,
@@ -322,7 +311,6 @@ mod perft_tests {
     }
 
     #[test]
-    #[ignore]
     fn test_perft_position3() {
         init();
         // Position 3 from CPW
@@ -341,7 +329,6 @@ mod perft_tests {
     }
 
     #[test]
-    #[ignore]
     fn test_perft_position4() {
         init();
         // Position 4 from CPW (en passant capture test)
@@ -361,14 +348,13 @@ mod perft_tests {
     }
 
     #[test]
-    #[ignore]
     fn test_make_unmake_consistency() {
         init();
         let mut board = Board::new();
         let original_board = board;
 
-        // Generate moves and test make/unmake for each one
-        if let Ok(legal_moves) = board.generate_legal_moves() {
+        let legal_moves = board.generate_legal_moves_for_search();
+        if !legal_moves.is_empty() {
             for (from, to) in legal_moves {
                 // Make the move
                 let move_data = board.try_move_with_info(from, to).unwrap();

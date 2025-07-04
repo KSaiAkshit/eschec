@@ -58,20 +58,7 @@ impl Search {
         self.nodes_searched = 0;
         self.start_time = Instant::now();
 
-        let legal_moves = match board.generate_legal_moves() {
-            Ok(moves) => moves,
-            Err(e) => {
-                error!("Error generating legal moves");
-                eprintln!("Error: {e:?}");
-                return SearchResult {
-                    best_move: None,
-                    score: 0,
-                    depth: self.max_depth,
-                    nodes_searched: 0,
-                    time_taken: Duration::from_secs(0),
-                };
-            }
-        };
+        let legal_moves = board.generate_legal_moves_for_search();
         if legal_moves.is_empty() {
             debug!("No legal moves");
             return SearchResult {
@@ -163,10 +150,7 @@ impl Search {
             return score;
         }
 
-        let legal_moves = match board.generate_legal_moves() {
-            Ok(moves) => moves,
-            Err(_) => return 0,
-        };
+        let legal_moves = board.generate_legal_moves_for_search();
 
         if legal_moves.is_empty() {
             return if board.is_in_check(board.stm) {
