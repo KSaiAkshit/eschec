@@ -1,6 +1,7 @@
 #![feature(portable_simd)]
-use std::cell::OnceCell;
+use std::env;
 use std::io::{Write, stderr};
+use std::sync::{LazyLock, Mutex};
 
 // Bit Boards use 64 bits of true or false, to tell if a given peice is at the location.
 // 12 Bit boards represent where the chess peices are at all times
@@ -13,7 +14,9 @@ pub mod utils;
 
 pub use board::components::*;
 pub use board::*;
-use tracing_subscriber::EnvFilter;
+use tracing_subscriber::{
+    EnvFilter, layer::SubscriberExt, reload::Handle, util::SubscriberInitExt,
+};
 pub use utils::cli;
 pub use utils::perft;
 
@@ -26,6 +29,26 @@ use tracing::{Level, error, info, span, trace};
 
 pub const START_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 pub const KIWIPETE: &str = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
+
+static LOG_FILTER_HANDLE: LazyLock<Mutex<Handle<EnvFilter, tracing_subscriber::Registry>>> =
+    LazyLock::new(|| {
+        color_backtrace::install();
+        let filter = match env::var("RUST_LOG") {
+            Ok(env_filter) => EnvFilter::new(env_filter),
+            Err(_) => EnvFilter::new("info"),
+        };
+
+        let (filter, handle) = tracing_subscriber::reload::Layer::new(filter);
+        tracing_subscriber::registry()
+            .with(filter)
+            .with(
+                tracing_subscriber::fmt::layer()
+                    .without_time()
+                    .with_writer(stderr),
+            )
+            .init();
+        Mutex::new(handle)
+    });
 
 pub fn clear_screen() -> miette::Result<()> {
     print!("\x1b[2J\x1b[1H");
@@ -147,15 +170,9 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
                     info!("Restarting game...");
                     board = Board::from_fen(&inp_fen);
                 }
-                GameSubcommand::Fen { set, get } => {
-                    if get || set.is_none() {
-                        info!("Printing fen...");
-                        println!("{}", fen::to_fen(&board)?);
-                    }
-                    if let Some(fen) = set {
-                        info!("Setting fen to {fen}");
-                        board = Board::from_fen(&fen);
-                    }
+                GameSubcommand::Fen => {
+                    info!("Printing fen...");
+                    println!("{}", fen::to_fen(&board)?);
                 }
                 GameSubcommand::Quit => {
                     info!("Exiting game loop...");
@@ -181,10 +198,6 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
                         error!("No legal moves available");
                     }
                 }
-                GameSubcommand::Depth { depth } => {
-                    info!("Changing search depth from {} to {}", inp_depth, depth);
-                    search.change_depth(depth);
-                }
                 GameSubcommand::Evaluate => {
                     info!("Evaluating the current board state");
                     let score = board.evaluate_position(&evaluator);
@@ -194,6 +207,29 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
                     info!("Clearing screen");
                     clear_screen()?;
                 }
+                GameSubcommand::Set { cmd } => match cmd {
+                    cli::SetSubcommand::Fen { parts } => {
+                        if parts.is_empty() {
+                            error!("No FEN string provided. Usage: set fen <FEN_STRING>");
+                            continue;
+                        }
+                        let fen_str = parts.join(" ");
+                        info!("Setting fen to {fen_str}");
+                        board = Board::from_fen(&fen_str);
+                        println!("{board}");
+                    }
+                    cli::SetSubcommand::Depth { depth } => {
+                        info!("Changing search depth from {inp_depth} to {depth}");
+                        search.change_depth(depth);
+                    }
+                    cli::SetSubcommand::LogLevel { level } => {
+                        let new_level: Level = level.into();
+                        info!("Setting log level to {new_level}");
+                        if let Err(e) = set_log_level(new_level) {
+                            error!("Failed to set log level: {e:?}");
+                        }
+                    }
+                },
             },
             Err(e) => {
                 // println!("{}", e.render());
@@ -205,27 +241,26 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
     Ok(())
 }
 
+pub fn set_log_level(level: Level) -> miette::Result<()> {
+    let new_filter = EnvFilter::new(level.to_string());
+
+    LOG_FILTER_HANDLE
+        .lock()
+        .unwrap()
+        .modify(|filter| *filter = new_filter)
+        .into_diagnostic()
+        .with_context(|| format!("Failed to modify log filter to level: {level}"))
+}
+
 /// Initialize tracing and backtrace
 pub fn init() {
-    let init: OnceCell<bool> = OnceCell::new();
-    init.get_or_init(|| {
-        color_backtrace::install();
-        tracing_subscriber::fmt()
-            .without_time()
-            .with_writer(stderr)
-            .with_env_filter(EnvFilter::from_default_env().add_directive(Level::INFO.into()))
-            .init();
-        #[cfg(feature = "simd")]
-        {
-            info!("Using Simd");
-        }
-        #[cfg(not(feature = "simd"))]
-        {
-            info!("Not using Simd");
-        }
-        true
-    });
-    if !init.get().unwrap() {
-        panic!("Backtrace and/or tracing_subscriber not initialized");
+    LazyLock::force(&LOG_FILTER_HANDLE);
+    #[cfg(feature = "simd")]
+    {
+        info!("Using Simd");
+    }
+    #[cfg(not(feature = "simd"))]
+    {
+        info!("Not using Simd");
     }
 }
