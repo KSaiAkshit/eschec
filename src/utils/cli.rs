@@ -1,4 +1,5 @@
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
+use tracing::Level;
 
 use crate::START_FEN;
 
@@ -41,6 +42,41 @@ pub enum Commands {
     },
 }
 
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
+pub enum LogLevel {
+    Trace,
+    Debug,
+    Info,
+    Warn,
+    Error,
+}
+
+impl From<LogLevel> for Level {
+    fn from(value: LogLevel) -> Self {
+        match value {
+            LogLevel::Trace => Level::TRACE,
+            LogLevel::Debug => Level::DEBUG,
+            LogLevel::Info => Level::INFO,
+            LogLevel::Warn => Level::WARN,
+            LogLevel::Error => Level::ERROR,
+        }
+    }
+}
+
+#[derive(Subcommand, Debug)]
+pub enum SetSubcommand {
+    /// Set the board position using a FEN string
+    Fen {
+        /// The FEN string. Consumes the rest of the line.
+        parts: Vec<String>,
+    },
+    /// Change the AI search depth
+    Depth { depth: u8 },
+    /// Change the logging level
+    #[clap(visible_alias = "log")]
+    LogLevel { level: LogLevel },
+}
+
 #[derive(Parser, Debug)]
 #[command(name = "game_cmd", no_binary_name = true)]
 pub struct GameCommand {
@@ -70,21 +106,13 @@ pub enum GameSubcommand {
     #[clap(visible_alias = "h")]
     Hint,
 
-    /// Change the AI search depth
-    #[clap(visible_alias = "d")]
-    Depth { depth: u8 },
-
     /// Show the current evaluation of the piece
     #[clap(visible_alias = "e")]
     Evaluate,
 
     /// Show the current fen of the board
     #[clap(visible_alias = "f")]
-    Fen {
-        set: Option<String>,
-        #[arg(short, default_value = "false")]
-        get: bool,
-    },
+    Fen,
 
     /// Run a perft test with given depth [default: 5]
     #[clap(visible_alias = "pe")]
@@ -92,6 +120,12 @@ pub enum GameSubcommand {
         depth: Option<u8>,
         #[arg(short, default_value = "false")]
         divide: bool,
+    },
+
+    /// Change a setting (fen, depth, log-level)
+    Set {
+        #[command(subcommand)]
+        cmd: SetSubcommand,
     },
 
     /// Clear screen
