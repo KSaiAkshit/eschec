@@ -161,7 +161,7 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
                     );
                     let mut board_copy = board;
                     if divide {
-                        perft::perft_divide(&mut board, depth.unwrap_or(5));
+                        perft::perft_divide(&mut board_copy, depth.unwrap_or(5));
                     } else {
                         perft::run_perft_suite(&mut board_copy, depth.unwrap_or(5));
                     }

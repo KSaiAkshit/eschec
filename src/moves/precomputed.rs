@@ -500,4 +500,67 @@ impl MoveTables {
             _ => BitBoard(0),
         }
     }
+
+    // "generic" functions that do not care about ally/enemy
+    // They take in an 'occupied' bitboard that contain all pieces except the king
+    // This is important for calculating opponent's attack map
+    //
+
+    fn get_attacks_in_dir(
+        &self,
+        ray: BitBoard,
+        occupied: BitBoard,
+        is_positive_direction: bool,
+        blocker_ray_table: &[BitBoard; 64],
+    ) -> BitBoard {
+        let blockers = ray & occupied;
+
+        if let Some(first_blocker_idx) = blockers.get_closest_bit(is_positive_direction) {
+            ray & !blocker_ray_table[first_blocker_idx as usize]
+        } else {
+            ray
+        }
+    }
+
+    pub fn get_bishop_attacks_generic(&self, from: usize, occupied: BitBoard) -> BitBoard {
+        let ne_attacks = self.get_attacks_in_dir(
+            self.northeast_rays[from],
+            occupied,
+            true,
+            &self.northeast_rays,
+        );
+        let se_attacks = self.get_attacks_in_dir(
+            self.southeast_rays[from],
+            occupied,
+            false,
+            &self.southeast_rays,
+        );
+        let sw_attacks = self.get_attacks_in_dir(
+            self.southwest_rays[from],
+            occupied,
+            true,
+            &self.southwest_rays,
+        );
+        let nw_attacks = self.get_attacks_in_dir(
+            self.northwest_rays[from],
+            occupied,
+            true,
+            &self.northwest_rays,
+        );
+
+        ne_attacks | se_attacks | sw_attacks | nw_attacks
+    }
+
+    pub fn get_rook_attacks_generic(&self, from: usize, occupied: BitBoard) -> BitBoard {
+        let n_attacks =
+            self.get_attacks_in_dir(self.north_rays[from], occupied, true, &self.north_rays);
+        let s_attacks =
+            self.get_attacks_in_dir(self.south_rays[from], occupied, false, &self.south_rays);
+        let e_attacks =
+            self.get_attacks_in_dir(self.east_rays[from], occupied, true, &self.east_rays);
+        let w_attacks =
+            self.get_attacks_in_dir(self.west_rays[from], occupied, false, &self.west_rays);
+
+        n_attacks | s_attacks | e_attacks | w_attacks
+    }
 }

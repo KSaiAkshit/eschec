@@ -5,6 +5,7 @@ use std::{
 };
 
 use miette::Context;
+use tracing::error;
 
 #[derive(Debug, Default, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
 pub struct BitBoard(pub u64);
@@ -178,7 +179,7 @@ impl BitBoard {
         (self.0 & (1 << index)) != 0
     }
 
-    pub const fn closest_bit(&self, forward: bool) -> Option<u64> {
+    pub const fn get_closest_bit(&self, forward: bool) -> Option<u64> {
         if self.is_empty() {
             None
         } else if forward {
@@ -500,12 +501,12 @@ impl BoardState {
         let side_index = side.index();
 
         if self.get_piece_at(&from).is_none() {
-            println!("{side} {piece} not available at {from}");
-            println!(
+            error!("{side} {piece} not available at {from}");
+            error!(
                 "{side} Side: \n{}",
                 self.all_sides[side_index].print_bitboard()
             );
-            println!(
+            error!(
                 "{piece}: \n{}",
                 self.all_pieces[side_index][piece.index()].print_bitboard()
             );
