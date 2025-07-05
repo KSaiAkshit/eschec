@@ -50,13 +50,14 @@ pub fn calculate_attack_data(board: &Board, side: Side) -> AttackData {
         let blockers_on_ray = ray & all_pieces;
 
         if blockers_on_ray.any() {
-            let first_blocker_sq = blockers_on_ray.closest_bit(is_forward_ray).unwrap() as usize;
+            let first_blocker_sq =
+                blockers_on_ray.get_closest_bit(is_forward_ray).unwrap() as usize;
 
             // If the first blocker is a friendly piece, it might be pinned.
             if friendly_pieces.contains_square(first_blocker_sq) {
                 let blockers_behind_friendly = blockers_on_ray & !BitBoard(1 << first_blocker_sq);
                 if let Some(potential_pinner_sq) =
-                    blockers_behind_friendly.closest_bit(is_forward_ray)
+                    blockers_behind_friendly.get_closest_bit(is_forward_ray)
                 {
                     let potential_pinner_sq = potential_pinner_sq as usize;
                     let pinner_bb = BitBoard(1 << potential_pinner_sq);
@@ -131,35 +132,25 @@ pub fn calculate_attack_data(board: &Board, side: Side) -> AttackData {
     // Opponent attack map
     let all_pieces_no_king = all_pieces & !board.positions.get_piece_bb(side, Piece::King);
 
-    if let Some(k_sq) = opp_king.lsb() {
-        attack_data.opp_attack_map |= MOVE_TABLES.king_moves[k_sq as usize];
+    if let Some(king_sq) = opp_king.lsb() {
+        attack_data.opp_attack_map |= MOVE_TABLES.king_moves[king_sq as usize];
     }
 
-    for p_sq in opp_pawns.iter_bits() {
-        attack_data.opp_attack_map |= MOVE_TABLES.get_pawn_attacks(p_sq, opponent);
+    for pawn_sq in opp_pawns.iter_bits() {
+        attack_data.opp_attack_map |= MOVE_TABLES.get_pawn_attacks(pawn_sq, opponent);
     }
-    for n_sq in opp_knights.iter_bits() {
-        attack_data.opp_attack_map |= MOVE_TABLES.knight_moves[n_sq];
+    for knight_sq in opp_knights.iter_bits() {
+        attack_data.opp_attack_map |= MOVE_TABLES.knight_moves[knight_sq];
     }
-    for b_sq in (board.positions.get_piece_bb(opponent, Piece::Bishop)
-        | board.positions.get_piece_bb(opponent, Piece::Queen))
-    .iter_bits()
-    {
-        attack_data.opp_attack_map |= MOVE_TABLES.get_bishop_moves(
-            b_sq,
-            *board.positions.get_side_bb(opponent),
-            all_pieces_no_king,
-        );
+    // Bishop + Queen
+    for diag_sq in board.positions.get_diag_sliders_bb(opponent).iter_bits() {
+        attack_data.opp_attack_map |=
+            MOVE_TABLES.get_bishop_attacks_generic(diag_sq, all_pieces_no_king);
     }
-    for r_sq in (board.positions.get_piece_bb(opponent, Piece::Rook)
-        | board.positions.get_piece_bb(opponent, Piece::Queen))
-    .iter_bits()
-    {
-        attack_data.opp_attack_map |= MOVE_TABLES.get_rook_moves(
-            r_sq,
-            *board.positions.get_side_bb(opponent),
-            all_pieces_no_king,
-        );
+    // Rook + Queen
+    for orhto_sq in board.positions.get_orhto_sliders_bb(opponent).iter_bits() {
+        attack_data.opp_attack_map |=
+            MOVE_TABLES.get_rook_attacks_generic(orhto_sq, all_pieces_no_king);
     }
 
     attack_data
