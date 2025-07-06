@@ -108,6 +108,18 @@ impl Move {
         (self.flags() >> 12) >= 0b1000
     }
 
+    /// Returns true if this move is a castling
+    #[inline]
+    pub const fn is_castling(&self) -> bool {
+        matches!(self.flags(), Self::KING_CASTLE | Self::QUEEN_CASTLE)
+    }
+
+    /// Returns true if this move is en_passant
+    #[inline]
+    pub const fn is_enpassant(&self) -> bool {
+        matches!(self.flags(), Self::EN_PASSANT)
+    }
+
     /// Returns promoted piece type as types, if promotion; else None
     #[inline]
     pub const fn promoted_piece(&self) -> Option<Piece> {
@@ -138,7 +150,7 @@ impl Move {
         let to = Square::new(self.to_idx().into()).unwrap_or_default();
         match self.promoted_piece_char() {
             Some(piece) => format!("{from}{to}{piece}"),
-            None => format!("from: {from}, to: {to},",),
+            None => format!("{from}{to}",),
         }
     }
 

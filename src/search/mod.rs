@@ -1,4 +1,4 @@
-use crate::evaluation::Evaluator;
+use crate::{evaluation::Evaluator, moves::move_info::Move};
 use tracing::*;
 
 use super::*;
@@ -7,7 +7,7 @@ use std::time::{Duration, Instant};
 
 #[derive(Debug)]
 pub struct SearchResult {
-    pub best_move: Option<(Square, Square)>,
+    pub best_move: Option<Move>,
     pub score: i32,
     pub depth: u8,
     pub nodes_searched: u64,
@@ -58,7 +58,7 @@ impl Search {
         self.nodes_searched = 0;
         self.start_time = Instant::now();
 
-        let legal_moves = board.generate_legal_moves_for_search();
+        let legal_moves = board.generate_legal_moves();
         if legal_moves.is_empty() {
             debug!("No legal moves");
             return SearchResult {
@@ -79,11 +79,16 @@ impl Search {
         let mut completed_depth = 0;
 
         for depth in 1..=self.max_depth {
-            let mut local_best_move: Option<(Square, Square)> = None;
+
+            if self.is_time_up() {break;}
+
+            let mut local_best_move: Option<Move> = None;
             let mut local_best_score = i32::MIN + 1;
             let mut alpha = i32::MIN + 1;
             let beta = i32::MAX;
-            for (from, to) in &legal_moves {
+
+            for &m in &legal_moves {
+
                 if self.is_time_up() || self.node_limit_reached() {
                     return SearchResult {
                         best_move,
@@ -93,22 +98,24 @@ impl Search {
                         time_taken: self.start_time.elapsed(),
                     };
                 }
+
                 let mut board_copy = *board;
-                if board_copy.try_move(*from, *to).is_err() {
+                if board_copy.make_move(m).is_err() {
                     continue;
                 }
 
-                info!("Evaluating from: {}, to: {}", from, to);
+                info!("Evaluating move: {}", m);
                 let score = -self.alpha_beta(&board_copy, depth - 1, -beta, -alpha, evaluator);
 
                 if score > local_best_score {
                     local_best_score = score;
-                    local_best_move = Some((*from, *to));
+                    local_best_move = Some(m);
                 }
 
                 alpha = max(alpha, local_best_score);
                 if alpha >= beta {
                     warn!("alpha {alpha} > beta {beta}");
+                    self.pruned_nodes += 1;
                     break;
                 }
             }
@@ -150,7 +157,7 @@ impl Search {
             return score;
         }
 
-        let legal_moves = board.generate_legal_moves_for_search();
+        let legal_moves = board.generate_legal_moves();
 
         if legal_moves.is_empty() {
             return if board.is_in_check(board.stm) {
@@ -162,9 +169,9 @@ impl Search {
 
         let mut best_score = i32::MIN + 1;
 
-        for (from, to) in legal_moves {
+        for m in legal_moves {
             let mut board_copy = *board;
-            if board_copy.try_move(from, to).is_err() {
+            if board_copy.make_move(m).is_err() {
                 continue;
             }
 

@@ -538,7 +538,7 @@ impl MoveTables {
         let sw_attacks = self.get_attacks_in_dir(
             self.southwest_rays[from],
             occupied,
-            true,
+            false,
             &self.southwest_rays,
         );
         let nw_attacks = self.get_attacks_in_dir(
