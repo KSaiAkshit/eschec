@@ -148,10 +148,11 @@ impl Move {
     pub fn uci(&self) -> String {
         let from = Square::new(self.from_idx().into()).unwrap();
         let to = Square::new(self.to_idx().into()).unwrap_or_default();
-        match self.promoted_piece_char() {
+       let uci_str =  match self.promoted_piece_char() {
             Some(piece) => format!("{from}{to}{piece}"),
             None => format!("{from}{to}",),
-        }
+        };
+       uci_str.to_lowercase()
     }
 
     /// 0..63 to e2 etc
