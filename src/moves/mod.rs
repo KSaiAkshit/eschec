@@ -3,6 +3,9 @@ pub mod move_gen;
 pub mod move_info;
 pub mod precomputed;
 
+#[cfg(test)]
+mod tests;
+
 /// First 4 are orhtogonal, rest are diagonal
 ///  (N, S, W, E, NW, SE, NE, SW)
 pub struct Direction;
