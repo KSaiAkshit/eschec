@@ -1,3 +1,4 @@
+use crate::moves::move_info::Move;
 use crate::*;
 use miette::Context;
 use std::io::{BufRead, BufReader, Write};
@@ -53,16 +54,12 @@ pub struct PerftResult {
     /// Nodes per second
     pub nps: u64,
     /// Move breakdown showing count for each move
-    pub move_counts: Option<Vec<(Square, Square, u64)>>,
+    pub move_counts: Option<Vec<(Move, u64)>>,
 }
 
 impl PerftResult {
     /// Creates a new PerftResult with the given data
-    pub fn new(
-        nodes: u64,
-        duration: Duration,
-        move_counts: Option<Vec<(Square, Square, u64)>>,
-    ) -> Self {
+    pub fn new(nodes: u64, duration: Duration, move_counts: Option<Vec<(Move, u64)>>) -> Self {
         let nanos = duration.as_nanos();
         let nps = if nanos > 0 {
             nodes * 1_000_000_000 / nanos as u64
@@ -85,10 +82,9 @@ pub fn perft_divide_uci(board: &mut Board, depth: u8) -> miette::Result<Vec<(Str
         .move_counts
         .unwrap_or_default()
         .into_iter()
-        .map(|(from, to, count)| {
+        .map(|(mov, count)| {
             // Convert to UCI string, e.g. "e2e4"
-            let uci = format!("{from}{to}");
-            (uci, count)
+            (mov.uci(), count)
         })
         .collect();
     Ok(r)
@@ -120,12 +116,12 @@ pub fn debug_perft_vs_stockfish(
         if our_count != sf_count {
             println!("Count mismatch on move {our_mv}: our {our_count} vs sf {sf_count}");
             // Decend into this move
-            let (from, to) = {
+            let mov = {
                 let from = Square::from_str(&our_mv[0..2])?;
                 let to = Square::from_str(&our_mv[2..4])?;
-                (from, to)
+                Move::new(from.index() as u8, to.index() as u8, Move::QUIET)
             };
-            let move_data = board.try_move_with_info(from, to)?;
+            let move_data = board.make_move(mov)?;
             let mut new_path = path.clone();
             new_path.push(our_mv.clone());
             debug_perft_vs_stockfish(board, depth - 1, new_path)?;
@@ -148,19 +144,14 @@ pub fn perft(board: &mut Board, depth: u8, divide: bool) -> PerftResult {
         return PerftResult::new(1, Duration::from_nanos(1), None);
     }
 
-    let legal_moves = board.generate_legal_moves_for_search();
+    let legal_moves = board.generate_legal_moves();
 
     if depth == 1 {
         return PerftResult::new(
             legal_moves.len() as u64,
             start_time.elapsed(),
             if divide {
-                Some(
-                    legal_moves
-                        .into_iter()
-                        .map(|(from, to)| (from, to, 1))
-                        .collect(),
-                )
+                Some(legal_moves.into_iter().map(|m| (m, 1)).collect())
             } else {
                 None
             },
@@ -174,8 +165,8 @@ pub fn perft(board: &mut Board, depth: u8, divide: bool) -> PerftResult {
         None
     };
 
-    for (from, to) in legal_moves {
-        let move_data = match board.try_move_with_info(from, to) {
+    for m in legal_moves {
+        let move_data = match board.make_move(m) {
             Ok(data) => data,
             Err(_) => continue,
         };
@@ -190,14 +181,18 @@ pub fn perft(board: &mut Board, depth: u8, divide: bool) -> PerftResult {
         board
             .unmake_move(&move_data)
             .wrap_err_with(|| {
-                format!("fucked up at {from} to {to} at {depth} depth. {move_data:?}")
+                format!(
+                    "fucked up at {} to {} at {depth} depth. {move_data:?}",
+                    m.from_sq(),
+                    m.to_sq()
+                )
             })
             .expect("Should be able to unmake move");
 
         total_nodes += sub_nodes;
 
         if let Some(ref mut counts) = move_counts {
-            counts.push((from, to, sub_nodes));
+            counts.push((m, sub_nodes));
         }
     }
 
@@ -213,8 +208,8 @@ pub fn perft_divide(board: &mut Board, depth: u8) -> PerftResult {
         println!("Perft results at depth {depth}");
         println!("----------------------------");
 
-        for (from, to, count) in move_counts {
-            println!("{from}{to}: {count}");
+        for (mov, count) in move_counts {
+            println!("{mov}: {count}");
         }
 
         println!("----------------------------");
@@ -353,11 +348,11 @@ mod perft_tests {
         let mut board = Board::new();
         let original_board = board;
 
-        let legal_moves = board.generate_legal_moves_for_search();
+        let legal_moves = board.generate_legal_moves();
         if !legal_moves.is_empty() {
-            for (from, to) in legal_moves {
+            for mov in legal_moves {
                 // Make the move
-                let move_data = board.try_move_with_info(from, to).unwrap();
+                let move_data = board.make_move(mov).unwrap();
 
                 // The board should now be different
                 assert_ne!(

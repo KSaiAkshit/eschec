@@ -1,9 +1,11 @@
+use std::fmt::Debug;
+
 use crate::{
     BitBoard, Board, Piece, Side,
     moves::{Direction, precomputed::MOVE_TABLES},
 };
 
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Default)]
 pub struct AttackData {
     /// If one piece attacks king
     pub in_check: bool,
@@ -21,6 +23,20 @@ pub struct AttackData {
     pub opp_attack_map: BitBoard,
     /// The square of the friendly king
     pub king_sq: usize,
+}
+
+impl Debug for AttackData {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("AttackData")
+            .field("in_check", &self.in_check)
+            .field("double_check", &self.double_check)
+            .field("pin_ray_mask", &self.pin_ray_mask.print_bitboard())
+            .field("check_ray_mask", &self.check_ray_mask.print_bitboard())
+            .field("checker_mask", &self.checker_mask.print_bitboard())
+            .field("opp_attack_map", &self.opp_attack_map.print_bitboard())
+            .field("king_sq", &self.king_sq)
+            .finish()
+    }
 }
 
 pub fn calculate_attack_data(board: &Board, side: Side) -> AttackData {

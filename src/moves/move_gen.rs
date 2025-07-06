@@ -249,9 +249,8 @@ fn gen_pawn_moves(
         while let Some(to_sq) = capture_targets.pop_lsb() {
             let to_sq_u = to_sq as usize;
             let capture_dir = Direction::get_dir(from_sq_u, to_sq_u);
-            if pin_dir.is_none()
-                || pin_dir == Some(capture_dir)
-                    && attack_data.check_ray_mask.contains_square(to_sq_u)
+            if (pin_dir.is_none() || pin_dir == Some(capture_dir))
+                && attack_data.check_ray_mask.contains_square(to_sq_u)
             {
                 if to_sq_u / 8 == promo_rank {
                     add_promo_moves(from_sq as u8, to_sq as u8, true, moves);

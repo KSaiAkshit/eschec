@@ -1,4 +1,4 @@
-set unstable
+set unstable := true
 
 flags := "--release"
 DEPTH := "5"
@@ -16,7 +16,7 @@ run *args:
     cargo run --bin eschec {{ flags }} -- {{ args }}
 
 [doc("Record perf for given pid")]
-record pid:
+record pid: setup
     perf record --call-graph dwarf -p {{ pid }}
 
 [doc("Run with given args along with dhat feature")]
@@ -33,6 +33,16 @@ dhat-perft depth=DEPTH fen=FEN:
 [doc("Run all tests")]
 test:
     cargo test --all-features
+
+[doc("Set some variables for debugging")]
+@setup:
+    echo "-1" | sudo tee /proc/sys/kernel/perf_event_paranoid
+    echo "0" | sudo tee /proc/sys/kernel/kptr_restrict
+    echo "0" | sudo tee /proc/sys/kernel/nmi_watchdog
+
+[doc("Generate flamegraph for perft and view in flamelens")]
+flame depth: setup
+    cargo flamegraph --post-process 'flamelens --echo' {{ flags }} --bin eschec -- perft --depth {{ depth }}
 
 [doc("lint the codebase")]
 lint:

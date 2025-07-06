@@ -1,6 +1,7 @@
 #![feature(portable_simd)]
 use std::env;
 use std::io::{Write, stderr};
+use std::str::FromStr;
 use std::sync::{LazyLock, Mutex};
 
 // Bit Boards use 64 bits of true or false, to tell if a given peice is at the location.
@@ -26,6 +27,8 @@ use evaluation::CompositeEvaluator;
 use miette::{Context, IntoDiagnostic};
 use search::Search;
 use tracing::{Level, error, info, span, trace};
+
+use crate::moves::move_info::Move;
 
 pub const START_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 pub const KIWIPETE: &str = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
@@ -85,11 +88,35 @@ pub fn get_input(input: &str) -> miette::Result<(Square, Square)> {
     Ok((from_square, to_square))
 }
 
-fn parse_move_input(from: String, to: String) -> miette::Result<(Square, Square)> {
-    let from_square: Square = from.try_into()?;
-    let to_square: Square = to.try_into()?;
 
-    Ok((from_square, to_square))
+fn parse_uci_move(board: &Board, uci: &str) -> miette::Result<Move> {
+    if uci.len() < 4 || uci.len() > 5 {
+        miette::bail!("Invalid UCI move format: '{}'", uci);
+    }
+    let from_str = &uci[0..2];
+    let to_str = &uci[2..4];
+    let promo_char = uci.chars().nth(4);
+
+    let from = Square::from_str(from_str)?;
+    let to = Square::from_str(to_str)?;
+
+    // Find the matching legal move. This is the only way to get the correct flags.
+    let legal_moves = board.generate_legal_moves();
+    let found_move = legal_moves.into_iter().find(|m| {
+        if m.from_sq() == from && m.to_sq() == to {
+            // If there's a promotion, make sure it matches.
+            if let Some(pc) = promo_char {
+                return m.promoted_piece_char() == Some(pc);
+            }
+            // If no promotion in UCI string, match a non-promotion move.
+            return !m.is_promotion();
+        }
+        false
+    });
+
+    found_move.context(format!(
+        "The move '{uci}' is not legal in the current position."
+    ))
 }
 
 pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
@@ -134,17 +161,17 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
 
         match GameCommand::try_parse_from(args) {
             Ok(game_cmd) => match game_cmd.cmd {
-                GameSubcommand::Move { from, to } => {
-                    info!("Moving from {} to {}", from, to);
-
-                    let (from_square, to_square) = match parse_move_input(from, to) {
-                        Ok(f) => (f.0, f.1),
+                GameSubcommand::Move { move_str } => {
+                    let mov = match parse_uci_move(&board, &move_str) {
+                        Ok(m) => m,
                         Err(e) => {
                             eprintln!("{e:?}");
                             continue;
                         }
                     };
-                    if let Err(e) = board.try_move(from_square, to_square) {
+                    info!("Attempting move: {}", mov);
+                    // Already verified that mov is legal when parsing for uci move above
+                    if let Err(e) = board.make_move(mov) {
                         eprintln!("{e:?}");
                         continue;
                     }
@@ -187,8 +214,8 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
                 GameSubcommand::Hint => {
                     info!("Here's a Hint. Support for multiple hints coming soon");
                     let result = search.find_best_move(&board, &evaluator);
-                    if let Some((from, to)) = result.best_move {
-                        info!("Best move: {} to {} ", from, to);
+                    if let Some(mov) = result.best_move {
+                        info!("Best move: {} ", mov);
                         info!(
                             "score: {}, time_taken: {} ms",
                             result.score,

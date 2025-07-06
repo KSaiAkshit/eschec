@@ -841,7 +841,7 @@ impl Display for Square {
 
 #[cfg(test)]
 mod tests {
-    use crate::board::Board;
+    use crate::{board::Board, moves::move_info::Move};
 
     use super::*;
 
@@ -898,9 +898,10 @@ mod tests {
 1 1 1 1 1 1 1 1
 ";
         let mut board = Board::new();
+        let mov = Move::new(8, 16, Move::QUIET);
         assert!(
             board
-                .try_move(Square::new(8).unwrap(), Square::new(16).unwrap())
+                .try_move(mov)
                 .is_ok()
         );
         let o = board.positions.get_side_bb(Side::White).print_bitboard();

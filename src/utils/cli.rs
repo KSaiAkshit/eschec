@@ -88,7 +88,7 @@ pub struct GameCommand {
 pub enum GameSubcommand {
     /// Make a move on the board
     #[clap(visible_alias = "m")]
-    Move { from: String, to: String },
+    Move { move_str: String },
 
     /// Print the current board state
     #[clap(visible_alias = "p")]

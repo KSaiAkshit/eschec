@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use super::{Evaluator, Piece, Square};
+use super::{Evaluator, Piece};
 use crate::board::Board;
 
 #[derive(Debug)]
@@ -31,38 +31,33 @@ impl MobilityEvaluator {
         }
     }
 
-    fn evaluate_move_by_piece(&self, legal_moves: &HashMap<Piece, Vec<(Square, Square)>>) -> i32 {
+    fn calculate_mobility_score(&self, board: &Board) -> i32 {
+        let legal_moves = board.generate_legal_moves();
         let mut score = 0;
 
-        for k in legal_moves.keys() {
-            let entries = legal_moves.get(k);
-            let len = if let Some(entries) = entries {
-                entries.len() as i32
-            } else {
-                0
-            };
-
-            if let Some(&weight) = self.mobility_weights.get(k) {
-                score += weight * len;
+        for m in legal_moves {
+            if let Some(piece) = board.get_piece_at(m.from_sq())
+                && let Some(weight) = self.mobility_weights.get(&piece)
+            {
+                score += weight;
             }
         }
-
         score
     }
 }
 
 impl Evaluator for MobilityEvaluator {
     fn evaluate(&self, board: &Board) -> i32 {
-        let current_moves_map = board.generate_piecewise_legal_moves();
-        let current_score = self.evaluate_move_by_piece(&current_moves_map);
+        let current_player_mobility = self.calculate_mobility_score(board);
 
-        let mut temp_board = *board;
-        temp_board.stm = temp_board.stm.flip();
+        // To calculate for the opponent, we need a board state from their perspective.
+        let mut opponent_board = *board;
+        opponent_board.stm = opponent_board.stm.flip();
 
-        let opponent_moves_map = temp_board.generate_piecewise_legal_moves();
-        let opponent_score = self.evaluate_move_by_piece(&opponent_moves_map);
+        let opponent_mobility = self.calculate_mobility_score(&opponent_board);
 
-        current_score - opponent_score
+        // The final score is the difference in mobility.
+        current_player_mobility - opponent_mobility
     }
 
     fn name(&self) -> &str {
