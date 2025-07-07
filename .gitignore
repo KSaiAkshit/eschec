@@ -8,3 +8,4 @@ heaprack**
 /src/bin/test.rs
 dhat-heap.json
 /.cargo/**
+.bacon-locations
