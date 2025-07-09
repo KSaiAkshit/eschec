@@ -8,6 +8,7 @@ use miette::Context;
 use tracing::error;
 
 #[derive(Debug, Default, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
+#[repr(transparent)]
 pub struct BitBoard(pub u64);
 
 impl BitAndAssign for BitBoard {
@@ -179,6 +180,7 @@ impl BitBoard {
         (self.0 & (1 << index)) != 0
     }
 
+    #[inline(always)]
     pub const fn get_closest_bit(&self, forward: bool) -> Option<u64> {
         if self.is_empty() {
             None
@@ -899,11 +901,7 @@ mod tests {
 ";
         let mut board = Board::new();
         let mov = Move::new(8, 16, Move::QUIET);
-        assert!(
-            board
-                .try_move(mov)
-                .is_ok()
-        );
+        assert!(board.try_move(mov).is_ok());
         let o = board.positions.get_side_bb(Side::White).print_bitboard();
         assert_eq!(out, o);
     }
