@@ -88,37 +88,6 @@ pub fn get_input(input: &str) -> miette::Result<(Square, Square)> {
     Ok((from_square, to_square))
 }
 
-
-fn parse_uci_move(board: &Board, uci: &str) -> miette::Result<Move> {
-    if uci.len() < 4 || uci.len() > 5 {
-        miette::bail!("Invalid UCI move format: '{}'", uci);
-    }
-    let from_str = &uci[0..2];
-    let to_str = &uci[2..4];
-    let promo_char = uci.chars().nth(4);
-
-    let from = Square::from_str(from_str)?;
-    let to = Square::from_str(to_str)?;
-
-    // Find the matching legal move. This is the only way to get the correct flags.
-    let legal_moves = board.generate_legal_moves();
-    let found_move = legal_moves.into_iter().find(|m| {
-        if m.from_sq() == from && m.to_sq() == to {
-            // If there's a promotion, make sure it matches.
-            if let Some(pc) = promo_char {
-                return m.promoted_piece_char() == Some(pc);
-            }
-            // If no promotion in UCI string, match a non-promotion move.
-            return !m.is_promotion();
-        }
-        false
-    });
-
-    found_move.context(format!(
-        "The move '{uci}' is not legal in the current position."
-    ))
-}
-
 pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
     let inp_depth = depth;
     let inp_fen = fen.clone();
@@ -162,7 +131,7 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
         match GameCommand::try_parse_from(args) {
             Ok(game_cmd) => match game_cmd.cmd {
                 GameSubcommand::Move { move_str } => {
-                    let mov = match parse_uci_move(&board, &move_str) {
+                    let mov = match Move::from_uci(&board, &move_str) {
                         Ok(m) => m,
                         Err(e) => {
                             eprintln!("{e:?}");
@@ -213,7 +182,7 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
                 }
                 GameSubcommand::Hint => {
                     info!("Here's a Hint. Support for multiple hints coming soon");
-                    let result = search.find_best_move(&board, &evaluator);
+                    let result = search.find_best_move(&board, &evaluator, None);
                     if let Some(mov) = result.best_move {
                         info!("Best move: {} ", mov);
                         info!(

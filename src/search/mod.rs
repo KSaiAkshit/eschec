@@ -3,6 +3,8 @@ use tracing::*;
 
 use super::*;
 use std::cmp::max;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
 
 #[derive(Debug)]
@@ -22,6 +24,7 @@ pub struct Search {
     max_time: Option<Duration>,
     nodes_limit: Option<u64>,
     pruned_nodes: u64,
+    search_running: Option<Arc<AtomicBool>>,
 }
 
 impl Search {
@@ -33,6 +36,7 @@ impl Search {
             max_time: None,
             nodes_limit: None,
             pruned_nodes: 0,
+            search_running: None,
         }
     }
 
@@ -44,6 +48,7 @@ impl Search {
             max_time: Some(Duration::from_millis(max_time_ms)),
             nodes_limit: None,
             pruned_nodes: 0,
+            search_running: None,
         }
     }
 
@@ -52,11 +57,17 @@ impl Search {
     }
 
     // #[instrument(skip_all)]
-    pub fn find_best_move(&mut self, board: &Board, evaluator: &dyn Evaluator) -> SearchResult {
+    pub fn find_best_move(
+        &mut self,
+        board: &Board,
+        evaluator: &dyn Evaluator,
+        search_running: Option<Arc<AtomicBool>>,
+    ) -> SearchResult {
         let span = info_span!("search_root");
         let _guard = span.enter();
         self.nodes_searched = 0;
         self.start_time = Instant::now();
+        self.search_running = search_running;
 
         let legal_moves = board.generate_legal_moves();
         if legal_moves.is_empty() {
@@ -74,29 +85,30 @@ impl Search {
             };
         }
 
-        let mut best_move = None;
+        let mut best_move = legal_moves.first().copied();
         let mut best_score = i32::MIN + 1;
         let mut completed_depth = 0;
 
         for depth in 1..=self.max_depth {
-
-            if self.is_time_up() {break;}
+            if self.should_stop() {
+                break;
+            }
 
             let mut local_best_move: Option<Move> = None;
             let mut local_best_score = i32::MIN + 1;
             let mut alpha = i32::MIN + 1;
             let beta = i32::MAX;
 
-            for &m in &legal_moves {
+            // let mut ordered_moves = legal_moves.clone();
+            // if let Some(prev_best) = best_move
+            //     && let Some(pos) = ordered_moves.iter().position(|&m| m == prev_best)
+            // {
+            //     ordered_moves.swap(0, pos);
+            // }
 
-                if self.is_time_up() || self.node_limit_reached() {
-                    return SearchResult {
-                        best_move,
-                        score: best_score,
-                        depth: completed_depth,
-                        nodes_searched: self.nodes_searched,
-                        time_taken: self.start_time.elapsed(),
-                    };
+            for &m in &legal_moves {
+                if self.should_stop() {
+                    break;
                 }
 
                 let mut board_copy = *board;
@@ -104,8 +116,12 @@ impl Search {
                     continue;
                 }
 
-                info!("Evaluating move: {}", m);
+                debug!("Evaluating move: {}", m);
                 let score = -self.alpha_beta(&board_copy, depth - 1, -beta, -alpha, evaluator);
+
+                if self.should_stop() {
+                    break;
+                }
 
                 if score > local_best_score {
                     local_best_score = score;
@@ -145,7 +161,7 @@ impl Search {
         beta: i32,
         evaluator: &dyn Evaluator,
     ) -> i32 {
-        if self.is_time_up() || self.node_limit_reached() {
+        if self.should_stop() {
             return alpha;
         }
         self.nodes_searched += 1;
@@ -188,16 +204,18 @@ impl Search {
         best_score
     }
 
-    fn is_time_up(&self) -> bool {
-        if let Some(max_time) = self.max_time {
-            self.start_time.elapsed() >= max_time
-        } else {
-            false
+    fn should_stop(&self) -> bool {
+        if let Some(flag) = &self.search_running
+            && !flag.load(Ordering::Relaxed)
+        {
+            return true;
         }
-    }
 
-    fn node_limit_reached(&self) -> bool {
-        // NOTE: Is this required?
+        if let Some(max_time) = self.max_time
+            && self.start_time.elapsed() >= max_time
+        {
+            return true;
+        }
         self.nodes_limit.is_some_and(|l| self.nodes_searched >= l)
     }
 }

@@ -1,6 +1,8 @@
-use std::fmt::Display;
+use std::{fmt::Display, str::FromStr};
 
-use crate::{CastlingRights, Piece, Square};
+use miette::Context;
+
+use crate::{Board, CastlingRights, Piece, Square};
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct MoveInfo {
@@ -148,11 +150,11 @@ impl Move {
     pub fn uci(&self) -> String {
         let from = Square::new(self.from_idx().into()).unwrap();
         let to = Square::new(self.to_idx().into()).unwrap_or_default();
-       let uci_str =  match self.promoted_piece_char() {
+        let uci_str = match self.promoted_piece_char() {
             Some(piece) => format!("{from}{to}{piece}"),
             None => format!("{from}{to}",),
         };
-       uci_str.to_lowercase()
+        uci_str.to_lowercase()
     }
 
     /// 0..63 to e2 etc
@@ -160,6 +162,36 @@ impl Move {
         let file = (b'a' + (idx % 8)) as char;
         let rank = (b'1' + (idx / 8)) as char;
         format!("{file}{rank}")
+    }
+
+    pub fn from_uci(board: &Board, uci: &str) -> miette::Result<Move> {
+        if uci.len() < 4 || uci.len() > 5 {
+            miette::bail!("Invalid UCI move format: '{}'", uci);
+        }
+        let from_str = &uci[0..2];
+        let to_str = &uci[2..4];
+        let promo_char = uci.chars().nth(4);
+
+        let from = Square::from_str(from_str)?;
+        let to = Square::from_str(to_str)?;
+
+        // Find the matching legal move. This is the only way to get the correct flags.
+        let legal_moves = board.generate_legal_moves();
+        let found_move = legal_moves.into_iter().find(|m| {
+            if m.from_sq() == from && m.to_sq() == to {
+                // If there's a promotion, make sure it matches.
+                if let Some(pc) = promo_char {
+                    return m.promoted_piece_char() == Some(pc);
+                }
+                // If no promotion in UCI string, match a non-promotion move.
+                return !m.is_promotion();
+            }
+            false
+        });
+
+        found_move.context(format!(
+            "The move '{uci}' is not legal in the current position."
+        ))
     }
 }
 

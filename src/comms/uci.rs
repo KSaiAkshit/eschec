@@ -8,11 +8,13 @@ use std::{
     thread::{self, spawn},
 };
 
+use tracing::*;
+
 use crate::{
     Board, Square,
     evaluation::{CompositeEvaluator, Evaluator},
-    moves::move_info::MoveInfo,
-    search::Search,
+    moves::move_info::{Move, MoveInfo},
+    search::{Search, SearchResult},
 };
 
 #[derive(Debug)]
@@ -22,7 +24,7 @@ pub struct UciState {
     evaluator: Arc<dyn Evaluator>,
     search_running: Arc<AtomicBool>,
     best_move: Arc<Mutex<Option<(Square, Square)>>>,
-    search_thread: Option<thread::JoinHandle<Search>>,
+    search_thread: Option<thread::JoinHandle<SearchResult>>,
     move_history: Vec<MoveInfo>,
 }
 
@@ -58,7 +60,7 @@ impl UciState {
             evaluator: Arc::new(CompositeEvaluator::balanced()),
             search_running: Arc::new(AtomicBool::new(false)),
             best_move: Arc::new(Mutex::new(None)),
-            search_thread: Some(thread::spawn(move || Search::new(depth))),
+            search_thread: None,
             move_history: Vec::new(),
         }
     }
@@ -92,7 +94,9 @@ pub fn play() -> miette::Result<()> {
             }
             "position" => {
                 cmd_stop(&mut state);
-                cmd_position(&mut state, &parts[1..]);
+                if let Err(e) = cmd_position(&mut state, &parts[1..]) {
+                    warn!("Error processing position command : {e:?}");
+                }
             }
             "go" => {
                 cmd_stop(&mut state);
@@ -109,12 +113,59 @@ pub fn play() -> miette::Result<()> {
     Ok(())
 }
 
-fn cmd_position(state: &mut UciState, parts: &[&str]) {
-    todo!()
+fn cmd_position(state: &mut UciState, parts: &[&str]) -> miette::Result<()> {
+    let mut moves_start_idx: Option<usize> = None;
+
+    if parts.is_empty() {
+        miette::bail!("'position' command is missing arguments")
+    }
+
+    if parts[0] == "startpos" {
+        state.reset();
+        moves_start_idx = parts.iter().position(|&s| s == "moves");
+    } else if parts[0] == "fen" {
+        moves_start_idx = parts.iter().position(|&s| s == "moves");
+        let fen_parts = if let Some(idx) = moves_start_idx {
+            &parts[1..idx]
+        } else {
+            &parts[1..]
+        };
+        let fen_str = fen_parts.join(" ");
+        state.board = Board::from_fen(&fen_str);
+        state.move_history.clear();
+    }
+
+    if let Some(idx) = moves_start_idx {
+        let moves = &parts[idx + 1..];
+        for move_uci in moves {
+            let mov = Move::from_uci(&state.board, move_uci)?;
+            let move_info = state.board.make_move(mov)?;
+            state.move_history.push(move_info);
+        }
+    }
+
+    Ok(())
 }
 
 fn cmd_go(state: &mut UciState, parts: &[&str]) {
-    todo!()
+    state.search_running.store(true, Ordering::Relaxed);
+
+    let board = state.board;
+    let evaluator = state.evaluator.clone();
+    let search_running = state.search_running.clone();
+    let depth = state.search_depth;
+
+    state.search_thread = Some(thread::spawn(move || {
+        let mut search = Search::new(depth);
+        let result = search.find_best_move(&board, &*evaluator, Some(search_running));
+
+        if let Some(best_move) = result.best_move {
+            println!("bestmove {}", best_move.uci());
+        } else {
+            println!("bestmove 0000");
+        }
+        result
+    }));
 }
 
 fn cmd_stop(state: &mut UciState) {
