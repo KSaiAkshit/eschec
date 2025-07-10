@@ -6,7 +6,7 @@ description = "A chess suite written in rust"
 authors = ["Akira"]
 
 [profile.release]
-# debug = true
+debug = true
 lto = "thin"
 codegen-units = 1
 panic = "abort"

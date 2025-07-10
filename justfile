@@ -3,6 +3,8 @@ set unstable := true
 flags := "--release"
 DEPTH := "5"
 FEN := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+pgn_output_dir := 'guantlet/results/'
+book_file := 'guantlet/books/2moves.pgn'
 export RUST_BACKTRACE := "full"
 
 alias up := update
@@ -13,9 +15,33 @@ default: play
 
 [doc("Build and symlink binary")]
 update:
-    -rm ./eschec
+    -rm ./guantlet/engines/eschec
     just build
-    ln -s ./target/release/eschec .
+    ln -s ../../target/release/eschec guantlet/engines/
+
+[doc("Run a gauntlet match against another engine using cutechess-cli")]
+[positional-arguments]
+gauntlet opponent='gnuchess' rounds='40' tc='15+0.1' concurrency='4' : update
+    @# Print the configuration for this run
+    @echo "Starting gauntlet:"
+    @echo "  - Opponent: {{ opponent }}"
+    @echo "  - Rounds: {{ rounds }}"
+    @echo "  - Time Control: {{ tc }}"
+    @echo "  - PGN Output: {{ pgn_output_dir }}eschec_vs_{{ opponent }}"
+    @echo "-------------------------------------"
+
+    @# Run the cutechess-cli command
+    cutechess-cli \
+        -engine conf=lucia \
+        -engine conf={{ opponent }} \
+        -each tc={{ tc }} \
+        -rounds {{ rounds }} \
+        -openings file={{ book_file }} format=pgn order=random \
+        -pgnout {{ pgn_output_dir }}eschec_vs_{{ opponent }}.txt \
+        -concurrency {{ concurrency }} \
+        -draw movenumber=40 movecount=8 score=20 \
+        -resign movecount=3 score=800 \
+        -recover
 
 [doc("Remove build artifacts and logs")]
 clean:

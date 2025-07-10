@@ -46,6 +46,7 @@ pub fn parse_line(line: &str) -> UciCommand {
         "quit" => UciCommand::Quit,
         "position" => parse_position(&parts[1..]),
         "go" => parse_go(&parts[1..]),
+        "ucinewgame" => UciCommand::UciNewGame,
         _ => UciCommand::Unknown(line.to_string()),
     }
 }
