@@ -7,7 +7,7 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct SearchResult {
     pub best_move: Option<Move>,
     pub score: i32,
@@ -138,7 +138,7 @@ impl Search {
                 let msg = format!(
                     "info depth {} score cp {} nodes {} nps {} pv {}",
                     depth,
-                    best_move_uci,
+                    best_score,
                     self.nodes_searched,
                     self.nodes_searched * 1000 / (self.start_time.elapsed().as_millis() + 1) as u64,
                     best_move_uci

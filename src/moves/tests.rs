@@ -1,9 +1,57 @@
+use tracing_subscriber::fmt::init;
+
 use crate::board::Board;
 use std::{
     io::{BufRead, BufReader, Write},
     process::{Command, Stdio},
     str::{self},
 };
+
+// verify symmetry of make_move and unmake_move
+fn test_make_unmake_symmetry(fen: &str) {
+    init();
+
+    let mut board = Board::from_fen(fen);
+    let original_board = board;
+
+    let legal_moves = board.generate_legal_moves();
+
+    if legal_moves.is_empty() {
+        return;
+    }
+
+    for mov in legal_moves {
+        let move_data = match board.make_move(mov) {
+            Ok(data) => data,
+            Err(e) => {
+                panic!(
+                    "make_move failed for FEN '{fen}', with move {}: {e:?}",
+                    mov.uci()
+                )
+            }
+        };
+        assert_ne!(
+            board,
+            original_board,
+            "Board state should change after making move {} on FEN {fen}",
+            mov.uci()
+        );
+
+        if let Err(e) = board.unmake_move(&move_data) {
+            panic!(
+                "unmake_move failed for FEN '{fen}', with move {}: {e:?}",
+                mov.uci()
+            )
+        }
+
+        assert_eq!(
+            board,
+            original_board,
+            "Board state was not restored after unmaking move {} on FEN {fen}",
+            mov.uci()
+        );
+    }
+}
 
 /// Spawns a Stockfish process, communicates with it via UCI, and returns a sorted list of legal moves.
 fn get_stockfish_legal_moves(fen: &str) -> Vec<String> {
@@ -48,7 +96,6 @@ fn get_stockfish_legal_moves(fen: &str) -> Vec<String> {
         if let Some((uci_move, _)) = line.split_once(':') {
             moves.push(uci_move.to_string());
         }
-
     }
 
     writeln!(stdin, "quit").ok();
@@ -83,7 +130,47 @@ fn assert_moves_match_stockfish(fen: &str) {
     );
 }
 
-// --- The test cases remain the same, but now they are more reliable ---
+#[test]
+fn test_make_unmake_startpos() {
+    test_make_unmake_symmetry("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+}
+
+#[test]
+fn test_make_unmake_kiwipete() {
+    test_make_unmake_symmetry(
+        "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1",
+    );
+}
+
+#[test]
+fn test_make_unmake_en_passant() {
+    // A position with a valid en passant square.
+    test_make_unmake_symmetry("rnbqkbnr/pp1p1ppp/8/2pPp3/8/8/PPP1PPPP/RNBQKBNR w KQkq e6 0 3");
+}
+
+#[test]
+fn test_make_unmake_promotion() {
+    // A position where white can promote a pawn (with and without capture).
+    test_make_unmake_symmetry("r3k2r/pPpp1ppp/1b3nbN/nP6/BBP1P3/q4N2/P2P2PP/R2Q1RK1 b kq - 0 1");
+}
+
+#[test]
+fn test_make_unmake_castling() {
+    // A position where both sides can castle.
+    test_make_unmake_symmetry("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1");
+}
+
+#[test]
+fn test_make_unmake_in_check() {
+    // A position where the king is in check and must respond.
+    test_make_unmake_symmetry("rnb1kbnr/pppp1ppp/8/4p3/4P2q/8/PPPP1PPP/RNBQKBNR w KQkq - 2 3");
+}
+
+#[test]
+fn test_make_unmake_double_check() {
+    // A position where the king is in double check.
+    test_make_unmake_symmetry("rnb1kbnr/pppp1ppp/8/8/3r4/3B4/PPP1PPPP/RN1QK1NR w KQkq - 0 5");
+}
 
 #[test]
 fn test_start_pos() {
