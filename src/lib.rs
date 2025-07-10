@@ -1,7 +1,8 @@
 #![feature(portable_simd)]
 use std::env;
+use std::fs::File;
 use std::io::{Write, stderr};
-use std::str::FromStr;
+use std::path::Path;
 use std::sync::{LazyLock, Mutex};
 
 // Bit Boards use 64 bits of true or false, to tell if a given peice is at the location.
@@ -15,12 +16,14 @@ pub mod utils;
 
 pub use board::components::*;
 pub use board::*;
+use tracing_appender::non_blocking;
 use tracing_subscriber::{
-    EnvFilter, layer::SubscriberExt, reload::Handle, util::SubscriberInitExt,
+    EnvFilter, Layer, fmt, layer::SubscriberExt, reload::Handle, util::SubscriberInitExt,
 };
 pub use utils::cli;
 pub use utils::perft;
 
+use chrono::Local;
 use clap::Parser;
 use cli::{GameCommand, GameSubcommand};
 use evaluation::CompositeEvaluator;
@@ -42,13 +45,37 @@ static LOG_FILTER_HANDLE: LazyLock<Mutex<Handle<EnvFilter, tracing_subscriber::R
         };
 
         let (filter, handle) = tracing_subscriber::reload::Layer::new(filter);
+
+        let log_dir = Path::new("logs");
+        if !log_dir.exists() {
+            std::fs::create_dir(log_dir).expect("Failed to create log directory");
+        }
+
+        let timestamp = Local::now().format("%Y-%m-%d_%H-%M-%S");
+        let log_filename = format!("logs/eschec_{}.log", timestamp);
+        let log_file = File::create(&log_filename)
+            .unwrap_or_else(|_| panic!("Failed to create log file: {}", log_filename));
+
+        let (non_blocking_writer, _guard) = non_blocking(log_file);
+        std::mem::forget(_guard); // Keep the guard alive.
+
+        let file_layer = fmt::layer()
+            .with_writer(non_blocking_writer)
+            .with_ansi(true)
+            .with_filter(EnvFilter::new("trace"));
+
+        let env_filter = EnvFilter::builder()
+            .with_default_directive(Level::INFO.into())
+            .from_env_lossy();
+        let console_layer = fmt::layer()
+            .without_time()
+            .with_writer(stderr)
+            .with_filter(env_filter);
+
         tracing_subscriber::registry()
-            .with(filter)
-            .with(
-                tracing_subscriber::fmt::layer()
-                    .without_time()
-                    .with_writer(stderr),
-            )
+            .with(filter) // This filter is controlled by the handle
+            .with(console_layer)
+            .with(file_layer)
             .init();
         Mutex::new(handle)
     });
@@ -184,7 +211,7 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
                     info!("Here's a Hint. Support for multiple hints coming soon");
                     let result = search.find_best_move(&board, &evaluator, None);
                     if let Some(mov) = result.best_move {
-                        info!("Best move: {} ", mov);
+                        info!("Best move: {} ", mov.uci());
                         info!(
                             "score: {}, time_taken: {} ms",
                             result.score,
