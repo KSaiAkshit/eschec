@@ -37,7 +37,7 @@ fn bench_search(c: &mut Criterion) {
     c.bench_function(&format!("search_depth_{depth}"), |b| {
         b.iter_batched(
             || Board::from_fen(KIWIPETE),
-            |board| black_box(search.find_best_move(&board, &evaluator)),
+            |board| black_box(search.find_best_move(&board, &evaluator, None)),
             BatchSize::SmallInput,
         );
     });

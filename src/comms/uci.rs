@@ -11,7 +11,7 @@ use std::{
 use tracing::*;
 
 use crate::{
-    Board, Square,
+    Board, Side, Square,
     evaluation::{CompositeEvaluator, Evaluator},
     moves::move_info::{Move, MoveInfo},
     search::{Search, SearchResult},
@@ -147,16 +147,88 @@ fn cmd_position(state: &mut UciState, parts: &[&str]) -> miette::Result<()> {
     Ok(())
 }
 
+#[instrument(skip(state))]
 fn cmd_go(state: &mut UciState, parts: &[&str]) {
     state.search_running.store(true, Ordering::Relaxed);
 
     let board = state.board;
     let evaluator = state.evaluator.clone();
     let search_running = state.search_running.clone();
-    let depth = state.search_depth;
+
+    let mut wtime_ms: Option<u64> = None;
+    let mut btime_ms: Option<u64> = None;
+    let mut moves_to_go: Option<u64> = None;
+    let mut depth = state.search_depth;
+
+    let mut i = 0;
+    while i < parts.len() {
+        match parts[i] {
+            "wtime" => {
+                if i + 1 < parts.len() {
+                    wtime_ms = parts[i + 1].parse().ok();
+                    i += 1;
+                }
+            }
+            "btime" => {
+                if i + 1 < parts.len() {
+                    btime_ms = parts[i + 1].parse().ok();
+                    i += 1;
+                }
+            }
+            "movestogo" => {
+                if i + 1 < parts.len() {
+                    moves_to_go = parts[i + 1].parse().ok();
+                    i += 1;
+                }
+            }
+            "depth" => {
+                if i + 1 < parts.len() {
+                    depth = parts[i + 1].parse().unwrap_or(state.search_depth);
+                    i += 1;
+                }
+            }
+            "infinite" => {
+                // For infinite search, there is no time limit.
+                // The other time variables will remain None.
+            }
+            _ => {}
+        }
+        i += 1;
+    }
+
+    // --- NEW: Time Management Logic ---
+    let mut max_time_ms: Option<u64> = None;
+    let time_remaining = if board.stm == Side::White {
+        wtime_ms
+    } else {
+        btime_ms
+    };
+
+    if let Some(time) = time_remaining {
+        let allocation;
+        if let Some(moves) = moves_to_go {
+            // We have a specific number of moves until the next time control.
+            // Use a fraction of the remaining time. A safety margin is good.
+            // Let's use 95% of the average time per move.
+            allocation = (time as f64 * 0.95 / moves as f64) as u64;
+        } else {
+            // No 'movestogo', so we are in a "sudden death" time control.
+            // Use a fixed fraction of the remaining time. 1/30 is a reasonable default.
+            allocation = time / 30;
+        }
+        // A small buffer to ensure we always have some time to think.
+        max_time_ms = Some(allocation.max(50)); // e.g., minimum 50ms
+    }
 
     state.search_thread = Some(thread::spawn(move || {
-        let mut search = Search::new(depth);
+        let mut search = if let Some(time) = max_time_ms {
+            // When time is a factor, we often want to search as deep as possible
+            // within that time, so we use a high max_depth.
+            Search::with_time_control(64, time)
+        } else {
+            Search::new(depth)
+        };
+
         let result = search.find_best_move(&board, &*evaluator, Some(search_running));
 
         if let Some(best_move) = result.best_move {
@@ -182,5 +254,7 @@ fn cmd_isready() {
 fn cmd_uci() {
     println!("id name {}", env!("CARGO_PKG_NAME"));
     println!("id author {}", env!("CARGO_PKG_AUTHORS"));
+    println!();
+    println!("option name Debug Log File type string default");
     println!("uciok");
 }
