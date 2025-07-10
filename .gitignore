@@ -9,3 +9,4 @@ heaprack**
 dhat-heap.json
 /.cargo/**
 .bacon-locations
+/logs
