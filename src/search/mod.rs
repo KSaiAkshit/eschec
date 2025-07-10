@@ -63,8 +63,9 @@ impl Search {
         evaluator: &dyn Evaluator,
         search_running: Option<Arc<AtomicBool>>,
     ) -> SearchResult {
-        let span = info_span!("search_root");
+        let span = trace_span!("search_root");
         let _guard = span.enter();
+
         self.nodes_searched = 0;
         self.start_time = Instant::now();
         self.search_running = search_running;
@@ -72,39 +73,36 @@ impl Search {
         let legal_moves = board.generate_legal_moves();
         if legal_moves.is_empty() {
             debug!("No legal moves");
+            let score = if board.is_in_check(board.stm) {
+                -20000 // checkmate
+            } else {
+                0 // stalemate
+            };
             return SearchResult {
                 best_move: None,
-                score: if board.is_in_check(board.stm) {
-                    -20000
-                } else {
-                    0
-                }, // Checkmate or stalemate
+                score,
                 depth: self.max_depth,
                 nodes_searched: 0,
                 time_taken: Duration::from_secs(0),
             };
         }
 
+        // Initialized to first move as fallback
         let mut best_move = legal_moves.first().copied();
         let mut best_score = i32::MIN + 1;
-        let mut completed_depth = 0;
+        let mut completed_depth = u8::default();
 
+        // Iterative deepening
         for depth in 1..=self.max_depth {
             if self.should_stop() {
                 break;
             }
 
-            let mut local_best_move: Option<Move> = None;
-            let mut local_best_score = i32::MIN + 1;
             let mut alpha = i32::MIN + 1;
             let beta = i32::MAX;
 
-            // let mut ordered_moves = legal_moves.clone();
-            // if let Some(prev_best) = best_move
-            //     && let Some(pos) = ordered_moves.iter().position(|&m| m == prev_best)
-            // {
-            //     ordered_moves.swap(0, pos);
-            // }
+            let mut local_best_move: Option<Move> = legal_moves.first().copied();
+            let mut local_best_score = i32::MIN + 1;
 
             for &m in &legal_moves {
                 if self.should_stop() {
@@ -129,24 +127,28 @@ impl Search {
                 }
 
                 alpha = max(alpha, local_best_score);
-                if alpha >= beta {
-                    warn!("alpha {alpha} > beta {beta}");
-                    self.pruned_nodes += 1;
-                    break;
-                }
             }
 
-            if local_best_move.is_some() {
+            if !self.should_stop() {
+                completed_depth = depth;
                 best_move = local_best_move;
                 best_score = local_best_score;
-                completed_depth = depth;
+
+                info!(
+                    "info depth {} score cp {} nodes {} nps {} pv {}",
+                    depth,
+                    best_move.unwrap(),
+                    self.nodes_searched,
+                    self.nodes_searched * 1000 / (self.start_time.elapsed().as_millis() + 1) as u64,
+                    best_move.unwrap().uci()
+                );
             }
         }
 
         SearchResult {
             best_move,
             score: best_score,
-            depth: self.max_depth,
+            depth: completed_depth,
             nodes_searched: self.nodes_searched,
             time_taken: self.start_time.elapsed(),
         }
@@ -183,8 +185,6 @@ impl Search {
             };
         }
 
-        let mut best_score = i32::MIN + 1;
-
         for m in legal_moves {
             let mut board_copy = *board;
             if board_copy.make_move(m).is_err() {
@@ -193,15 +193,13 @@ impl Search {
 
             let score = -self.alpha_beta(&board_copy, depth - 1, -beta, -alpha, evaluator);
 
-            best_score = max(best_score, score);
-            alpha = max(alpha, best_score);
-
             if alpha >= beta {
                 self.pruned_nodes += 1;
-                break;
+                return beta;
             }
+            alpha = max(alpha, score);
         }
-        best_score
+        alpha
     }
 
     fn should_stop(&self) -> bool {

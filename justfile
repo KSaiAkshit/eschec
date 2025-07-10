@@ -11,6 +11,10 @@ default: play
 play:
     cargo run --bin eschec {{ flags }} -- play
 
+[doc("Run the engine in headless mode")]
+uci:
+    cargo run --bin eschec {{ flags }} -- headless --protocol uci
+
 [doc("Run the engine with given args")]
 run *args:
     cargo run --bin eschec {{ flags }} -- {{ args }}
@@ -33,6 +37,10 @@ dhat-perft depth=DEPTH fen=FEN:
 [doc("Run all tests")]
 test:
     cargo test --all-features
+
+[doc("Build in release mode")]
+build:
+    cargo build --bin eschec {{ flags }}
 
 [doc("Set some variables for debugging")]
 @setup:

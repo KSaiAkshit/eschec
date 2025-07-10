@@ -39,7 +39,8 @@ fn main() -> miette::Result<()> {
             }
         },
         None => {
-            todo!("Start default game");
+            trace!("Running headless with protocol: uci");
+            uci::play()?;
         }
     }
     Ok(())
