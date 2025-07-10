@@ -10,4 +10,4 @@ dhat-heap.json
 /.cargo/**
 .bacon-locations
 /logs
-./eschec
+eschec

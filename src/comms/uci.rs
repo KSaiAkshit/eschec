@@ -12,6 +12,7 @@ use tracing::*;
 
 use crate::{
     Board, Side, Square,
+    comms::uci_parser::{GoParams, UciCommand, parse_line},
     evaluation::{CompositeEvaluator, Evaluator},
     moves::move_info::{Move, MoveInfo},
     search::{Search, SearchResult},
@@ -53,7 +54,7 @@ impl Drop for UciState {
 
 impl UciState {
     pub fn new(depth: Option<u8>) -> Self {
-        let depth = depth.unwrap_or(5);
+        let depth = depth.unwrap_or(7);
         Self {
             board: Board::new(),
             search_depth: depth,
@@ -78,33 +79,34 @@ pub fn play() -> miette::Result<()> {
     let mut lines = stdin.lock().lines();
 
     while let Some(Ok(line)) = lines.next() {
-        let cmd = line.trim();
-        let parts: Vec<&str> = cmd.split_whitespace().collect();
-
-        if parts.is_empty() {
-            continue;
-        }
-
-        match parts[0] {
-            "uci" => cmd_uci(),
-            "isready" => cmd_isready(),
-            "ucinewgame" => {
+        match parse_line(&line) {
+            UciCommand::Uci => cmd_uci(),
+            UciCommand::IsReady => cmd_isready(),
+            UciCommand::UciNewGame => {
                 cmd_stop(&mut state);
                 state.reset();
             }
-            "position" => {
+            UciCommand::Position {
+                startpos,
+                fen,
+                moves,
+            } => {
                 cmd_stop(&mut state);
-                if let Err(e) = cmd_position(&mut state, &parts[1..]) {
-                    warn!("Error processing position command : {e:?}");
+                if let Err(e) = cmd_position(&mut state, startpos, fen, moves) {
+                    warn!("Error processing position command: {:?}", e);
                 }
             }
-            "go" => {
+            UciCommand::Go(go_params) => {
                 cmd_stop(&mut state);
-                cmd_go(&mut state, &parts[1..]);
+                cmd_go(&mut state, go_params);
             }
-            "stop" => cmd_stop(&mut state),
-            "quit" => break,
-            _ => {}
+            UciCommand::Stop => cmd_stop(&mut state),
+            UciCommand::Quit => break,
+            UciCommand::Unknown(cmd) => {
+                if !cmd.is_empty() {
+                    info!("Received unknown command: {cmd}");
+                }
+            }
         }
     }
 
@@ -113,120 +115,62 @@ pub fn play() -> miette::Result<()> {
     Ok(())
 }
 
-fn cmd_position(state: &mut UciState, parts: &[&str]) -> miette::Result<()> {
-    let mut moves_start_idx: Option<usize> = None;
-
-    if parts.is_empty() {
-        miette::bail!("'position' command is missing arguments")
-    }
-
-    if parts[0] == "startpos" {
+fn cmd_position(
+    state: &mut UciState,
+    startpos: bool,
+    fen: Option<String>,
+    moves: Vec<String>,
+) -> miette::Result<()> {
+    if startpos {
         state.reset();
-        moves_start_idx = parts.iter().position(|&s| s == "moves");
-    } else if parts[0] == "fen" {
-        moves_start_idx = parts.iter().position(|&s| s == "moves");
-        let fen_parts = if let Some(idx) = moves_start_idx {
-            &parts[1..idx]
-        } else {
-            &parts[1..]
-        };
-        let fen_str = fen_parts.join(" ");
+    } else if let Some(fen_str) = fen {
         state.board = Board::from_fen(&fen_str);
         state.move_history.clear();
     }
 
-    if let Some(idx) = moves_start_idx {
-        let moves = &parts[idx + 1..];
-        for move_uci in moves {
-            let mov = Move::from_uci(&state.board, move_uci)?;
-            let move_info = state.board.make_move(mov)?;
-            state.move_history.push(move_info);
-        }
+    for move_uci in moves {
+        let mov = Move::from_uci(&state.board, &move_uci)?;
+        let move_info = state.board.make_move(mov)?;
+        state.move_history.push(move_info);
     }
 
     Ok(())
 }
 
 #[instrument(skip(state))]
-fn cmd_go(state: &mut UciState, parts: &[&str]) {
+fn cmd_go(state: &mut UciState, params: GoParams) {
     state.search_running.store(true, Ordering::Relaxed);
 
     let board = state.board;
     let evaluator = state.evaluator.clone();
     let search_running = state.search_running.clone();
+    let default_depth = state.search_depth;
 
-    let mut wtime_ms: Option<u64> = None;
-    let mut btime_ms: Option<u64> = None;
-    let mut moves_to_go: Option<u64> = None;
-    let mut depth = state.search_depth;
-
-    let mut i = 0;
-    while i < parts.len() {
-        match parts[i] {
-            "wtime" => {
-                if i + 1 < parts.len() {
-                    wtime_ms = parts[i + 1].parse().ok();
-                    i += 1;
-                }
-            }
-            "btime" => {
-                if i + 1 < parts.len() {
-                    btime_ms = parts[i + 1].parse().ok();
-                    i += 1;
-                }
-            }
-            "movestogo" => {
-                if i + 1 < parts.len() {
-                    moves_to_go = parts[i + 1].parse().ok();
-                    i += 1;
-                }
-            }
-            "depth" => {
-                if i + 1 < parts.len() {
-                    depth = parts[i + 1].parse().unwrap_or(state.search_depth);
-                    i += 1;
-                }
-            }
-            "infinite" => {
-                // For infinite search, there is no time limit.
-                // The other time variables will remain None.
-            }
-            _ => {}
-        }
-        i += 1;
-    }
-
-    // --- NEW: Time Management Logic ---
+    // --- Time Management Logic ---
     let mut max_time_ms: Option<u64> = None;
-    let time_remaining = if board.stm == Side::White {
-        wtime_ms
+    let (time_remaining, increment) = if board.stm == Side::White {
+        (params.wtime, params.winc.unwrap_or(0))
     } else {
-        btime_ms
+        (params.btime, params.binc.unwrap_or(0))
     };
 
     if let Some(time) = time_remaining {
         let allocation;
-        if let Some(moves) = moves_to_go {
-            // We have a specific number of moves until the next time control.
-            // Use a fraction of the remaining time. A safety margin is good.
-            // Let's use 95% of the average time per move.
-            allocation = (time as f64 * 0.95 / moves as f64) as u64;
+        if let Some(moves) = params.moves_to_go {
+            // Time control with move count: use a fraction of the remaining time.
+            allocation = (time / moves).saturating_sub(50); // Subtract 50ms for overhead
         } else {
-            // No 'movestogo', so we are in a "sudden death" time control.
-            // Use a fixed fraction of the remaining time. 1/30 is a reasonable default.
-            allocation = time / 30;
+            // Sudden death: use a smaller fraction of remaining time plus the increment.
+            allocation = (time / 30) + increment;
         }
-        // A small buffer to ensure we always have some time to think.
-        max_time_ms = Some(allocation.max(50)); // e.g., minimum 50ms
+        max_time_ms = Some(allocation.max(50));
     }
 
     state.search_thread = Some(thread::spawn(move || {
         let mut search = if let Some(time) = max_time_ms {
-            // When time is a factor, we often want to search as deep as possible
-            // within that time, so we use a high max_depth.
-            Search::with_time_control(64, time)
+            Search::with_time_control(default_depth, time)
         } else {
-            Search::new(depth)
+            Search::new(params.depth.unwrap_or(default_depth))
         };
 
         let result = search.find_best_move(&board, &*evaluator, Some(search_running));

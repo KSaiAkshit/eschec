@@ -5,7 +5,22 @@ DEPTH := "5"
 FEN := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 export RUST_BACKTRACE := "full"
 
+alias up := update
+alias log := tail_log
+alias tail := tail_log
+
 default: play
+
+[doc("Build and symlink binary")]
+update:
+    -rm ./eschec
+    just build
+    ln -s ./target/release/eschec .
+
+[doc("Remove build artifacts and logs")]
+clean:
+    cargo clean
+    rm -rf ./logs ./eschec
 
 [doc("Run the engine in play mode")]
 play:
@@ -18,6 +33,10 @@ uci:
 [doc("Run the engine with given args")]
 run *args:
     cargo run --bin eschec {{ flags }} -- {{ args }}
+
+[doc("Find the most recent file in the 'logs' directory and tail it")]
+tail_log:
+    tail -f ./logs/$(ls -t logs | head -n 1)
 
 [doc("Record perf for given pid")]
 record pid: setup
@@ -39,7 +58,7 @@ test:
     cargo test --all-features
 
 [doc("Build in release mode")]
-build:
+@build:
     cargo build --bin eschec {{ flags }}
 
 [doc("Set some variables for debugging")]

@@ -52,9 +52,9 @@ static LOG_FILTER_HANDLE: LazyLock<Mutex<Handle<EnvFilter, tracing_subscriber::R
         }
 
         let timestamp = Local::now().format("%Y-%m-%d_%H-%M-%S");
-        let log_filename = format!("logs/eschec_{}.log", timestamp);
+        let log_filename = format!("logs/eschec_{timestamp}.log");
         let log_file = File::create(&log_filename)
-            .unwrap_or_else(|_| panic!("Failed to create log file: {}", log_filename));
+            .unwrap_or_else(|_| panic!("Failed to create log file: {log_filename}"));
 
         let (non_blocking_writer, _guard) = non_blocking(log_file);
         std::mem::forget(_guard); // Keep the guard alive.
@@ -121,7 +121,7 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
 
     let mut board = Board::from_fen(&fen);
     let evaluator = CompositeEvaluator::balanced();
-    let mut search = Search::with_time_control(depth, 5_000);
+    let mut search = Search::with_time_control(depth, 10_000);
     // let mut search = Search::new(depth);
 
     let stdin = std::io::stdin();

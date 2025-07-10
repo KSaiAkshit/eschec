@@ -134,14 +134,17 @@ impl Search {
                 best_move = local_best_move;
                 best_score = local_best_score;
 
-                info!(
+                let best_move_uci = best_move.unwrap().uci();
+                let msg = format!(
                     "info depth {} score cp {} nodes {} nps {} pv {}",
                     depth,
-                    best_move.unwrap(),
+                    best_move_uci,
                     self.nodes_searched,
                     self.nodes_searched * 1000 / (self.start_time.elapsed().as_millis() + 1) as u64,
-                    best_move.unwrap().uci()
+                    best_move_uci
                 );
+                info!(msg);
+                println!("{msg}");
             }
         }
 
@@ -167,7 +170,6 @@ impl Search {
             return alpha;
         }
         self.nodes_searched += 1;
-        info!(self.nodes_searched);
 
         if depth == 0 {
             let score = evaluator.evaluate(board);
