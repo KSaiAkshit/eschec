@@ -653,6 +653,14 @@ impl CastlingRights {
     pub fn allows(&self, rights: CastlingRights) -> bool {
         self.0 & rights.0 != Self::NO_CASTLING
     }
+    pub fn can_castle(&self, side: Side, kingside: bool) -> bool {
+        match (side, kingside) {
+            (Side::White, true) => self.allows(CastlingRights(CastlingRights::WHITE_00)),
+            (Side::White, false) => self.allows(CastlingRights(CastlingRights::WHITE_000)),
+            (Side::Black, true) => self.allows(CastlingRights(CastlingRights::BLACK_00)),
+            (Side::Black, false) => self.allows(CastlingRights(CastlingRights::BLACK_000)),
+        }
+    }
     pub fn black_only() -> Self {
         Self::BLACK_CASTLING
     }

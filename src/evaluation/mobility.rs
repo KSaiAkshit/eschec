@@ -19,10 +19,10 @@ impl MobilityEvaluator {
     pub fn new() -> Self {
         let mut mobility_weights = HashMap::new();
         mobility_weights.insert(Piece::Pawn, 1);
-        mobility_weights.insert(Piece::Knight, 4);
-        mobility_weights.insert(Piece::Bishop, 4);
-        mobility_weights.insert(Piece::Rook, 2);
-        mobility_weights.insert(Piece::Queen, 2);
+        mobility_weights.insert(Piece::Knight, 3);
+        mobility_weights.insert(Piece::Bishop, 3);
+        mobility_weights.insert(Piece::Rook, 5);
+        mobility_weights.insert(Piece::Queen, 9);
         mobility_weights.insert(Piece::King, 0);
 
         Self {
