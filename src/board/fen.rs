@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::LazyLock};
 
 use miette::{Context, IntoDiagnostic};
 
-use crate::Piece;
+use crate::{BoardState, Piece};
 
 use super::{
     Board,
@@ -62,8 +62,6 @@ pub fn to_fen(board: &Board) -> miette::Result<String> {
 /// Determine the corresponding position on the board for each piece based on its rank and file. The rank
 /// and file are represented by the row and column of the chessboard, respectively.
 /// Update the bb_pieces array in the Position struct to reflect the positions of the pieces for each side.
-/// We'll need to update the appropriate BitBoard for each piece type and side.
-/// Ensure that the bb_sides array in the Position struct is updated accordingly to reflect the presence of pieces on each side of the board.
 /// Initialize the Board struct with the Position struct containing the updated piece positions.
 pub fn parse_fen(fen: &str) -> miette::Result<Board> {
     let parts: Vec<&str> = fen.split_whitespace().collect();
@@ -75,28 +73,74 @@ pub fn parse_fen(fen: &str) -> miette::Result<Board> {
         );
     }
     let piece_placement = parts[0];
-    board
-        .place_pieces(piece_placement)
-        .with_context(|| format!("Placing peices with given fen string {piece_placement}"))?;
+    board.positions = parse_with_context(
+        piece_placement,
+        place_pieces,
+        "Placing pieces with given fen",
+    )?;
     let stm = parts[1];
-    board.stm = parse_stm(stm).with_context(|| format!("parsed stm input: {stm}"))?;
+    board.stm = parse_with_context(stm, parse_stm, "Parsed stm input")?;
     let castle = parts[2];
-    board.castling_rights =
-        parse_castle(castle).with_context(|| format!("parsed input castle: {castle}"))?;
+    board.castling_rights = parse_with_context(castle, parse_castle, "Parsed castle input")?;
     let enpassant = parts[3];
-    board.enpassant_square = parse_enpassant(enpassant)
-        .with_context(|| format!("parsed input enpassant: {enpassant}"))?;
+    board.enpassant_square =
+        parse_with_context(enpassant, parse_enpassant, "Parsed enpassant input")?;
     let half_move = parts[4];
-    board.halfmove_clock = half_move
-        .parse::<u8>()
-        .into_diagnostic()
-        .with_context(|| format!("attempt to parse {half_move} to u8"))?;
+    board.halfmove_clock = parse_with_context(
+        half_move,
+        |s| s.parse::<u8>().into_diagnostic(),
+        "Parsed halfmove to u8",
+    )?;
     let full_move = parts[5];
-    board.fullmove_counter = full_move
-        .parse::<u8>()
-        .into_diagnostic()
-        .with_context(|| format!("attempt to parse {full_move} to u8"))?;
+    board.fullmove_counter = parse_with_context(
+        full_move,
+        |s| s.parse::<u8>().into_diagnostic(),
+        "Parsed fullmove to u8",
+    )?;
     Ok(board)
+}
+
+fn parse_with_context<T, F>(input: &str, parser: F, context_msg: &str) -> miette::Result<T>
+where
+    F: FnOnce(&str) -> miette::Result<T>,
+{
+    parser(input).with_context(|| format!("{context_msg}: {input}"))
+}
+
+fn place_pieces(pieces: &str) -> miette::Result<BoardState> {
+    let mut positions = BoardState::default();
+
+    if pieces.contains(' ') {
+        miette::bail!("'Space' found in 'pieces' part of FEN: {pieces}");
+    }
+
+    let mut rank = 7;
+    let mut file = 0;
+
+    for char in pieces.chars() {
+        match char {
+            '1'..='8' => {
+                file += char
+                    .to_digit(10)
+                    .with_context(|| miette::miette!("Could not parse char {char} to number"))?
+                    as usize;
+            }
+            '/' => {
+                rank -= 1;
+                file = 0;
+            }
+            _ => {
+                if let Some((piece, side)) = PIECE_CHAR_LOOKUP_TABLE.get(&char) {
+                    positions.set(*side, *piece, rank * 8 + file)?;
+                    file += 1
+                } else {
+                    miette::bail!("Invalid fen character: {char}")
+                }
+            }
+        }
+    }
+
+    Ok(positions)
 }
 
 fn parse_stm(stm: &str) -> miette::Result<Side> {

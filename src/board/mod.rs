@@ -1,4 +1,5 @@
 use crate::{
+    START_FEN,
     evaluation::Evaluator,
     moves::{
         attack_data::calculate_attack_data,
@@ -112,24 +113,7 @@ impl Display for Board {
 impl Board {
     /// Use to initialize a default board
     pub fn new() -> Self {
-        const START_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
-        let mut board = Self {
-            positions: BoardState::default(),
-            stm: Side::default(),
-            castling_rights: CastlingRights::all(),
-            enpassant_square: Option::default(),
-            halfmove_clock: u8::default(),
-            fullmove_counter: u8::default(),
-            material: [u64::default(); 2],
-        };
-        match board.place_pieces(START_FEN) {
-            Ok(_) => {}
-            Err(e) => {
-                eprintln!("Error initializing board: {e}");
-            }
-        }
-        board.calculate_material();
-        board
+        Board::from_fen(START_FEN)
     }
     /// Use this to construct a board from fen
     pub fn from_fen(fen: &str) -> Self {
@@ -428,46 +412,6 @@ impl Board {
 
     pub fn evaluate_position(&self, evaluator: &dyn Evaluator) -> i32 {
         evaluator.evaluate(self)
-    }
-
-    // NOTE: Older Implementation without support for full length FEN strings
-    fn place_pieces(&mut self, fen: &str) -> miette::Result<()> {
-        if fen.contains(' ') {
-            return Err(miette::Error::msg("Not supported for now"));
-        }
-        // rank [7,0]
-        let mut rank = 7;
-        // file [0,7]
-        let mut file = 0;
-        // dbg!(rank, file);
-        for c in fen.chars() {
-            // dbg!("---------------------");
-            // dbg!(c);
-            match c {
-                '1'..='8' => {
-                    // dbg!(rank, file);
-                    file += c.to_digit(10).unwrap() as usize;
-                    // dbg!(rank, file);
-                }
-                '/' => {
-                    // dbg!(rank, file);
-                    rank -= 1;
-                    file = 0;
-                    // dbg!(rank, file);
-                }
-                _ => {
-                    if let Some((piece, side)) = fen::PIECE_CHAR_LOOKUP_TABLE.get(&c) {
-                        // dbg!(piece, side);
-                        // dbg!(rank, file);
-                        self.positions.set(*side, *piece, rank * 8 + file)?;
-                        file += 1;
-                    } else {
-                        miette::bail!("Invalid Fen Character")
-                    }
-                }
-            }
-        }
-        Ok(())
     }
 
     pub fn get_piece_at(&self, square: Square) -> Option<Piece> {
