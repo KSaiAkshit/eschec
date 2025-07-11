@@ -36,6 +36,16 @@ use crate::moves::move_info::Move;
 pub const START_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 pub const KIWIPETE: &str = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
 
+pub mod consts {
+    use crate::{Piece, Side};
+
+    pub const NUM_SIDES: usize = Side::SIDES.len();
+    pub const NUM_PIECES: usize = Piece::PIECES.len();
+    pub const NUM_SQUARES: usize = 64;
+    pub const NUM_CASTLING_RIGHTS: usize = 16;
+    pub const NUM_FILES: usize = 8;
+}
+
 static LOG_FILTER_HANDLE: LazyLock<Mutex<Handle<EnvFilter, tracing_subscriber::Registry>>> =
     LazyLock::new(|| {
         color_backtrace::install();
