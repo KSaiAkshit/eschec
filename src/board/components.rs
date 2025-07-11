@@ -761,9 +761,9 @@ impl Square {
     }
     pub fn enpassant_from_index(file: char, rank: char) -> miette::Result<Self> {
         let file = file.to_ascii_lowercase();
-        if !('a'..='g').contains(&file) {
+        if !('a'..='h').contains(&file) {
             return Err(
-                miette::Error::msg("given file isn't valid. Valid file = ['a'..='g']")
+                miette::Error::msg("given file isn't valid. Valid file = ['a'..='h']")
                     .context(format!("input file: {file}")),
             );
         }

@@ -1,6 +1,10 @@
 use crate::{evaluation::Evaluator, moves::move_info::Move};
 use tracing::*;
 
+pub mod zobrist;
+pub mod tt;
+pub mod move_ordering;
+
 use super::*;
 use std::cmp::max;
 use std::sync::Arc;

@@ -6,6 +6,7 @@ use crate::{
         move_gen::generate_legal_moves,
         move_info::{Move, MoveInfo},
     },
+    search::zobrist::{ZOBRIST, calculate_hash},
 };
 use miette::Context;
 #[cfg(feature = "random")]
@@ -16,6 +17,8 @@ use self::components::{BoardState, CastlingRights, Piece, Side, Square};
 
 pub mod components;
 pub mod fen;
+#[cfg(test)]
+mod tests;
 
 /// Completely encapsulate the game
 #[derive(Default, Debug, PartialEq, Eq, Clone, Hash, PartialOrd, Copy)]
@@ -35,6 +38,8 @@ pub struct Board {
     pub fullmove_counter: u8,
     /// Material left for each side [White, Black]
     pub material: [u64; 2],
+    /// Zobrist hash
+    pub hash: u64,
 }
 
 impl Display for Board {
@@ -126,6 +131,7 @@ impl Board {
             }
         };
         board.calculate_material();
+        board.hash = calculate_hash(&board);
         board
     }
 
@@ -209,6 +215,7 @@ impl Board {
         }
 
         self.calculate_material();
+        self.hash = calculate_hash(self);
         Ok(())
     }
 
@@ -415,15 +422,7 @@ impl Board {
     }
 
     pub fn get_piece_at(&self, square: Square) -> Option<Piece> {
-        let index = square.index();
-
-        for (piece_type, side) in Piece::all() {
-            let piece_bb = self.positions.get_piece_bb(side, piece_type);
-            if piece_bb.contains_square(index) {
-                return Some(piece_type);
-            }
-        }
-        None
+        self.positions.get_piece_at(&square).map(|(piece, _)| piece)
     }
 
     pub fn handle_special_rules(&mut self, from: Square, to: Square) -> miette::Result<()> {

@@ -10,6 +10,8 @@ export RUST_BACKTRACE := "full"
 alias up := update
 alias log := tail_log
 alias tail := tail_log
+alias b := build
+alias r := run
 
 default: play
 
@@ -36,7 +38,7 @@ gauntlet opponent='gnuchess' rounds='40' tc='15+0.1' concurrency='4' : update
 
     @# Run the cutechess-cli command
     cutechess-cli \
-        -engine conf=eschec \
+        -engine conf=lucia \
         -engine conf={{ opponent }} \
         -each tc={{ tc }} \
         -rounds {{ rounds }} \
