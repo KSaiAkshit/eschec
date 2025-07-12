@@ -1,12 +1,11 @@
-use std::collections::HashMap;
+use super::Evaluator;
+use crate::{board::Board, consts::NUM_PIECES};
 
-use super::{Evaluator, Piece};
-use crate::board::Board;
-
+const MOBILITY_WEIGHTS: [i32; NUM_PIECES] = [1, 3, 3, 5, 9, 0];
 #[derive(Debug)]
 pub struct MobilityEvaluator {
     name: String,
-    mobility_weights: HashMap<Piece, i32>,
+    mobility_weights: [i32; NUM_PIECES],
 }
 
 impl Default for MobilityEvaluator {
@@ -17,29 +16,20 @@ impl Default for MobilityEvaluator {
 
 impl MobilityEvaluator {
     pub fn new() -> Self {
-        let mut mobility_weights = HashMap::new();
-        mobility_weights.insert(Piece::Pawn, 1);
-        mobility_weights.insert(Piece::Knight, 3);
-        mobility_weights.insert(Piece::Bishop, 3);
-        mobility_weights.insert(Piece::Rook, 5);
-        mobility_weights.insert(Piece::Queen, 9);
-        mobility_weights.insert(Piece::King, 0);
-
         Self {
             name: "Mobility".to_string(),
-            mobility_weights,
+            mobility_weights: MOBILITY_WEIGHTS,
         }
     }
 
     fn calculate_mobility_score(&self, board: &Board) -> i32 {
+        // NOTE: Use pseudo legal moves here;
         let legal_moves = board.generate_legal_moves();
         let mut score = 0;
 
         for m in legal_moves {
-            if let Some(piece) = board.get_piece_at(m.from_sq())
-                && let Some(weight) = self.mobility_weights.get(&piece)
-            {
-                score += weight;
+            if let Some(piece) = board.get_piece_at(m.from_sq()) {
+                score += self.mobility_weights[piece.index()];
             }
         }
         score

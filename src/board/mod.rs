@@ -5,6 +5,7 @@ use crate::{
         attack_data::calculate_attack_data,
         move_gen::generate_legal_moves,
         move_info::{Move, MoveInfo},
+        pseudo_legal::generate_all_moves,
     },
     search::zobrist::{ZOBRIST, calculate_hash},
 };
@@ -145,6 +146,18 @@ impl Board {
         legal_moves
     }
 
+    pub fn generate_pseudo_legal_moves(&self) -> Vec<Move> {
+        let mut pseudo_legal_moves = Vec::with_capacity(40);
+        generate_all_moves(
+            &self.positions,
+            self.stm,
+            self.castling_rights,
+            self.enpassant_square,
+            &mut pseudo_legal_moves,
+        );
+        pseudo_legal_moves
+    }
+
     /// Primary "safe" method for applying a move.
     /// Checks for legality before making the move.
     pub fn try_move(&mut self, m: Move) -> miette::Result<()> {
@@ -172,14 +185,13 @@ impl Board {
         let opponent = self.stm.flip();
         let piece_moved = move_data.piece_moved;
 
-        // Handle promotion
+        // Restore moved piece
         if let Some(promoted_piece) = move_data.promotion {
             self.positions
-                .capture(self.stm, promoted_piece, to.index())?;
+                .remove_piece(self.stm, promoted_piece, to.index())?;
             self.positions.set(self.stm, Piece::Pawn, from.index())?;
         } else {
-            self.positions
-                .update_piece_position(piece_moved, self.stm, to, from)?;
+            self.positions.move_piece(piece_moved, self.stm, to, from)?;
         }
 
         // Restore captured pieces
@@ -195,7 +207,7 @@ impl Board {
             }
         }
 
-        // Unmake castling
+        // Unmake castling (Moving rook)
         if move_data.is_castling {
             let (rook_from, rook_to) = match (self.stm, to.index()) {
                 (Side::White, 6) => (5, 7),    // White kingside: rook from f1 to h1
@@ -206,12 +218,8 @@ impl Board {
             };
             let rook_from_sq = Square::new(rook_from).unwrap();
             let rook_to_sq = Square::new(rook_to).unwrap();
-            self.positions.update_piece_position(
-                Piece::Rook,
-                self.stm,
-                rook_from_sq,
-                rook_to_sq,
-            )?;
+            self.positions
+                .move_piece(Piece::Rook, self.stm, rook_from_sq, rook_to_sq)?;
         }
 
         self.calculate_material();
@@ -228,8 +236,10 @@ impl Board {
         let piece = self
             .get_piece_at(from)
             .context("A piece should exist at from sq")?;
+        let opponent = self.stm.flip();
 
         // Store current state for unmake
+        //
         let mut move_data = MoveInfo::new(from, to);
         move_data.piece_moved = piece;
         move_data.castle_rights = self.castling_rights;
@@ -239,21 +249,25 @@ impl Board {
         move_data.is_castling = m.is_castling();
         move_data.is_en_passant = m.is_enpassant();
         move_data.promotion = m.promoted_piece();
-
-        // --- Update Board State ---
-        self.halfmove_clock += 1;
-        if m.is_capture() || piece == Piece::Pawn {
-            self.halfmove_clock = 0;
+        if m.is_enpassant() {
+            move_data.captured_piece = Some(Piece::Pawn)
+        } else {
+            move_data.captured_piece = self.get_piece_at(to);
         }
 
-        // Reset en passant square
-        self.enpassant_square = None;
+        // Update Board State
+        //
+        // This covers normal captures and promotion-captures.
+        if let Some(captured_piece) = move_data.captured_piece {
+            if !m.is_enpassant() {
+                self.positions
+                    .remove_piece(opponent, captured_piece, to.index())?;
+            }
+        }
 
-        // Move the piece
-        self.positions
-            .update_piece_position(piece, self.stm, from, to)?;
+        // Move the piece from 'from' to 'to'
+        self.positions.move_piece(piece, self.stm, from, to)?;
 
-        // Handle special move types
         match m.flags() {
             Move::DOUBLE_PAWN => {
                 let ep_sq_idx = if self.stm == Side::White {
@@ -261,7 +275,7 @@ impl Board {
                 } else {
                     to.index() + 8
                 };
-                self.enpassant_square = Some(Square::new(ep_sq_idx).unwrap());
+                self.enpassant_square = Square::new(ep_sq_idx)
             }
             Move::EN_PASSANT => {
                 let captured_pawn_idx = if self.stm == Side::White {
@@ -270,43 +284,55 @@ impl Board {
                     to.index() + 8
                 };
                 self.positions
-                    .capture(self.stm.flip(), Piece::Pawn, captured_pawn_idx)?;
-                move_data.captured_piece = Some(Piece::Pawn); // Set captured piece for unmake
+                    .remove_piece(opponent, Piece::Pawn, captured_pawn_idx)?;
             }
             Move::KING_CASTLE => {
-                let (rook_from_file, rook_to_file) = (7, 5);
-                let rank = from.row();
-                let rook_from = Square::new(rank * 8 + rook_from_file).unwrap();
-                let rook_to = Square::new(rank * 8 + rook_to_file).unwrap();
+                let (rook_from, rook_to) = (
+                    Square::new(from.row() * 8 + 7).unwrap(),
+                    Square::new(from.row() * 8 + 5).unwrap(),
+                );
                 self.positions
-                    .update_piece_position(Piece::Rook, self.stm, rook_from, rook_to)?;
+                    .move_piece(Piece::Rook, self.stm, rook_from, rook_to)?;
             }
             Move::QUEEN_CASTLE => {
-                let (rook_from_file, rook_to_file) = (0, 3);
-                let rank = from.row();
-                let rook_from = Square::new(rank * 8 + rook_from_file).unwrap();
-                let rook_to = Square::new(rank * 8 + rook_to_file).unwrap();
+                let (rook_from, rook_to) = (
+                    Square::new(from.row() * 8 + 0).unwrap(),
+                    Square::new(from.row() * 8 + 3).unwrap(),
+                );
                 self.positions
-                    .update_piece_position(Piece::Rook, self.stm, rook_from, rook_to)?;
+                    .move_piece(Piece::Rook, self.stm, rook_from, rook_to)?;
             }
-            _ => {
-                // Promotions
-                if let Some(promo_piece) = m.promoted_piece() {
-                    // Remove the pawn and add the new piece
-                    self.positions.capture(self.stm, Piece::Pawn, to.index())?;
-                    self.positions.set(self.stm, promo_piece, to.index())?;
-                }
+            _flags if m.is_promotion() => {
+                let promo_piece = m.promoted_piece().unwrap();
+                // The pawn is already at the 'to' square, so we replace it.
+                self.positions
+                    .remove_piece(self.stm, Piece::Pawn, to.index())?;
+                self.positions.set(self.stm, promo_piece, to.index())?;
+            }
+            _ => { /* Quiet and normal captures fall through to here,
+                but they dont need anything special */
             }
         }
 
-        // Update castling rights
+        // Final state update
         self.update_castling_rights(from, to);
 
-        // Update clocks and side to move
+        if m.flags() != Move::DOUBLE_PAWN {
+            self.enpassant_square = None;
+        }
+
+        if piece == Piece::Pawn || m.is_capture() {
+            self.halfmove_clock = 0
+        } else {
+            self.halfmove_clock += 1;
+        }
+
+        // Flip side to move
         if self.stm == Side::Black {
             self.fullmove_counter += 1;
         }
-        self.stm = self.stm.flip();
+        self.stm = opponent;
+
         self.calculate_material();
 
         Ok(move_data)
@@ -440,7 +466,7 @@ impl Board {
                         })
                         .unwrap();
 
-                        self.positions.capture(
+                        self.positions.remove_piece(
                             self.stm.flip(),
                             Piece::Pawn,
                             captured_pawn_square.index(),
@@ -484,12 +510,8 @@ impl Board {
                     let rook_from = Square::new(rank * 8 + rook_from_file).unwrap();
                     let rook_to = Square::new(rank * 8 + rook_to_file).unwrap();
 
-                    self.positions.update_piece_position(
-                        Piece::Rook,
-                        self.stm,
-                        rook_from,
-                        rook_to,
-                    )?;
+                    self.positions
+                        .move_piece(Piece::Rook, self.stm, rook_from, rook_to)?;
                 }
             }
             Some(Piece::Rook) => match (self.stm, from.index()) {
@@ -611,12 +633,12 @@ impl Board {
         let black_bishop = self.positions.get_piece_bb(Side::Black, Piece::Bishop);
 
         if let (Some(white_sq), Some(black_sq)) = (
-            white_bishop.get_set_bits().first(),
-            black_bishop.get_set_bits().first(),
+            white_bishop.iter_bits().next(),
+            black_bishop.iter_bits().next(),
         ) {
             // Bishops are on same colored squares if sum of their coordinates is even/odd same
-            let (white_file, white_rank) = Square::new(*white_sq).unwrap().coords();
-            let (black_file, black_rank) = Square::new(*black_sq).unwrap().coords();
+            let (white_file, white_rank) = Square::new(white_sq).unwrap().coords();
+            let (black_file, black_rank) = Square::new(black_sq).unwrap().coords();
 
             let a = (white_file + white_rank) % 2;
             let b = (black_file + black_rank) % 2;
@@ -665,7 +687,7 @@ mod material_tests {
 
         let from = Square::from_str("e4").unwrap();
         let to = Square::from_str("d5").unwrap();
-        let mov = Move::new(from.index() as u8, to.index() as u8, Move::QUIET);
+        let mov = Move::new(from.index() as u8, to.index() as u8, Move::CAPTURE);
 
         let move_data = board.make_move(mov).unwrap();
 
@@ -673,6 +695,8 @@ mod material_tests {
 
         board.unmake_move(&move_data).unwrap();
 
+        println!("original board: \n{orig_board}");
+        println!("unmade board: \n{board}");
         assert_eq!(board, orig_board);
     }
     #[test]

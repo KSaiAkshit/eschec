@@ -86,7 +86,7 @@ fn test_en_passant_make_unmake_symmetry() {
     );
 }
 
-// --- General Correctness and Regression Tests for the New `make_move` ---
+// General Correctness and Regression Tests for the New `make_move`
 
 #[test]
 fn test_rook_capture_removes_opponent_castling_rights() {

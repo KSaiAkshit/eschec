@@ -2,6 +2,7 @@ pub mod attack_data;
 pub mod move_gen;
 pub mod move_info;
 pub mod precomputed;
+pub mod pseudo_legal;
 
 #[cfg(test)]
 mod tests;

@@ -1,0 +1,31 @@
+default
+--
+search_depth_5          time:   [3.8623 s 3.8783 s 3.8951 s]
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high mild
+--
+array indexing
+--
+search_depth_5          time:   [2.3909 s 2.4012 s 2.4120 s]
+change: [−38.465% −38.086% −37.717%] (p = 0.00 < 0.05)
+Performance has improved.
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high mild
+--
+iterators
+--
+search_depth_5          time:   [1.5240 s 1.5356 s 1.5483 s]
+change: [−36.628% −36.048% −35.454%] (p = 0.00 < 0.05)
+Performance has improved.
+Found 5 outliers among 100 measurements (5.00%)
+  3 (3.00%) high mild
+  2 (2.00%) high severe
+--
+pseudo_legal 
+--
+search_depth_5          time:   [580.13 ms 585.00 ms 590.72 ms]
+change: [−61.786% −61.414% −60.981%] (p = 0.00 < 0.05)
+Performance has improved.
+Found 20 outliers among 100 measurements (20.00%)
+  3 (3.00%) high mild
+  17 (17.00%) high severe

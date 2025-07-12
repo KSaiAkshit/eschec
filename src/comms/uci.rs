@@ -146,7 +146,7 @@ fn cmd_go(state: &mut UciState, params: GoParams) {
     let search_running = state.search_running.clone();
     let default_depth = state.search_depth;
 
-    // --- Time Management Logic ---
+    // Time Management Logic
     let mut max_time_ms: Option<u64> = None;
     let (time_remaining, increment) = if board.stm == Side::White {
         (params.wtime, params.winc.unwrap_or(0))

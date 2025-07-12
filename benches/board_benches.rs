@@ -14,7 +14,7 @@ fn setup_board_state() -> BoardState {
     Board::from_fen(KIWIPETE).positions
 }
 
-// --- Board Struct Benchmarks ---
+// Board Struct Benchmarks
 fn bench_board_ops(c: &mut Criterion) {
     let mut group = c.benchmark_group("Board_Ops");
     let from = Square::new(12).unwrap(); // e2
@@ -35,7 +35,7 @@ fn bench_board_ops(c: &mut Criterion) {
     });
 }
 
-// --- BoardState Struct Benchmarks ---
+// BoardState Struct Benchmarks
 fn bench_boardstate_ops(c: &mut Criterion) {
     let mut group = c.benchmark_group("BoardState_Ops");
 
@@ -50,7 +50,9 @@ fn bench_boardstate_ops(c: &mut Criterion) {
     group.bench_function("capture_piece", |b| {
         b.iter_batched(
             || (setup_board_state(), Side::Black, Piece::Pawn, 53),
-            |(mut state, side, piece, pos)| black_box(state.capture(side, piece, pos).unwrap()),
+            |(mut state, side, piece, pos)| {
+                black_box(state.remove_piece(side, piece, pos).unwrap())
+            },
             BatchSize::SmallInput,
         );
     });
@@ -67,7 +69,7 @@ fn bench_boardstate_ops(c: &mut Criterion) {
                 )
             },
             |(mut state, piece, side, from, to)| {
-                black_box(state.update_piece_position(piece, side, from, to).unwrap());
+                black_box(state.move_piece(piece, side, from, to).unwrap());
             },
             BatchSize::SmallInput,
         );

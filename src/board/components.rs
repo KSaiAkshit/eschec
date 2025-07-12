@@ -157,10 +157,6 @@ impl BitBoard {
         self.0 != 0
     }
 
-    pub fn get_set_bits(&self) -> Vec<usize> {
-        (0..64).filter(|&i| (self.0 & (1 << i) != 0)).collect()
-    }
-
     pub const fn iter_bits(&self) -> BitBoardIterator {
         BitBoardIterator { remaining: self.0 }
     }
@@ -490,8 +486,8 @@ impl BoardState {
     }
 
     /// Primary way to make moves.
-    /// Handles regular captures too, so using just this should be fine
-    pub fn update_piece_position(
+    /// This does NOT handle captures
+    pub fn move_piece(
         &mut self,
         piece: Piece,
         side: Side,
@@ -502,34 +498,26 @@ impl BoardState {
         let to_index = to.index();
         let side_index = side.index();
 
-        if self.get_piece_at(&from).is_none() {
-            error!("{side} {piece} not available at {from}");
-            error!(
-                "{side} Side: \n{}",
-                self.all_sides[side_index].print_bitboard()
-            );
-            error!(
-                "{piece}: \n{}",
-                self.all_pieces[side_index][piece.index()].print_bitboard()
-            );
+        miette::ensure!(
+            self.get_piece_at(&from).is_some(),
+            "[update_piece_position] No {side} {piece} piece at from ( {from} ) square"
+        );
 
-            return Err(miette::miette!(
-                "[update_piece_position] No {side} {piece} piece at from ( {from} ) square"
-            ));
-        }
+        miette::ensure!(
+            self.get_piece_at(&to).is_none(),
+            "[move_piece] Destination square {to} is not empty. Found: {:?}",
+            self.get_piece_at(&to)
+        );
+
+        // Update piece bitboard
         self.all_pieces[side_index][piece.index()].capture(from_index);
-        if let Some((captured_piece, captured_side)) = self.get_piece_at(&to)
-            && captured_side == side.flip()
-        {
-            self.all_pieces[captured_side.index()][captured_piece.index()].capture(to_index);
-            self.all_sides[captured_side.index()].capture(to_index);
-        }
-
         self.all_pieces[side_index][piece.index()].set(to_index);
 
+        // Update side bitboard
         self.all_sides[side_index].capture(from_index);
         self.all_sides[side_index].set(to_index);
 
+        // Update mailbox
         self.mailbox[from_index] = None;
         self.mailbox[to_index] = Some(PieceInfo::new(piece, side));
 
@@ -595,7 +583,7 @@ impl BoardState {
         Ok(())
     }
 
-    pub fn capture(
+    pub fn remove_piece(
         &mut self,
         side_to_capture: Side,
         piece_to_capture: Piece,
