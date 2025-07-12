@@ -74,7 +74,7 @@ impl Search {
         self.start_time = Instant::now();
         self.search_running = search_running;
 
-        let legal_moves = board.generate_pseudo_legal_moves();
+        let legal_moves = board.generate_legal_moves();
         if legal_moves.is_empty() {
             debug!("No legal moves");
             let score = if board.is_in_check(board.stm) {
@@ -115,11 +115,6 @@ impl Search {
 
                 let mut board_copy = *board;
                 if board_copy.make_move(m).is_err() {
-                    continue;
-                }
-
-                // make_move flips the side, so flip again to get og side
-                if board.is_in_check(board.stm.flip()) {
                     continue;
                 }
 
@@ -178,38 +173,53 @@ impl Search {
         if self.should_stop() {
             return alpha;
         }
-        self.nodes_searched += 1;
 
         if depth == 0 {
+            self.nodes_searched += 1;
             let score = evaluator.evaluate(board);
             trace!("Returning static eval: {}", score);
             return score;
         }
 
-        let legal_moves = board.generate_pseudo_legal_moves();
+        let pseudo_legal_moves = board.generate_pseudo_legal_moves();
+        let mut legal_move_found = false;
 
-        if legal_moves.is_empty() {
-            return if board.is_in_check(board.stm) {
-                -20_000 + (self.max_depth - depth) as i32 // prefer faster checkmate
-            } else {
-                0 // stalemate
-            };
-        }
-
-        for m in legal_moves {
+        for m in pseudo_legal_moves {
             let mut board_copy = *board;
-            if board_copy.make_move(m).is_err() {
+
+            // Make the move and check if it was legal (i.e., didn't leave the king in check).
+            // This combines the move making and legality check into one step.
+            if board_copy.make_move(m).is_err() || board_copy.is_in_check(board.stm) {
                 continue;
             }
 
+            // If we are here, we have found at least one legal move.
+            legal_move_found = true;
+            self.nodes_searched += 1;
+
             let score = -self.alpha_beta(&board_copy, depth - 1, -beta, -alpha, evaluator);
 
-            if alpha >= beta {
+            // Alpha-beta pruning logic
+            if score >= beta {
                 self.pruned_nodes += 1;
-                return beta;
+                return beta; // Fail-hard beta cutoff
             }
             alpha = max(alpha, score);
         }
+
+        // After checking all moves, if we haven't found a single legal one,
+        // it's either checkmate or stalemate.
+        if !legal_move_found {
+            self.nodes_searched += 1; // Count this terminal node
+            return if board.is_in_check(board.stm) {
+                // Checkmate. A closer mate is more valuable.
+                -20_000 + (self.max_depth - depth) as i32
+            } else {
+                // Stalemate
+                0
+            };
+        }
+
         alpha
     }
 

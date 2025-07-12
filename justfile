@@ -51,8 +51,7 @@ gauntlet opponent='gnuchess' rounds='40' tc='15+0.1' concurrency='4' : update
 
 [doc("Remove build artifacts and logs")]
 clean:
-    cargo clean
-    rm -rf ./logs ./eschec
+    rm -rf ./logs ./guantlet/results/* ./guantlet/engines/*
 
 [doc("Run the engine in play mode")]
 play:
