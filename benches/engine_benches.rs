@@ -31,7 +31,7 @@ fn bench_evaluation(c: &mut Criterion) {
 
 fn bench_search(c: &mut Criterion) {
     let evaluator = CompositeEvaluator::balanced();
-    let depth = 3;
+    let depth = 5;
     let mut search = Search::new(depth);
 
     c.bench_function(&format!("search_depth_{depth}"), |b| {

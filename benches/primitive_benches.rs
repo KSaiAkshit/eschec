@@ -3,11 +3,11 @@ use std::hint::black_box;
 
 use eschec::{board::components::BitBoard, moves::precomputed::MOVE_TABLES};
 
-// --- Constants and Setup ---
+// Constants and Setup
 const INITIAL_PIECES_BB: BitBoard = BitBoard(0xFFFF00000000FFFF);
 const MIDGAME_OCCUPANCY_BB: BitBoard = BitBoard(0x007E8181A5A5FFFF);
 
-// --- BitBoard Benchmarks ---
+// BitBoard Benchmarks
 fn bench_bitboard_ops(c: &mut Criterion) {
     let mut group = c.benchmark_group("BitBoard_Ops");
 
@@ -88,7 +88,7 @@ fn bench_bitboard_ops(c: &mut Criterion) {
     group.finish();
 }
 
-// --- Precomputed Move Table Benchmarks ---
+// Precomputed Move Table Benchmarks
 fn bench_move_lookups(c: &mut Criterion) {
     let mut group = c.benchmark_group("Move_Lookups");
 

@@ -21,7 +21,7 @@ fn setup_board_state() -> BoardState {
     board.positions
 }
 
-// --- Strategy 1: Scalar Recalculation (Naive aproach) ---
+// Strategy 1: Scalar Recalculation (Naive aproach)
 fn update_all_sides_scalar_recalc(board_state: &mut BoardState) {
     let white_pieces = board_state.get_colored_pieces(Side::White);
     board_state.get_side_bb_mut(Side::White).0 = white_pieces[0].0
@@ -40,7 +40,7 @@ fn update_all_sides_scalar_recalc(board_state: &mut BoardState) {
         | black_pieces[5].0;
 }
 
-// --- Strategy 2: Fold Recalculation (Should be the same as above) ---
+// Strategy 2: Fold Recalculation (Should be the same as above)
 fn update_all_sides_fold_recalc(board_state: &mut BoardState) {
     let white_pieces = board_state.get_colored_pieces(Side::White);
     board_state.get_side_bb_mut(Side::White).0 =
@@ -51,7 +51,7 @@ fn update_all_sides_fold_recalc(board_state: &mut BoardState) {
         black_pieces.iter().fold(BitBoard(0), |acc, &bb| acc | bb).0;
 }
 
-// --- Strategy 3: SIMD Recalculation (CPU Magic!) ---
+// Strategy 3: SIMD Recalculation (CPU Magic!)
 #[cfg(feature = "simd")]
 fn update_all_sides_simd_recalc(board_state: &mut BoardState) {
     use std::simd::{num::SimdUint, u64x4};
@@ -79,7 +79,7 @@ fn update_all_sides_simd_recalc(board_state: &mut BoardState) {
     board_state.get_side_bb_mut(Side::Black).0 = partial_or | black_pieces[4].0 | black_pieces[5].0;
 }
 
-// --- Strategy 4: Incremental Update (Better algo) ---
+// Strategy 4: Incremental Update (Better algo)
 fn incremental_update(board_state: &mut BoardState, from: usize, to: usize) {
     board_state.get_side_bb_mut(Side::White).capture(from);
     board_state.get_side_bb_mut(Side::White).set(to);

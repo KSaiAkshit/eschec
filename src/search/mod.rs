@@ -1,9 +1,9 @@
 use crate::{evaluation::Evaluator, moves::move_info::Move};
 use tracing::*;
 
-pub mod zobrist;
-pub mod tt;
 pub mod move_ordering;
+pub mod tt;
+pub mod zobrist;
 
 use super::*;
 use std::cmp::max;
@@ -74,7 +74,7 @@ impl Search {
         self.start_time = Instant::now();
         self.search_running = search_running;
 
-        let legal_moves = board.generate_legal_moves();
+        let legal_moves = board.generate_pseudo_legal_moves();
         if legal_moves.is_empty() {
             debug!("No legal moves");
             let score = if board.is_in_check(board.stm) {
@@ -115,6 +115,11 @@ impl Search {
 
                 let mut board_copy = *board;
                 if board_copy.make_move(m).is_err() {
+                    continue;
+                }
+
+                // make_move flips the side, so flip again to get og side
+                if board.is_in_check(board.stm.flip()) {
                     continue;
                 }
 
@@ -181,7 +186,7 @@ impl Search {
             return score;
         }
 
-        let legal_moves = board.generate_legal_moves();
+        let legal_moves = board.generate_pseudo_legal_moves();
 
         if legal_moves.is_empty() {
             return if board.is_in_check(board.stm) {
