@@ -86,7 +86,7 @@ dhat-perft depth=DEPTH fen=FEN:
 
 [doc("Run all tests")]
 test:
-    cargo test --all-features
+    cargo nextest run
 
 [doc("Build in release mode")]
 @build:

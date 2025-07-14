@@ -54,7 +54,7 @@ impl Drop for UciState {
 
 impl UciState {
     pub fn new(depth: Option<u8>) -> Self {
-        let depth = depth.unwrap_or(7);
+        let depth = depth.unwrap_or(20);
         Self {
             board: Board::new(),
             search_depth: depth,

@@ -7,7 +7,7 @@ use crate::{
         move_info::{Move, MoveInfo},
         pseudo_legal::generate_all_moves,
     },
-    search::zobrist::{ZOBRIST, calculate_hash},
+    search::zobrist::calculate_hash,
 };
 use miette::Context;
 #[cfg(feature = "random")]
@@ -258,12 +258,11 @@ impl Board {
         // Update Board State
         //
         // This covers normal captures and promotion-captures.
-        if let Some(captured_piece) = move_data.captured_piece {
-            if !m.is_enpassant() {
+        if let Some(captured_piece) = move_data.captured_piece
+            && !m.is_enpassant() {
                 self.positions
                     .remove_piece(opponent, captured_piece, to.index())?;
             }
-        }
 
         // Move the piece from 'from' to 'to'
         self.positions.move_piece(piece, self.stm, from, to)?;
@@ -296,7 +295,7 @@ impl Board {
             }
             Move::QUEEN_CASTLE => {
                 let (rook_from, rook_to) = (
-                    Square::new(from.row() * 8 + 0).unwrap(),
+                    Square::new(from.row() * 8).unwrap(),
                     Square::new(from.row() * 8 + 3).unwrap(),
                 );
                 self.positions

@@ -1,3 +1,4 @@
+use crate::search::move_ordering::sort_moves;
 use crate::{evaluation::Evaluator, moves::move_info::Move};
 use tracing::*;
 
@@ -10,6 +11,8 @@ use std::cmp::max;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
+
+const MAX_PLY: usize = 64;
 
 #[derive(Debug, Default)]
 pub struct SearchResult {
@@ -29,6 +32,7 @@ pub struct Search {
     nodes_limit: Option<u64>,
     pruned_nodes: u64,
     search_running: Option<Arc<AtomicBool>>,
+    killer_moves: [[Option<Move>; 2]; MAX_PLY],
 }
 
 impl Search {
@@ -41,6 +45,7 @@ impl Search {
             nodes_limit: None,
             pruned_nodes: 0,
             search_running: None,
+            killer_moves: [[None; 2]; MAX_PLY],
         }
     }
 
@@ -53,11 +58,17 @@ impl Search {
             nodes_limit: None,
             pruned_nodes: 0,
             search_running: None,
+            killer_moves: [[None; 2]; MAX_PLY],
         }
     }
 
-    pub fn change_depth(&mut self, new_max_depth: u8) {
+    pub fn change_depth(&mut self, new_max_depth: u8) -> miette::Result<()> {
+        miette::ensure!(
+            (new_max_depth as usize) < MAX_PLY,
+            "New depth ({new_max_depth}) cannot be greater than {MAX_PLY}"
+        );
         self.max_depth = new_max_depth;
+        Ok(())
     }
 
     // #[instrument(skip_all)]
@@ -73,8 +84,9 @@ impl Search {
         self.nodes_searched = 0;
         self.start_time = Instant::now();
         self.search_running = search_running;
+        self.killer_moves = [[None; 2]; MAX_PLY];
 
-        let legal_moves = board.generate_legal_moves();
+        let mut legal_moves = board.generate_legal_moves();
         if legal_moves.is_empty() {
             debug!("No legal moves");
             let score = if board.is_in_check(board.stm) {
@@ -105,6 +117,8 @@ impl Search {
             let mut alpha = i32::MIN + 1;
             let beta = i32::MAX;
 
+            sort_moves(board, &mut legal_moves, &[None, None]);
+
             let mut local_best_move: Option<Move> = legal_moves.first().copied();
             let mut local_best_score = i32::MIN + 1;
 
@@ -119,7 +133,7 @@ impl Search {
                 }
 
                 debug!("Evaluating move: {}", m);
-                let score = -self.alpha_beta(&board_copy, depth - 1, -beta, -alpha, evaluator);
+                let score = -self.alpha_beta(&board_copy, depth - 1, 0, -beta, -alpha, evaluator);
 
                 if self.should_stop() {
                     break;
@@ -147,7 +161,7 @@ impl Search {
                     self.nodes_searched * 1000 / (self.start_time.elapsed().as_millis() + 1) as u64,
                     best_move_uci
                 );
-                info!(msg);
+                debug!(msg);
                 println!("{msg}");
             }
         }
@@ -166,58 +180,62 @@ impl Search {
         &mut self,
         board: &Board,
         depth: u8,
+        ply: usize,
         mut alpha: i32,
         beta: i32,
         evaluator: &dyn Evaluator,
     ) -> i32 {
         if self.should_stop() {
-            return alpha;
+            return 0; // Neutral score because search was stopped
         }
 
         if depth == 0 {
             self.nodes_searched += 1;
+            // TODO: Add Quiescence search here
             let score = evaluator.evaluate(board);
             trace!("Returning static eval: {}", score);
             return score;
         }
 
-        let pseudo_legal_moves = board.generate_pseudo_legal_moves();
-        let mut legal_move_found = false;
+        let mut legal_moves = board.generate_legal_moves();
 
-        for m in pseudo_legal_moves {
-            let mut board_copy = *board;
-
-            // Make the move and check if it was legal (i.e., didn't leave the king in check).
-            // This combines the move making and legality check into one step.
-            if board_copy.make_move(m).is_err() || board_copy.is_in_check(board.stm) {
-                continue;
-            }
-
-            // If we are here, we have found at least one legal move.
-            legal_move_found = true;
-            self.nodes_searched += 1;
-
-            let score = -self.alpha_beta(&board_copy, depth - 1, -beta, -alpha, evaluator);
-
-            // Alpha-beta pruning logic
-            if score >= beta {
-                self.pruned_nodes += 1;
-                return beta; // Fail-hard beta cutoff
-            }
-            alpha = max(alpha, score);
+        if legal_moves.is_empty() {
+            self.nodes_searched += 1; // Terminal nodes_search
+            return if board.is_in_check(board.stm) {
+                -20_000 + ply as i32 // Checkmate
+            } else {
+                0 // Stalemate
+            };
         }
 
-        // After checking all moves, if we haven't found a single legal one,
-        // it's either checkmate or stalemate.
-        if !legal_move_found {
-            self.nodes_searched += 1; // Count this terminal node
-            return if board.is_in_check(board.stm) {
-                // Checkmate. A closer mate is more valuable.
-                -20_000 + (self.max_depth - depth) as i32
-            } else {
-                // Stalemate
-                0
-            };
+        if ply < MAX_PLY {
+            sort_moves(board, &mut legal_moves, &self.killer_moves[ply]);
+        }
+
+        for mv in legal_moves {
+            let mut board_copy = *board;
+            board_copy
+                .make_move(mv)
+                .expect("Should be safe since we use legal moves");
+
+            self.nodes_searched += 1;
+
+            let score = -self.alpha_beta(&board_copy, depth - 1, ply + 1, -beta, -alpha, evaluator);
+
+            if score >= beta {
+                self.pruned_nodes += 1;
+
+                // This is beta cutoff, if move was quiet,
+                // it is a good candidate for killer move
+                if !mv.is_capture() && ply < MAX_PLY {
+                    // Backup the existing one
+                    self.killer_moves[ply][1] = self.killer_moves[ply][0];
+                    self.killer_moves[ply][0] = Some(mv);
+                }
+                return beta;
+            }
+
+            alpha = max(alpha, score);
         }
 
         alpha

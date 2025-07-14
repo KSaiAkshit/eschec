@@ -56,13 +56,13 @@ static LOG_FILTER_HANDLE: LazyLock<Mutex<Handle<EnvFilter, tracing_subscriber::R
 
         let (filter, handle) = tracing_subscriber::reload::Layer::new(filter);
 
-        let log_dir = Path::new("logs");
+        let log_dir = Path::new("/tmp/eschec_logs");
         if !log_dir.exists() {
             std::fs::create_dir(log_dir).expect("Failed to create log directory");
         }
 
         let timestamp = Local::now().format("%Y-%m-%d_%H-%M-%S");
-        let log_filename = format!("logs/eschec_{timestamp}.log");
+        let log_filename = format!("/tmp/eschec_logs/eschec_{timestamp}.log");
         let log_file = File::create(&log_filename)
             .unwrap_or_else(|_| panic!("Failed to create log file: {log_filename}"));
 
@@ -253,7 +253,7 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
                     }
                     cli::SetSubcommand::Depth { depth } => {
                         info!("Changing search depth from {inp_depth} to {depth}");
-                        search.change_depth(depth);
+                        search.change_depth(depth)?;
                     }
                     cli::SetSubcommand::LogLevel { level } => {
                         let new_level: Level = level.into();

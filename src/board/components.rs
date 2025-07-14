@@ -5,7 +5,6 @@ use std::{
 };
 
 use miette::Context;
-use tracing::error;
 
 #[derive(Debug, Default, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
 #[repr(transparent)]

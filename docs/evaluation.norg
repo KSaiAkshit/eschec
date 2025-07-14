@@ -8,7 +8,7 @@ tags: [
   chess
 ]
 created: 12 Apr 2025 05:38
-updated: 12 Apr 2025 05:38
+updated: 15 Jul 2025 00:00
 version: 1.1.1
 @end
 
@@ -16,13 +16,13 @@ version: 1.1.1
   This will tell us how good a potential move is.
 
 ** Material Evaluation
-   4 rules of thumb. Also called piece-value
+   4 rules. Also called piece-value
    ~ Avoid expaching one minor piece for 3 pawns
    ~ Encourage engine to have the bishop pair
    ~ Avoid exchanging 2 minor pieces for a rook and a pawn
    ~ Stick to human chess experience
 
-   Final Equations:
+   Final Equations (should be used to satisfy piece values):
    @math
    B > N > 3P
    B + N = R + 1.5P
@@ -36,6 +36,31 @@ version: 1.1.1
 
    > Currenlty, PST and piece-value remain seperated, just so we can fine tune
      engine
+** King's Safety Evaluation
+   4 rules. Focuses on vulnerability and protection of the king
+   ~ Bonuses for castling rights (especially on both sides)
+   ~ Penalties for broken pawn shield around the king
+   ~ Penalties for opponent pawn storms approaching the king
+   ~ Penalties on King Tropism
+
+   Final Equations:
+   @math
+   king_safety = a * castling_bonus
+   - b * broken_shield
+   - c * pawn_storm
+   - d * tropism
+   @end
+
+** Mobility Evaluation
+   3 rules. Emphasizes activity and freedom
+   ~ More choices (/legal_moves/), more bonuses
+   ~ Penalize cramped positions with low piece mobility
+   ~ Weight mobility score based on piece type
+
+   Final Equations:
+   @math
+   mobility = \sum{piece} (legal\_moves(piece) × weight(piece))
+   @end
 
 
    ___

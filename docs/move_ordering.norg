@@ -1,0 +1,59 @@
+@document.meta
+title: move_ordering
+authors: akira
+categories: [
+  chess
+]
+tags: [
+  chess
+]
+created: 14 Jul 2025 23:37
+updated: 15 Jul 2025 00:14
+version: 1.1.1
+@end
+
+* Move Ordering
+  This helps the engine search faster by checking the most promising moves first.
+
+**  Why?
+    - Improves pruning in alpha-beta search
+    - Reduces number of nodes visited
+    - As a by-product of the above, less evaluation
+
+    > Better ordering = more cutoffs = faster search
+
+** Common Heuristics:
+   ~ MVV-LVA: Captures first before quiet moves
+   ~ PV Move first: Try best move from prev iteration (Principal Variation)
+   ~ Killer Moves: Quiet moves that caused beta cutoffs in sibiling nodes
+   ~ History Heuristics: quiet moves that often lead to cutoffs get a bonus
+   ~ Promotions and checks have higher priority too
+
+*** MVV-LVA (Most Valuable Victim - Least Valuable Attacker)
+    Scoring captures to priotize tactical opportunities
+    @math
+    mvv_lva = value(victim) * 10 - value (attacker)
+    @end
+
+    > Encourages moves like QxR over PxN
+
+** Move Score Equation
+   Logic used to score and priotize moves
+
+   @code rust
+   fn score_move(mv: Move, state: &BoardState) -> i32 {
+     if mv == principal_variation_move {
+       10_000 // PV Move
+     } else if mv.is_capture() {
+       mvv_lva_score(mv) // Captures and tactical moves
+     } else if is_killer(mv) {
+       500  // Killer moves
+     } else {
+       history_heuristic_score(mv) // History Heuristics
+     }
+     0
+   }
+
+   // Note: Might end up looking very different
+
+   @end
