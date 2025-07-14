@@ -23,7 +23,7 @@ fn bench_board_ops(c: &mut Criterion) {
 
     group.bench_function("make_unmake_move_cycle", |b| {
         b.iter_batched(
-            || Board::new(), // Setup: create a fresh board
+            Board::new, // Setup: create a fresh board
             |mut board| {
                 // Timed routine
                 let move_data = board.make_move(mov).unwrap();
@@ -42,7 +42,7 @@ fn bench_boardstate_ops(c: &mut Criterion) {
     group.bench_function("set_piece", |b| {
         b.iter_batched(
             || (setup_board_state(), Side::White, Piece::Knight, 27),
-            |(mut state, side, piece, pos)| black_box(state.set(side, piece, pos).unwrap()),
+            |(mut state, side, piece, pos)| black_box(state.set(side, piece, pos).is_ok()),
             BatchSize::SmallInput,
         );
     });
@@ -50,9 +50,7 @@ fn bench_boardstate_ops(c: &mut Criterion) {
     group.bench_function("capture_piece", |b| {
         b.iter_batched(
             || (setup_board_state(), Side::Black, Piece::Pawn, 53),
-            |(mut state, side, piece, pos)| {
-                black_box(state.remove_piece(side, piece, pos).unwrap())
-            },
+            |(mut state, side, piece, pos)| black_box(state.remove_piece(side, piece, pos).is_ok()),
             BatchSize::SmallInput,
         );
     });
@@ -69,7 +67,7 @@ fn bench_boardstate_ops(c: &mut Criterion) {
                 )
             },
             |(mut state, piece, side, from, to)| {
-                black_box(state.move_piece(piece, side, from, to).unwrap());
+                black_box(state.move_piece(piece, side, from, to).is_ok());
             },
             BatchSize::SmallInput,
         );
