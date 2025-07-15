@@ -5,6 +5,7 @@ DEPTH := "5"
 FEN := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 pgn_output_dir := 'gauntlet/results/'
 book_file := 'gauntlet/books/2moves.pgn'
+logs_dir := '/tmp/eschec_logs/'
 export RUST_BACKTRACE := "full"
 
 alias up := update
@@ -27,7 +28,7 @@ update:
 
 [doc("Run a gauntlet match against another engine using cutechess-cli")]
 [positional-arguments]
-gauntlet opponent='gnuchess' rounds='40' tc='15+0.1' concurrency='4' : update
+gauntlet opponent='gnuchess' rounds='40' tc='15+0.1' concurrency='4': update
     @# Print the configuration for this run
     @echo "Starting gauntlet:"
     @echo "  - Opponent: {{ opponent }}"
@@ -38,7 +39,7 @@ gauntlet opponent='gnuchess' rounds='40' tc='15+0.1' concurrency='4' : update
 
     @# Run the cutechess-cli command
     cutechess-cli \
-        -engine conf=eschec \
+        -engine conf=lucia \
         -engine conf={{ opponent }} \
         -each tc={{ tc }} \
         -rounds {{ rounds }} \
@@ -49,9 +50,9 @@ gauntlet opponent='gnuchess' rounds='40' tc='15+0.1' concurrency='4' : update
         -resign movecount=3 score=800 \
         -recover
 
-[doc("Remove build artifacts and logs")]
+[doc("Remove build artifacts and gauntlet artifacts")]
 clean:
-    rm -rf ./logs ./gauntlet/results/* ./gauntlet/engines/*
+    rm -rf ./gauntlet/results/* ./gauntlet/engines/*
 
 [doc("Run the engine in play mode")]
 play:
@@ -67,7 +68,7 @@ run *args:
 
 [doc("Find the most recent file in the 'logs' directory and tail it")]
 tail_log:
-    tail -f ./logs/$(ls -t logs | head -n 1)
+    tail -f {{ logs_dir }}$(ls -t logs | head -n 1)
 
 [doc("Record perf for given pid")]
 record pid: setup

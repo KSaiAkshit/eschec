@@ -107,6 +107,11 @@ pub fn play() -> miette::Result<()> {
                     info!("Received unknown command: {cmd}");
                 }
             }
+            UciCommand::SetOption { name, value } => {
+                if let Err(e) = cmd_setoption(&name, &value) {
+                    warn!("Error setting option: {e:?}");
+                }
+            }
         }
     }
 
@@ -189,6 +194,20 @@ fn cmd_stop(state: &mut UciState) {
     if let Some(handle) = state.search_thread.take() {
         let _ = handle.join();
     }
+}
+
+fn cmd_setoption(name: &str, value: &str) -> miette::Result<()> {
+    match name {
+        "Debug Log File" => {
+            let enable = value.to_lowercase() == "true";
+            crate::toggle_file_logging(enable)?;
+            info!("Set file logging to {enable}");
+        }
+        _ => {
+            info!("Unknown option: {name} = {value}");
+        }
+    }
+    Ok(())
 }
 
 fn cmd_isready() {

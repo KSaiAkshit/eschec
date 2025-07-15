@@ -75,6 +75,8 @@ pub enum SetSubcommand {
     /// Change the logging level
     #[clap(visible_alias = "log")]
     LogLevel { level: LogLevel },
+    /// Enable or diable logging to a file
+    LogFile { enable: String },
 }
 
 #[derive(Parser, Debug)]

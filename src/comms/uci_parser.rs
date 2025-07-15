@@ -16,6 +16,8 @@ pub enum UciCommand {
     Go(GoParams),
     /// "stop" cmd, to stop search
     Stop,
+    /// "setoption" cmd, to configure engine options
+    SetOption { name: String, value: String },
     /// "quit" cmd, to exit game
     Quit,
     /// unknown or unsupported cmd
