@@ -12,3 +12,4 @@ dhat-heap.json
 /logs
 ./guantlet/results/**
 ./guantlet/engines/eschec
+./guantlet/engines/**

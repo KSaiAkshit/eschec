@@ -3,8 +3,8 @@ set unstable := true
 flags := "--release"
 DEPTH := "5"
 FEN := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-pgn_output_dir := 'guantlet/results/'
-book_file := 'guantlet/books/2moves.pgn'
+pgn_output_dir := 'gauntlet/results/'
+book_file := 'gauntlet/books/2moves.pgn'
 export RUST_BACKTRACE := "full"
 
 alias up := update
@@ -21,9 +21,9 @@ help:
 
 [doc("Build and symlink binary")]
 update:
-    -rm ./guantlet/engines/eschec
+    -rm ./gauntlet/engines/eschec
     just build
-    ln -s ../../target/release/eschec guantlet/engines/
+    ln -s ../../target/release/eschec gauntlet/engines/
 
 [doc("Run a gauntlet match against another engine using cutechess-cli")]
 [positional-arguments]
@@ -51,7 +51,7 @@ gauntlet opponent='gnuchess' rounds='40' tc='15+0.1' concurrency='4' : update
 
 [doc("Remove build artifacts and logs")]
 clean:
-    rm -rf ./logs ./guantlet/results/* ./guantlet/engines/*
+    rm -rf ./logs ./gauntlet/results/* ./gauntlet/engines/*
 
 [doc("Run the engine in play mode")]
 play:
