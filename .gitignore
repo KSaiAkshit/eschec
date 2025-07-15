@@ -10,6 +10,5 @@ dhat-heap.json
 /.cargo/**
 .bacon-locations
 /logs
-./guantlet/results/**
-./guantlet/engines/eschec
-./guantlet/engines/**
+gauntlet/engines/**
+gauntlet/results/**

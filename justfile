@@ -38,7 +38,7 @@ gauntlet opponent='gnuchess' rounds='40' tc='15+0.1' concurrency='4' : update
 
     @# Run the cutechess-cli command
     cutechess-cli \
-        -engine conf=lucia \
+        -engine conf=eschec \
         -engine conf={{ opponent }} \
         -each tc={{ tc }} \
         -rounds {{ rounds }} \
