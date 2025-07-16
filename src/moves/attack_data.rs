@@ -61,7 +61,7 @@ pub fn calculate_attack_data(board: &Board, side: Side) -> AttackData {
     let opp_bishops_queens = board.positions.get_diag_sliders_bb(opponent);
 
     for &dir in &Direction::ALL {
-        let is_forward_ray = dir > 0;
+        let is_forward_ray = dir.value() > 0;
         let ray = MOVE_TABLES.get_ray(king_sq, dir);
         let blockers_on_ray = ray & all_pieces;
 

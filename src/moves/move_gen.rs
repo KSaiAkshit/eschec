@@ -231,7 +231,7 @@ fn gen_pawn_moves(
                 // Double push
                 let start_rank = if side == Side::White { 1 } else { 6 };
                 if from_sq_u / 8 == start_rank {
-                    let two_steps = from_sq_u as i8 + 2 * push_dir;
+                    let two_steps = from_sq_u as i8 + 2 * push_dir.value();
                     if !all_pieces.contains_square(two_steps as usize)
                         && attack_data
                             .check_ray_mask

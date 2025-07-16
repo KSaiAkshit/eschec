@@ -126,10 +126,10 @@ impl MoveTables {
         }
     }
 
-    const fn generate_ray(&self, start_rank: usize, start_file: usize, direction: i8) -> BitBoard {
+    const fn generate_ray(&self, start_rank: usize, start_file: usize, direction: Direction) -> BitBoard {
         let mut ray = BitBoard(0);
         let start_index = start_rank * 8 + start_file;
-        let mut current = start_index as i8 + direction;
+        let mut current = start_index as i8 + direction.0;
 
         while current >= 0 && current < 64 {
             let current_rank = (current as usize) / 8;
@@ -183,7 +183,7 @@ impl MoveTables {
             }
             ray.set(current as usize);
 
-            current += direction;
+            current += direction.0;
         }
 
         ray
@@ -487,7 +487,7 @@ impl MoveTables {
         moves
     }
 
-    pub fn get_ray(&self, from: usize, dir: i8) -> BitBoard {
+    pub fn get_ray(&self, from: usize, dir: Direction) -> BitBoard {
         match dir {
             Direction::NORTH => self.north_rays[from],
             Direction::SOUTH => self.south_rays[from],
