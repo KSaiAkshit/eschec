@@ -12,3 +12,4 @@ dhat-heap.json
 /logs
 gauntlet/engines/**
 gauntlet/results/**
+.envrc
