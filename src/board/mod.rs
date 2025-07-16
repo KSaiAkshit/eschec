@@ -560,13 +560,13 @@ impl Board {
         let mut black_counts = [0; 6];
 
         // Count the pieces for both sides
-        for piece in Piece::PIECES.iter() {
+        Piece::all_pieces().for_each(|piece| {
             white_counts[piece.index()] =
-                self.positions.get_piece_bb(Side::White, *piece).pop_count();
+                self.positions.get_piece_bb(Side::White, piece).pop_count();
 
             black_counts[piece.index()] =
-                self.positions.get_piece_bb(Side::Black, *piece).pop_count();
-        }
+                self.positions.get_piece_bb(Side::Black, piece).pop_count();
+        });
 
         // If both sides have only their kings, it's insufficient material
         if white_pieces.0.count_ones() == 1 && black_pieces.0.count_ones() == 1 {

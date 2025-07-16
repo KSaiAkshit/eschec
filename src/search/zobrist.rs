@@ -37,11 +37,11 @@ impl ZobristKeys {
         };
 
         for side in Side::SIDES {
-            for piece in Piece::PIECES {
+            Piece::all_pieces().for_each(|piece| {
                 for square in 0..NUM_SQUARES {
                     keys.pieces[side.index()][piece.index()][square] = rng.random();
                 }
-            }
+            })
         }
 
         for i in 0..NUM_CASTLING_RIGHTS {
@@ -60,8 +60,8 @@ pub fn calculate_hash(board: &Board) -> u64 {
     let mut hash = 0;
 
     Side::SIDES.iter().for_each(|side| {
-        Piece::PIECES.iter().for_each(|piece| {
-            let mut piece_bb = *board.positions.get_piece_bb(*side, *piece);
+        Piece::all_pieces().for_each(|piece| {
+            let mut piece_bb = *board.positions.get_piece_bb(*side, piece);
             while let Some(sq) = piece_bb.pop_lsb() {
                 hash ^= ZOBRIST.pieces[side.index()][piece.index()][sq as usize];
             }
