@@ -1,0 +1,46 @@
+@document.meta
+title: zobrist_hashing
+authors: akira
+categories: [
+  chess
+]
+tags: [
+  chess
+]
+created: 17 Jul 2025 02:17
+updated: 17 Jul 2025 02:26
+version: 1.1.1
+@end
+
+* Zobrist Hashing
+  Used to uniquely identify a board state as fixed-size hash.
+  Essential for transposition tables and repetition detection
+
+** Why?
+   - Essential way to detect repeated position
+   - Enable fast transposition table lookups
+   - Constant-time updates when making/unmaking moves
+
+   > Lightweight and incremental: only change what's affected
+
+** What is stored?
+   Zobrist hashing accounts for these components:
+   - Piece positions( side + piece + square )
+   - Castling rights ( all 4 as bitflags, so 16 possible combinations )
+   - En passant square ( file only as rank is const, and /only if EP is legal, i.e, immediatedly capturable/)
+   - Side to move ( White vs Black )
+
+** Incremental Hashing
+   Rather than recomputing the hash from scratch:
+   - When a move is made, XOR out old values, XOR in new values
+   - Makes it very fast for engine operations
+
+   > Hash XORs are reversible
+
+** En Passant caveat
+   EnPassant should only be hashed in if a capture is legal:
+   - Consider a Board state `B`. It can be arrived at in many different forms,
+     for ex, one via a double pawn push and one withut a double pawn push. These 'BoardStates' are functionally similar
+     just one with ep_sq and one without, This makes it difficult to detect repetition.
+
+   > Prevents TT polution and broken 3-fold repetition detection.

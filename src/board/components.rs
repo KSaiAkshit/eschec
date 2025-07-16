@@ -6,6 +6,8 @@ use std::{
 
 use miette::Context;
 
+use crate::moves::Direction;
+
 #[derive(Debug, Default, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
 #[repr(transparent)]
 pub struct BitBoard(pub u64);
@@ -769,6 +771,10 @@ impl Square {
         let rank = self.0 / 8;
         let file = self.0 % 8;
         (rank, file)
+    }
+
+    pub const fn get_neighbor(&self, dir: Direction) -> Square {
+        Self((self.0 as i8 + dir.0) as usize)
     }
 
     pub const fn row(&self) -> usize {

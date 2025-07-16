@@ -2,7 +2,7 @@ use std::sync::LazyLock;
 
 use rand::{Rng, SeedableRng, rngs::StdRng};
 
-use crate::{Board, Piece, Side, consts::*};
+use crate::{Board, Piece, Side, consts::*, moves::Direction};
 
 pub static ZOBRIST: LazyLock<ZobristKeys> = LazyLock::new(ZobristKeys::new);
 #[derive(Debug)]
@@ -59,19 +59,31 @@ impl ZobristKeys {
 pub fn calculate_hash(board: &Board) -> u64 {
     let mut hash = 0;
 
-    Side::SIDES.iter().for_each(|side| {
-        Piece::all_pieces().for_each(|piece| {
-            let mut piece_bb = *board.positions.get_piece_bb(*side, piece);
-            while let Some(sq) = piece_bb.pop_lsb() {
-                hash ^= ZOBRIST.pieces[side.index()][piece.index()][sq as usize];
-            }
-        });
+    Piece::all().for_each(|(piece, side)| {
+        let mut piece_bb = *board.positions.get_piece_bb(side, piece);
+        while let Some(sq) = piece_bb.pop_lsb() {
+            hash ^= ZOBRIST.pieces[side.index()][piece.index()][sq as usize];
+        }
     });
 
     hash ^= ZOBRIST.castling[board.castling_rights.0 as usize];
 
     if let Some(ep_sq) = board.enpassant_square {
-        hash ^= ZOBRIST.en_passant_file[ep_sq.col()];
+        let pawns = board.positions.get_piece_bb(board.stm.flip(), Piece::Pawn);
+        let (left, right) = match board.stm {
+            Side::White => (
+                ep_sq.get_neighbor(Direction::NORTHWEST),
+                ep_sq.get_neighbor(Direction::NORTHEAST),
+            ),
+            Side::Black => (
+                ep_sq.get_neighbor(Direction::SOUTHEAST),
+                ep_sq.get_neighbor(Direction::SOUTHWEST),
+            ),
+        };
+
+        if pawns.contains_square(left.index()) || pawns.contains_square(right.index()) {
+            hash ^= ZOBRIST.en_passant_file[ep_sq.col()];
+        }
     }
 
     if board.stm == Side::Black {

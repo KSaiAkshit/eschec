@@ -259,10 +259,11 @@ impl Board {
         //
         // This covers normal captures and promotion-captures.
         if let Some(captured_piece) = move_data.captured_piece
-            && !m.is_enpassant() {
-                self.positions
-                    .remove_piece(opponent, captured_piece, to.index())?;
-            }
+            && !m.is_enpassant()
+        {
+            self.positions
+                .remove_piece(opponent, captured_piece, to.index())?;
+        }
 
         // Move the piece from 'from' to 'to'
         self.positions.move_piece(piece, self.stm, from, to)?;
@@ -644,6 +645,45 @@ impl Board {
             a == b
         } else {
             false
+        }
+    }
+}
+
+#[cfg(test)]
+mod zobrist_tests {
+
+    use crate::init;
+
+    use super::*;
+
+    #[test]
+    fn test_zobrist_hash_symmetry() {
+        init();
+        let mut board = Board::new();
+        let original_hash = board.hash;
+
+        let legal_moves = board.generate_legal_moves();
+
+        for mov in legal_moves {
+            let move_data = board.make_move(mov).unwrap();
+
+            // The hash MUST change after a move is made.
+            assert_ne!(
+                board.hash,
+                original_hash,
+                "Zobrist hash should change after move {}",
+                mov.uci()
+            );
+
+            board.unmake_move(&move_data).unwrap();
+
+            // The hash MUST be perfectly restored after unmaking the move.
+            assert_eq!(
+                board.hash,
+                original_hash,
+                "Zobrist hash was not restored after unmaking move {}",
+                mov.uci()
+            );
         }
     }
 }
