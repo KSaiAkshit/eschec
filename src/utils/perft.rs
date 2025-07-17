@@ -30,17 +30,16 @@ pub fn stockfish_perft_divide(fen: &str, depth: u8) -> miette::Result<Vec<(Strin
     let mut buf = String::new();
     while reader.read_line(&mut buf).unwrap() > 0 {
         let line = buf.trim();
-        if let Some((mv, count)) = line.split_once(':') {
-            let mv = mv.trim().to_uppercase().to_string();
-            let count = count.trim().parse::<u64>().unwrap_or(0);
-            results.push((mv, count));
-        }
         if line.starts_with("Nodes searched") || line.starts_with("bestmove") {
             break;
         }
+        if let Some((mv, count)) = line.split_once(':') {
+            let mv = mv.trim().to_string();
+            let count = count.trim().parse::<u64>().unwrap_or(0);
+            results.push((mv, count));
+        }
         buf.clear();
     }
-    // dbg!(&results);
 
     Ok(results)
 }
@@ -209,7 +208,7 @@ pub fn perft_divide(board: &mut Board, depth: u8) -> PerftResult {
         println!("----------------------------");
 
         for (mov, count) in move_counts {
-            println!("{mov}: {count}");
+            println!("{}: {count}", mov.uci());
         }
 
         println!("----------------------------");

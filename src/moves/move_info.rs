@@ -16,6 +16,7 @@ pub struct MoveInfo {
     pub castle_rights: CastlingRights,    // prev
     pub enpassant_square: Option<Square>, // prev
     pub halfmove_clock: u8,               // prev
+    pub zobrist_hash: u64,                // prev
 }
 
 impl MoveInfo {

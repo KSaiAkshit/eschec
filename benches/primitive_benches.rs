@@ -1,7 +1,12 @@
 use criterion::{BatchSize, Criterion, criterion_group, criterion_main};
 use std::hint::black_box;
 
-use eschec::{board::components::BitBoard, moves::precomputed::MOVE_TABLES};
+use eschec::{
+    Board,
+    board::components::BitBoard,
+    moves::precomputed::MOVE_TABLES,
+    search::zobrist::{ZobristKeys, calculate_hash},
+};
 
 // Constants and Setup
 const INITIAL_PIECES_BB: BitBoard = BitBoard(0xFFFF00000000FFFF);
@@ -9,7 +14,7 @@ const MIDGAME_OCCUPANCY_BB: BitBoard = BitBoard(0x007E8181A5A5FFFF);
 
 // BitBoard Benchmarks
 fn bench_bitboard_ops(c: &mut Criterion) {
-    let mut group = c.benchmark_group("BitBoard_Ops");
+    let mut group = c.benchmark_group("bitBoard_ops");
 
     group.bench_function("pop_lsb_loop", |b| {
         b.iter_batched(
@@ -88,9 +93,33 @@ fn bench_bitboard_ops(c: &mut Criterion) {
     group.finish();
 }
 
+fn bench_zobrist_hash(c: &mut Criterion) {
+    let mut group = c.benchmark_group("zobrist_hash");
+
+    let legal_ep_fen = "4k3/8/8/8/3pP3/8/8/4K3 b - e3 0 1";
+
+    group.bench_function("calculate_hash", |b| {
+        b.iter_batched(
+            || Board::from_fen(legal_ep_fen),
+            |board| black_box(calculate_hash(&board)),
+            BatchSize::SmallInput,
+        )
+    });
+
+    group.bench_function("zobrist_init", |b| {
+        b.iter_batched(
+            || (),
+            |_| black_box(ZobristKeys::new()),
+            BatchSize::SmallInput,
+        )
+    });
+
+    group.finish();
+}
+
 // Precomputed Move Table Benchmarks
 fn bench_move_lookups(c: &mut Criterion) {
-    let mut group = c.benchmark_group("Move_Lookups");
+    let mut group = c.benchmark_group("move_lookups");
 
     group.bench_function("knight_moves", |b| {
         b.iter_batched(
@@ -131,5 +160,10 @@ fn bench_move_lookups(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, bench_bitboard_ops, bench_move_lookups);
+criterion_group!(
+    benches,
+    bench_bitboard_ops,
+    bench_move_lookups,
+    bench_zobrist_hash
+);
 criterion_main!(benches);

@@ -2,9 +2,10 @@ use std::sync::LazyLock;
 
 use rand::{Rng, SeedableRng, rngs::StdRng};
 
-use crate::{Board, Piece, Side, consts::*, moves::Direction};
+use crate::{Board, Piece, Side, consts::*, moves::precomputed::MOVE_TABLES};
 
 pub static ZOBRIST: LazyLock<ZobristKeys> = LazyLock::new(ZobristKeys::new);
+
 #[derive(Debug)]
 pub struct ZobristKeys {
     /// For each piece type, on each square, for each side
@@ -69,19 +70,11 @@ pub fn calculate_hash(board: &Board) -> u64 {
     hash ^= ZOBRIST.castling[board.castling_rights.0 as usize];
 
     if let Some(ep_sq) = board.enpassant_square {
-        let pawns = board.positions.get_piece_bb(board.stm.flip(), Piece::Pawn);
-        let (left, right) = match board.stm {
-            Side::White => (
-                ep_sq.get_neighbor(Direction::NORTHWEST),
-                ep_sq.get_neighbor(Direction::NORTHEAST),
-            ),
-            Side::Black => (
-                ep_sq.get_neighbor(Direction::SOUTHEAST),
-                ep_sq.get_neighbor(Direction::SOUTHWEST),
-            ),
-        };
+        let opponent_pawns = board.positions.get_piece_bb(board.stm.flip(), Piece::Pawn);
 
-        if pawns.contains_square(left.index()) || pawns.contains_square(right.index()) {
+        let legal_ep_capture_sq = MOVE_TABLES.get_pawn_attacks(ep_sq.index(), board.stm);
+
+        if (*opponent_pawns & legal_ep_capture_sq).any() {
             hash ^= ZOBRIST.en_passant_file[ep_sq.col()];
         }
     }
@@ -91,4 +84,22 @@ pub fn calculate_hash(board: &Board) -> u64 {
     }
 
     hash
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn different_hash() {
+        let legal_ep_fen = "4k3/8/8/8/3pP3/8/8/4K3 b - e3 0 1";
+        let board = Board::from_fen(legal_ep_fen);
+
+        let hash1 = calculate_hash(&board);
+
+        let illegal_ep_fen = "4k3/8/8/8/3pP3/8/8/4K3 w - - 0 1";
+        let board = Board::from_fen(illegal_ep_fen);
+        let hash2 = calculate_hash(&board);
+
+        assert_ne!(hash1, hash2, "Both should not be the same");
+    }
 }

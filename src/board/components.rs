@@ -774,7 +774,7 @@ impl Square {
     }
 
     pub const fn get_neighbor(&self, dir: Direction) -> Square {
-        Self((self.0 as i8 + dir.0) as usize)
+        Self((self.0 as i8 + dir.value()) as usize)
     }
 
     pub const fn row(&self) -> usize {
