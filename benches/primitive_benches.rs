@@ -3,9 +3,11 @@ use std::hint::black_box;
 
 use eschec::{
     Board,
-    board::components::BitBoard,
+    board::{
+        components::BitBoard,
+        zobrist::{ZobristKeys, calculate_hash},
+    },
     moves::precomputed::MOVE_TABLES,
-    search::zobrist::{ZobristKeys, calculate_hash},
 };
 
 // Constants and Setup

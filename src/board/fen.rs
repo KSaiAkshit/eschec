@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::LazyLock};
 
 use miette::{Context, IntoDiagnostic};
 
-use crate::{BoardState, Piece};
+use crate::{BoardState, Piece, moves::Direction};
 
 use super::{
     Board,
@@ -83,8 +83,11 @@ pub fn parse_fen(fen: &str) -> miette::Result<Board> {
     let castle = parts[2];
     board.castling_rights = parse_with_context(castle, parse_castle, "Parsed castle input")?;
     let enpassant = parts[3];
-    board.enpassant_square =
-        parse_with_context(enpassant, parse_enpassant, "Parsed enpassant input")?;
+    board.enpassant_square = parse_with_context(
+        enpassant,
+        |s| parse_enpassant(s, &board.positions, board.stm),
+        "Parsed enpassant input",
+    )?;
     let half_move = parts[4];
     board.halfmove_clock = parse_with_context(
         half_move,
@@ -98,6 +101,46 @@ pub fn parse_fen(fen: &str) -> miette::Result<Board> {
         "Parsed fullmove to u8",
     )?;
     Ok(board)
+}
+
+fn is_fen_ep_square_legal(positions: &BoardState, stm: Side, ep_square: Square) -> bool {
+    match stm {
+        Side::White => {
+            if ep_square.row() != 5 {
+                return false;
+            }
+
+            // Example: Black ep square: e6
+            // Original pawn sq: e7
+            // Final pawn sq: e5
+            // e6 -> NORTH ->e7
+            // e6 -> SOUTH -> e5
+
+            let final_pawn_sq = ep_square.get_neighbor(Direction::SOUTH); // e5
+            let original_pawn_sq = ep_square.get_neighbor(Direction::NORTH); // e7
+
+            // Check for black pawn on final_pawn_sq and empty sq on original_pawn_sq
+            positions.get_piece_at(&final_pawn_sq.into()) == Some((Piece::Pawn, Side::Black))
+                && positions.get_piece_at(&original_pawn_sq.into()).is_none()
+        }
+        Side::Black => {
+            if ep_square.row() != 2 {
+                return false;
+            }
+            // Example: White ep square: e3
+            // Original pawn sq: e2
+            // Final pawn sq: e4
+            // e3 -> NORTH ->e4
+            // e3 -> SOUTH -> e2
+
+            let final_pawn_sq = ep_square.get_neighbor(Direction::NORTH); // e4
+            let original_pawn_sq = ep_square.get_neighbor(Direction::SOUTH); // e2
+
+            // Check for white pawn on final_pawn_sq and empty sq on original_pawn_sq
+            positions.get_piece_at(&final_pawn_sq.into()) == Some((Piece::Pawn, Side::White))
+                && positions.get_piece_at(&original_pawn_sq.into()).is_none()
+        }
+    }
 }
 
 fn parse_with_context<T, F>(input: &str, parser: F, context_msg: &str) -> miette::Result<T>
@@ -170,20 +213,25 @@ fn parse_castle(castle: &str) -> miette::Result<CastlingRights> {
     Ok(CastlingRights(res))
 }
 
-fn parse_enpassant(enpassant: &str) -> miette::Result<Option<Square>> {
+fn parse_enpassant(
+    enpassant: &str,
+    positions: &BoardState,
+    stm: Side,
+) -> miette::Result<Option<Square>> {
     if enpassant == "-" {
-        Ok(None)
+        return Ok(None);
+    }
+    let file = enpassant
+        .chars()
+        .next()
+        .context("Missing en passant file")?;
+    let rank = enpassant.chars().nth(1).context("Missing enpassant file")?;
+    let ep_square = Square::enpassant_from_index(file, rank)?;
+
+    if is_fen_ep_square_legal(positions, stm, ep_square) {
+        Ok(Some(ep_square))
     } else {
-        let file = enpassant
-            .chars()
-            .next()
-            .ok_or_else(|| miette::Error::msg("Missing en passant file"))?;
-        let rank = enpassant
-            .chars()
-            .nth(1)
-            .ok_or_else(|| miette::Error::msg("Missing enpassant file"))?;
-        let square = Square::enpassant_from_index(file, rank)?;
-        Ok(Some(square))
+        Ok(None)
     }
 }
 
@@ -205,20 +253,29 @@ mod tests {
     #[test]
     fn test_parse_enpassant() {
         // Valid en passant
+        let fen = "rnbqkbnr/ppp1pppp/8/8/3pP3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1";
         let enpassant = "e3";
-        let square = parse_enpassant(enpassant).unwrap().unwrap();
-        assert_eq!(square, Square::new(20).unwrap()); // Adjust based on your implementation
+        let board = Board::from_fen(fen);
+        let def_state = board.positions;
+        let stm = board.stm;
+        let square = parse_enpassant(enpassant, &def_state, stm)
+            .unwrap()
+            .unwrap();
+        assert_eq!(square, Square::new(20).unwrap());
 
         // Invalid en passant (missing rank)
         let enpassant_missing_rank = "e";
-        assert!(parse_enpassant(enpassant_missing_rank).is_err());
+        assert!(parse_enpassant(enpassant_missing_rank, &def_state, stm).is_err());
 
         // Invalid en passant (missing file)
         let enpassant_missing_file = "";
-        assert!(parse_enpassant(enpassant_missing_file).is_err());
+        assert!(parse_enpassant(enpassant_missing_file, &def_state, stm).is_err());
 
         // En passant disabled
         let enpassant_disabled = "-";
-        assert_eq!(parse_enpassant(enpassant_disabled).unwrap(), None);
+        assert_eq!(
+            parse_enpassant(enpassant_disabled, &def_state, stm).unwrap(),
+            None
+        );
     }
 }

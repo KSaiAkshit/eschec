@@ -4,7 +4,6 @@ use tracing::*;
 
 pub mod move_ordering;
 pub mod tt;
-pub mod zobrist;
 
 use super::*;
 use std::cmp::max;

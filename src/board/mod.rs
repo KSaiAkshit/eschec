@@ -8,14 +8,12 @@ use crate::{
         precomputed::MOVE_TABLES,
         pseudo_legal::generate_all_moves,
     },
-    search::zobrist::calculate_hash,
+    zobrist::{ZOBRIST, calculate_hash},
 };
 use miette::Context;
 #[cfg(feature = "random")]
 use rand::prelude::*;
 use std::fmt::Display;
-
-use crate::search::zobrist::ZOBRIST;
 
 use self::components::{BoardState, CastlingRights, Piece, Side, Square};
 
@@ -23,6 +21,7 @@ pub mod components;
 pub mod fen;
 #[cfg(test)]
 mod tests;
+pub mod zobrist;
 
 /// Completely encapsulate the game
 #[derive(Default, Debug, PartialEq, Eq, Clone, Hash, PartialOrd, Copy)]
@@ -262,17 +261,20 @@ impl Board {
         if let Some(ep_sq) = self.enpassant_square {
             self.hash ^= ZOBRIST.en_passant_file[ep_sq.col()];
         }
+        self.enpassant_square = None;
+        // XOR out prev castling rights.
+        self.hash ^= ZOBRIST.castling[self.castling_rights.0 as usize];
 
         // Update Board State
-        //
         // This covers normal captures and promotion-captures.
+        // Enpassant capture is handled further down
         if let Some(captured_piece) = move_data.captured_piece
             && !m.is_enpassant()
         {
             self.positions
                 .remove_piece(opponent, captured_piece, to.index())?;
             // XOR out key for removed piece
-            self.hash ^= ZOBRIST.pieces[self.stm.index()][captured_piece.index()][to.index()];
+            self.hash ^= ZOBRIST.pieces[opponent.index()][captured_piece.index()][to.index()];
         }
 
         // Move the piece from 'from' to 'to'
@@ -290,14 +292,12 @@ impl Board {
                     to.index() + 8
                 };
                 let opponent_pawns = self.positions.get_piece_bb(opponent, Piece::Pawn);
-                let legal_ep_capture = MOVE_TABLES.get_pawn_attacks(ep_sq_idx, self.stm);
-                if (*opponent_pawns & legal_ep_capture).any() {
+                let legal_ep_attackers = MOVE_TABLES.get_pawn_attacks(ep_sq_idx, self.stm);
+                if (*opponent_pawns & legal_ep_attackers).any() {
                     self.enpassant_square = Square::new(ep_sq_idx);
-                    // XOR in new enpassant file. What should i XOR out?
+                    // XOR in new enpassant file.
                     self.hash ^= ZOBRIST.en_passant_file[ep_sq_idx % 8];
                 }
-                // self.enpassant_square = Square::new(ep_sq_idx);
-                // self.hash ^= ZOBRIST.en_passant_file[ep_sq_idx % 8];
             }
             Move::EN_PASSANT => {
                 let captured_pawn_idx = if self.stm == Side::White {
@@ -351,20 +351,9 @@ impl Board {
         }
 
         // Final state update
-        let old_rights = self.castling_rights;
         self.update_castling_rights(from, to);
-        let new_rights = self.castling_rights;
-
-        if old_rights != new_rights {
-            // XOR out old
-            self.hash ^= ZOBRIST.castling[old_rights.0 as usize];
-            // XOR in new
-            self.hash ^= ZOBRIST.castling[new_rights.0 as usize];
-        }
-
-        if m.flags() != Move::DOUBLE_PAWN {
-            self.enpassant_square = None;
-        }
+        // XOR in updated castling rights;
+        self.hash ^= ZOBRIST.castling[self.castling_rights.0 as usize];
 
         if piece == Piece::Pawn || m.is_capture() {
             self.halfmove_clock = 0
