@@ -3,10 +3,9 @@ use crate::{
     evaluation::Evaluator,
     moves::{
         attack_data::calculate_attack_data,
-        move_gen::generate_legal_moves,
+        move_gen::{generate_legal_moves, generate_pseudo_legal_moves},
         move_info::{Move, MoveInfo},
         precomputed::MOVE_TABLES,
-        pseudo_legal::generate_all_moves,
     },
     zobrist::{ZOBRIST, calculate_hash},
 };
@@ -150,7 +149,7 @@ impl Board {
 
     pub fn generate_pseudo_legal_moves(&self) -> Vec<Move> {
         let mut pseudo_legal_moves = Vec::with_capacity(40);
-        generate_all_moves(
+        generate_pseudo_legal_moves(
             &self.positions,
             self.stm,
             self.castling_rights,
@@ -681,45 +680,6 @@ impl Board {
             a == b
         } else {
             false
-        }
-    }
-}
-
-#[cfg(test)]
-mod zobrist_tests {
-
-    use crate::init;
-
-    use super::*;
-
-    #[test]
-    fn test_zobrist_hash_symmetry() {
-        init();
-        let mut board = Board::new();
-        let original_hash = board.hash;
-
-        let legal_moves = board.generate_legal_moves();
-
-        for mov in legal_moves {
-            let move_data = board.make_move(mov).unwrap();
-
-            // The hash MUST change after a move is made.
-            assert_ne!(
-                board.hash,
-                original_hash,
-                "Zobrist hash should change after move {}",
-                mov.uci()
-            );
-
-            board.unmake_move(&move_data).unwrap();
-
-            // The hash MUST be perfectly restored after unmaking the move.
-            assert_eq!(
-                board.hash,
-                original_hash,
-                "Zobrist hash was not restored after unmaking move {}",
-                mov.uci()
-            );
         }
     }
 }

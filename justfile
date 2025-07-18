@@ -39,7 +39,7 @@ gauntlet opponent='gnuchess' rounds='40' tc='15+0.1' concurrency='4': update
 
     @# Run the cutechess-cli command
     cutechess-cli \
-        -engine conf=lucia \
+        -engine conf=eschec \
         -engine conf={{ opponent }} \
         -each tc={{ tc }} \
         -rounds {{ rounds }} \
@@ -52,7 +52,8 @@ gauntlet opponent='gnuchess' rounds='40' tc='15+0.1' concurrency='4': update
 
 [doc("Remove build artifacts and gauntlet artifacts")]
 clean:
-    rm -rf ./gauntlet/results/* ./gauntlet/engines/*
+    rm -rf ./gauntlet/results/ ./gauntlet/engines/
+    mkdir ./gauntlet/results ./gauntlet/engines
 
 [doc("Run the engine in play mode")]
 play:

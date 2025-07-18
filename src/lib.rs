@@ -32,6 +32,7 @@ use miette::{Context, IntoDiagnostic};
 use search::Search;
 use tracing::{Level, error, info, span, trace};
 
+use crate::board::zobrist::ZOBRIST;
 use crate::moves::move_info::Move;
 
 pub const START_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -317,6 +318,7 @@ pub fn toggle_file_logging(enable: bool) -> miette::Result<()> {
 /// Initialize tracing and backtrace
 pub fn init() {
     LazyLock::force(&LOG_HANDLES);
+    LazyLock::force(&ZOBRIST);
     #[cfg(feature = "simd")]
     {
         info!("Simd Enabled, but nothing for now");

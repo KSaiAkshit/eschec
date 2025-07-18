@@ -250,7 +250,7 @@ pub fn run_perft_suite(board: &mut Board, max_depth: u8) {
 }
 
 #[cfg(test)]
-mod perft_tests {
+mod tests {
     use super::*;
     use crate::init;
 

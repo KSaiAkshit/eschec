@@ -98,14 +98,14 @@ fn alpha_beta_one_loop(
             continue; // Skip illegal moves
         }
 
-    // Check for mate/stalemate after the loop
-    if !legal_move_found {
-        return if board.is_in_check(board.stm) {
-            -20_000 + depth as i32
-        } else {
-            0
-        };
-    }
+        // Check for mate/stalemate after the loop
+        if !legal_move_found {
+            return if board.is_in_check(board.stm) {
+                -20_000 + depth as i32
+            } else {
+                0
+            };
+        }
         legal_move_found = true;
         let score = -alpha_beta_one_loop(&board_copy, depth - 1, -beta, -alpha, evaluator);
         alpha = max(alpha, score);
@@ -113,7 +113,6 @@ fn alpha_beta_one_loop(
             return beta; // Pruning
         }
     }
-
 
     alpha
 }

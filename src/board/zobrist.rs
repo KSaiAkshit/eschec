@@ -103,6 +103,37 @@ mod tests {
 
         assert_ne!(hash1, hash2, "Both should not be the same");
     }
+
+    #[test]
+    fn test_zobrist_hash_symmetry() {
+        let mut board = Board::new();
+        let original_hash = board.hash;
+
+        let legal_moves = board.generate_legal_moves();
+
+        for mov in legal_moves {
+            let move_data = board.make_move(mov).unwrap();
+
+            // The hash MUST change after a move is made.
+            assert_ne!(
+                board.hash,
+                original_hash,
+                "Zobrist hash should change after move {}",
+                mov.uci()
+            );
+
+            board.unmake_move(&move_data).unwrap();
+
+            // The hash MUST be perfectly restored after unmaking the move.
+            assert_eq!(
+                board.hash,
+                original_hash,
+                "Zobrist hash was not restored after unmaking move {}",
+                mov.uci()
+            );
+        }
+    }
+
     // helper function
     fn test_hash_symmetry_for_fen(fen: &str) {
         let mut board = Board::from_fen(fen);

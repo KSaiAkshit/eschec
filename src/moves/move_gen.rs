@@ -1,37 +1,49 @@
-//! Stateless Move Generation
+//! Move Generation
 //!
-//! This module provides stateless move generation functions for chess pieces.
-//! Legal Move Generation
+//! This module provides functions for generating both pseudo-legal and legal chess moves.
 //!
-//! This module provides legal move generation functions for chess pieces.
-//! It uses pre-calculated AttackData to efficiently determine legality
-//! without making/unmaking moves on a board copy.
+//! # Pseudo-Legal vs. Legal Moves
+//!
+//! - **Pseudo-legal moves**: All moves a piece can make, including special moves like
+//!   castling and en passant, without considering whether the king is left in check.
+//!   These are generated quickly and are useful for tasks like mobility evaluation or
+//!   the first stage of full legal move generation.
+//!
+//! - **Legal moves**: A subset of pseudo-legal moves that are guaranteed not to leave
+//!   the king in check. This is what the engine's search and game logic uses. This
+//!   generator uses pre-calculated `AttackData` to efficiently determine legality.
 
 use crate::{
-    BitBoard, Board, CastlingRights, Piece, Side,
+    BitBoard, Board, BoardState, CastlingRights, Piece, Side, Square,
     moves::{
         Direction, attack_data::calculate_attack_data, move_info::Move, precomputed::MOVE_TABLES,
     },
 };
 
+// ===================================================================
+//                      LEGAL MOVE GENERATION
+// ===================================================================
+
+/// Generates all strictly legal moves for the current side to move.
+/// It accounts for checks, pins, and all special move rules.
 pub fn generate_legal_moves(board: &Board, moves: &mut Vec<Move>) {
     let side = board.stm;
     let attack_data = calculate_attack_data(board, side);
 
     if attack_data.double_check {
-        gen_king_moves(board, &attack_data, moves);
+        gen_legal_king_moves(board, &attack_data, moves);
         return;
     }
 
-    gen_king_moves(board, &attack_data, moves);
-    gen_pawn_moves(board, &attack_data, moves);
-    gen_knight_moves(board, &attack_data, moves);
-    gen_sliding_moves(board, Piece::Bishop, &attack_data, moves);
-    gen_sliding_moves(board, Piece::Rook, &attack_data, moves);
-    gen_sliding_moves(board, Piece::Queen, &attack_data, moves);
+    gen_legal_king_moves(board, &attack_data, moves);
+    gen_legal_pawn_moves(board, &attack_data, moves);
+    gen_legal_knight_moves(board, &attack_data, moves);
+    gen_legal_sliding_moves(board, Piece::Bishop, &attack_data, moves);
+    gen_legal_sliding_moves(board, Piece::Rook, &attack_data, moves);
+    gen_legal_sliding_moves(board, Piece::Queen, &attack_data, moves);
 }
 
-fn gen_king_moves(
+fn gen_legal_king_moves(
     board: &Board,
     attack_data: &super::attack_data::AttackData,
     moves: &mut Vec<Move>,
@@ -112,7 +124,7 @@ fn gen_king_moves(
     }
 }
 
-fn gen_sliding_moves(
+fn gen_legal_sliding_moves(
     board: &Board,
     piece: Piece,
     attack_data: &super::attack_data::AttackData,
@@ -160,7 +172,7 @@ fn gen_sliding_moves(
     }
 }
 
-fn gen_knight_moves(
+fn gen_legal_knight_moves(
     board: &Board,
     attack_data: &super::attack_data::AttackData,
     moves: &mut Vec<Move>,
@@ -186,7 +198,7 @@ fn gen_knight_moves(
     }
 }
 
-fn gen_pawn_moves(
+fn gen_legal_pawn_moves(
     board: &Board,
     attack_data: &super::attack_data::AttackData,
     moves: &mut Vec<Move>,
@@ -309,5 +321,285 @@ fn add_promo_moves(from: u8, to: u8, is_capture: bool, moves: &mut Vec<Move>) {
         moves.push(Move::new(from, to, Move::PROMO_R));
         moves.push(Move::new(from, to, Move::PROMO_B));
         moves.push(Move::new(from, to, Move::PROMO_N));
+    }
+}
+
+// ===================================================================
+//                  PSEUDO-LEGAL MOVE GENERATION
+// ===================================================================
+
+/// Comprehensive pseudo-legal move generation function.
+///
+/// This function generates all pseudo-legal moves for the given side, including:
+/// - Regular piece moves (pawns, knights, bishops, rooks, queens, kings)
+/// - Special pawn moves (double push, en passant, promotions)
+/// - Castling moves (kingside and queenside)
+pub fn generate_pseudo_legal_moves(
+    state: &BoardState,
+    side: Side,
+    castling_rights: CastlingRights,
+    en_passant_square: Option<Square>,
+    move_list: &mut Vec<Move>,
+) {
+    gen_pawn_moves_with_ep(state, side, en_passant_square, move_list);
+    gen_knight_moves(state, side, move_list);
+    gen_bishop_moves(state, side, move_list);
+    gen_rook_moves(state, side, move_list);
+    gen_queen_moves(state, side, move_list);
+    gen_king_moves_with_castling(state, side, castling_rights, move_list);
+}
+
+/// Generate pseudo-legal moves for a specific piece type.
+pub fn generate_pseudo_legal_piece_moves(
+    piece: Piece,
+    state: &BoardState,
+    side: Side,
+    castling_rights: CastlingRights,
+    en_passant_square: Option<Square>,
+    move_list: &mut Vec<Move>,
+) {
+    match piece {
+        Piece::Pawn => gen_pawn_moves_with_ep(state, side, en_passant_square, move_list),
+        Piece::Knight => gen_knight_moves(state, side, move_list),
+        Piece::Bishop => gen_bishop_moves(state, side, move_list),
+        Piece::Rook => gen_rook_moves(state, side, move_list),
+        Piece::Queen => gen_queen_moves(state, side, move_list),
+        Piece::King => gen_king_moves_with_castling(state, side, castling_rights, move_list),
+    }
+}
+
+/// Generate pseudo-legal knight moves.
+fn gen_knight_moves(state: &BoardState, side: Side, move_list: &mut Vec<Move>) {
+    let knights = state.get_piece_bb(side, Piece::Knight);
+    let ally_pieces = state.get_side_bb(side);
+    let enemy_pieces = state.get_side_bb(side.flip());
+
+    let mut knights_bb = *knights;
+    while let Some(from_sq) = knights_bb.pop_lsb() {
+        let mut attacks = MOVE_TABLES.knight_moves[from_sq as usize] & !ally_pieces;
+        while let Some(to_sq) = attacks.pop_lsb() {
+            let is_capture = enemy_pieces.contains_square(to_sq as usize);
+            let flag = if is_capture {
+                Move::CAPTURE
+            } else {
+                Move::QUIET
+            };
+            move_list.push(Move::new(from_sq as u8, to_sq as u8, flag));
+        }
+    }
+}
+
+/// Generate pseudo-legal king moves (without castling).
+fn gen_king_moves(state: &BoardState, side: Side, move_list: &mut Vec<Move>) {
+    let king = state.get_piece_bb(side, Piece::King);
+    let ally_pieces = state.get_side_bb(side);
+    let enemy_pieces = state.get_side_bb(side.flip());
+
+    let mut king_bb = *king;
+    while let Some(from_sq) = king_bb.pop_lsb() {
+        let mut moves = MOVE_TABLES.king_moves[from_sq as usize] & !ally_pieces;
+        while let Some(to_sq) = moves.pop_lsb() {
+            let is_capture = enemy_pieces.contains_square(to_sq as usize);
+            let flag = if is_capture {
+                Move::CAPTURE
+            } else {
+                Move::QUIET
+            };
+            move_list.push(Move::new(from_sq as u8, to_sq as u8, flag));
+        }
+    }
+}
+
+/// Generate pseudo-legal bishop moves.
+fn gen_bishop_moves(state: &BoardState, side: Side, move_list: &mut Vec<Move>) {
+    let bishops = state.get_piece_bb(side, Piece::Bishop);
+    let ally_pieces = state.get_side_bb(side);
+    let enemy_pieces = state.get_side_bb(side.flip());
+
+    let mut bishops_bb = *bishops;
+    while let Some(from_sq) = bishops_bb.pop_lsb() {
+        let attacks = MOVE_TABLES.get_bishop_moves(from_sq as usize, *ally_pieces, *enemy_pieces);
+        let mut attack_bb = attacks;
+        while let Some(to_sq) = attack_bb.pop_lsb() {
+            let is_capture = enemy_pieces.contains_square(to_sq as usize);
+            let flag = if is_capture {
+                Move::CAPTURE
+            } else {
+                Move::QUIET
+            };
+            move_list.push(Move::new(from_sq as u8, to_sq as u8, flag));
+        }
+    }
+}
+
+/// Generate pseudo-legal queen moves.
+fn gen_queen_moves(state: &BoardState, side: Side, move_list: &mut Vec<Move>) {
+    let queens = state.get_piece_bb(side, Piece::Queen);
+    let ally_pieces = state.get_side_bb(side);
+    let enemy_pieces = state.get_side_bb(side.flip());
+
+    let mut queens_bb = *queens;
+    while let Some(from_sq) = queens_bb.pop_lsb() {
+        let attacks = MOVE_TABLES.get_queen_moves(from_sq as usize, *ally_pieces, *enemy_pieces);
+        let mut attack_bb = attacks;
+        while let Some(to_sq) = attack_bb.pop_lsb() {
+            let is_capture = enemy_pieces.contains_square(to_sq as usize);
+            let flag = if is_capture {
+                Move::CAPTURE
+            } else {
+                Move::QUIET
+            };
+            move_list.push(Move::new(from_sq as u8, to_sq as u8, flag));
+        }
+    }
+}
+
+/// Generate pseudo-legal rook moves.
+fn gen_rook_moves(state: &BoardState, side: Side, move_list: &mut Vec<Move>) {
+    let rooks = state.get_piece_bb(side, Piece::Rook);
+    let ally_pieces = state.get_side_bb(side);
+    let enemy_pieces = state.get_side_bb(side.flip());
+
+    let mut rooks_bb = *rooks;
+    while let Some(from_sq) = rooks_bb.pop_lsb() {
+        let attacks = MOVE_TABLES.get_rook_moves(from_sq as usize, *ally_pieces, *enemy_pieces);
+        let mut attack_bb = attacks;
+        while let Some(to_sq) = attack_bb.pop_lsb() {
+            let is_capture = enemy_pieces.contains_square(to_sq as usize);
+            let flag = if is_capture {
+                Move::CAPTURE
+            } else {
+                Move::QUIET
+            };
+            move_list.push(Move::new(from_sq as u8, to_sq as u8, flag));
+        }
+    }
+}
+
+/// Generate pseudo-legal pawn moves (without en passant).
+fn gen_pawn_moves(state: &BoardState, side: Side, move_list: &mut Vec<Move>) {
+    let pawns = state.get_piece_bb(side, Piece::Pawn);
+    let ally_pieces = state.get_side_bb(side);
+    let enemy_pieces = state.get_side_bb(side.flip());
+
+    let mut pawns_bb = *pawns;
+    while let Some(from_sq) = pawns_bb.pop_lsb() {
+        let from = from_sq as usize;
+
+        let pushes = MOVE_TABLES.get_pawn_pushes(from, side, *ally_pieces, *enemy_pieces);
+
+        let mut push_bb = pushes;
+        while let Some(to_sq) = push_bb.pop_lsb() {
+            let to_rank = to_sq as usize / 8;
+            let is_promotion = match side {
+                Side::White => to_rank == 7,
+                Side::Black => to_rank == 0,
+            };
+            let is_double = match side {
+                Side::White => (to_sq as usize) == from + 16,
+                Side::Black => (to_sq as usize) == from - 16,
+            };
+            if is_promotion {
+                add_promo_moves(from_sq as u8, to_sq as u8, false, move_list);
+            } else if is_double {
+                move_list.push(Move::new(from_sq as u8, to_sq as u8, Move::DOUBLE_PAWN));
+            } else {
+                move_list.push(Move::new(from_sq as u8, to_sq as u8, Move::QUIET));
+            }
+        }
+
+        let attacks = MOVE_TABLES.get_pawn_attacks(from, side);
+        let mut attack_bb = attacks & *enemy_pieces;
+        while let Some(to_sq) = attack_bb.pop_lsb() {
+            let to_rank = to_sq as usize / 8;
+            let is_promotion = match side {
+                Side::White => to_rank == 7,
+                Side::Black => to_rank == 0,
+            };
+            if is_promotion {
+                add_promo_moves(from_sq as u8, to_sq as u8, true, move_list);
+            } else {
+                move_list.push(Move::new(from_sq as u8, to_sq as u8, Move::CAPTURE));
+            }
+        }
+    }
+}
+
+/// Generate pseudo-legal pawn moves with en passant support.
+fn gen_pawn_moves_with_ep(
+    state: &BoardState,
+    side: Side,
+    en_passant_square: Option<Square>,
+    move_list: &mut Vec<Move>,
+) {
+    gen_pawn_moves(state, side, move_list);
+
+    if let Some(ep_square) = en_passant_square {
+        let pawns = state.get_piece_bb(side, Piece::Pawn);
+        let mut pawns_bb = *pawns;
+
+        while let Some(from_sq) = pawns_bb.pop_lsb() {
+            let attacks = MOVE_TABLES.get_pawn_attacks(from_sq as usize, side);
+            if attacks.contains_square(ep_square.index()) {
+                move_list.push(Move::new(
+                    from_sq as u8,
+                    ep_square.index() as u8,
+                    Move::EN_PASSANT,
+                ));
+            }
+        }
+    }
+}
+
+/// Generate pseudo-legal king moves with castling support.
+fn gen_king_moves_with_castling(
+    state: &BoardState,
+    side: Side,
+    castling_rights: CastlingRights,
+    move_list: &mut Vec<Move>,
+) {
+    gen_king_moves(state, side, move_list);
+
+    let king_bb = state.get_piece_bb(side, Piece::King);
+    if let Some(king_pos) = king_bb.lsb() {
+        let king_sq = king_pos as usize;
+        let all_pieces = *state.get_side_bb(side) | *state.get_side_bb(side.flip());
+
+        match side {
+            Side::White => {
+                if king_sq == 4 {
+                    if castling_rights.allows(CastlingRights(CastlingRights::WHITE_00))
+                        && !all_pieces.contains_square(5)
+                        && !all_pieces.contains_square(6)
+                    {
+                        move_list.push(Move::new(4, 6, Move::KING_CASTLE));
+                    }
+                    if castling_rights.allows(CastlingRights(CastlingRights::WHITE_000))
+                        && !all_pieces.contains_square(1)
+                        && !all_pieces.contains_square(2)
+                        && !all_pieces.contains_square(3)
+                    {
+                        move_list.push(Move::new(4, 2, Move::QUEEN_CASTLE));
+                    }
+                }
+            }
+            Side::Black => {
+                if king_sq == 60 {
+                    if castling_rights.allows(CastlingRights(CastlingRights::BLACK_00))
+                        && !all_pieces.contains_square(61)
+                        && !all_pieces.contains_square(62)
+                    {
+                        move_list.push(Move::new(60, 62, Move::KING_CASTLE));
+                    }
+                    if castling_rights.allows(CastlingRights(CastlingRights::BLACK_000))
+                        && !all_pieces.contains_square(57)
+                        && !all_pieces.contains_square(58)
+                        && !all_pieces.contains_square(59)
+                    {
+                        move_list.push(Move::new(60, 58, Move::QUEEN_CASTLE));
+                    }
+                }
+            }
+        }
     }
 }

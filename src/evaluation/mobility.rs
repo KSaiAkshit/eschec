@@ -24,7 +24,7 @@ impl MobilityEvaluator {
 
     fn calculate_mobility_score(&self, board: &Board) -> i32 {
         // NOTE: Use pseudo legal moves here;
-        let legal_moves = board.generate_legal_moves();
+        let legal_moves = board.generate_pseudo_legal_moves();
         let mut score = 0;
 
         for m in legal_moves {

@@ -2,7 +2,6 @@ pub mod attack_data;
 pub mod move_gen;
 pub mod move_info;
 pub mod precomputed;
-pub mod pseudo_legal;
 
 use std::ops::{Add, Mul, Neg, Sub};
 
