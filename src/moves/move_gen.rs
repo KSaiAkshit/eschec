@@ -46,6 +46,8 @@ pub fn generate_legal_moves(board: &Board, moves: &mut Vec<Move>) {
     gen_legal_sliding_moves(board, Piece::Queen, &attack_data, moves, false);
 }
 
+/// Generates all strictly legal captures for the current side to move.
+/// Used by Quiescences search
 pub fn generate_legal_captures(board: &Board, moves: &mut Vec<Move>) {
     let side = board.stm;
     let attack_data = calculate_attack_data(board, side);

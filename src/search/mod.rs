@@ -337,15 +337,20 @@ impl Search {
             return 0;
         }
 
-        let stand_pat_score = evaluator.evaluate(board);
+        let is_in_check = board.is_in_check(board.stm);
 
-        if stand_pat_score > beta {
-            self.pruned_nodes += 1;
-            return beta; // Fail high
+        if !is_in_check {
+            let stand_pat_score = evaluator.evaluate(board);
+
+            if stand_pat_score > beta {
+                self.pruned_nodes += 1;
+                return beta; // Fail high
+            }
+            alpha = max(alpha, stand_pat_score);
         }
-        alpha = max(alpha, stand_pat_score);
 
-        let mut legal_moves = board.generate_legal_moves(true);
+        // Generate all moves if in check, otherwise use captures only
+        let mut legal_moves = board.generate_legal_moves(!is_in_check);
 
         sort_moves(board, &mut legal_moves, &[None, None], None);
 
