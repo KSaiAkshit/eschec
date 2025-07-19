@@ -5,14 +5,43 @@ use eschec::{
     KIWIPETE,
     board::Board,
     evaluation::{CompositeEvaluator, Evaluator},
+    moves::{move_gen, move_info::Move},
     search::Search,
 };
+
+fn filter_captures(board: &Board) -> Vec<Move> {
+    let mut moves = board.generate_legal_moves(false);
+    moves.retain(|mv| mv.is_capture());
+    moves
+}
+
+fn gen_captures(board: &Board) -> Vec<Move> {
+    let mut captures = Vec::with_capacity(40);
+    move_gen::generate_legal_captures(board, &mut captures);
+    captures
+}
 
 fn bench_move_generation(c: &mut Criterion) {
     c.bench_function("generate_all_moves", |b| {
         b.iter_batched(
             || Board::from_fen(KIWIPETE),
-            |board| black_box(board.generate_legal_moves()),
+            |board| black_box(board.generate_legal_moves(false)),
+            BatchSize::SmallInput,
+        );
+    });
+
+    c.bench_function("captures_iter_filter", |b| {
+        b.iter_batched(
+            || Board::from_fen(KIWIPETE),
+            |board| black_box(filter_captures(&board)),
+            BatchSize::SmallInput,
+        );
+    });
+
+    c.bench_function("captures_move_gen", |b| {
+        b.iter_batched(
+            || Board::from_fen(KIWIPETE),
+            |board| black_box(gen_captures(&board)),
             BatchSize::SmallInput,
         );
     });

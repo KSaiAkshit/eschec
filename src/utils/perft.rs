@@ -143,7 +143,7 @@ pub fn perft(board: &mut Board, depth: u8, divide: bool) -> PerftResult {
         return PerftResult::new(1, Duration::from_nanos(1), None);
     }
 
-    let legal_moves = board.generate_legal_moves();
+    let legal_moves = board.generate_legal_moves(false);
 
     if depth == 1 {
         return PerftResult::new(
@@ -347,7 +347,7 @@ mod tests {
         let mut board = Board::new();
         let original_board = board;
 
-        let legal_moves = board.generate_legal_moves();
+        let legal_moves = board.generate_legal_moves(false);
         if !legal_moves.is_empty() {
             for mov in legal_moves {
                 // Make the move

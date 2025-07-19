@@ -14,10 +14,9 @@
 //!   generator uses pre-calculated `AttackData` to efficiently determine legality.
 
 use crate::{
-    BitBoard, Board, BoardState, CastlingRights, Piece, Side, Square,
     moves::{
-        Direction, attack_data::calculate_attack_data, move_info::Move, precomputed::MOVE_TABLES,
-    },
+        attack_data::{calculate_attack_data, AttackData}, move_info::Move, precomputed::MOVE_TABLES, Direction
+    }, BitBoard, Board, BoardState, CastlingRights, Piece, Side, Square
 };
 
 // ===================================================================
@@ -31,22 +30,38 @@ pub fn generate_legal_moves(board: &Board, moves: &mut Vec<Move>) {
     let attack_data = calculate_attack_data(board, side);
 
     if attack_data.double_check {
-        gen_legal_king_moves(board, &attack_data, moves);
+        gen_legal_king_moves(board, &attack_data, moves, false);
         return;
     }
 
-    gen_legal_king_moves(board, &attack_data, moves);
-    gen_legal_pawn_moves(board, &attack_data, moves);
-    gen_legal_knight_moves(board, &attack_data, moves);
-    gen_legal_sliding_moves(board, Piece::Bishop, &attack_data, moves);
-    gen_legal_sliding_moves(board, Piece::Rook, &attack_data, moves);
-    gen_legal_sliding_moves(board, Piece::Queen, &attack_data, moves);
+    gen_legal_king_moves(board, &attack_data, moves, false);
+    gen_legal_pawn_moves(board, &attack_data, moves, false);
+    gen_legal_knight_moves(board, &attack_data, moves, false);
+    gen_legal_sliding_moves(board, Piece::Bishop, &attack_data, moves, false);
+    gen_legal_sliding_moves(board, Piece::Rook, &attack_data, moves, false);
+    gen_legal_sliding_moves(board, Piece::Queen, &attack_data, moves, false);
+}
+
+pub fn generate_legal_captures(board: &Board, moves: &mut Vec<Move>) {
+    let side = board.stm;
+    let attack_data = calculate_attack_data(board, side);
+
+    if attack_data.double_check {
+        gen_legal_king_moves(board, &attack_data, moves, true);
+    }
+
+    gen_legal_pawn_moves(board, &attack_data, moves, true);
+    gen_legal_knight_moves(board, &attack_data, moves, true);
+    gen_legal_sliding_moves(board, Piece::Bishop, &attack_data, moves, true);
+    gen_legal_sliding_moves(board, Piece::Rook, &attack_data, moves, true);
+    gen_legal_sliding_moves(board, Piece::Queen, &attack_data, moves, true);
 }
 
 fn gen_legal_king_moves(
     board: &Board,
-    attack_data: &super::attack_data::AttackData,
+    attack_data: &AttackData,
     moves: &mut Vec<Move>,
+    captures_only: bool,
 ) {
     let side = board.stm;
     let from_sq = attack_data.king_sq;
@@ -57,17 +72,20 @@ fn gen_legal_king_moves(
 
     while let Some(to_sq) = legal_targets.pop_lsb() {
         if !attack_data.opp_attack_map.contains_square(to_sq as usize) {
-            let flag = if board.positions.is_occupied(to_sq as usize) {
-                Move::CAPTURE
-            } else {
-                Move::QUIET
+            let is_capture = board.positions.is_occupied(to_sq as usize);
+            if !captures_only || is_capture {
+                let flag = if is_capture {
+                    Move::CAPTURE
+                } else {
+                    Move::QUIET
+                };
+                moves.push(Move::new(from_sq as u8, to_sq as u8, flag));
             };
-            moves.push(Move::new(from_sq as u8, to_sq as u8, flag));
         }
     }
 
     // Castling
-    if !attack_data.in_check {
+    if !captures_only && !attack_data.in_check {
         let all_pieces =
             board.positions.get_side_bb(Side::White) | board.positions.get_side_bb(Side::Black);
         match side {
@@ -127,8 +145,9 @@ fn gen_legal_king_moves(
 fn gen_legal_sliding_moves(
     board: &Board,
     piece: Piece,
-    attack_data: &super::attack_data::AttackData,
+    attack_data: &AttackData,
     moves: &mut Vec<Move>,
+    captures_only: bool,
 ) {
     let side = board.stm;
     let friendly_pieces = board.positions.get_side_bb(side);
@@ -161,6 +180,9 @@ fn gen_legal_sliding_moves(
         };
 
         let mut legal_targets = attacks & move_mask;
+        if captures_only {
+            legal_targets &= *enemy_pieces;
+        }
         while let Some(to_sq) = legal_targets.pop_lsb() {
             let flag = if enemy_pieces.contains_square(to_sq as usize) {
                 Move::CAPTURE
@@ -174,8 +196,9 @@ fn gen_legal_sliding_moves(
 
 fn gen_legal_knight_moves(
     board: &Board,
-    attack_data: &super::attack_data::AttackData,
+    attack_data: &AttackData,
     moves: &mut Vec<Move>,
+    captures_only: bool,
 ) {
     let side = board.stm;
     let friendly_pieces = board.positions.get_side_bb(side);
@@ -186,6 +209,9 @@ fn gen_legal_knight_moves(
     while let Some(from_sq) = knights.pop_lsb() {
         let attacks = MOVE_TABLES.knight_moves[from_sq as usize] & !friendly_pieces;
         let mut legal_targets = attacks & attack_data.check_ray_mask;
+        if captures_only {
+            legal_targets &= *enemy_pieces;
+        }
 
         while let Some(to_sq) = legal_targets.pop_lsb() {
             let flag = if enemy_pieces.contains_square(to_sq as usize) {
@@ -200,8 +226,9 @@ fn gen_legal_knight_moves(
 
 fn gen_legal_pawn_moves(
     board: &Board,
-    attack_data: &super::attack_data::AttackData,
+    attack_data: &AttackData,
     moves: &mut Vec<Move>,
+    captures_only: bool,
 ) {
     let side = board.stm;
     let pawns = board.positions.get_piece_bb(side, Piece::Pawn);
@@ -222,39 +249,44 @@ fn gen_legal_pawn_moves(
         };
 
         // Pushes
-        let push_dir = if side == Side::White {
-            Direction::NORTH
-        } else {
-            Direction::SOUTH
-        };
-        if pin_dir.is_none() || pin_dir == Some(push_dir) {
-            let one_step = from_sq_u as i8 + push_dir;
-            if !all_pieces.contains_square(one_step as usize) {
-                if attack_data
-                    .check_ray_mask
-                    .contains_square(one_step as usize)
-                {
-                    if (one_step as usize) / 8 == promo_rank {
-                        add_promo_moves(from_sq as u8, one_step as u8, false, moves);
-                    } else {
-                        moves.push(Move::new(from_sq as u8, one_step as u8, Move::QUIET));
-                    }
-                }
-                // Double push
-                let start_rank = if side == Side::White { 1 } else { 6 };
-                if from_sq_u / 8 == start_rank {
-                    let two_steps = from_sq_u as i8 + 2 * push_dir.value();
-                    if !all_pieces.contains_square(two_steps as usize)
-                        && attack_data
-                            .check_ray_mask
-                            .contains_square(two_steps as usize)
+        if !captures_only {
+            let push_dir = if side == Side::White {
+                Direction::NORTH
+            } else {
+                Direction::SOUTH
+            };
+            if pin_dir.is_none() || pin_dir == Some(push_dir) {
+                let one_step = from_sq_u as i8 + push_dir;
+                if !all_pieces.contains_square(one_step as usize) {
+                    if attack_data
+                        .check_ray_mask
+                        .contains_square(one_step as usize)
                     {
-                        moves.push(Move::new(from_sq as u8, two_steps as u8, Move::DOUBLE_PAWN));
+                        if (one_step as usize) / 8 == promo_rank {
+                            add_promo_moves(from_sq as u8, one_step as u8, false, moves);
+                        } else {
+                            moves.push(Move::new(from_sq as u8, one_step as u8, Move::QUIET));
+                        }
+                    }
+                    // Double push
+                    let start_rank = if side == Side::White { 1 } else { 6 };
+                    if from_sq_u / 8 == start_rank {
+                        let two_steps = from_sq_u as i8 + 2 * push_dir.value();
+                        if !all_pieces.contains_square(two_steps as usize)
+                            && attack_data
+                                .check_ray_mask
+                                .contains_square(two_steps as usize)
+                        {
+                            moves.push(Move::new(
+                                from_sq as u8,
+                                two_steps as u8,
+                                Move::DOUBLE_PAWN,
+                            ));
+                        }
                     }
                 }
             }
         }
-
         // Captures
         let attacks = MOVE_TABLES.get_pawn_attacks(from_sq_u, side);
         let mut capture_targets = attacks & *enemy_pieces;

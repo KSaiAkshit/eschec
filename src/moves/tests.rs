@@ -14,7 +14,7 @@ fn test_make_unmake_symmetry(fen: &str) {
     let mut board = Board::from_fen(fen);
     let original_board = board;
 
-    let legal_moves = board.generate_legal_moves();
+    let legal_moves = board.generate_legal_moves(false);
 
     if legal_moves.is_empty() {
         return;
@@ -114,7 +114,7 @@ fn assert_moves_match_stockfish(fen: &str) {
     // 1. Generate and sort moves with our engine
     let board = Board::from_fen(fen);
     let mut our_moves: Vec<String> = board
-        .generate_legal_moves()
+        .generate_legal_moves(false)
         .into_iter()
         .map(|m| m.uci())
         .collect();

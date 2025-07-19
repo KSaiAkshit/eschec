@@ -1,13 +1,10 @@
 use crate::{
-    START_FEN,
-    evaluation::Evaluator,
-    moves::{
+    evaluation::Evaluator, moves::{
         attack_data::calculate_attack_data,
-        move_gen::{generate_legal_moves, generate_pseudo_legal_moves},
+        move_gen::{generate_legal_captures, generate_legal_moves, generate_pseudo_legal_moves},
         move_info::{Move, MoveInfo},
         precomputed::MOVE_TABLES,
-    },
-    zobrist::{ZOBRIST, calculate_hash},
+    }, zobrist::{calculate_hash, ZOBRIST}, START_FEN
 };
 use miette::Context;
 #[cfg(feature = "random")]
@@ -141,9 +138,14 @@ impl Board {
         fen::to_fen(self)
     }
 
-    pub fn generate_legal_moves(&self) -> Vec<Move> {
+    pub fn generate_legal_moves(&self, captures_only: bool) -> Vec<Move> {
         let mut legal_moves = Vec::with_capacity(40);
-        generate_legal_moves(self, &mut legal_moves);
+        if !captures_only {
+            generate_legal_moves(self, &mut legal_moves);
+
+        } else {
+            generate_legal_captures(self, &mut legal_moves);
+        }
         legal_moves
     }
 
@@ -162,7 +164,7 @@ impl Board {
     /// Primary "safe" method for applying a move.
     /// Checks for legality before making the move.
     pub fn try_move(&mut self, m: Move) -> miette::Result<()> {
-        let legal_moves = self.generate_legal_moves();
+        let legal_moves = self.generate_legal_moves(false);
 
         if legal_moves.contains(&m) {
             let _ = self.make_move(m)?;
@@ -431,11 +433,11 @@ impl Board {
     }
 
     pub fn is_checkmate(&self, side: Side) -> bool {
-        self.is_in_check(side) && !self.generate_legal_moves().is_empty()
+        self.is_in_check(side) && !self.generate_legal_moves(false).is_empty()
     }
 
     pub fn is_stalemate(&self, side: Side) -> bool {
-        !self.is_in_check(side) && self.generate_legal_moves().is_empty()
+        !self.is_in_check(side) && self.generate_legal_moves(false).is_empty()
     }
 
     pub fn is_draw(&self) -> bool {

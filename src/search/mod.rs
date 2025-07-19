@@ -85,7 +85,7 @@ impl Search {
         self.search_running = search_running;
         self.killer_moves = [[None; 2]; MAX_PLY];
 
-        let mut legal_moves = board.generate_legal_moves();
+        let mut legal_moves = board.generate_legal_moves(false);
         if legal_moves.is_empty() {
             debug!("No legal moves");
             let score = if board.is_in_check(board.stm) {
@@ -189,14 +189,10 @@ impl Search {
         }
 
         if depth == 0 {
-            self.nodes_searched += 1;
-            // TODO: Add Quiescence search here
-            let score = evaluator.evaluate(board);
-            trace!("Returning static eval: {}", score);
-            return score;
+            return self.quiescence_search(board, alpha, beta, evaluator);
         }
 
-        let mut legal_moves = board.generate_legal_moves();
+        let mut legal_moves = board.generate_legal_moves(false);
 
         if legal_moves.is_empty() {
             self.nodes_searched += 1; // Terminal nodes_search
@@ -237,6 +233,49 @@ impl Search {
             alpha = max(alpha, score);
         }
 
+        alpha
+    }
+
+    fn quiescence_search(
+        &mut self,
+        board: &Board,
+        mut alpha: i32,
+        beta: i32,
+        evaluator: &dyn Evaluator,
+    ) -> i32 {
+        self.nodes_searched += 1;
+
+        if self.should_stop() {
+            return 0;
+        }
+
+        let stand_pat_score = evaluator.evaluate(board);
+
+        if stand_pat_score > beta {
+            self.pruned_nodes += 1;
+            return beta; // Fail high
+        }
+        alpha = max(alpha, stand_pat_score);
+
+        let mut legal_moves = board.generate_legal_moves(false);
+        legal_moves.retain(|m| m.is_capture());
+
+        sort_moves(board, &mut legal_moves, &[None, None]);
+
+        for mv in legal_moves {
+            let mut board_copy = *board;
+            if board_copy.make_move(mv).is_err() {
+                continue;
+            }
+
+            let score = -self.quiescence_search(&board_copy, -beta, -alpha, evaluator);
+
+            if score >= beta {
+                self.pruned_nodes += 1;
+                return beta; // Fail high
+            }
+            alpha = max(alpha, score)
+        }
         alpha
     }
 

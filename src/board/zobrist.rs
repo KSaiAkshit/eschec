@@ -109,7 +109,7 @@ mod tests {
         let mut board = Board::new();
         let original_hash = board.hash;
 
-        let legal_moves = board.generate_legal_moves();
+        let legal_moves = board.generate_legal_moves(false);
 
         for mov in legal_moves {
             let move_data = board.make_move(mov).unwrap();
@@ -146,7 +146,7 @@ mod tests {
             "Initial hash calculation mismatch for FEN: {fen}"
         );
 
-        let legal_moves = board.generate_legal_moves();
+        let legal_moves = board.generate_legal_moves(false);
         if legal_moves.is_empty() {
             return;
         }

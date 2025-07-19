@@ -120,8 +120,8 @@ fn is_fen_ep_square_legal(positions: &BoardState, stm: Side, ep_square: Square) 
             let original_pawn_sq = ep_square.get_neighbor(Direction::NORTH); // e7
 
             // Check for black pawn on final_pawn_sq and empty sq on original_pawn_sq
-            positions.get_piece_at(&final_pawn_sq.into()) == Some((Piece::Pawn, Side::Black))
-                && positions.get_piece_at(&original_pawn_sq.into()).is_none()
+            positions.get_piece_at(&final_pawn_sq) == Some((Piece::Pawn, Side::Black))
+                && positions.get_piece_at(&original_pawn_sq).is_none()
         }
         Side::Black => {
             if ep_square.row() != 2 {
@@ -137,8 +137,8 @@ fn is_fen_ep_square_legal(positions: &BoardState, stm: Side, ep_square: Square) 
             let original_pawn_sq = ep_square.get_neighbor(Direction::SOUTH); // e2
 
             // Check for white pawn on final_pawn_sq and empty sq on original_pawn_sq
-            positions.get_piece_at(&final_pawn_sq.into()) == Some((Piece::Pawn, Side::White))
-                && positions.get_piece_at(&original_pawn_sq.into()).is_none()
+            positions.get_piece_at(&final_pawn_sq) == Some((Piece::Pawn, Side::White))
+                && positions.get_piece_at(&original_pawn_sq).is_none()
         }
     }
 }

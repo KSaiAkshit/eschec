@@ -606,6 +606,10 @@ impl BoardState {
     pub fn get_piece_at(&self, square: &Square) -> Option<(Piece, Side)> {
         self.mailbox[square.index()].map(|info| (info.piece, info.side))
     }
+
+    pub fn get_occupied_bb(&self) -> BitBoard {
+        self.all_sides[Side::White.index()] | self.all_sides[Side::Black.index()]
+    }
 }
 
 /// Castling rights are stored in a [`u8`], which is divided into the following parts:
