@@ -1,10 +1,13 @@
 use crate::{
-    evaluation::Evaluator, moves::{
+    START_FEN,
+    evaluation::Evaluator,
+    moves::{
         attack_data::calculate_attack_data,
         move_gen::{generate_legal_captures, generate_legal_moves, generate_pseudo_legal_moves},
         move_info::{Move, MoveInfo},
         precomputed::MOVE_TABLES,
-    }, zobrist::{calculate_hash, ZOBRIST}, START_FEN
+    },
+    zobrist::{ZOBRIST, calculate_hash},
 };
 use miette::Context;
 #[cfg(feature = "random")]
@@ -142,7 +145,6 @@ impl Board {
         let mut legal_moves = Vec::with_capacity(40);
         if !captures_only {
             generate_legal_moves(self, &mut legal_moves);
-
         } else {
             generate_legal_captures(self, &mut legal_moves);
         }

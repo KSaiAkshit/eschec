@@ -31,10 +31,10 @@ update:
 gauntlet opponent='gnuchess' rounds='40' tc='15+0.1' concurrency='4': update
     @# Print the configuration for this run
     @echo "Starting gauntlet:"
-    @echo "  - Opponent: {{ opponent }}"
-    @echo "  - Rounds: {{ rounds }}"
-    @echo "  - Time Control: {{ tc }}"
-    @echo "  - PGN Output: {{ pgn_output_dir }}eschec_vs_{{ opponent }}"
+    @echo "  - Opponent: {{ BLUE }}{{ opponent }}{{ NORMAL }}"
+    @echo "  - Rounds: {{ GREEN }}{{ rounds }}{{ NORMAL }}"
+    @echo "  - Time Control: {{ CYAN }}{{ tc }}{{ NORMAL }}"
+    @echo "  - PGN Output: {{ YELLOW }}{{ pgn_output_dir }}eschec_vs_{{ opponent }}{{ NORMAL }}"
     @echo "-------------------------------------"
 
     @# Run the cutechess-cli command
@@ -68,8 +68,9 @@ run *args:
     cargo run --bin eschec {{ flags }} -- {{ args }}
 
 [doc("Find the most recent file in the 'logs' directory and tail it")]
-tail_log:
-    tail -f {{ logs_dir }}$(ls -t logs | head -n 1)
+@tail_log:
+    echo "{{ MAGENTA }} Tailing log {{ NORMAL }}"
+    tail -f {{ logs_dir }}$(ls -t {{ logs_dir }} | head -n 1)
 
 [doc("Record perf for given pid")]
 record pid: setup
@@ -100,9 +101,9 @@ test:
     echo "0" | sudo tee /proc/sys/kernel/kptr_restrict
     echo "0" | sudo tee /proc/sys/kernel/nmi_watchdog
 
-[doc("Generate flamegraph for perft and view in flamelens")]
-flame depth: setup
-    cargo flamegraph --post-process 'flamelens --echo' {{ flags }} --bin eschec -- perft --depth {{ depth }}
+[doc("Generate flamegraph for given args and view in flamelens")]
+flame *args: setup
+    cargo flamegraph --post-process 'flamelens --echo' {{ flags }} --bin eschec -- {{ args }}
 
 [doc("lint the codebase")]
 lint:
@@ -111,6 +112,11 @@ lint:
 [doc("check format")]
 fmt-check:
     cargo fmt --all --check
+    just fmt
+
+[confirm("Run 'cargo fmt'?")]
+fmt:
+    cargo fmt
 
 [doc("run perft at given depth and fen")]
 [positional-arguments]

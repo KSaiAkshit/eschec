@@ -31,6 +31,7 @@ impl Default for TranspositionEntry {
     }
 }
 
+#[derive(Debug)]
 pub struct TranspositionTable {
     entries: Vec<TranspositionEntry>,
     size: usize,

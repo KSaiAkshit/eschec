@@ -126,7 +126,12 @@ impl MoveTables {
         }
     }
 
-    const fn generate_ray(&self, start_rank: usize, start_file: usize, direction: Direction) -> BitBoard {
+    const fn generate_ray(
+        &self,
+        start_rank: usize,
+        start_file: usize,
+        direction: Direction,
+    ) -> BitBoard {
         let mut ray = BitBoard(0);
         let start_index = start_rank * 8 + start_file;
         let mut current = start_index as i8 + direction.0;

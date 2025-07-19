@@ -54,7 +54,7 @@ impl Evaluator for MaterialEvaluator {
             .sum::<i32>();
 
         let score = white_material - black_material;
-        
+
         // Convert to side-to-move perspective
         if board.stm == Side::White {
             score

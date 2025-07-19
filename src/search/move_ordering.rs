@@ -11,11 +11,20 @@ const VICTIM_SCORES: [i32; NUM_PIECES] = [
 
 // Using large offsets to create distinct "buckets" for move types.
 // This ensures that any capture is scored higher than any killer move, etc.
+const TT_MOVE_SCORE: i32 = 3_000_000;
 const MVV_LVA_OFFSET: i32 = 2_000_000;
 const KILLER_MOVE_SCORE: i32 = 1_000_000;
 // TODO: Add more scores here
 
-pub fn score_move(board: &Board, mv: Move, killers: &[Option<Move>; 2]) -> i32 {
+pub fn score_move(
+    board: &Board,
+    mv: Move,
+    killers: &[Option<Move>; 2],
+    tt_move: Option<Move>,
+) -> i32 {
+    if tt_move.is_some() {
+        return TT_MOVE_SCORE;
+    }
     if mv.is_capture() {
         let attacker = board.get_piece_at(mv.from_sq()).unwrap_or_default();
         let victim = if mv.is_enpassant() {
@@ -34,8 +43,12 @@ pub fn score_move(board: &Board, mv: Move, killers: &[Option<Move>; 2]) -> i32 {
 }
 
 // Sorts a slice of moves in-place from best to worst based on their score
-pub fn sort_moves(board: &Board, moves: &mut [Move], killers: &[Option<Move>; 2]) {
+pub fn sort_moves(
+    board: &Board,
+    moves: &mut [Move],
+    killers: &[Option<Move>; 2],
+    tt_move: Option<Move>,
+) {
     // Score is negated here because sort is ascending, but we want descending
-    // PERF: Maybe unstable_sort_by_key is faster?
-    moves.sort_by_key(|&m| -score_move(board, m, killers));
+    moves.sort_by_key(|&m| -score_move(board, m, killers, tt_move));
 }

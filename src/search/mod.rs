@@ -1,4 +1,6 @@
+use crate::consts::{MATE_THRESHOLD, MAX_PLY};
 use crate::search::move_ordering::sort_moves;
+use crate::search::tt::{ScoreTypes, TranspositionEntry, TranspositionTable};
 use crate::{evaluation::Evaluator, moves::move_info::Move};
 use tracing::*;
 
@@ -6,12 +8,11 @@ pub mod move_ordering;
 pub mod tt;
 
 use super::*;
-use std::cmp::max;
+use std::cmp::{max, min};
+use std::i32;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
-
-const MAX_PLY: usize = 64;
 
 #[derive(Debug, Default)]
 pub struct SearchResult {
@@ -31,6 +32,7 @@ pub struct Search {
     nodes_limit: Option<u64>,
     pruned_nodes: u64,
     search_running: Option<Arc<AtomicBool>>,
+    tt: TranspositionTable,
     killer_moves: [[Option<Move>; 2]; MAX_PLY],
 }
 
@@ -44,11 +46,14 @@ impl Search {
             nodes_limit: None,
             pruned_nodes: 0,
             search_running: None,
+            tt: TranspositionTable::new(16),
             killer_moves: [[None; 2]; MAX_PLY],
         }
     }
 
     pub fn with_time_control(max_depth: u8, max_time_ms: u64) -> Self {
+        let tt = TranspositionTable::new(16);
+        println!("Size of table: {}", std::mem::size_of_val(&tt));
         Self {
             max_depth,
             nodes_searched: 0,
@@ -57,6 +62,7 @@ impl Search {
             nodes_limit: None,
             pruned_nodes: 0,
             search_running: None,
+            tt,
             killer_moves: [[None; 2]; MAX_PLY],
         }
     }
@@ -116,7 +122,7 @@ impl Search {
             let mut alpha = i32::MIN + 1;
             let beta = i32::MAX;
 
-            sort_moves(board, &mut legal_moves, &[None, None]);
+            sort_moves(board, &mut legal_moves, &[None, None], None);
 
             let mut local_best_move: Option<Move> = legal_moves.first().copied();
             let mut local_best_score = i32::MIN + 1;
@@ -181,11 +187,48 @@ impl Search {
         depth: u8,
         ply: usize,
         mut alpha: i32,
-        beta: i32,
+        mut beta: i32,
         evaluator: &dyn Evaluator,
     ) -> i32 {
         if self.should_stop() {
             return 0; // Neutral score because search was stopped
+        }
+
+        let original_alpha = alpha;
+
+        let current_hash = board.hash;
+        let mut tt_move = Move::default();
+
+        if let Some(entry) = self.tt.probe(current_hash)
+            && entry.hash == current_hash
+        {
+            tt_move = entry.best_move;
+            if entry.depth >= depth {
+                let score = adjust_score_for_ply(entry.score, ply);
+
+                match entry.score_type {
+                    tt::ScoreTypes::Exact => {
+                        // Exact score can be returned as is
+                        return score;
+                    }
+                    tt::ScoreTypes::LowerBound => {
+                        // The true score is at least 'prev_score'
+                        // if this is enough to beat beta, we can prune
+                        alpha = max(alpha, score);
+                        if alpha >= beta {
+                            return beta;
+                        }
+                    }
+                    tt::ScoreTypes::UpperBound => {
+                        // The true score is at most 'prev_score'
+                        // if this is enough to beat alpha, we can prune
+                        beta = min(beta, score);
+                        if alpha >= beta {
+                            return alpha;
+                        }
+                    }
+                }
+            }
         }
 
         if depth == 0 {
@@ -204,8 +247,16 @@ impl Search {
         }
 
         if ply < MAX_PLY {
-            sort_moves(board, &mut legal_moves, &self.killer_moves[ply]);
+            sort_moves(
+                board,
+                &mut legal_moves,
+                &self.killer_moves[ply],
+                Some(tt_move),
+            );
         }
+
+        let mut best_move_this_node = legal_moves.first().copied().unwrap();
+        let mut best_score = i32::MIN + 1;
 
         for mv in legal_moves {
             let mut board_copy = *board;
@@ -217,21 +268,58 @@ impl Search {
 
             let score = -self.alpha_beta(&board_copy, depth - 1, ply + 1, -beta, -alpha, evaluator);
 
-            if score >= beta {
+            if self.should_stop() {
+                return 0;
+            }
+
+            if score > best_score {
+                best_score = score;
+                best_move_this_node = mv;
+            }
+
+            alpha = max(alpha, score);
+
+            if alpha >= beta {
                 self.pruned_nodes += 1;
 
-                // This is beta cutoff, if move was quiet,
-                // it is a good candidate for killer move
+                // This is beta cutoff (Fail-High)
+                // if move was quiet, it is a good candidate for killer move
                 if !mv.is_capture() && ply < MAX_PLY {
                     // Backup the existing one
                     self.killer_moves[ply][1] = self.killer_moves[ply][0];
                     self.killer_moves[ply][0] = Some(mv);
                 }
+
+                let entry_to_score = TranspositionEntry {
+                    hash: current_hash,
+                    depth,
+                    score: adjust_score_from_ply(beta, ply),
+                    score_type: ScoreTypes::LowerBound,
+                    best_move: best_move_this_node,
+                };
+                self.tt.store(entry_to_score);
                 return beta;
             }
-
-            alpha = max(alpha, score);
         }
+
+        let score_type = if best_score <= original_alpha {
+            // We failed to raise alpha. This is a "fail-low".
+            // The score is an upper bound on the node's true value.
+            ScoreTypes::UpperBound // Fail-low
+        } else {
+            // Successfully raised alpha but did not fail high.
+            // This means the exact best score was found in the (alpha, beta) window.
+            ScoreTypes::Exact // Exact score
+        };
+
+        let entry_to_store = TranspositionEntry {
+            hash: current_hash,
+            depth,
+            score: adjust_score_from_ply(best_score, ply),
+            score_type,
+            best_move: best_move_this_node,
+        };
+        self.tt.store(entry_to_store);
 
         alpha
     }
@@ -257,10 +345,9 @@ impl Search {
         }
         alpha = max(alpha, stand_pat_score);
 
-        let mut legal_moves = board.generate_legal_moves(false);
-        legal_moves.retain(|m| m.is_capture());
+        let mut legal_moves = board.generate_legal_moves(true);
 
-        sort_moves(board, &mut legal_moves, &[None, None]);
+        sort_moves(board, &mut legal_moves, &[None, None], None);
 
         for mv in legal_moves {
             let mut board_copy = *board;
@@ -292,5 +379,29 @@ impl Search {
             return true;
         }
         self.nodes_limit.is_some_and(|l| self.nodes_searched >= l)
+    }
+}
+
+fn adjust_score_for_ply(score: i32, ply: usize) -> i32 {
+    if score.abs() > MATE_THRESHOLD {
+        if score > 0 {
+            score - ply as i32
+        } else {
+            score + ply as i32
+        }
+    } else {
+        score
+    }
+}
+
+fn adjust_score_from_ply(score: i32, ply: usize) -> i32 {
+    if score.abs() > MATE_THRESHOLD {
+        if score > 0 {
+            score + ply as i32
+        } else {
+            score - ply as i32
+        }
+    } else {
+        score
     }
 }

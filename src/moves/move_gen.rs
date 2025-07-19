@@ -14,9 +14,13 @@
 //!   generator uses pre-calculated `AttackData` to efficiently determine legality.
 
 use crate::{
+    BitBoard, Board, BoardState, CastlingRights, Piece, Side, Square,
     moves::{
-        attack_data::{calculate_attack_data, AttackData}, move_info::Move, precomputed::MOVE_TABLES, Direction
-    }, BitBoard, Board, BoardState, CastlingRights, Piece, Side, Square
+        Direction,
+        attack_data::{AttackData, calculate_attack_data},
+        move_info::Move,
+        precomputed::MOVE_TABLES,
+    },
 };
 
 // ===================================================================

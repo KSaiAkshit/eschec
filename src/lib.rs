@@ -46,6 +46,11 @@ pub mod consts {
     pub const NUM_SQUARES: usize = 64;
     pub const NUM_CASTLING_RIGHTS: usize = 16;
     pub const NUM_FILES: usize = 8;
+
+    pub const MAX_PLY: usize = 64;
+
+    pub const MATE_SCORE: i32 = 20_000;
+    pub const MATE_THRESHOLD: i32 = MATE_SCORE - MAX_PLY as i32;
 }
 
 pub trait LogHandle: Send + Sync {

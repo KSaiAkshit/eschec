@@ -52,4 +52,3 @@ impl Evaluator for KingSafetyEvaluator {
         &self.name
     }
 }
-
