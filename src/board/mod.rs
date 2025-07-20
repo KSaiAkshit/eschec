@@ -189,7 +189,7 @@ impl Board {
         let from = move_data.from;
         let to = move_data.to;
         let opponent = self.stm.flip();
-        let piece_moved = move_data.piece_moved;
+        let _piece_moved = move_data.piece_moved;
 
         // Restore moved piece
         if let Some(promoted_piece) = move_data.promotion {
@@ -197,7 +197,7 @@ impl Board {
                 .remove_piece(self.stm, promoted_piece, to.index())?;
             self.positions.set(self.stm, Piece::Pawn, from.index())?;
         } else {
-            self.positions.move_piece(piece_moved, self.stm, to, from)?;
+            self.positions.move_piece(  to, from)?;
         }
 
         // Restore captured pieces
@@ -225,7 +225,7 @@ impl Board {
             let rook_from_sq = Square::new(rook_from).unwrap();
             let rook_to_sq = Square::new(rook_to).unwrap();
             self.positions
-                .move_piece(Piece::Rook, self.stm, rook_from_sq, rook_to_sq)?;
+                .move_piece(  rook_from_sq, rook_to_sq)?;
         }
 
         self.calculate_material();
@@ -281,7 +281,7 @@ impl Board {
         }
 
         // Move the piece from 'from' to 'to'
-        self.positions.move_piece(piece, self.stm, from, to)?;
+        self.positions.move_piece(  from, to)?;
         // XOR out key for moved piece at source sq 'from'
         self.hash ^= ZOBRIST.pieces[self.stm.index()][piece.index()][from.index()];
         // XOR in key for moved piece at destination sq 'to'
@@ -319,7 +319,7 @@ impl Board {
                     Square::new(from.row() * 8 + 5).unwrap(),
                 );
                 self.positions
-                    .move_piece(Piece::Rook, self.stm, rook_from, rook_to)?;
+                    .move_piece(  rook_from, rook_to)?;
                 // XOR out rook from source sq
                 self.hash ^= ZOBRIST.pieces[self.stm.index()][Piece::rook()][rook_from.index()];
                 // XOR in rook from destination sq
@@ -331,7 +331,7 @@ impl Board {
                     Square::new(from.row() * 8 + 3).unwrap(),
                 );
                 self.positions
-                    .move_piece(Piece::Rook, self.stm, rook_from, rook_to)?;
+                    .move_piece(  rook_from, rook_to)?;
                 // XOR out rook from source sq
                 self.hash ^= ZOBRIST.pieces[self.stm.index()][Piece::rook()][rook_from.index()];
                 // XOR in rook from destination sq
@@ -550,7 +550,7 @@ impl Board {
                     let rook_to = Square::new(rank * 8 + rook_to_file).unwrap();
 
                     self.positions
-                        .move_piece(Piece::Rook, self.stm, rook_from, rook_to)?;
+                        .move_piece(  rook_from, rook_to)?;
                 }
             }
             Some(Piece::Rook) => match (self.stm, from.index()) {

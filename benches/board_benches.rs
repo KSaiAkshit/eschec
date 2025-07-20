@@ -60,14 +60,12 @@ fn bench_boardstate_ops(c: &mut Criterion) {
             || {
                 (
                     setup_board_state(),
-                    Piece::Pawn,
-                    Side::White,
                     Square::new(28).unwrap(),
                     Square::new(29).unwrap(),
                 )
             },
-            |(mut state, piece, side, from, to)| {
-                black_box(state.move_piece(piece, side, from, to).is_ok());
+            |(mut state, from, to)| {
+                black_box(state.move_piece(  from, to).is_ok());
             },
             BatchSize::SmallInput,
         );

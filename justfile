@@ -24,7 +24,7 @@ help:
 update:
     -rm ./gauntlet/engines/eschec
     just build
-    ln -s ../../target/release/eschec gauntlet/engines/
+    cp target/release/eschec gauntlet/engines/
 
 [doc("Run a gauntlet match against another engine using cutechess-cli")]
 [positional-arguments]

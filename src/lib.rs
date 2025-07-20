@@ -1,4 +1,4 @@
-#![feature(portable_simd)]
+#![cfg_attr(feature = "simd", feature(portable_simd))]
 use std::fs::File;
 use std::io::{Write, stderr};
 use std::path::Path;

@@ -490,19 +490,17 @@ impl BoardState {
     /// This does NOT handle captures
     pub fn move_piece(
         &mut self,
-        piece: Piece,
-        side: Side,
         from: Square,
         to: Square,
     ) -> miette::Result<()> {
         let from_index = from.index();
         let to_index = to.index();
-        let side_index = side.index();
 
-        miette::ensure!(
-            self.get_piece_at(&from).is_some(),
-            "[update_piece_position] No {side} {piece} piece at from ( {from} ) square"
-        );
+        let piece_info = self.mailbox[from_index].with_context(|| "[move_piece] No piece at from ({from}) square")?;
+
+        let side = piece_info.side;
+        let side_index = piece_info.side.index();
+        let piece = piece_info.piece;
 
         miette::ensure!(
             self.get_piece_at(&to).is_none(),
