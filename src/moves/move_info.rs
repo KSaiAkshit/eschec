@@ -17,6 +17,7 @@ pub struct MoveInfo {
     pub enpassant_square: Option<Square>, // prev
     pub halfmove_clock: u8,               // prev
     pub zobrist_hash: u64,                // prev
+    pub material: [u32; 2],               // prev
 }
 
 impl MoveInfo {

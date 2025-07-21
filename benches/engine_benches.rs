@@ -2,7 +2,11 @@ use criterion::{BatchSize, Criterion, criterion_group, criterion_main};
 use std::{cmp::max, hint::black_box};
 
 use eschec::{
-    board::Board, evaluation::{position::PositionEvaluator, CompositeEvaluator, Evaluator}, moves::{move_gen, move_info::Move}, search::Search, KIWIPETE
+    KIWIPETE,
+    board::Board,
+    evaluation::{CompositeEvaluator, Evaluator},
+    moves::{move_gen, move_info::Move},
+    search::Search,
 };
 
 fn filter_captures(board: &Board) -> Vec<Move> {

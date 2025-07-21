@@ -39,7 +39,7 @@ pub struct Board {
     ///  The number of the full moves in a game. It starts at 1, and is incremented after each Black's move.
     pub fullmove_counter: u8,
     /// Material left for each side [White, Black]
-    pub material: [u64; 2],
+    pub material: [u32; 2],
     /// Zobrist hash
     pub hash: u64,
 }
@@ -132,7 +132,7 @@ impl Board {
                 panic!("very bad fen")
             }
         };
-        board.calculate_material();
+        board.recalculate_material();
         board.hash = calculate_hash(&board);
         board
     }
@@ -197,7 +197,7 @@ impl Board {
                 .remove_piece(self.stm, promoted_piece, to.index())?;
             self.positions.set(self.stm, Piece::Pawn, from.index())?;
         } else {
-            self.positions.move_piece(  to, from)?;
+            self.positions.move_piece(to, from)?;
         }
 
         // Restore captured pieces
@@ -224,11 +224,10 @@ impl Board {
             };
             let rook_from_sq = Square::new(rook_from).unwrap();
             let rook_to_sq = Square::new(rook_to).unwrap();
-            self.positions
-                .move_piece(  rook_from_sq, rook_to_sq)?;
+            self.positions.move_piece(rook_from_sq, rook_to_sq)?;
         }
 
-        self.calculate_material();
+        self.material = move_data.material;
         Ok(())
     }
 
@@ -245,21 +244,24 @@ impl Board {
         let opponent = self.stm.flip();
 
         // Store current state for unmake
-        let mut move_data = MoveInfo::new(from, to);
-        move_data.piece_moved = piece;
-        move_data.castle_rights = self.castling_rights;
-        move_data.enpassant_square = self.enpassant_square;
-        move_data.halfmove_clock = self.halfmove_clock;
-        move_data.zobrist_hash = self.hash;
-        move_data.captured_piece = self.get_piece_at(to);
-        move_data.is_castling = m.is_castling();
-        move_data.is_en_passant = m.is_enpassant();
-        move_data.promotion = m.promoted_piece();
-        if m.is_enpassant() {
-            move_data.captured_piece = Some(Piece::Pawn)
-        } else {
-            move_data.captured_piece = self.get_piece_at(to);
-        }
+        let move_data = MoveInfo {
+            from,
+            to,
+            piece_moved: piece,
+            castle_rights: self.castling_rights,
+            enpassant_square: self.enpassant_square,
+            halfmove_clock: self.halfmove_clock,
+            zobrist_hash: self.hash,
+            is_castling: m.is_castling(),
+            is_en_passant: m.is_enpassant(),
+            promotion: m.promoted_piece(),
+            material: self.material,
+            captured_piece: if m.is_enpassant() {
+                Some(Piece::Pawn)
+            } else {
+                self.get_piece_at(to)
+            },
+        };
 
         if let Some(ep_sq) = self.enpassant_square {
             self.hash ^= ZOBRIST.en_passant_file[ep_sq.col()];
@@ -278,10 +280,11 @@ impl Board {
                 .remove_piece(opponent, captured_piece, to.index())?;
             // XOR out key for removed piece
             self.hash ^= ZOBRIST.pieces[opponent.index()][captured_piece.index()][to.index()];
+            self.material[opponent.index()] -= captured_piece.value();
         }
 
         // Move the piece from 'from' to 'to'
-        self.positions.move_piece(  from, to)?;
+        self.positions.move_piece(from, to)?;
         // XOR out key for moved piece at source sq 'from'
         self.hash ^= ZOBRIST.pieces[self.stm.index()][piece.index()][from.index()];
         // XOR in key for moved piece at destination sq 'to'
@@ -312,14 +315,14 @@ impl Board {
                     .remove_piece(opponent, Piece::Pawn, captured_pawn_idx)?;
                 // XOR out captured opponent pawn
                 self.hash ^= ZOBRIST.pieces[opponent.index()][Piece::pawn()][captured_pawn_idx];
+                self.material[opponent.index()] -= Piece::Pawn.value();
             }
             Move::KING_CASTLE => {
                 let (rook_from, rook_to) = (
                     Square::new(from.row() * 8 + 7).unwrap(),
                     Square::new(from.row() * 8 + 5).unwrap(),
                 );
-                self.positions
-                    .move_piece(  rook_from, rook_to)?;
+                self.positions.move_piece(rook_from, rook_to)?;
                 // XOR out rook from source sq
                 self.hash ^= ZOBRIST.pieces[self.stm.index()][Piece::rook()][rook_from.index()];
                 // XOR in rook from destination sq
@@ -330,8 +333,7 @@ impl Board {
                     Square::new(from.row() * 8).unwrap(),
                     Square::new(from.row() * 8 + 3).unwrap(),
                 );
-                self.positions
-                    .move_piece(  rook_from, rook_to)?;
+                self.positions.move_piece(rook_from, rook_to)?;
                 // XOR out rook from source sq
                 self.hash ^= ZOBRIST.pieces[self.stm.index()][Piece::rook()][rook_from.index()];
                 // XOR in rook from destination sq
@@ -342,9 +344,12 @@ impl Board {
                 // The pawn is already at the 'to' square, so we replace it.
                 self.positions
                     .remove_piece(self.stm, Piece::Pawn, to.index())?;
-                self.positions.set(self.stm, promo_piece, to.index())?;
+                self.material[self.stm.index()] -= Piece::Pawn.value();
                 // XOR out pawn
                 self.hash ^= ZOBRIST.pieces[self.stm.index()][Piece::pawn()][to.index()];
+
+                self.positions.set(self.stm, promo_piece, to.index())?;
+                self.material[self.stm.index()] += promo_piece.value();
                 // XOR in promote piece
                 self.hash ^= ZOBRIST.pieces[self.stm.index()][promo_piece.index()][to.index()];
             }
@@ -371,8 +376,6 @@ impl Board {
         self.stm = opponent;
         // XOR side
         self.hash ^= ZOBRIST.black_to_move;
-
-        self.calculate_material();
 
         Ok(move_data)
     }
@@ -549,8 +552,7 @@ impl Board {
                     let rook_from = Square::new(rank * 8 + rook_from_file).unwrap();
                     let rook_to = Square::new(rank * 8 + rook_to_file).unwrap();
 
-                    self.positions
-                        .move_piece(  rook_from, rook_to)?;
+                    self.positions.move_piece(rook_from, rook_to)?;
                 }
             }
             Some(Piece::Rook) => match (self.stm, from.index()) {
@@ -576,16 +578,15 @@ impl Board {
         Ok(())
     }
 
-    fn calculate_material(&mut self) {
-        // Reset material counts
+    fn recalculate_material(&mut self) {
+        // Reset material
         self.material = [0; 2];
-
         for side in [Side::White, Side::Black] {
             let side_index = side.index();
             for piece in Piece::colored_pieces(side) {
                 let piece_bb = self.positions.get_piece_bb(side, piece);
-                let piece_count = piece_bb.0.count_ones() as u64;
-                let piece_value: u64 = piece.value().into();
+                let piece_count = piece_bb.0.count_ones();
+                let piece_value = piece.value();
                 self.material[side_index] += piece_count * piece_value;
             }
         }
@@ -706,14 +707,20 @@ mod material_tests {
         let from = Square::from_str("e2").unwrap();
         let to = Square::from_str("e4").unwrap();
         let mov = Move::new(from.index() as u8, to.index() as u8, Move::QUIET);
+        let orig_mat = board.material;
 
         let move_data = board.make_move(mov).unwrap();
 
+        let moved_mat = board.material;
+
         assert_ne!(board, orig_board);
+        assert_eq!(orig_mat, moved_mat);
 
         board.unmake_move(&move_data).unwrap();
+        let restored_mat = board.material;
 
         assert_eq!(board, orig_board);
+        assert_eq!(orig_mat, restored_mat);
     }
 
     #[test]
@@ -727,21 +734,26 @@ mod material_tests {
         let from = Square::from_str("e4").unwrap();
         let to = Square::from_str("d5").unwrap();
         let mov = Move::new(from.index() as u8, to.index() as u8, Move::CAPTURE);
+        let orig_mat = board.material;
 
         let move_data = board.make_move(mov).unwrap();
+        let moved_mat = board.material;
 
         assert_ne!(board, orig_board);
+        assert_ne!(orig_mat, moved_mat);
 
         board.unmake_move(&move_data).unwrap();
+        let restored_mat = board.material;
 
         println!("original board: \n{orig_board}");
         println!("unmade board: \n{board}");
         assert_eq!(board, orig_board);
+        assert_eq!(orig_mat, restored_mat);
     }
     #[test]
     fn test_initial_material_balance() {
         let mut board = Board::new();
-        board.calculate_material();
+        board.recalculate_material();
         // Initial material for each side should be:
         // 8 pawns (8 * 100 = 800)
         // 2 knights (2 * 320 = 640)
@@ -757,7 +769,7 @@ mod material_tests {
     #[test]
     fn test_material_after_capture() {
         let mut board = Board::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPP1PP/RNBQKBNR w KQkq - 0 1");
-        board.calculate_material();
+        board.recalculate_material();
         // Standard position with a missing f2 pawn on white's side
 
         assert_eq!(board.material[Side::White.index()], 23900); // 24000 - 100 = 23900
