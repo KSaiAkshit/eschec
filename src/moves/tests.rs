@@ -1,12 +1,144 @@
 use tracing_subscriber::fmt::init;
 
-use crate::board::Board;
+use crate::{board::Board, moves::precomputed::MOVE_TABLES, BitBoard, Square};
 use std::{
     io::{BufRead, BufReader, Write},
     process::{Command, Stdio},
     str::{self},
 };
 
+fn bb_from_squares(squares: &[&str]) -> BitBoard {
+    let mut bb = BitBoard(0);
+    for s in squares {
+        let sq = s.parse::<Square>().unwrap();
+        bb.set(sq.index());
+    }
+    bb
+}
+
+#[test]
+fn test_rook_mask_from_center() {
+    // Rook on d4
+    let from = "d4".parse::<Square>().unwrap().index();
+    let mask = MOVE_TABLES.generate_sliding_attack_mask(from, true);
+
+    let expected_north = bb_from_squares(&["d5", "d6", "d7"]);
+    let expected_south = bb_from_squares(&["d3", "d2"]);
+    let expected_east = bb_from_squares(&["e4", "f4", "g4"]);
+    let expected_west = bb_from_squares(&["c4", "b4"]);
+
+    let expected = expected_north | expected_south | expected_east | expected_west;
+
+    assert_eq!(
+        mask,
+        expected,
+        "\nExpected:\n{}\nGot:\n{}",
+        expected.print_bitboard(),
+        mask.print_bitboard()
+    );
+}
+
+#[test]
+fn test_rook_mask_from_corner_a1() {
+    // Rook on a1
+    let from = "a1".parse::<Square>().unwrap().index();
+    let mask = MOVE_TABLES.generate_sliding_attack_mask(from, true);
+
+    let expected_north = bb_from_squares(&["a2", "a3", "a4", "a5", "a6", "a7"]);
+    let expected_east = bb_from_squares(&["b1", "c1", "d1", "e1", "f1", "g1"]);
+
+    let expected = expected_north | expected_east;
+
+    assert_eq!(
+        mask,
+        expected,
+        "\nExpected:\n{}\nGot:\n{}",
+        expected.print_bitboard(),
+        mask.print_bitboard()
+    );
+}
+
+#[test]
+fn test_rook_mask_from_edge_h4() {
+    // Rook on h4
+    let from = "h4".parse::<Square>().unwrap().index();
+    let mask = MOVE_TABLES.generate_sliding_attack_mask(from, true);
+
+    let expected_north = bb_from_squares(&["h5", "h6", "h7"]);
+    let expected_south = bb_from_squares(&["h3", "h2"]);
+    let expected_west = bb_from_squares(&["g4", "f4", "e4", "d4", "c4", "b4"]);
+
+    let expected = expected_north | expected_south | expected_west;
+
+    assert_eq!(
+        mask,
+        expected,
+        "\nExpected:\n{}\nGot:\n{}",
+        expected.print_bitboard(),
+        mask.print_bitboard()
+    );
+}
+
+#[test]
+fn test_bishop_mask_from_center() {
+    // Bishop on d4
+    let from = "d4".parse::<Square>().unwrap().index();
+    let mask = MOVE_TABLES.generate_sliding_attack_mask(from, false);
+
+    let expected_ne = bb_from_squares(&["e5", "f6", "g7"]);
+    let expected_se = bb_from_squares(&["e3", "f2"]);
+    let expected_sw = bb_from_squares(&["c3", "b2"]);
+    let expected_nw = bb_from_squares(&["c5", "b6"]);
+
+    let expected = expected_ne | expected_se | expected_sw | expected_nw;
+
+    assert_eq!(
+        mask,
+        expected,
+        "\nExpected:\n{}\nGot:\n{}",
+        expected.print_bitboard(),
+        mask.print_bitboard()
+    );
+}
+
+#[test]
+fn test_bishop_mask_from_corner_a1() {
+    // Bishop on a1
+    let from = "a1".parse::<Square>().unwrap().index();
+    let mask = MOVE_TABLES.generate_sliding_attack_mask(from, false);
+
+    let expected_ne = bb_from_squares(&["b2", "c3", "d4", "e5", "f6", "g7"]);
+
+    let expected = expected_ne;
+
+    assert_eq!(
+        mask,
+        expected,
+        "\nExpected:\n{}\nGot:\n{}",
+        expected.print_bitboard(),
+        mask.print_bitboard()
+    );
+}
+
+#[test]
+fn test_bishop_mask_from_edge_b1() {
+    // Bishop on b1
+    let from = "b1".parse::<Square>().unwrap().index();
+    let mask = MOVE_TABLES.generate_sliding_attack_mask(from, false);
+
+    let expected_ne = bb_from_squares(&["c2", "d3", "e4", "f5", "g6"]);
+    // No other rays have inner squares
+
+    let expected = expected_ne;
+
+    assert_eq!(
+        mask,
+        expected,
+        "\nExpected:\n{}\nGot:\n{}",
+        expected.print_bitboard(),
+        mask.print_bitboard()
+    );
+}
 // verify symmetry of make_move and unmake_move
 fn test_make_unmake_symmetry(fen: &str) {
     init();

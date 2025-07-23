@@ -388,6 +388,7 @@ dependencies = [
  "dhat",
  "miette",
  "rand",
+ "rayon",
  "shell-words",
  "tracing",
  "tracing-appender",

@@ -1,4 +1,7 @@
-use crate::{BitBoard, Side, moves::Direction};
+use crate::{
+    BitBoard, Side,
+    moves::{Direction, magics::MagicEntry},
+};
 
 #[derive(Debug)]
 pub struct MoveTables {
@@ -10,8 +13,13 @@ pub struct MoveTables {
 
     pub white_pawn_pushes: [BitBoard; 64],
     pub black_pawn_pushes: [BitBoard; 64],
-    pub white_pawn_double_pushes: [BitBoard; 64], // Double pushes from start rank
-    pub black_pawn_double_pushes: [BitBoard; 64], // Double pushes from start rank
+    // Double pushes from start rank
+    pub white_pawn_double_pushes: [BitBoard; 64],
+    // Double pushes from start rank
+    pub black_pawn_double_pushes: [BitBoard; 64],
+
+    pub rook_magics: [MagicEntry; 64],
+    pub bishop_magics: [MagicEntry; 64],
 
     // For sliding pieces, pre-compute ray attacks
     // These represent attacks in each direction, assuming empty board
@@ -45,6 +53,8 @@ impl MoveTables {
             black_pawn_pushes: [BitBoard(0); 64],
             white_pawn_double_pushes: [BitBoard(0); 64],
             black_pawn_double_pushes: [BitBoard(0); 64],
+            rook_magics: [MagicEntry::EMPTY_MAGIC; 64],
+            bishop_magics: [MagicEntry::EMPTY_MAGIC; 64],
             north_rays: [BitBoard(0); 64],
             south_rays: [BitBoard(0); 64],
             east_rays: [BitBoard(0); 64],
@@ -58,6 +68,7 @@ impl MoveTables {
         tables.init_knight_moves();
         tables.init_king_moves();
         tables.init_pawn_tables();
+        tables.init_magics();
         tables.init_ray_attacks();
 
         tables
@@ -124,6 +135,29 @@ impl MoveTables {
             self.king_moves[index] = king_moves;
             index += 1;
         }
+    }
+
+    const fn init_magics(&mut self) {
+        // let mut i = 0;
+        // while i < 64 {
+        //     self.rook_magics[i] = MagicEntry {
+        //         mask: BitBoard(magics::ROOK_MASKS[i]),
+        //         magic: magics::ROOK_MAGICS[i],
+        //         attacks: magics::ROOK_ATTACKS
+        //             .as_ptr()
+        //             .wrapping_add(magics::ROOK_ATTACK_OFFSETS[i]),
+        //         shift: magics::ROOK_SHIFTS[i] as u32,
+        //     };
+        //     self.bishop_magics[i] = MagicEntry {
+        //         mask: BitBoard(magics::BISHOP_MASKS[i]),
+        //         magic: magics::BISHOP_MAGICS[i],
+        //         attacks: magics::BISHOP_ATTACKS
+        //             .as_ptr()
+        //             .wrapping_add(magics::BISHOP_ATTACK_OFFSETS[i]),
+        //         shift: magics::BISHOP_SHIFTS[i] as u32,
+        //     };
+        //     i += 1;
+        // }
     }
 
     const fn generate_ray(
@@ -274,95 +308,50 @@ impl MoveTables {
         }
     }
 
-    // const fn init_ray_attacks(&mut self) {
-    //     let mut index = 0;
-    //     while index < 64 {
-    //         let rank = index / 8;
-    //         let file = index % 8;
-    //
-    //         // North ray (up)
-    //         let mut north = BitBoard(0);
-    //         let mut r = rank + 1;
-    //         while r < 8 {
-    //             north.set(r * 8 + file);
-    //             r += 1;
-    //         }
-    //         self.north_rays[index] = north;
-    //
-    //         // South ray (down)
-    //         let mut south = BitBoard(0);
-    //         let mut r = rank as i8 - 1;
-    //         while r >= 0 {
-    //             south.set(r as usize * 8 + file);
-    //             r -= 1;
-    //         }
-    //         self.south_rays[index] = south;
-    //
-    //         // East ray (right)
-    //         let mut east = BitBoard(0);
-    //         let mut f = file + 1;
-    //         while f < 8 {
-    //             east.set(rank * 8 + f);
-    //             f += 1;
-    //         }
-    //         self.east_rays[index] = east;
-    //
-    //         // West ray (left)
-    //         let mut west = BitBoard(0);
-    //         let mut f = file as i8 - 1;
-    //         while f >= 0 {
-    //             west.set(rank * 8 + f as usize);
-    //             f -= 1;
-    //         }
-    //         self.west_rays[index] = west;
-    //
-    //         // Northeast ray (up-right)
-    //         let mut northeast = BitBoard(0);
-    //         let mut r = rank + 1;
-    //         let mut f = file + 1;
-    //         while r < 8 && f < 8 {
-    //             northeast.set(r * 8 + f);
-    //             r += 1;
-    //             f += 1;
-    //         }
-    //         self.northeast_rays[index] = northeast;
-    //
-    //         // Southeast ray (down-right)
-    //         let mut southeast = BitBoard(0);
-    //         let mut r = rank as i8 - 1;
-    //         let mut f = file + 1;
-    //         while r >= 0 && f < 8 {
-    //             southeast.set(r as usize * 8 + f);
-    //             r -= 1;
-    //             f += 1;
-    //         }
-    //         self.southeast_rays[index] = southeast;
-    //
-    //         // Southwest ray (down-left)
-    //         let mut southwest = BitBoard(0);
-    //         let mut r = rank as i8 - 1;
-    //         let mut f = file as i8 - 1;
-    //         while r >= 0 && f >= 0 {
-    //             southwest.set(r as usize * 8 + f as usize);
-    //             r -= 1;
-    //             f -= 1;
-    //         }
-    //         self.southwest_rays[index] = southwest;
-    //
-    //         // Northwest ray (up-left)
-    //         let mut northwest = BitBoard(0);
-    //         let mut r = rank + 1;
-    //         let mut f = file as i8 - 1;
-    //         while r < 8 && f >= 0 {
-    //             northwest.set(r * 8 + f as usize);
-    //             r += 1;
-    //             f -= 1;
-    //         }
-    //         self.northwest_rays[index] = northwest;
-    //
-    //         index += 1;
-    //     }
-    // }
+
+    pub fn generate_sliding_attack_mask(&self, from: usize, is_rook: bool) -> BitBoard {
+        let mut attacks = BitBoard(0);
+        let all_rays = if is_rook {
+            [
+                self.north_rays[from],
+                self.south_rays[from],
+                self.east_rays[from],
+                self.west_rays[from],
+            ]
+        } else {
+            [
+                self.northeast_rays[from],
+                self.southeast_rays[from],
+                self.southwest_rays[from],
+                self.northwest_rays[from],
+            ]
+        };
+
+        for ray in all_rays {
+            if ray.is_empty() {
+                continue;
+            }
+            // Get the square at the far end of the ray
+            let edge_sq = if ray.0 > (1u64 << from) {
+                ray.msb().unwrap() as usize
+            } else {
+                ray.lsb().unwrap() as usize
+            };
+
+            // Get the ray coming back from that edge square
+            let reverse_ray = if is_rook {
+                self.get_rook_moves(edge_sq, BitBoard(0), BitBoard(0))
+            } else {
+                self.get_bishop_moves(edge_sq, BitBoard(0), BitBoard(0))
+            };
+
+            // The intersection of the forward and reverse rays gives us the squares *between*
+            // the piece and the edge, which is exactly what we need for the mask.
+            attacks |= ray & reverse_ray;
+        }
+
+        attacks
+    }
 
     pub const fn get_rook_moves(
         &self,

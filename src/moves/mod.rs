@@ -1,9 +1,11 @@
+use std::ops::{Add, Mul, Neg, Sub};
+
 pub mod attack_data;
 pub mod move_gen;
 pub mod move_info;
+pub mod magics;
 pub mod precomputed;
 
-use std::ops::{Add, Mul, Neg, Sub};
 
 #[cfg(test)]
 mod tests;
