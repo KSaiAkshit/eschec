@@ -176,17 +176,17 @@ fn main() -> miette::Result<()> {
         println!("Found rook magic for squares {sq}");
     }
 
-    writeln!(f, "pub const ROOK_MASKS: [u64; 64] = {rook_masks:?};").unwrap();
-    writeln!(f, "pub const ROOK_MAGICS: [u64; 64] = {rook_magics:?};").unwrap();
-    writeln!(f, "pub const ROOK_SHIFTS: [u8; 64] = {rook_shifts:?};").unwrap();
+    writeln!(f, "pub static ROOK_MASKS: [u64; 64] = {rook_masks:?};").unwrap();
+    writeln!(f, "pub static ROOK_MAGICS: [u64; 64] = {rook_magics:?};").unwrap();
+    writeln!(f, "pub static ROOK_SHIFTS: [u8; 64] = {rook_shifts:?};").unwrap();
     writeln!(
         f,
-        "pub const ROOK_ATTACK_OFFSETS: [usize; 64] = {rook_offsets:?};"
+        "pub static ROOK_ATTACK_OFFSETS: [usize; 64] = {rook_offsets:?};"
     )
     .unwrap();
     writeln!(
         f,
-        "pub const ROOK_ATTACKS: [BitBoard; {}] = {:?};",
+        "pub static ROOK_ATTACKS: [BitBoard; {}] = {:?};",
         rook_attacks_table.len(),
         rook_attacks_table
     )
@@ -249,17 +249,25 @@ fn main() -> miette::Result<()> {
         println!("Found bishop magic for square {sq}");
     }
 
-    writeln!(f, "\npub const BISHOP_MASKS: [u64; 64] = {bishop_masks:?};").unwrap();
-    writeln!(f, "pub const BISHOP_MAGICS: [u64; 64] = {bishop_magics:?};").unwrap();
-    writeln!(f, "pub const BISHOP_SHIFTS: [u8; 64] = {bishop_shifts:?};").unwrap();
     writeln!(
         f,
-        "pub const BISHOP_ATTACK_OFFSETS: [usize; 64] = {bishop_offsets:?};"
+        "\npub static BISHOP_MASKS: [u64; 64] = {bishop_masks:?};"
     )
     .unwrap();
     writeln!(
         f,
-        "pub const BISHOP_ATTACKS: [BitBoard; {}] = {:?};",
+        "pub static BISHOP_MAGICS: [u64; 64] = {bishop_magics:?};"
+    )
+    .unwrap();
+    writeln!(f, "pub static BISHOP_SHIFTS: [u8; 64] = {bishop_shifts:?};").unwrap();
+    writeln!(
+        f,
+        "pub static BISHOP_ATTACK_OFFSETS: [usize; 64] = {bishop_offsets:?};"
+    )
+    .unwrap();
+    writeln!(
+        f,
+        "pub static BISHOP_ATTACKS: [BitBoard; {}] = {:?};",
         bishop_attacks_table.len(),
         bishop_attacks_table
     )

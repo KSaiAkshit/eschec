@@ -12,8 +12,8 @@ pub struct MagicEntry {
     pub mask: BitBoard,
     /// The magic number used to transform the blockers bitboard into a unique index.
     pub magic: u64,
-    /// A pointer to the first of this piece's attack_sets in the global attacks table.
-    pub attacks: *const BitBoard,
+    /// The offset into the global attacks table for this piece.
+    pub offset: usize,
     /// The amount to shift the transformed blockers by to get the final table index.
     pub shift: u32,
 }
@@ -23,7 +23,7 @@ impl MagicEntry {
     pub const EMPTY_MAGIC: MagicEntry = MagicEntry {
         mask: BitBoard(0),
         magic: 0,
-        attacks: std::ptr::null(),
+        offset: 0,
         shift: 0,
     };
 }

@@ -1,6 +1,9 @@
 use crate::{
     BitBoard, Side,
-    moves::{Direction, magics::MagicEntry},
+    moves::{
+        Direction,
+        magics::{self, MagicEntry},
+    },
 };
 
 #[derive(Debug)]
@@ -138,26 +141,22 @@ impl MoveTables {
     }
 
     const fn init_magics(&mut self) {
-        // let mut i = 0;
-        // while i < 64 {
-        //     self.rook_magics[i] = MagicEntry {
-        //         mask: BitBoard(magics::ROOK_MASKS[i]),
-        //         magic: magics::ROOK_MAGICS[i],
-        //         attacks: magics::ROOK_ATTACKS
-        //             .as_ptr()
-        //             .wrapping_add(magics::ROOK_ATTACK_OFFSETS[i]),
-        //         shift: magics::ROOK_SHIFTS[i] as u32,
-        //     };
-        //     self.bishop_magics[i] = MagicEntry {
-        //         mask: BitBoard(magics::BISHOP_MASKS[i]),
-        //         magic: magics::BISHOP_MAGICS[i],
-        //         attacks: magics::BISHOP_ATTACKS
-        //             .as_ptr()
-        //             .wrapping_add(magics::BISHOP_ATTACK_OFFSETS[i]),
-        //         shift: magics::BISHOP_SHIFTS[i] as u32,
-        //     };
-        //     i += 1;
-        // }
+        let mut i = 0;
+        while i < 64 {
+            self.rook_magics[i] = MagicEntry {
+                mask: BitBoard(magics::ROOK_MASKS[i]),
+                magic: magics::ROOK_MAGICS[i],
+                offset: magics::ROOK_ATTACK_OFFSETS[i],
+                shift: magics::ROOK_SHIFTS[i] as u32,
+            };
+            self.bishop_magics[i] = MagicEntry {
+                mask: BitBoard(magics::BISHOP_MASKS[i]),
+                magic: magics::BISHOP_MAGICS[i],
+                offset: magics::BISHOP_ATTACK_OFFSETS[i],
+                shift: magics::BISHOP_SHIFTS[i] as u32,
+            };
+            i += 1;
+        }
     }
 
     const fn generate_ray(
@@ -358,16 +357,9 @@ impl MoveTables {
         ally_pieces: BitBoard,
         enemy_pieces: BitBoard,
     ) -> BitBoard {
-        let mut moves = BitBoard(0);
-
-        // Use the ray tables and add until blocker logic
-        moves = moves
-            .or(self.ray_until_blocker(self.north_rays[from], ally_pieces, enemy_pieces, true))
-            .or(self.ray_until_blocker(self.south_rays[from], ally_pieces, enemy_pieces, false))
-            .or(self.ray_until_blocker(self.east_rays[from], ally_pieces, enemy_pieces, true))
-            .or(self.ray_until_blocker(self.west_rays[from], ally_pieces, enemy_pieces, false));
-
-        moves
+        let blockers = ally_pieces.or(enemy_pieces);
+        let attacks = self.get_rook_attacks_bb(from, blockers);
+        attacks.and(ally_pieces.not())
     }
 
     pub const fn get_bishop_moves(
@@ -376,16 +368,9 @@ impl MoveTables {
         ally_pieces: BitBoard,
         enemy_pieces: BitBoard,
     ) -> BitBoard {
-        let mut moves = BitBoard(0);
-
-        // Use the ray tables and add until blocker logic
-        moves = moves
-            .or(self.ray_until_blocker(self.northeast_rays[from], ally_pieces, enemy_pieces, true))
-            .or(self.ray_until_blocker(self.southeast_rays[from], ally_pieces, enemy_pieces, false))
-            .or(self.ray_until_blocker(self.southwest_rays[from], ally_pieces, enemy_pieces, false))
-            .or(self.ray_until_blocker(self.northwest_rays[from], ally_pieces, enemy_pieces, true));
-
-        moves
+        let blockers = ally_pieces.or(enemy_pieces);
+        let attacks = self.get_bishop_attacks_bb(from, blockers);
+        attacks.and(ally_pieces.not())
     }
 
     pub const fn get_queen_moves(
@@ -555,5 +540,22 @@ impl MoveTables {
             self.get_attacks_in_dir(self.west_rays[from], occupied, false, &self.west_rays);
 
         n_attacks | s_attacks | e_attacks | w_attacks
+    }
+
+    const fn get_rook_attacks_bb(&self, from: usize, blockers: BitBoard) -> BitBoard {
+        let entry = &self.rook_magics[from];
+        let blockers_masked = blockers.and(entry.mask);
+        let index = ((blockers_masked.0.wrapping_mul(entry.magic)) >> entry.shift) as usize;
+
+        magics::ROOK_ATTACKS[magics::ROOK_ATTACK_OFFSETS[from] + index]
+    }
+
+    const fn get_bishop_attacks_bb(&self, square: usize, blockers: BitBoard) -> BitBoard {
+        let entry = &self.bishop_magics[square];
+        let blockers_masked = blockers.and(entry.mask);
+        let index = ((blockers_masked.0.wrapping_mul(entry.magic)) >> entry.shift) as usize;
+
+        // Use indexing which is bounds-checked, instead of pointer arithmetic
+        magics::BISHOP_ATTACKS[magics::BISHOP_ATTACK_OFFSETS[square] + index]
     }
 }

@@ -172,6 +172,10 @@ impl BitBoard {
         BitBoard(self.0 & rhs.0)
     }
 
+    pub const fn not(self) -> Self {
+        BitBoard(!self.0)
+    }
+
     #[inline(always)]
     pub const fn contains_square(&self, index: usize) -> bool {
         (self.0 & (1 << index)) != 0
