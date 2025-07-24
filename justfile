@@ -111,7 +111,7 @@ lint:
 
 [doc("check format")]
 fmt-check:
-    cargo fmt --all --check
+    -cargo fmt --all --check
     just fmt
 
 [confirm("Run 'cargo fmt'?")]

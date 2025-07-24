@@ -308,7 +308,6 @@ impl MoveTables {
         }
     }
 
-
     pub fn generate_sliding_attack_mask(&self, from: usize, is_rook: bool) -> BitBoard {
         let mut attacks = BitBoard(0);
         let all_rays = if is_rook {

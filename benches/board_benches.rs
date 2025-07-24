@@ -65,7 +65,7 @@ fn bench_boardstate_ops(c: &mut Criterion) {
                 )
             },
             |(mut state, from, to)| {
-                black_box(state.move_piece(  from, to).is_ok());
+                black_box(state.move_piece(from, to).is_ok());
             },
             BatchSize::SmallInput,
         );

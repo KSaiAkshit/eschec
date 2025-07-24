@@ -46,11 +46,34 @@ pub mod consts {
     pub const NUM_SQUARES: usize = 64;
     pub const NUM_CASTLING_RIGHTS: usize = 16;
     pub const NUM_FILES: usize = 8;
+    pub const NUM_RANKS: usize = 8;
 
     pub const MAX_PLY: usize = 64;
 
     pub const MATE_SCORE: i32 = 20_000;
     pub const MATE_THRESHOLD: i32 = MATE_SCORE - MAX_PLY as i32;
+
+    pub const FILE_MASKS: [u64; NUM_FILES] = [
+        0x0101010101010101, // A
+        0x0202020202020202, // B
+        0x0404040404040404, // C
+        0x0808080808080808, // D
+        0x1010101010101010, // E
+        0x2020202020202020, // F
+        0x4040404040404040, // G
+        0x8080808080808080, // H
+    ];
+
+    pub const RANK_MASKS: [u64; NUM_RANKS] = [
+        0x00000000000000FF, // Rank 1
+        0x000000000000FF00, // Rank 2
+        0x0000000000FF0000, // Rank 3
+        0x00000000FF000000, // Rank 4
+        0x000000FF00000000, // Rank 5
+        0x0000FF0000000000, // Rank 6
+        0x00FF000000000000, // Rank 7
+        0xFF00000000000000, // Rank 8
+    ];
 }
 
 pub trait LogHandle: Send + Sync {
