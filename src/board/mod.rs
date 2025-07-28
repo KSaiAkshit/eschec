@@ -231,6 +231,10 @@ impl Board {
         Ok(())
     }
 
+    pub fn make_null_move(&mut self) {
+        self.stm = self.stm.flip();
+    }
+
     /// The primary "unsafe" but fast method for applying a move.
     /// It assumes the move is legal and comes from our own generator.
     /// Also updates zobrist hash

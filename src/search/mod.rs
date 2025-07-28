@@ -1,4 +1,4 @@
-use crate::consts::{MATE_THRESHOLD, MAX_PLY};
+use crate::consts::{MATE_SCORE, MATE_THRESHOLD, MAX_PLY};
 use crate::search::move_ordering::sort_moves;
 use crate::search::tt::{ScoreTypes, TranspositionEntry, TranspositionTable};
 use crate::{evaluation::Evaluator, moves::move_info::Move};
@@ -33,6 +33,7 @@ pub struct Search {
     search_running: Option<Arc<AtomicBool>>,
     tt: TranspositionTable,
     killer_moves: [[Option<Move>; 2]; MAX_PLY],
+    enable_nmp: bool,
 }
 
 impl Search {
@@ -47,6 +48,7 @@ impl Search {
             search_running: None,
             tt: TranspositionTable::new(16),
             killer_moves: [[None; 2]; MAX_PLY],
+            enable_nmp: true,
         }
     }
 
@@ -63,6 +65,7 @@ impl Search {
             search_running: None,
             tt,
             killer_moves: [[None; 2]; MAX_PLY],
+            enable_nmp: true,
         }
     }
 
@@ -75,7 +78,20 @@ impl Search {
         Ok(())
     }
 
-    // #[instrument(skip_all)]
+    pub fn toggle_nmp(&mut self) -> bool {
+        if self
+            .search_running
+            .as_ref()
+            .is_none_or(|flag| flag.load(Ordering::Relaxed))
+        {
+            self.enable_nmp = !self.enable_nmp;
+            true
+        } else {
+            false
+        }
+    }
+
+    #[instrument(skip_all)]
     pub fn find_best_move(
         &mut self,
         board: &Board,
@@ -111,6 +127,7 @@ impl Search {
         let mut best_move = legal_moves.first().copied();
         let mut best_score = i32::MIN + 1;
         let mut completed_depth = u8::default();
+        let mut once = false;
 
         // Iterative deepening
         for depth in 1..=self.max_depth {
@@ -138,6 +155,10 @@ impl Search {
 
                 debug!("Evaluating move: {}", m);
                 let score = -self.alpha_beta(&board_copy, depth - 1, 0, -beta, -alpha, evaluator);
+                if !once {
+                    println!("alpha: {alpha}, beta: {beta}");
+                    once = true;
+                }
 
                 if self.should_stop() {
                     break;
@@ -179,7 +200,7 @@ impl Search {
         }
     }
 
-    #[instrument(skip_all)]
+    #[instrument(skip(self, board, depth, ply, evaluator))]
     fn alpha_beta(
         &mut self,
         board: &Board,
@@ -193,7 +214,16 @@ impl Search {
             return 0; // Neutral score because search was stopped
         }
 
+        if alpha >= beta {
+            debug_assert!(
+                false,
+                "Invalid alpha-beta window: alpha: {alpha}, beta: {beta}"
+            );
+            return alpha;
+        }
+
         let original_alpha = alpha;
+        let is_in_check = board.is_in_check(board.stm);
 
         let current_hash = board.hash;
         let mut tt_move = Move::default();
@@ -230,6 +260,46 @@ impl Search {
             }
         }
 
+        if alpha >= beta {
+            debug_assert!(
+                false,
+                "Invalid initial alpha-beta window: alpha: {alpha}, beta: {beta}"
+            );
+            return alpha;
+        }
+
+        let window = beta.checked_sub(alpha);
+
+        if self.enable_nmp
+            && !is_in_check
+            && depth >= 3
+            && window.is_some_and(|win| win > 1)
+            && has_non_pawn_material(board)
+            && ply > 0
+        {
+            let mut null_board = *board;
+            null_board.make_null_move();
+
+            let null_reduction = if depth >= 6 { 4 } else { 2 };
+            let null_depth = depth.saturating_sub(null_reduction);
+
+            let null_score = -self.alpha_beta(
+                &null_board,
+                null_depth,
+                ply + 1,
+                -beta,
+                -beta + 1,
+                evaluator,
+            );
+
+            if null_score >= beta {
+                if null_score >= MATE_THRESHOLD {
+                    return beta;
+                }
+                return null_score;
+            }
+        }
+
         if depth == 0 {
             return self.quiescence_search(board, alpha, beta, evaluator);
         }
@@ -256,6 +326,7 @@ impl Search {
 
         let mut best_move_this_node = legal_moves.first().copied().unwrap();
         let mut best_score = i32::MIN + 1;
+        let num_moves = legal_moves.len();
 
         for mv in legal_moves {
             let mut board_copy = *board;
@@ -299,6 +370,13 @@ impl Search {
                 self.tt.store(entry_to_score);
                 return beta;
             }
+        }
+
+        if best_score == i32::MIN + 1 {
+            println!(
+                "Mad cooked: alpha: {alpha}, beta: {beta}, best_score: {best_score}, legal_moves searched: {}",
+                num_moves
+            );
         }
 
         let score_type = if best_score <= original_alpha {
@@ -386,12 +464,25 @@ impl Search {
     }
 }
 
+fn has_non_pawn_material(board: &Board) -> bool {
+    let side = board.stm;
+    let side_pieces = board.positions.get_side_bb(side);
+    let pawns = board.positions.get_piece_bb(side, Piece::Pawn);
+    let king = board.positions.get_piece_bb(side, Piece::King);
+    (*side_pieces & !(*pawns | *king)).any()
+}
+
 fn adjust_score_for_ply(score: i32, ply: usize) -> i32 {
+    if score == i32::MIN {
+        // debug_assert!(false, "BUG: adjust_score_for_ply called with i32::MIN");
+        // println!("BUG: adjust_score_for_ply called with i32::MIN");
+        return -MATE_SCORE;
+    }
     if score.abs() > MATE_THRESHOLD {
         if score > 0 {
-            score - ply as i32
+            score.saturating_sub(ply as i32)
         } else {
-            score + ply as i32
+            score.saturating_add(ply as i32)
         }
     } else {
         score
@@ -399,13 +490,58 @@ fn adjust_score_for_ply(score: i32, ply: usize) -> i32 {
 }
 
 fn adjust_score_from_ply(score: i32, ply: usize) -> i32 {
+    if score == i32::MIN {
+        debug_assert!(false, "BUG: adjust_score_from_ply called with i32::MIN");
+        println!("BUG: adjust_score_from_ply called with i32::MIN");
+        return -MATE_SCORE;
+    }
     if score.abs() > MATE_THRESHOLD {
         if score > 0 {
-            score + ply as i32
+            score.saturating_add(ply as i32)
         } else {
-            score - ply as i32
+            score.saturating_sub(ply as i32)
         }
     } else {
         score
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_null_move_pruning() {
+        crate::init();
+        let _ = crate::toggle_file_logging(true);
+        let mut search_with_null = Search::new(6);
+        let mut search_without_null = Search::new(6);
+        search_without_null.toggle_nmp();
+
+        let board =
+            Board::from_fen("r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/3P1N2/PPP2PPP/RNBQK2R w KQkq - 0 1");
+        println!("{board}");
+        let evaluator = CompositeEvaluator::balanced();
+
+        info!("Starting with null move pruning");
+        let start = std::time::Instant::now();
+        let result_with = search_with_null.find_best_move(&board, &evaluator, None);
+        let time_with = start.elapsed();
+
+        info!("Starting without null move pruning");
+        let start = std::time::Instant::now();
+        let result_without = search_without_null.find_best_move(&board, &evaluator, None);
+        let time_without = start.elapsed();
+
+        println!(
+            "With null move: {} nodes in {:?}",
+            result_with.nodes_searched, time_with
+        );
+        println!(
+            "Without null move: {} nodes in {:?}",
+            result_without.nodes_searched, time_without
+        );
+
+        assert!(result_with.nodes_searched < result_without.nodes_searched);
     }
 }

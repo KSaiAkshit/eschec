@@ -81,7 +81,7 @@ impl MagicGenerator {
                 info!("Here in {piece} {square}, skipped: {counts}: {i}");
             }
             let magic_candidate = self.prng.sparse_rand();
-            if (mask.0.wrapping_mul(magic_candidate) & 0xFF00000000000000) < 6 {
+            if (mask.0.wrapping_mul(magic_candidate) & 0xFF00000000000000).count_ones() < 6 {
                 continue;
             }
             self.used_attacks.iter_mut().for_each(|x| *x = None);

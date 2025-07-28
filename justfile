@@ -53,6 +53,7 @@ gauntlet opponent='gnuchess' rounds='40' tc='15+0.1' concurrency='4': update
 [doc("Remove build artifacts and gauntlet artifacts")]
 clean:
     rm -rf ./gauntlet/results/ ./gauntlet/engines/
+    rm -rf /tmp/eschec_logs
     mkdir ./gauntlet/results ./gauntlet/engines
 
 [doc("Run the engine in play mode")]
@@ -69,6 +70,7 @@ run *args:
 
 [doc("Find the most recent file in the 'logs' directory and tail it")]
 @tail_log:
+    path_exists({{ logs_dir }})
     echo "{{ MAGENTA }} Tailing log {{ NORMAL }}"
     tail -f {{ logs_dir }}$(ls -t {{ logs_dir }} | head -n 1)
 

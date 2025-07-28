@@ -529,13 +529,14 @@ fn gen_pawn_moves(state: &BoardState, side: Side, move_list: &mut Vec<Move>) {
         let mut push_bb = pushes;
         while let Some(to_sq) = push_bb.pop_lsb() {
             let to_rank = to_sq as usize / 8;
+            let from_rank = from / 8;
             let is_promotion = match side {
                 Side::White => to_rank == 7,
                 Side::Black => to_rank == 0,
             };
             let is_double = match side {
-                Side::White => (to_sq as usize) == from + 16,
-                Side::Black => (to_sq as usize) == from - 16,
+                Side::White => from_rank == 1 && to_rank == 3,
+                Side::Black => from_rank == 6 && to_rank == 4,
             };
             if is_promotion {
                 add_promo_moves(from_sq as u8, to_sq as u8, false, move_list);
