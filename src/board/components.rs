@@ -172,6 +172,7 @@ impl BitBoard {
         BitBoard(self.0 & rhs.0)
     }
 
+    #[inline(always)]
     pub const fn not(self) -> Self {
         BitBoard(!self.0)
     }
@@ -434,6 +435,8 @@ impl PieceInfo {
     }
 }
 
+/// Bit Boards use 64 bits of true or false, to tell if a given peice is at the location.
+/// 12 Bit boards represent where the chess peices are at all times
 /// Snapshot of current board
 #[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
 pub struct BoardState {

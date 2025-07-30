@@ -1,5 +1,4 @@
-use super::Evaluator;
-use crate::{board::Board, consts::NUM_PIECES};
+use crate::prelude::*;
 
 const MOBILITY_WEIGHTS: [i32; NUM_PIECES] = [1, 3, 3, 5, 9, 0];
 #[derive(Debug)]
@@ -47,7 +46,13 @@ impl Evaluator for MobilityEvaluator {
         let opponent_mobility = self.calculate_mobility_score(&opponent_board);
 
         // The final score is the difference in mobility.
-        current_player_mobility - opponent_mobility
+        let score = current_player_mobility - opponent_mobility;
+
+        if board.stm == Side::White {
+            score
+        } else {
+            -score
+        }
     }
 
     fn name(&self) -> &str {

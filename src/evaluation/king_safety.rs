@@ -1,4 +1,5 @@
 use crate::prelude::*;
+
 #[derive(Debug)]
 pub struct KingSafetyEvaluator {
     name: String,

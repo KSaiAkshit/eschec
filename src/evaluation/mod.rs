@@ -4,11 +4,13 @@ use std::fmt::Debug;
 pub mod king_safety;
 pub mod material;
 pub mod mobility;
+pub mod pawn_structure;
 pub mod position;
 
 use king_safety::KingSafetyEvaluator;
 use material::MaterialEvaluator;
 use mobility::MobilityEvaluator;
+use pawn_structure::PawnStructureEvaluator;
 use position::PositionEvaluator;
 
 pub trait Evaluator: Debug + Send + Sync {
@@ -37,7 +39,8 @@ impl CompositeEvaluator {
             .add_evaluator(Box::new(MaterialEvaluator::new()), 0.5)
             .add_evaluator(Box::new(PositionEvaluator::new()), 0.2)
             .add_evaluator(Box::new(MobilityEvaluator::new()), 0.1)
-            .add_evaluator(Box::new(KingSafetyEvaluator::new()), 0.2);
+            .add_evaluator(Box::new(KingSafetyEvaluator::new()), 0.1)
+            .add_evaluator(Box::new(PawnStructureEvaluator::new()), 0.1);
         evaluator
     }
 

@@ -20,7 +20,7 @@ pub mod zobrist;
 /// Completely encapsulate the game
 #[derive(Default, Debug, PartialEq, Eq, Clone, Hash, PartialOrd, Copy)]
 pub struct Board {
-    // Snapshot of current board
+    /// Snapshot of current board
     pub positions: BoardState,
     /// Side to move, 0 - white, 1 - black
     pub stm: Side,
