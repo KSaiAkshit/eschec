@@ -1,13 +1,11 @@
-use crate::consts::{MATE_SCORE, MATE_THRESHOLD, MAX_PLY};
 use crate::search::move_ordering::sort_moves;
 use crate::search::tt::{ScoreTypes, TranspositionEntry, TranspositionTable};
-use crate::{evaluation::Evaluator, moves::move_info::Move};
 use tracing::*;
 
 pub mod move_ordering;
 pub mod tt;
 
-use super::*;
+use crate::prelude::*;
 use std::cmp::{max, min};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -508,12 +506,14 @@ fn adjust_score_from_ply(score: i32, ply: usize) -> i32 {
 
 #[cfg(test)]
 mod tests {
+    use crate::utils::log::init;
+
     use super::*;
 
     #[test]
     fn test_null_move_pruning() {
-        crate::init();
-        let _ = crate::toggle_file_logging(true);
+        init();
+        let _ = utils::log::toggle_file_logging(true);
         let mut search_with_null = Search::new(6);
         let mut search_without_null = Search::new(6);
         search_without_null.toggle_nmp();

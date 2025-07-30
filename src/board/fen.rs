@@ -1,8 +1,6 @@
 use std::{collections::HashMap, sync::LazyLock};
 
-use miette::{Context, IntoDiagnostic};
-
-use crate::{BoardState, Piece, moves::Direction};
+use crate::prelude::*;
 
 use super::{
     Board,

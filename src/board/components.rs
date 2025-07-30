@@ -847,7 +847,7 @@ impl Display for Square {
 
 #[cfg(test)]
 mod tests {
-    use crate::{board::Board, moves::move_info::Move};
+    use crate::{board::Board, moves::move_info::Move, utils::log::init};
 
     use super::*;
 
@@ -893,7 +893,7 @@ mod tests {
 
     #[test]
     fn test_make_move() {
-        crate::init();
+        init();
         let out = "0 0 0 0 0 0 0 0
 0 0 0 0 0 0 0 0
 0 0 0 0 0 0 0 0

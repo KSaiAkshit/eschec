@@ -1,6 +1,6 @@
 use tracing_subscriber::fmt::init;
 
-use crate::{BitBoard, Square, board::Board, moves::precomputed::MOVE_TABLES};
+use crate::prelude::*;
 use std::{
     io::{BufRead, BufReader, Write},
     process::{Command, Stdio},

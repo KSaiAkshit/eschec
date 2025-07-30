@@ -2,11 +2,11 @@ use criterion::{BatchSize, Criterion, criterion_group, criterion_main};
 use std::{hint::black_box, str::FromStr};
 
 use eschec::{
-    KIWIPETE,
     board::{
         Board,
         components::{BoardState, Piece, Side, Square},
     },
+    consts::KIWIPETE,
     moves::move_info::Move,
 };
 

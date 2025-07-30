@@ -2,12 +2,8 @@ use criterion::{BatchSize, Criterion, criterion_group, criterion_main};
 use std::hint::black_box;
 
 use eschec::{
-    Board,
-    board::{
-        components::BitBoard,
-        zobrist::{ZobristKeys, calculate_hash},
-    },
-    moves::precomputed::MOVE_TABLES,
+    board::zobrist::{ZobristKeys, calculate_hash},
+    prelude::*,
 };
 
 // Constants and Setup

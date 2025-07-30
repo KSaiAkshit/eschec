@@ -11,13 +11,13 @@
 #![allow(dead_code)]
 #![cfg_attr(feature = "simd", feature(portable_simd))]
 
-use eschec::board::components::{BitBoard, BoardState, Side};
+use eschec::prelude::*;
 use std::hint::black_box;
 use std::time::Instant;
 
 // This helper function creates a BoardState in the starting position.
 fn setup_board_state() -> BoardState {
-    let board = eschec::Board::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    let board = Board::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     board.positions
 }
 

@@ -1,4 +1,4 @@
-use super::*;
+use crate::prelude::*;
 use std::fmt::Debug;
 
 pub mod king_safety;

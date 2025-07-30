@@ -8,14 +8,9 @@ use std::{
     thread::{self, spawn},
 };
 
-use tracing::*;
-
 use crate::{
-    Board, Side, Square,
     comms::uci_parser::{GoParams, UciCommand, parse_line},
-    evaluation::{CompositeEvaluator, Evaluator},
-    moves::move_info::{Move, MoveInfo},
-    search::{Search, SearchResult},
+    prelude::*,
 };
 
 #[derive(Debug)]
@@ -200,7 +195,7 @@ fn cmd_setoption(name: &str, value: &str) -> miette::Result<()> {
     match name {
         "Debug Log File" => {
             let enable = value.to_lowercase() == "true";
-            crate::toggle_file_logging(enable)?;
+            toggle_file_logging(enable)?;
             info!("Set file logging to {enable}");
         }
         _ => {

@@ -1,7 +1,9 @@
-use clap::{Parser, Subcommand, ValueEnum};
-use tracing::Level;
+use std::io::Write;
 
-use crate::START_FEN;
+use clap::{Parser, Subcommand, ValueEnum};
+use tracing::{Level, span};
+
+use crate::prelude::*;
 
 #[derive(Parser)]
 #[command(name = env!("CARGO_PKG_NAME"), version = env!("CARGO_PKG_VERSION"), about = env!("CARGO_PKG_DESCRIPTION") )]
@@ -141,4 +143,170 @@ pub enum GameSubcommand {
     /// Quit game
     #[clap(visible_alias = "q")]
     Quit,
+}
+
+pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
+    let inp_depth = depth;
+    let inp_fen = fen.clone();
+
+    let mut board = Board::from_fen(&fen);
+    let evaluator = CompositeEvaluator::balanced();
+    let mut search = Search::with_time_control(depth, 10_000);
+    // let mut search = Search::new(depth);
+
+    let stdin = std::io::stdin();
+
+    println!("{board}");
+    loop {
+        let span = span!(Level::DEBUG, "game_loop");
+        let _guard = span.enter();
+
+        trace!("inside game_loop");
+
+        print!("{} >> ", board.stm);
+        std::io::stdout().flush().unwrap();
+
+        let mut input = String::new();
+        if stdin.read_line(&mut input).unwrap() == 0 {
+            println!("EOF detected, exiting...");
+            break;
+        }
+
+        let input = input.trim();
+        if input.is_empty() {
+            continue;
+        }
+
+        let args = match shell_words::split(input) {
+            Ok(tokens) => tokens,
+            Err(e) => {
+                eprintln!("Error parsing input: {e}");
+                continue;
+            }
+        };
+
+        match GameCommand::try_parse_from(args) {
+            Ok(game_cmd) => match game_cmd.cmd {
+                GameSubcommand::Move { move_str } => {
+                    let mov = match Move::from_uci(&board, &move_str) {
+                        Ok(m) => m,
+                        Err(e) => {
+                            eprintln!("{e:?}");
+                            continue;
+                        }
+                    };
+                    info!("Attempting move: {}", mov);
+                    // Already verified that mov is legal when parsing for uci move above
+                    if let Err(e) = board.make_move(mov) {
+                        eprintln!("{e:?}");
+                        continue;
+                    }
+                }
+                GameSubcommand::Print => {
+                    info!("Printing board..");
+                    println!("{board}");
+                }
+                GameSubcommand::Perft { depth, divide } => {
+                    info!(
+                        "Running perft to depth {}, with divide: {}",
+                        depth.unwrap_or(5),
+                        divide
+                    );
+                    let mut board_copy = board;
+                    if divide {
+                        perft_divide(&mut board_copy, depth.unwrap_or(5));
+                    } else {
+                        run_perft_suite(&mut board_copy, depth.unwrap_or(5));
+                    }
+                }
+                GameSubcommand::Restart => {
+                    info!("Restarting game...");
+                    board = Board::from_fen(&inp_fen);
+                }
+                GameSubcommand::Fen => {
+                    info!("Printing fen...");
+                    println!("{}", fen::to_fen(&board)?);
+                }
+                GameSubcommand::Quit => {
+                    info!("Exiting game loop...");
+                    break;
+                }
+                GameSubcommand::Undo => {
+                    todo!("Undo last state")
+                }
+                GameSubcommand::Save { filename } => {
+                    todo!("Saving to file: {filename}");
+                }
+                GameSubcommand::Hint => {
+                    info!("Here's a Hint. Support for multiple hints coming soon");
+                    let result = search.find_best_move(&board, &evaluator, None);
+                    if let Some(mov) = result.best_move {
+                        info!("Best move: {} ", mov.uci());
+                        info!(
+                            "score: {}, time_taken: {} ms",
+                            result.score,
+                            result.time_taken.as_millis()
+                        );
+                    } else {
+                        error!("No legal moves available");
+                    }
+                }
+                GameSubcommand::Evaluate => {
+                    info!("Evaluating the current board state");
+                    let score = board.evaluate_position(&evaluator);
+                    info!("Score: {score}");
+                }
+                GameSubcommand::Clear => {
+                    info!("Clearing screen");
+                    utils::clear_screen()?;
+                }
+                GameSubcommand::Set { cmd } => match cmd {
+                    SetSubcommand::Fen { parts } => {
+                        if parts.is_empty() {
+                            error!("No FEN string provided. Usage: set fen <FEN_STRING>");
+                            continue;
+                        }
+                        let fen_str = parts.join(" ");
+                        info!("Setting fen to {fen_str}");
+                        board = Board::from_fen(&fen_str);
+                        println!("{board}");
+                    }
+                    SetSubcommand::Depth { depth } => {
+                        info!("Changing search depth from {inp_depth} to {depth}");
+                        search.change_depth(depth)?;
+                    }
+                    SetSubcommand::LogLevel { level } => {
+                        let new_level: Level = level.into();
+                        info!("Setting log level to {new_level}");
+                        if let Err(e) = set_log_level(new_level) {
+                            error!("Failed to set log level: {e:?}");
+                        }
+                    }
+                    SetSubcommand::LogFile { enable } => {
+                        let enable_bool = match enable.to_lowercase().as_str() {
+                            "true" | "t" | "1" | "on" => true,
+                            "false" | "f" | "0" | "off" => false,
+                            _ => {
+                                error!(
+                                    "Invalid value for log-file: '{}'. Use 'true' or 'false'.",
+                                    enable
+                                );
+                                continue;
+                            }
+                        };
+                        info!("Setting file logging to: {enable_bool}");
+                        if let Err(e) = toggle_file_logging(enable_bool) {
+                            error!("Failed to toggle file logging: {e:?}");
+                        }
+                    }
+                },
+            },
+            Err(e) => {
+                // println!("{}", e.render());
+                e.print().expect("Failed to print clap error");
+            }
+        }
+    }
+
+    Ok(())
 }

@@ -2,8 +2,8 @@ use criterion::{BatchSize, Criterion, criterion_group, criterion_main};
 use std::{cmp::max, hint::black_box};
 
 use eschec::{
-    KIWIPETE,
     board::Board,
+    consts::KIWIPETE,
     evaluation::{CompositeEvaluator, Evaluator},
     moves::{move_gen, move_info::Move},
     search::Search,

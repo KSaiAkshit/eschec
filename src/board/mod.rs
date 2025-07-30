@@ -1,20 +1,15 @@
 use crate::{
-    START_FEN,
-    evaluation::Evaluator,
+    board::zobrist::calculate_hash,
     moves::{
         attack_data::calculate_attack_data,
         move_gen::{generate_legal_captures, generate_legal_moves, generate_pseudo_legal_moves},
-        move_info::{Move, MoveInfo},
-        precomputed::MOVE_TABLES,
     },
-    zobrist::{ZOBRIST, calculate_hash},
+    prelude::*,
 };
 use miette::Context;
 #[cfg(feature = "random")]
 use rand::prelude::*;
 use std::fmt::Display;
-
-use self::components::{BoardState, CastlingRights, Piece, Side, Square};
 
 pub mod components;
 pub mod fen;
@@ -698,7 +693,7 @@ mod material_tests {
 
     use std::str::FromStr;
 
-    use crate::init;
+    use crate::utils::log::init;
 
     use super::*;
 

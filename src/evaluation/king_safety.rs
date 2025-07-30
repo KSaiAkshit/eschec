@@ -1,5 +1,4 @@
-use crate::{Board, CastlingRights, Side, evaluation::Evaluator};
-
+use crate::prelude::*;
 #[derive(Debug)]
 pub struct KingSafetyEvaluator {
     name: String,

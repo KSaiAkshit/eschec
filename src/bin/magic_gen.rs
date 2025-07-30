@@ -1,8 +1,7 @@
 use std::io::Write;
 use std::{fs::File, io::BufWriter, path::Path};
 
-use eschec::Square;
-use eschec::{BitBoard, Piece, moves::precomputed::MOVE_TABLES, utils::prng::Prng};
+use eschec::prelude::*;
 use miette::IntoDiagnostic;
 #[cfg(feature = "rayon")]
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
@@ -105,7 +104,7 @@ impl MagicGenerator {
 }
 
 fn main() -> miette::Result<()> {
-    eschec::init();
+    eschec::utils::log::init();
     println!("Generating magic bitboard constants ... (This may take some time)");
 
     #[cfg(not(feature = "rayon"))]

@@ -1,10 +1,4 @@
-use crate::{
-    BitBoard, Side,
-    moves::{
-        Direction,
-        magics::{self, MagicEntry},
-    },
-};
+use crate::{moves::magics::MagicEntry, prelude::*};
 
 #[derive(Debug)]
 pub struct MoveTables {

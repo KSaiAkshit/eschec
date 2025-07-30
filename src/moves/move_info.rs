@@ -2,7 +2,7 @@ use std::{fmt::Display, str::FromStr};
 
 use miette::Context;
 
-use crate::{Board, CastlingRights, Piece, Square};
+use crate::prelude::*;
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct MoveInfo {

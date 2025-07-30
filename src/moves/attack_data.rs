@@ -1,9 +1,5 @@
+use crate::prelude::*;
 use std::fmt::Debug;
-
-use crate::{
-    BitBoard, Board, Piece, Side,
-    moves::{Direction, precomputed::MOVE_TABLES},
-};
 
 #[derive(Clone, Default)]
 pub struct AttackData {

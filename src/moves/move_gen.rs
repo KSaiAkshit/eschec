@@ -12,15 +12,9 @@
 //! - **Legal moves**: A subset of pseudo-legal moves that are guaranteed not to leave
 //!   the king in check. This is what the engine's search and game logic uses. This
 //!   generator uses pre-calculated `AttackData` to efficiently determine legality.
-
 use crate::{
-    BitBoard, Board, BoardState, CastlingRights, Piece, Side, Square,
-    moves::{
-        Direction,
-        attack_data::{AttackData, calculate_attack_data},
-        move_info::Move,
-        precomputed::MOVE_TABLES,
-    },
+    moves::attack_data::{AttackData, calculate_attack_data},
+    prelude::*,
 };
 
 // ===================================================================

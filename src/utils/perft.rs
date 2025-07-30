@@ -1,6 +1,4 @@
-use crate::moves::move_info::Move;
-use crate::*;
-use miette::Context;
+use crate::prelude::*;
 use std::io::{BufRead, BufReader, Write};
 use std::process::{Command, Stdio};
 use std::str::FromStr;
@@ -252,7 +250,7 @@ pub fn run_perft_suite(board: &mut Board, max_depth: u8) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::init;
+    use crate::{consts::KIWIPETE, utils::log::init};
 
     /// Known Perft values for the starting position
     const STARTING_PERFT: &[(u8, u64)] = &[

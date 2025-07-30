@@ -2,7 +2,7 @@ use std::sync::LazyLock;
 
 use rand::{Rng, SeedableRng, rngs::StdRng};
 
-use crate::{Board, Piece, Side, consts::*, moves::precomputed::MOVE_TABLES};
+use crate::prelude::*;
 
 pub static ZOBRIST: LazyLock<ZobristKeys> = LazyLock::new(ZobristKeys::new);
 
@@ -89,7 +89,7 @@ pub fn calculate_hash(board: &Board) -> u64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::KIWIPETE;
+    use crate::consts::KIWIPETE;
     #[test]
     fn different_hash() {
         let legal_ep_fen = "4k3/8/8/8/3pP3/8/8/4K3 b - e3 0 1";
