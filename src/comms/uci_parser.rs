@@ -49,6 +49,7 @@ pub fn parse_line(line: &str) -> UciCommand {
         "position" => parse_position(&parts[1..]),
         "go" => parse_go(&parts[1..]),
         "ucinewgame" => UciCommand::UciNewGame,
+        "setoption" => parse_setoption(&parts[1..]),
         _ => UciCommand::Unknown(line.to_string()),
     }
 }
@@ -134,4 +135,37 @@ fn parse_go(parts: &[&str]) -> UciCommand {
     }
 
     UciCommand::Go(params)
+}
+
+fn parse_setoption(parts: &[&str]) -> UciCommand {
+    // setoption name <name> [value <value>]
+    let mut name = String::new();
+    let mut value = String::new();
+    let mut i = 0;
+    while i < parts.len() {
+        match parts[i] {
+            "name" => {
+                i += 1;
+                while i < parts.len() && parts[i] != "value" {
+                    if !name.is_empty() {
+                        name.push(' ');
+                    }
+                    name.push_str(parts[i]);
+                    i += 1;
+                }
+            }
+            "value" => {
+                i += 1;
+                while i < parts.len() {
+                    if !value.is_empty() {
+                        value.push(' ');
+                    }
+                    value.push_str(parts[i]);
+                    i += 1;
+                }
+            }
+            _ => i += 1,
+        }
+    }
+    UciCommand::SetOption { name, value }
 }

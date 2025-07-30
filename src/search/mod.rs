@@ -151,7 +151,7 @@ impl Search {
                     continue;
                 }
 
-                debug!("Evaluating move: {}", m);
+                trace!("Evaluating move: {}", m.uci());
                 let score = -self.alpha_beta(&board_copy, depth - 1, 0, -beta, -alpha, evaluator);
                 if !once {
                     println!("alpha: {alpha}, beta: {beta}");
