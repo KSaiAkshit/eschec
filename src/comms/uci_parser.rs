@@ -1,3 +1,5 @@
+use tracing::warn;
+
 #[derive(Debug, PartialEq)]
 pub enum UciCommand {
     /// "uci" cmd, sent at startup
@@ -36,6 +38,7 @@ pub struct GoParams {
 }
 
 pub fn parse_line(line: &str) -> UciCommand {
+    warn!("UCI: {line}");
     let parts: Vec<&str> = line.trim().split_ascii_whitespace().collect();
     if parts.is_empty() {
         return UciCommand::Unknown(line.to_string());

@@ -94,7 +94,7 @@ pub fn set_log_level(level: Level) -> miette::Result<()> {
 
 pub fn toggle_file_logging(enable: bool) -> miette::Result<()> {
     let new_filter = if enable {
-        EnvFilter::new("debug")
+        EnvFilter::new("info")
     } else {
         EnvFilter::new("off")
     };

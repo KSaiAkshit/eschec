@@ -28,7 +28,7 @@ update:
 
 [doc("Run a gauntlet match against another engine using cutechess-cli")]
 [positional-arguments]
-gauntlet opponent='gnuchess' rounds='40' tc='15+0.1' concurrency='4': update
+gauntlet opponent='gnuchess' rounds='40' concurrency='4' tc='15+0.1': update
     @# Print the configuration for this run
     @echo "Starting gauntlet:"
     @echo "  - Opponent: {{ BLUE }}{{ opponent }}{{ NORMAL }}"
@@ -69,7 +69,6 @@ run *args:
 
 [doc("Find the most recent file in the 'logs' directory and tail it")]
 @tail_log:
-    path_exists({{ logs_dir }})
     echo "{{ MAGENTA }} Tailing log {{ NORMAL }}"
     tail -f {{ logs_dir }}$(ls -t {{ logs_dir }} | head -n 1)
 

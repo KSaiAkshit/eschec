@@ -125,7 +125,6 @@ impl Search {
         let mut best_move = legal_moves.first().copied();
         let mut best_score = i32::MIN + 1;
         let mut completed_depth = u8::default();
-        let mut once = false;
 
         // Iterative deepening
         for depth in 1..=self.max_depth {
@@ -153,10 +152,6 @@ impl Search {
 
                 trace!("Evaluating move: {}", m.uci());
                 let score = -self.alpha_beta(&board_copy, depth - 1, 0, -beta, -alpha, evaluator);
-                if !once {
-                    println!("alpha: {alpha}, beta: {beta}");
-                    once = true;
-                }
 
                 if self.should_stop() {
                     break;
@@ -371,7 +366,7 @@ impl Search {
         }
 
         if best_score == i32::MIN + 1 {
-            println!(
+            eprintln!(
                 "Mad cooked: alpha: {alpha}, beta: {beta}, best_score: {best_score}, legal_moves searched: {}",
                 num_moves
             );
@@ -472,8 +467,8 @@ fn has_non_pawn_material(board: &Board) -> bool {
 
 fn adjust_score_for_ply(score: i32, ply: usize) -> i32 {
     if score == i32::MIN {
-        // debug_assert!(false, "BUG: adjust_score_for_ply called with i32::MIN");
-        // println!("BUG: adjust_score_for_ply called with i32::MIN");
+        debug_assert!(false, "BUG: adjust_score_for_ply called with i32::MIN");
+        error!("BUG: adjust_score_for_ply called with i32::MIN");
         return -MATE_SCORE;
     }
     if score.abs() > MATE_THRESHOLD {
@@ -490,7 +485,7 @@ fn adjust_score_for_ply(score: i32, ply: usize) -> i32 {
 fn adjust_score_from_ply(score: i32, ply: usize) -> i32 {
     if score == i32::MIN {
         debug_assert!(false, "BUG: adjust_score_from_ply called with i32::MIN");
-        println!("BUG: adjust_score_from_ply called with i32::MIN");
+        error!("BUG: adjust_score_from_ply called with i32::MIN");
         return -MATE_SCORE;
     }
     if score.abs() > MATE_THRESHOLD {

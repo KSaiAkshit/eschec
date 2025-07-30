@@ -139,6 +139,7 @@ fn cmd_position(
 
 #[instrument(skip(state))]
 fn cmd_go(state: &mut UciState, params: GoParams) {
+    warn!("Starting search");
     state.search_running.store(true, Ordering::Relaxed);
 
     let board = state.board;
@@ -185,6 +186,7 @@ fn cmd_go(state: &mut UciState, params: GoParams) {
 }
 
 fn cmd_stop(state: &mut UciState) {
+    warn!("Stopping everything");
     state.search_running.store(false, Ordering::Relaxed);
     if let Some(handle) = state.search_thread.take() {
         let _ = handle.join();
