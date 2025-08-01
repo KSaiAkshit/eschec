@@ -160,62 +160,22 @@ impl MoveTables {
         direction: Direction,
     ) -> BitBoard {
         let mut ray = BitBoard(0);
-        let start_index = start_rank * 8 + start_file;
-        let mut current = start_index as i8 + direction.0;
 
-        while current >= 0 && current < 64 {
-            let current_rank = (current as usize) / 8;
-            let current_file = (current as usize) % 8;
+        let (dr, df) = direction.deltas();
 
-            let rank_diff = (current_rank as i8) - (start_rank as i8);
-            let file_diff = (current_file as i8) - (start_file as i8);
+        let mut rank = start_rank as i8;
+        let mut file = start_file as i8;
 
-            match direction {
-                Direction::NORTH => {
-                    if rank_diff <= 0 {
-                        break;
-                    }
-                }
-                Direction::SOUTH => {
-                    if rank_diff >= 0 {
-                        break;
-                    }
-                }
-                Direction::EAST => {
-                    if file_diff <= 0 || rank_diff != 0 {
-                        break;
-                    }
-                }
-                Direction::WEST => {
-                    if file_diff >= 0 || rank_diff != 0 {
-                        break;
-                    }
-                }
-                Direction::NORTHEAST => {
-                    if rank_diff != file_diff || rank_diff <= 0 {
-                        break;
-                    }
-                }
-                Direction::SOUTHWEST => {
-                    if rank_diff != file_diff || rank_diff >= 0 {
-                        break;
-                    }
-                }
-                Direction::SOUTHEAST => {
-                    if rank_diff != -file_diff || rank_diff >= 0 {
-                        break;
-                    }
-                }
-                Direction::NORTHWEST => {
-                    if rank_diff != -file_diff || rank_diff <= 0 {
-                        break;
-                    }
-                }
-                _ => break,
+        loop {
+            rank += dr;
+            file += df;
+
+            if rank < 0 || rank >= 8 || file < 0 || file >= 8 {
+                break;
             }
-            ray.set(current as usize);
 
-            current += direction.0;
+            let idx = (rank as usize) * 8 + (file as usize);
+            ray.set(idx);
         }
 
         ray

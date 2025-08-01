@@ -92,6 +92,20 @@ impl Direction {
             Direction(0) // Not a straight line
         }
     }
+
+    const fn deltas(&self) -> (i8, i8) {
+        match *self {
+            Direction::NORTH => (1, 0),
+            Direction::SOUTH => (-1, 0),
+            Direction::EAST => (0, 1),
+            Direction::WEST => (0, -1),
+            Direction::NORTHEAST => (1, 1),
+            Direction::SOUTHEAST => (-1, 1),
+            Direction::SOUTHWEST => (-1, -1),
+            Direction::NORTHWEST => (1, -1),
+            _ => (0, 0),
+        }
+    }
 }
 
 impl From<i8> for Direction {
