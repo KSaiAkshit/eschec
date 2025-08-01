@@ -89,12 +89,21 @@ pub fn set_log_level(level: Level) -> miette::Result<()> {
         .lock()
         .unwrap()
         .set_filter(new_filter)
-        .with_context(|| format!("Failed to modify log filter to level: {level}"))
+        .with_context(|| format!("Failed to modify console log filter to level: {level}"))?;
+
+    let new_filter = EnvFilter::new(level.to_string());
+    LOG_HANDLES
+        .file_handle
+        .lock()
+        .unwrap()
+        .set_filter(new_filter)
+        .with_context(|| format!("Failed to modify file log filter to level: {level}"))?;
+    Ok(())
 }
 
 pub fn toggle_file_logging(enable: bool) -> miette::Result<()> {
     let new_filter = if enable {
-        EnvFilter::new("info")
+        EnvFilter::new("debug")
     } else {
         EnvFilter::new("off")
     };

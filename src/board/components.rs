@@ -493,77 +493,54 @@ impl BoardState {
         fen
     }
 
-    /// Primary way to make moves.
-    /// This does NOT handle captures
-    pub fn move_piece(&mut self, from: Square, to: Square) -> miette::Result<()> {
-        let from_index = from.index();
-        let to_index = to.index();
-
-        let piece_info = self.mailbox[from_index]
-            .with_context(|| "[move_piece] No piece at from ({from}) square")?;
-
-        let side = piece_info.side;
-        let side_index = piece_info.side.index();
-        let piece = piece_info.piece;
-
-        miette::ensure!(
-            self.get_piece_at(&to).is_none(),
-            "[move_piece] Destination square {to} is not empty. Found: {:?}",
-            self.get_piece_at(&to)
-        );
-
-        // Update piece bitboard
-        self.all_pieces[side_index][piece.index()].capture(from_index);
-        self.all_pieces[side_index][piece.index()].set(to_index);
-
-        // Update side bitboard
-        self.all_sides[side_index].capture(from_index);
-        self.all_sides[side_index].set(to_index);
-
-        // Update mailbox
-        self.mailbox[from_index] = None;
-        self.mailbox[to_index] = Some(PieceInfo::new(piece, side));
-
-        Ok(())
-    }
-
+    #[inline(always)]
     pub const fn get_piece_bb(&self, side: Side, piece: Piece) -> &BitBoard {
         &self.all_pieces[side.index()][piece.index()]
     }
 
+    #[inline(always)]
     pub const fn get_piece_bb_mut(&mut self, side: Side, piece: Piece) -> &mut BitBoard {
         &mut self.all_pieces[side.index()][piece.index()]
     }
 
+    #[inline(always)]
     pub const fn get_colored_pieces(&self, side: Side) -> &[BitBoard; 6] {
         &self.all_pieces[side.index()]
     }
 
+    #[inline(always)]
     pub const fn get_colored_pieces_mut(&mut self, side: Side) -> &mut [BitBoard; 6] {
         &mut self.all_pieces[side.index()]
     }
 
+    #[inline(always)]
     pub const fn get_side_bb(&self, side: Side) -> &BitBoard {
         &self.all_sides[side.index()]
     }
 
+    #[inline(always)]
     pub const fn get_side_bb_mut(&mut self, side: Side) -> &mut BitBoard {
         &mut self.all_sides[side.index()]
     }
 
+    #[inline(always)]
     pub const fn get_orhto_sliders_bb(&self, side: Side) -> BitBoard {
         self.all_pieces[side.index()][Piece::rook()]
             .or(self.all_pieces[side.index()][Piece::queen()])
     }
 
+    #[inline(always)]
     pub const fn get_diag_sliders_bb(&self, side: Side) -> BitBoard {
         self.all_pieces[side.index()][Piece::bishop()]
             .or(self.all_pieces[side.index()][Piece::queen()])
     }
+
+    #[inline(always)]
     pub const fn square_belongs_to(&self, side: Side, square: usize) -> bool {
         self.all_sides[side.index()].contains_square(square)
     }
 
+    #[inline(always)]
     pub const fn is_occupied(&self, square: usize) -> bool {
         self.all_sides[Side::White.index()].contains_square(square)
             || self.all_sides[Side::Black.index()].contains_square(square)
@@ -605,10 +582,46 @@ impl BoardState {
         Ok(())
     }
 
+    /// Primary way to make moves.
+    /// This does NOT handle captures
+    pub fn move_piece(&mut self, from: Square, to: Square) -> miette::Result<()> {
+        let from_index = from.index();
+        let to_index = to.index();
+
+        let piece_info = self.mailbox[from_index]
+            .with_context(|| "[move_piece] No piece at from ({from}) square")?;
+
+        let side = piece_info.side;
+        let side_index = piece_info.side.index();
+        let piece = piece_info.piece;
+
+        miette::ensure!(
+            self.get_piece_at(&to).is_none(),
+            "[move_piece] Destination square {to} is not empty. Found: {:?}",
+            self.get_piece_at(&to)
+        );
+
+        // Update piece bitboard
+        self.all_pieces[side_index][piece.index()].capture(from_index);
+        self.all_pieces[side_index][piece.index()].set(to_index);
+
+        // Update side bitboard
+        self.all_sides[side_index].capture(from_index);
+        self.all_sides[side_index].set(to_index);
+
+        // Update mailbox
+        self.mailbox[from_index] = None;
+        self.mailbox[to_index] = Some(PieceInfo::new(piece, side));
+
+        Ok(())
+    }
+
+    #[inline(always)]
     pub fn get_piece_at(&self, square: &Square) -> Option<(Piece, Side)> {
         self.mailbox[square.index()].map(|info| (info.piece, info.side))
     }
 
+    #[inline(always)]
     pub fn get_occupied_bb(&self) -> BitBoard {
         self.all_sides[Side::White.index()] | self.all_sides[Side::Black.index()]
     }

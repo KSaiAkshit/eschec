@@ -51,8 +51,6 @@ impl Search {
     }
 
     pub fn with_time_control(max_depth: u8, max_time_ms: u64) -> Self {
-        let tt = TranspositionTable::new(16);
-        println!("Size of table: {}", std::mem::size_of_val(&tt));
         Self {
             max_depth,
             nodes_searched: 0,
@@ -61,7 +59,7 @@ impl Search {
             nodes_limit: None,
             pruned_nodes: 0,
             search_running: None,
-            tt,
+            tt: TranspositionTable::new(16),
             killer_moves: [[None; 2]; MAX_PLY],
             enable_nmp: true,
         }
@@ -150,7 +148,7 @@ impl Search {
                     continue;
                 }
 
-                trace!("Evaluating move: {}", m.uci());
+                trace!("Evaluating move: {}, α: {alpha}, β: {beta}", m.uci());
                 let score = -self.alpha_beta(&board_copy, depth - 1, 0, -beta, -alpha, evaluator);
 
                 if self.should_stop() {
@@ -179,7 +177,7 @@ impl Search {
                     self.nodes_searched * 1000 / (self.start_time.elapsed().as_millis() + 1) as u64,
                     best_move_uci
                 );
-                debug!(msg);
+                debug!("{msg}");
                 println!("{msg}");
             }
         }
@@ -193,7 +191,7 @@ impl Search {
         }
     }
 
-    #[instrument(skip(self, board, depth, ply, evaluator))]
+    #[instrument(skip_all)]
     fn alpha_beta(
         &mut self,
         board: &Board,
@@ -205,6 +203,10 @@ impl Search {
     ) -> i32 {
         if self.should_stop() {
             return 0; // Neutral score because search was stopped
+        }
+
+        if depth == 0 {
+            return self.quiescence_search(board, alpha, beta, evaluator);
         }
 
         if alpha >= beta {
@@ -263,18 +265,14 @@ impl Search {
 
         let window = beta.checked_sub(alpha);
 
-        if self.enable_nmp
-            && !is_in_check
-            && depth >= 3
-            && window.is_some_and(|win| win > 1)
-            && has_non_pawn_material(board)
-            && ply > 0
-        {
+        let null_reduction = if depth >= 6 { 4 } else { 2 };
+        let null_depth = depth.saturating_sub(null_reduction);
+        if self.is_nmp_allowed(board, depth, ply, window) && !is_in_check {
+            debug!(
+                "NMP => depth: {depth}, null_reduction: {null_reduction}, null_depth: {null_depth}"
+            );
             let mut null_board = *board;
             null_board.make_null_move();
-
-            let null_reduction = if depth >= 6 { 4 } else { 2 };
-            let null_depth = depth.saturating_sub(null_reduction);
 
             let null_score = -self.alpha_beta(
                 &null_board,
@@ -291,10 +289,6 @@ impl Search {
                 }
                 return null_score;
             }
-        }
-
-        if depth == 0 {
-            return self.quiescence_search(board, alpha, beta, evaluator);
         }
 
         let mut legal_moves = board.generate_legal_moves(false);
@@ -392,6 +386,17 @@ impl Search {
         self.tt.store(entry_to_store);
 
         alpha
+    }
+
+    fn is_nmp_allowed(&self, board: &Board, depth: u8, ply: usize, window: Option<i32>) -> bool {
+        let null_reduction = if depth >= 6 { 4 } else { 2 };
+        let null_depth = depth.saturating_sub(null_reduction);
+        self.enable_nmp
+            && depth >= 5
+            && null_depth >= 2
+            && window.is_some_and(|win| win > 1)
+            && has_non_pawn_material(board)
+            && ply > 0
     }
 
     fn quiescence_search(
