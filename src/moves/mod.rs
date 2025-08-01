@@ -2,6 +2,7 @@ use std::ops::{Add, Mul, Neg, Sub};
 
 pub mod attack_data;
 pub mod magics;
+pub mod move_buffer;
 pub mod move_gen;
 pub mod move_info;
 pub mod precomputed;
