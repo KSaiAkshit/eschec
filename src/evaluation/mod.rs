@@ -53,11 +53,16 @@ impl CompositeEvaluator {
 
 impl Evaluator for CompositeEvaluator {
     fn evaluate(&self, board: &Board) -> i32 {
-        self.evaluators
+        let total_weight: f32 = self.weights.iter().sum();
+        let score = self
+            .evaluators
             .iter()
             .zip(self.weights.iter())
             .map(|(evaluator, &weight)| evaluator.evaluate(board) as f32 * weight)
-            .sum::<f32>() as i32
+            .sum::<f32>()
+            / total_weight;
+        let jiggle = (board.hash % 5) as i32 - 2;
+        score as i32 + jiggle
     }
 
     fn name(&self) -> &str {

@@ -62,8 +62,53 @@ version: 1.1.1
    mobility = \sum{piece} (legal\_moves(piece) × weight(piece))
    @end
 
+** Pawn Structure Evaluation
+   Basics of /Pawn structure evaluation/:
+   - Giving bonuses for good pawn formations
+   - Giving penalties for bad pawn formations
 
-   ___
-   ===
+   Key Pawn features:
+*** Isolated Pawn
+    - *Definition*: A pawn that has no friendly pawns on the files directly next to it
+    - *Why is it bad?*: Isolated pawns cannot be protected by other pawns, making them
+      easy targets.
+    - *How to detect?*:
+    -- For each pawn, check if there are friendly pawns to left/right file
+    -- If not, it's isolated
+***  Doubled Pawn:
+     - *Definition*: Two or more pawns of the same color on same file
+     - *Why is it bad?*: Doubled pawns block each other, and cannot defend the other
+     - *How to detect?*:
+     -- Count how many pawns on each file
+     -- If a file has more than one pawn, those pawns are doubled
+***  Backward Pawn:
+     - *Definition*: A pawn that cannot move fwd because it's blocked, and can't be protected by another
+       pawn from behind on adjacent files.
+     - *Why is it bad?*: Backward pawns are hard to defend and easy to attack
+     - *How to detect?*:
+     -- The square in front of the pawn is occupied
+     -- There are no friendly pawns on adjacent files behind it
+***  Passed Pawn:
+     - *Definition*: A pawn with no enemy pawns on its file or adjacent file ahead of it.
+     - *Why is it good?*: Passed pawns can advance to promotion more easily
+     - *How to detect?*:
+     -- For each pawn, check all enemy pawns on the same and adjacent files, but only those ahead
+        (closer to promo).
+     -- If there are none, it is passed pawn.
+***  Connected Pawn:
+     - *Definition*: Pawns that are next to each other (adjacent files/ranks)
+     - *Why is it good?*: Connected pawns can protect each other.
+     - *How to detect?*:
+     -- For each pawn, check if there is another friendly pawn on a neighbouring file and rank
+***  Pawn Shield:
+     - *Definition*: Pawns in front of the king (especially after castling).
+     - *Why is it good?*: They protect the king from attacks
+     - *How to detect?*:
+     -- Find king's position
+     -- Check if there are pawns on the square directly in front of the king
+
+     ___
+     ===
 ^ Sources
 [Simplified Evaluation]{https://www.chessprogramming.org/Simplified_Evaluation_Function}
+[Pawn Structure]{https://www.chessprogramming.org/Pawn_Structure}
