@@ -23,7 +23,7 @@ use crate::{
 
 /// Generates all strictly legal moves for the current side to move.
 /// It accounts for checks, pins, and all special move rules.
-pub fn generate_legal_moves(board: &Board, moves: &mut Vec<Move>) {
+pub fn generate_legal_moves(board: &Board, moves: &mut MoveBuffer) {
     let side = board.stm;
     let attack_data = calculate_attack_data(board, side);
 
@@ -42,7 +42,7 @@ pub fn generate_legal_moves(board: &Board, moves: &mut Vec<Move>) {
 
 /// Generates all strictly legal captures for the current side to move.
 /// Used by Quiescences search
-pub fn generate_legal_captures(board: &Board, moves: &mut Vec<Move>) {
+pub fn generate_legal_captures(board: &Board, moves: &mut MoveBuffer) {
     let side = board.stm;
     let attack_data = calculate_attack_data(board, side);
 
@@ -60,7 +60,7 @@ pub fn generate_legal_captures(board: &Board, moves: &mut Vec<Move>) {
 fn gen_legal_king_moves(
     board: &Board,
     attack_data: &AttackData,
-    moves: &mut Vec<Move>,
+    moves: &mut MoveBuffer,
     captures_only: bool,
 ) {
     let side = board.stm;
@@ -146,7 +146,7 @@ fn gen_legal_sliding_moves(
     board: &Board,
     piece: Piece,
     attack_data: &AttackData,
-    moves: &mut Vec<Move>,
+    moves: &mut MoveBuffer,
     captures_only: bool,
 ) {
     let side = board.stm;
@@ -197,7 +197,7 @@ fn gen_legal_sliding_moves(
 fn gen_legal_knight_moves(
     board: &Board,
     attack_data: &AttackData,
-    moves: &mut Vec<Move>,
+    moves: &mut MoveBuffer,
     captures_only: bool,
 ) {
     let side = board.stm;
@@ -227,7 +227,7 @@ fn gen_legal_knight_moves(
 fn gen_legal_pawn_moves(
     board: &Board,
     attack_data: &AttackData,
-    moves: &mut Vec<Move>,
+    moves: &mut MoveBuffer,
     captures_only: bool,
 ) {
     let side = board.stm;
@@ -342,7 +342,7 @@ fn gen_legal_pawn_moves(
     }
 }
 
-fn add_promo_moves(from: u8, to: u8, is_capture: bool, moves: &mut Vec<Move>) {
+fn add_promo_moves(from: u8, to: u8, is_capture: bool, moves: &mut MoveBuffer) {
     if is_capture {
         moves.push(Move::new(from, to, Move::PROMO_QC));
         moves.push(Move::new(from, to, Move::PROMO_RC));
@@ -371,7 +371,7 @@ pub fn generate_pseudo_legal_moves(
     side: Side,
     castling_rights: CastlingRights,
     en_passant_square: Option<Square>,
-    move_list: &mut Vec<Move>,
+    move_list: &mut MoveBuffer,
 ) {
     gen_pawn_moves_with_ep(state, side, en_passant_square, move_list);
     gen_knight_moves(state, side, move_list);
@@ -388,7 +388,7 @@ pub fn generate_pseudo_legal_piece_moves(
     side: Side,
     castling_rights: CastlingRights,
     en_passant_square: Option<Square>,
-    move_list: &mut Vec<Move>,
+    move_list: &mut MoveBuffer,
 ) {
     match piece {
         Piece::Pawn => gen_pawn_moves_with_ep(state, side, en_passant_square, move_list),
@@ -401,7 +401,7 @@ pub fn generate_pseudo_legal_piece_moves(
 }
 
 /// Generate pseudo-legal knight moves.
-fn gen_knight_moves(state: &BoardState, side: Side, move_list: &mut Vec<Move>) {
+fn gen_knight_moves(state: &BoardState, side: Side, move_list: &mut MoveBuffer) {
     let knights = state.get_piece_bb(side, Piece::Knight);
     let ally_pieces = state.get_side_bb(side);
     let enemy_pieces = state.get_side_bb(side.flip());
@@ -422,7 +422,7 @@ fn gen_knight_moves(state: &BoardState, side: Side, move_list: &mut Vec<Move>) {
 }
 
 /// Generate pseudo-legal king moves (without castling).
-fn gen_king_moves(state: &BoardState, side: Side, move_list: &mut Vec<Move>) {
+fn gen_king_moves(state: &BoardState, side: Side, move_list: &mut MoveBuffer) {
     let king = state.get_piece_bb(side, Piece::King);
     let ally_pieces = state.get_side_bb(side);
     let enemy_pieces = state.get_side_bb(side.flip());
@@ -443,7 +443,7 @@ fn gen_king_moves(state: &BoardState, side: Side, move_list: &mut Vec<Move>) {
 }
 
 /// Generate pseudo-legal bishop moves.
-fn gen_bishop_moves(state: &BoardState, side: Side, move_list: &mut Vec<Move>) {
+fn gen_bishop_moves(state: &BoardState, side: Side, move_list: &mut MoveBuffer) {
     let bishops = state.get_piece_bb(side, Piece::Bishop);
     let ally_pieces = state.get_side_bb(side);
     let enemy_pieces = state.get_side_bb(side.flip());
@@ -465,7 +465,7 @@ fn gen_bishop_moves(state: &BoardState, side: Side, move_list: &mut Vec<Move>) {
 }
 
 /// Generate pseudo-legal queen moves.
-fn gen_queen_moves(state: &BoardState, side: Side, move_list: &mut Vec<Move>) {
+fn gen_queen_moves(state: &BoardState, side: Side, move_list: &mut MoveBuffer) {
     let queens = state.get_piece_bb(side, Piece::Queen);
     let ally_pieces = state.get_side_bb(side);
     let enemy_pieces = state.get_side_bb(side.flip());
@@ -487,7 +487,7 @@ fn gen_queen_moves(state: &BoardState, side: Side, move_list: &mut Vec<Move>) {
 }
 
 /// Generate pseudo-legal rook moves.
-fn gen_rook_moves(state: &BoardState, side: Side, move_list: &mut Vec<Move>) {
+fn gen_rook_moves(state: &BoardState, side: Side, move_list: &mut MoveBuffer) {
     let rooks = state.get_piece_bb(side, Piece::Rook);
     let ally_pieces = state.get_side_bb(side);
     let enemy_pieces = state.get_side_bb(side.flip());
@@ -509,7 +509,7 @@ fn gen_rook_moves(state: &BoardState, side: Side, move_list: &mut Vec<Move>) {
 }
 
 /// Generate pseudo-legal pawn moves (without en passant).
-fn gen_pawn_moves(state: &BoardState, side: Side, move_list: &mut Vec<Move>) {
+fn gen_pawn_moves(state: &BoardState, side: Side, move_list: &mut MoveBuffer) {
     let pawns = state.get_piece_bb(side, Piece::Pawn);
     let ally_pieces = state.get_side_bb(side);
     let enemy_pieces = state.get_side_bb(side.flip());
@@ -563,7 +563,7 @@ fn gen_pawn_moves_with_ep(
     state: &BoardState,
     side: Side,
     en_passant_square: Option<Square>,
-    move_list: &mut Vec<Move>,
+    move_list: &mut MoveBuffer,
 ) {
     gen_pawn_moves(state, side, move_list);
 
@@ -589,7 +589,7 @@ fn gen_king_moves_with_castling(
     state: &BoardState,
     side: Side,
     castling_rights: CastlingRights,
-    move_list: &mut Vec<Move>,
+    move_list: &mut MoveBuffer,
 ) {
     gen_king_moves(state, side, move_list);
 

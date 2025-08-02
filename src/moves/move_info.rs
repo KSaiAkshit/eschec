@@ -178,7 +178,8 @@ impl Move {
         let to = Square::from_str(to_str)?;
 
         // Find the matching legal move. This is the only way to get the correct flags.
-        let legal_moves = board.generate_legal_moves(false);
+        let mut legal_moves = MoveBuffer::new();
+        board.generate_legal_moves(&mut legal_moves, false);
         let found_move = legal_moves.into_iter().find(|m| {
             if m.from_sq() == from && m.to_sq() == to {
                 // If there's a promotion, make sure it matches.

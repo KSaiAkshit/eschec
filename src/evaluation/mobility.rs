@@ -22,11 +22,12 @@ impl MobilityEvaluator {
     }
 
     fn calculate_mobility_score(&self, board: &Board) -> i32 {
+        let mut buffer = MoveBuffer::new();
         // NOTE: Use pseudo legal moves here;
-        let legal_moves = board.generate_pseudo_legal_moves();
+        board.generate_pseudo_legal_moves(&mut buffer);
         let mut score = 0;
 
-        for m in legal_moves {
+        for m in &buffer {
             if let Some(piece) = board.get_piece_at(m.from_sq()) {
                 score += self.mobility_weights[piece.index()];
             }

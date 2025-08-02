@@ -5,18 +5,20 @@ use eschec::{
     board::Board,
     consts::KIWIPETE,
     evaluation::{CompositeEvaluator, Evaluator},
-    moves::{move_gen, move_info::Move},
+    moves::move_gen,
+    prelude::MoveBuffer,
     search::Search,
 };
 
-fn filter_captures(board: &Board) -> Vec<Move> {
-    let mut moves = board.generate_legal_moves(false);
+fn filter_captures(board: &Board) -> MoveBuffer {
+    let mut moves = MoveBuffer::new();
+    board.generate_legal_moves(&mut moves, false);
     moves.retain(|mv| mv.is_capture());
     moves
 }
 
-fn gen_captures(board: &Board) -> Vec<Move> {
-    let mut captures = Vec::with_capacity(40);
+fn gen_captures(board: &Board) -> MoveBuffer {
+    let mut captures = MoveBuffer::new();
     move_gen::generate_legal_captures(board, &mut captures);
     captures
 }
@@ -25,7 +27,11 @@ fn bench_move_generation(c: &mut Criterion) {
     c.bench_function("generate_all_moves", |b| {
         b.iter_batched(
             || Board::from_fen(KIWIPETE),
-            |board| black_box(board.generate_legal_moves(false)),
+            |board| {
+                let mut moves = MoveBuffer::new();
+                (board.generate_legal_moves(&mut moves, false));
+                black_box(moves)
+            },
             BatchSize::SmallInput,
         );
     });
@@ -69,7 +75,8 @@ fn alpha_beta_two_loops(
         return evaluator.evaluate(board);
     }
 
-    let pseudo_legal_moves = board.generate_pseudo_legal_moves();
+    let mut pseudo_legal_moves = MoveBuffer::new();
+    board.generate_pseudo_legal_moves(&mut pseudo_legal_moves);
     let is_in_check = board.is_in_check(board.stm);
     let mut legal_move_found = false;
 
@@ -118,7 +125,9 @@ fn alpha_beta_one_loop(
         return evaluator.evaluate(board);
     }
 
-    let pseudo_legal_moves = board.generate_pseudo_legal_moves();
+    let mut pseudo_legal_moves = MoveBuffer::new();
+    board.generate_pseudo_legal_moves(&mut pseudo_legal_moves);
+
     let mut legal_move_found = false;
 
     for m in pseudo_legal_moves {

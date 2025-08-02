@@ -18,6 +18,7 @@ pub struct SearchResult {
     pub depth: u8,
     pub nodes_searched: u64,
     pub time_taken: Duration,
+    pub pruned_nodes: u64,
 }
 
 #[derive(Debug)]
@@ -102,7 +103,8 @@ impl Search {
         self.search_running = search_running;
         self.killer_moves = [[None; 2]; MAX_PLY];
 
-        let mut legal_moves = board.generate_legal_moves(false);
+        let mut legal_moves = MoveBuffer::new();
+        board.generate_legal_moves(&mut legal_moves, false);
         if legal_moves.is_empty() {
             debug!("No legal moves");
             let score = if board.is_in_check(board.stm) {
@@ -116,11 +118,12 @@ impl Search {
                 depth: self.max_depth,
                 nodes_searched: 0,
                 time_taken: Duration::from_secs(0),
+                pruned_nodes: self.pruned_nodes,
             };
         }
 
         // Initialized to first move as fallback
-        let mut best_move = legal_moves.first().copied();
+        let mut best_move = legal_moves.first();
         let mut best_score = i32::MIN + 1;
         let mut completed_depth = u8::default();
 
@@ -133,9 +136,9 @@ impl Search {
             let mut alpha = i32::MIN + 1;
             let beta = i32::MAX;
 
-            sort_moves(board, &mut legal_moves, &[None, None], None);
+            sort_moves(board, legal_moves.as_mut_slice(), &[None, None], None);
 
-            let mut local_best_move: Option<Move> = legal_moves.first().copied();
+            let mut local_best_move: Option<Move> = legal_moves.first();
             let mut local_best_score = i32::MIN + 1;
 
             for &m in &legal_moves {
@@ -188,6 +191,7 @@ impl Search {
             depth: completed_depth,
             nodes_searched: self.nodes_searched,
             time_taken: self.start_time.elapsed(),
+            pruned_nodes: self.pruned_nodes,
         }
     }
 
@@ -291,7 +295,8 @@ impl Search {
             }
         }
 
-        let mut legal_moves = board.generate_legal_moves(false);
+        let mut legal_moves = MoveBuffer::new();
+        board.generate_legal_moves(&mut legal_moves, false);
 
         if legal_moves.is_empty() {
             self.nodes_searched += 1; // Terminal nodes_search
@@ -305,13 +310,13 @@ impl Search {
         if ply < MAX_PLY {
             sort_moves(
                 board,
-                &mut legal_moves,
+                legal_moves.as_mut_slice(),
                 &self.killer_moves[ply],
                 Some(tt_move),
             );
         }
 
-        let mut best_move_this_node = legal_moves.first().copied().unwrap();
+        let mut best_move_this_node = legal_moves.first().unwrap();
         let mut best_score = i32::MIN + 1;
         let num_moves = legal_moves.len();
 
@@ -425,9 +430,10 @@ impl Search {
         }
 
         // Generate all moves if in check, otherwise use captures only
-        let mut legal_moves = board.generate_legal_moves(!is_in_check);
+        let mut legal_moves = MoveBuffer::new();
+        board.generate_legal_moves(&mut legal_moves, !is_in_check);
 
-        sort_moves(board, &mut legal_moves, &[None, None], None);
+        sort_moves(board, legal_moves.as_mut_slice(), &[None, None], None);
 
         for mv in legal_moves {
             let mut board_copy = *board;

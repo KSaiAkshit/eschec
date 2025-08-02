@@ -243,9 +243,11 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
                     if let Some(mov) = result.best_move {
                         info!("Best move: {} ", mov.uci());
                         info!(
-                            "score: {}, time_taken: {} ms",
+                            "score: {}, time_taken: {} ms, nodes: {}, pruned: {}",
                             result.score,
-                            result.time_taken.as_millis()
+                            result.time_taken.as_millis(),
+                            result.nodes_searched,
+                            result.pruned_nodes
                         );
                     } else {
                         error!("No legal moves available");

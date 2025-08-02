@@ -136,32 +136,40 @@ impl Board {
         fen::to_fen(self)
     }
 
-    pub fn generate_legal_moves(&self, captures_only: bool) -> Vec<Move> {
-        let mut legal_moves = Vec::with_capacity(40);
+    pub fn generate_legal_moves(&self, buffer: &mut MoveBuffer, captures_only: bool) {
         if !captures_only {
-            generate_legal_moves(self, &mut legal_moves);
+            generate_legal_moves(self, buffer);
         } else {
-            generate_legal_captures(self, &mut legal_moves);
+            generate_legal_captures(self, buffer);
         }
-        legal_moves
     }
 
-    pub fn generate_pseudo_legal_moves(&self) -> Vec<Move> {
-        let mut pseudo_legal_moves = Vec::with_capacity(40);
+    /// Only to be used internally;
+    fn get_legal_moves(&self, captures_only: bool) -> MoveBuffer {
+        let mut buffer = MoveBuffer::new();
+        if !captures_only {
+            generate_legal_moves(self, &mut buffer);
+        } else {
+            generate_legal_captures(self, &mut buffer);
+        }
+        buffer
+    }
+
+    pub fn generate_pseudo_legal_moves(&self, buffer: &mut MoveBuffer) {
         generate_pseudo_legal_moves(
             &self.positions,
             self.stm,
             self.castling_rights,
             self.enpassant_square,
-            &mut pseudo_legal_moves,
+            buffer,
         );
-        pseudo_legal_moves
     }
 
     /// Primary "safe" method for applying a move.
     /// Checks for legality before making the move.
     pub fn try_move(&mut self, m: Move) -> miette::Result<()> {
-        let legal_moves = self.generate_legal_moves(false);
+        let mut legal_moves = MoveBuffer::new();
+        self.generate_legal_moves(&mut legal_moves, false);
 
         if legal_moves.contains(&m) {
             let _ = self.make_move(m)?;
@@ -437,11 +445,11 @@ impl Board {
     }
 
     pub fn is_checkmate(&self, side: Side) -> bool {
-        self.is_in_check(side) && !self.generate_legal_moves(false).is_empty()
+        self.is_in_check(side) && !self.get_legal_moves(false).is_empty()
     }
 
     pub fn is_stalemate(&self, side: Side) -> bool {
-        !self.is_in_check(side) && self.generate_legal_moves(false).is_empty()
+        !self.is_in_check(side) && self.get_legal_moves(false).is_empty()
     }
 
     pub fn is_draw(&self) -> bool {

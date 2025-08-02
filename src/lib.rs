@@ -1,4 +1,5 @@
 #![cfg_attr(feature = "simd", feature(portable_simd))]
+#![feature(slice_index_methods)]
 
 pub mod board;
 pub mod comms;

@@ -12,6 +12,7 @@ pub use crate::evaluation::{self, CompositeEvaluator, Evaluator};
 pub use crate::moves::magics;
 pub use crate::moves::{
     self, Direction,
+    move_buffer::MoveBuffer,
     move_info::{Move, MoveInfo},
     precomputed::MOVE_TABLES,
 };
