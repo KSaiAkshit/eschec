@@ -20,6 +20,7 @@ pub fn score_move(
     mv: Move,
     killers: &[Option<Move>; 2],
     tt_move: Option<Move>,
+    history: &[[i32; 64]; 64],
 ) -> i32 {
     if tt_move.is_some() {
         return TT_MOVE_SCORE;
@@ -36,8 +37,7 @@ pub fn score_move(
     } else if killers.contains(&Some(mv)) {
         KILLER_MOVE_SCORE
     } else {
-        // TODO: History heuristic goes here
-        0
+        history[mv.from_idx() as usize][mv.to_idx() as usize]
     }
 }
 
@@ -47,7 +47,8 @@ pub fn sort_moves(
     moves: &mut [Move],
     killers: &[Option<Move>; 2],
     tt_move: Option<Move>,
+    history: &[[i32; 64]; 64],
 ) {
     // Score is negated here because sort is ascending, but we want descending
-    moves.sort_by_key(|&m| -score_move(board, m, killers, tt_move));
+    moves.sort_by_key(|&m| -score_move(board, m, killers, tt_move, history));
 }

@@ -32,6 +32,7 @@ pub struct Search {
     search_running: Option<Arc<AtomicBool>>,
     tt: TranspositionTable,
     killer_moves: [[Option<Move>; 2]; MAX_PLY],
+    history: [[i32; 64]; 64],
     enable_nmp: bool,
 }
 
@@ -47,6 +48,7 @@ impl Search {
             search_running: None,
             tt: TranspositionTable::new(16),
             killer_moves: [[None; 2]; MAX_PLY],
+            history: [[0; 64]; 64],
             enable_nmp: true,
         }
     }
@@ -62,6 +64,7 @@ impl Search {
             search_running: None,
             tt: TranspositionTable::new(16),
             killer_moves: [[None; 2]; MAX_PLY],
+            history: [[0; 64]; 64],
             enable_nmp: true,
         }
     }
@@ -136,7 +139,13 @@ impl Search {
             let mut alpha = i32::MIN + 1;
             let beta = i32::MAX;
 
-            sort_moves(board, legal_moves.as_mut_slice(), &[None, None], None);
+            sort_moves(
+                board,
+                legal_moves.as_mut_slice(),
+                &[None, None],
+                None,
+                &self.history,
+            );
 
             let mut local_best_move: Option<Move> = legal_moves.first();
             let mut local_best_score = i32::MIN + 1;
@@ -185,6 +194,7 @@ impl Search {
             }
         }
 
+        self.decay_history();
         SearchResult {
             best_move,
             score: best_score,
@@ -313,6 +323,7 @@ impl Search {
                 legal_moves.as_mut_slice(),
                 &self.killer_moves[ply],
                 Some(tt_move),
+                &self.history,
             );
         }
 
@@ -350,6 +361,10 @@ impl Search {
                     // Backup the existing one
                     self.killer_moves[ply][1] = self.killer_moves[ply][0];
                     self.killer_moves[ply][0] = Some(mv);
+
+                    let from = mv.from_idx() as usize;
+                    let to = mv.to_idx() as usize;
+                    self.history[from][to] += depth as i32 * depth as i32;
                 }
 
                 let entry_to_score = TranspositionEntry {
@@ -433,7 +448,13 @@ impl Search {
         let mut legal_moves = MoveBuffer::new();
         board.generate_legal_moves(&mut legal_moves, !is_in_check);
 
-        sort_moves(board, legal_moves.as_mut_slice(), &[None, None], None);
+        sort_moves(
+            board,
+            legal_moves.as_mut_slice(),
+            &[None, None],
+            None,
+            &self.history,
+        );
 
         for mv in legal_moves {
             let mut board_copy = *board;
@@ -465,6 +486,14 @@ impl Search {
             return true;
         }
         self.nodes_limit.is_some_and(|l| self.nodes_searched >= l)
+    }
+    fn decay_history(&mut self) {
+        trace!("Decaying history by 2");
+        for from in 0..64 {
+            for to in 0..64 {
+                self.history[from][to] /= 2;
+            }
+        }
     }
 }
 
