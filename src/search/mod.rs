@@ -36,36 +36,37 @@ pub struct Search {
     enable_nmp: bool,
 }
 
+impl Default for Search {
+    fn default() -> Self {
+        Self {
+            max_depth: Default::default(),
+            nodes_searched: Default::default(),
+            start_time: Instant::now(),
+            max_time: Default::default(),
+            nodes_limit: Default::default(),
+            pruned_nodes: Default::default(),
+            search_running: Default::default(),
+            tt: TranspositionTable::new(16),
+            killer_moves: [[None; 2]; 64],
+            history: [[0; 64]; 64],
+            enable_nmp: true,
+        }
+    }
+}
+
 impl Search {
     pub fn new(max_depth: u8) -> Self {
         Self {
             max_depth,
-            nodes_searched: 0,
-            start_time: Instant::now(),
-            max_time: None,
-            nodes_limit: None,
-            pruned_nodes: 0,
-            search_running: None,
-            tt: TranspositionTable::new(16),
-            killer_moves: [[None; 2]; MAX_PLY],
-            history: [[0; 64]; 64],
-            enable_nmp: true,
+            ..Default::default()
         }
     }
 
     pub fn with_time_control(max_depth: u8, max_time_ms: u64) -> Self {
         Self {
             max_depth,
-            nodes_searched: 0,
-            start_time: Instant::now(),
             max_time: Some(Duration::from_millis(max_time_ms)),
-            nodes_limit: None,
-            pruned_nodes: 0,
-            search_running: None,
-            tt: TranspositionTable::new(16),
-            killer_moves: [[None; 2]; MAX_PLY],
-            history: [[0; 64]; 64],
-            enable_nmp: true,
+            ..Default::default()
         }
     }
 
@@ -339,7 +340,26 @@ impl Search {
 
             self.nodes_searched += 1;
 
-            let score = -self.alpha_beta(&board_copy, depth - 1, ply + 1, -beta, -alpha, evaluator);
+            let mut score: i32;
+            // Principal Variation search.
+            // Use ZWS (zero window search) for moves other than the first move (PV)
+            // Reduces nodes searched massively
+            if mv == best_move_this_node {
+                score = -self.alpha_beta(&board_copy, depth - 1, ply + 1, -beta, -alpha, evaluator);
+            } else {
+                score = -self.alpha_beta(
+                    &board_copy,
+                    depth - 1,
+                    ply + 1,
+                    -alpha - 1,
+                    -alpha,
+                    evaluator,
+                );
+                if score > alpha && score < beta {
+                    score =
+                        -self.alpha_beta(&board_copy, depth - 1, ply + 1, -beta, -alpha, evaluator);
+                }
+            }
 
             if self.should_stop() {
                 return 0;
