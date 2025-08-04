@@ -40,9 +40,9 @@ pub fn generate_legal_moves(board: &Board, moves: &mut MoveBuffer) {
     gen_legal_sliding_moves(board, Piece::Queen, &attack_data, moves, false);
 }
 
-/// Generates all strictly legal captures for the current side to move.
+/// Generates all strictly legal forcing moves for the current side to move.
 /// Used by Quiescences search
-pub fn generate_legal_captures(board: &Board, moves: &mut MoveBuffer) {
+pub fn generate_forcing_moves(board: &Board, moves: &mut MoveBuffer) {
     let side = board.stm;
     let attack_data = calculate_attack_data(board, side);
 
@@ -55,13 +55,14 @@ pub fn generate_legal_captures(board: &Board, moves: &mut MoveBuffer) {
     gen_legal_sliding_moves(board, Piece::Bishop, &attack_data, moves, true);
     gen_legal_sliding_moves(board, Piece::Rook, &attack_data, moves, true);
     gen_legal_sliding_moves(board, Piece::Queen, &attack_data, moves, true);
+    gen_legal_king_moves(board, &attack_data, moves, true);
 }
 
 fn gen_legal_king_moves(
     board: &Board,
     attack_data: &AttackData,
     moves: &mut MoveBuffer,
-    captures_only: bool,
+    forcing_only: bool,
 ) {
     let side = board.stm;
     let from_sq = attack_data.king_sq;
@@ -73,7 +74,7 @@ fn gen_legal_king_moves(
     while let Some(to_sq) = legal_targets.pop_lsb() {
         if !attack_data.opp_attack_map.contains_square(to_sq as usize) {
             let is_capture = board.positions.is_occupied(to_sq as usize);
-            if !captures_only || is_capture {
+            if !forcing_only || is_capture {
                 let flag = if is_capture {
                     Move::CAPTURE
                 } else {
@@ -85,7 +86,7 @@ fn gen_legal_king_moves(
     }
 
     // Castling
-    if !captures_only && !attack_data.in_check {
+    if !forcing_only && !attack_data.in_check {
         let all_pieces =
             board.positions.get_side_bb(Side::White) | board.positions.get_side_bb(Side::Black);
         match side {
@@ -147,12 +148,17 @@ fn gen_legal_sliding_moves(
     piece: Piece,
     attack_data: &AttackData,
     moves: &mut MoveBuffer,
-    captures_only: bool,
+    forcing_only: bool,
 ) {
     let side = board.stm;
     let friendly_pieces = board.positions.get_side_bb(side);
     let enemy_pieces = board.positions.get_side_bb(side.flip());
     let mut piece_bb = *board.positions.get_piece_bb(side, piece);
+    let opponent_king_sq = board
+        .positions
+        .get_piece_bb(board.stm.flip(), Piece::King)
+        .lsb()
+        .unwrap() as usize;
 
     while let Some(from_sq) = piece_bb.pop_lsb() {
         let is_pinned = attack_data.pin_ray_mask.contains_square(from_sq as usize);
@@ -180,16 +186,21 @@ fn gen_legal_sliding_moves(
         };
 
         let mut legal_targets = attacks & move_mask;
-        if captures_only {
-            legal_targets &= *enemy_pieces;
-        }
         while let Some(to_sq) = legal_targets.pop_lsb() {
-            let flag = if enemy_pieces.contains_square(to_sq as usize) {
+            let is_capture = enemy_pieces.contains_square(to_sq as usize);
+            let flag = if is_capture {
                 Move::CAPTURE
             } else {
                 Move::QUIET
             };
-            moves.push(Move::new(from_sq as u8, to_sq as u8, flag));
+            let current_move = Move::new(from_sq as u8, to_sq as u8, flag);
+            if is_capture
+                || (forcing_only && is_move_a_check(board, current_move, opponent_king_sq))
+            {
+                moves.push(current_move);
+            } else if !forcing_only {
+                moves.push(current_move);
+            }
         }
     }
 }
@@ -198,28 +209,38 @@ fn gen_legal_knight_moves(
     board: &Board,
     attack_data: &AttackData,
     moves: &mut MoveBuffer,
-    captures_only: bool,
+    forcing_only: bool,
 ) {
     let side = board.stm;
     let friendly_pieces = board.positions.get_side_bb(side);
     let enemy_pieces = board.positions.get_side_bb(side.flip());
     let mut knights =
         *board.positions.get_piece_bb(side, Piece::Knight) & !attack_data.pin_ray_mask;
+    let opponent_king_sq = board
+        .positions
+        .get_piece_bb(board.stm.flip(), Piece::King)
+        .lsb()
+        .unwrap() as usize;
 
     while let Some(from_sq) = knights.pop_lsb() {
         let attacks = MOVE_TABLES.knight_moves[from_sq as usize] & !friendly_pieces;
         let mut legal_targets = attacks & attack_data.check_ray_mask;
-        if captures_only {
-            legal_targets &= *enemy_pieces;
-        }
 
         while let Some(to_sq) = legal_targets.pop_lsb() {
+            let is_capture = enemy_pieces.contains_square(to_sq as usize);
             let flag = if enemy_pieces.contains_square(to_sq as usize) {
                 Move::CAPTURE
             } else {
                 Move::QUIET
             };
-            moves.push(Move::new(from_sq as u8, to_sq as u8, flag));
+            let current_move = Move::new(from_sq as u8, to_sq as u8, flag);
+            if is_capture
+                || (forcing_only && is_move_a_check(board, current_move, opponent_king_sq))
+            {
+                moves.push(current_move);
+            } else if !forcing_only {
+                moves.push(current_move);
+            }
         }
     }
 }
@@ -228,13 +249,20 @@ fn gen_legal_pawn_moves(
     board: &Board,
     attack_data: &AttackData,
     moves: &mut MoveBuffer,
-    captures_only: bool,
+    forcing_only: bool,
 ) {
     let side = board.stm;
     let pawns = board.positions.get_piece_bb(side, Piece::Pawn);
     let enemy_pieces = board.positions.get_side_bb(side.flip());
     let all_pieces =
         *board.positions.get_side_bb(Side::White) | *board.positions.get_side_bb(Side::Black);
+    // TODO: Handle unwrap here
+    let opponent_king_sq = board
+        .positions
+        .get_piece_bb(side.flip(), Piece::King)
+        .lsb()
+        .expect("[gen_legal_pawn_moves] King not found. Need to handle")
+        as usize;
 
     let promo_rank = if side == Side::White { 7 } else { 0 };
 
@@ -249,7 +277,7 @@ fn gen_legal_pawn_moves(
         };
 
         // Pushes
-        if !captures_only {
+        if !forcing_only {
             let push_dir = if side == Side::White {
                 Direction::NORTH
             } else {
@@ -282,6 +310,29 @@ fn gen_legal_pawn_moves(
                                 two_steps as u8,
                                 Move::DOUBLE_PAWN,
                             ));
+                        }
+                    }
+                }
+            }
+        } else {
+            // When forcing_only, need to check if a push can lead to a check (promotion)
+            // Quiet moves are not forcing
+            let push_dir = if side == Side::White {
+                Direction::NORTH
+            } else {
+                Direction::SOUTH
+            };
+            if pin_dir.is_none() || pin_dir == Some(push_dir) {
+                let one_step = (from_sq as i8 + push_dir) as usize;
+                if !all_pieces.contains_square(one_step)
+                    && attack_data.check_ray_mask.contains_square(one_step)
+                {
+                    // Only consider promotions, as they are the only pushes that can be forcing.
+                    if one_step / 8 == promo_rank {
+                        // Queen promo is most likey to result in checks
+                        let promo_move = Move::new(from_sq as u8, one_step as u8, Move::PROMO_Q);
+                        if is_move_a_check(board, promo_move, opponent_king_sq) {
+                            add_promo_moves(from_sq as u8, one_step as u8, false, moves);
                         }
                     }
                 }
@@ -353,6 +404,91 @@ fn add_promo_moves(from: u8, to: u8, is_capture: bool, moves: &mut MoveBuffer) {
         moves.push(Move::new(from, to, Move::PROMO_R));
         moves.push(Move::new(from, to, Move::PROMO_B));
         moves.push(Move::new(from, to, Move::PROMO_N));
+    }
+}
+
+/// Determines if a given pseudo-legal move delivers a check to the opponent.
+/// Also handles discovered checks
+fn is_move_a_check(board: &Board, mv: Move, opponent_king_sq: usize) -> bool {
+    let from = mv.from_sq().index();
+    let to = mv.to_sq().index();
+    let piece = match board.get_piece_at(mv.from_sq()) {
+        Some(p) => p,
+        None => return false,
+    };
+
+    // Direct check from piece that is moved
+    let piece_attacks_from_to_sq = get_piece_attacks(board, board.stm, piece, to);
+    if piece_attacks_from_to_sq.contains_square(opponent_king_sq) {
+        return true;
+    }
+
+    // Discovered check: see if moving this piece from 'from' square open up
+    // an avenue of attack by other pieces.
+    // NOTE: The moving piece is not a pinned piece, it is a friendly, so it cannot be pinned
+    // Pinned pieces are those that block an enemy's attack
+    let king_and_from_ray =
+        MOVE_TABLES.get_ray(opponent_king_sq, Direction::get_dir(opponent_king_sq, from));
+    // get_dir can return a (0), so this is to handle the case where the pieces are not
+    // aligned
+    if king_and_from_ray.contains_square(from) {
+        let occupied = board.positions.get_occupied_bb() & !BitBoard(1 << from); // Remove 'from' sq
+
+        let rooks_queens = board.positions.get_orhto_sliders_bb(board.stm);
+        let bishops_queens = board.positions.get_diag_sliders_bb(board.stm);
+
+        let rook_attacks = MOVE_TABLES.get_rook_attacks_generic(opponent_king_sq, occupied);
+        if (rook_attacks & rooks_queens).any() {
+            return true;
+        }
+        let bishop_attacks = MOVE_TABLES.get_bishop_attacks_generic(opponent_king_sq, occupied);
+        if (bishop_attacks & bishops_queens).any() {
+            return true;
+        }
+    }
+
+    if mv.is_enpassant() {
+        let captured_pawn_sq = if board.stm == Side::White {
+            to - 8
+        } else {
+            to + 8
+        };
+        let occupied = (board.positions.get_occupied_bb()
+            & !BitBoard(1 << from)
+            & !BitBoard(1 << captured_pawn_sq))
+            | BitBoard(1 << to);
+
+        let rooks_queens = board.positions.get_orhto_sliders_bb(board.stm);
+        let bishops_queens = board.positions.get_diag_sliders_bb(board.stm);
+
+        let rook_attacks = MOVE_TABLES.get_rook_attacks_generic(opponent_king_sq, occupied);
+        if (rook_attacks & rooks_queens).any() {
+            return true;
+        }
+
+        let bishop_attacks = MOVE_TABLES.get_bishop_attacks_generic(opponent_king_sq, occupied);
+        if (bishop_attacks & bishops_queens).any() {
+            return true;
+        }
+    }
+    false
+}
+
+fn get_piece_attacks(board: &Board, side: Side, piece: Piece, from: usize) -> BitBoard {
+    match piece {
+        Piece::Pawn => MOVE_TABLES.get_pawn_attacks(from, side),
+        Piece::Knight => MOVE_TABLES.knight_moves[from],
+        Piece::King => MOVE_TABLES.king_moves[from],
+        Piece::Bishop => {
+            MOVE_TABLES.get_bishop_attacks_generic(from, board.positions.get_occupied_bb())
+        }
+        Piece::Rook => {
+            MOVE_TABLES.get_rook_attacks_generic(from, board.positions.get_occupied_bb())
+        }
+        Piece::Queen => {
+            MOVE_TABLES.get_rook_attacks_generic(from, board.positions.get_occupied_bb())
+                | MOVE_TABLES.get_bishop_attacks_generic(from, board.positions.get_occupied_bb())
+        }
     }
 }
 

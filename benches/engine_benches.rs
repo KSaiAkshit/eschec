@@ -19,7 +19,7 @@ fn filter_captures(board: &Board) -> MoveBuffer {
 
 fn gen_captures(board: &Board) -> MoveBuffer {
     let mut captures = MoveBuffer::new();
-    move_gen::generate_legal_captures(board, &mut captures);
+    move_gen::generate_forcing_moves(board, &mut captures);
     captures
 }
 

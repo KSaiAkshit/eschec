@@ -2,7 +2,7 @@ use crate::{
     board::zobrist::calculate_hash,
     moves::{
         attack_data::calculate_attack_data,
-        move_gen::{generate_legal_captures, generate_legal_moves, generate_pseudo_legal_moves},
+        move_gen::{generate_forcing_moves, generate_legal_moves, generate_pseudo_legal_moves},
     },
     prelude::*,
 };
@@ -140,7 +140,7 @@ impl Board {
         if !captures_only {
             generate_legal_moves(self, buffer);
         } else {
-            generate_legal_captures(self, buffer);
+            generate_forcing_moves(self, buffer);
         }
     }
 
@@ -150,7 +150,7 @@ impl Board {
         if !captures_only {
             generate_legal_moves(self, &mut buffer);
         } else {
-            generate_legal_captures(self, &mut buffer);
+            generate_forcing_moves(self, &mut buffer);
         }
         buffer
     }
