@@ -195,9 +195,9 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
                             continue;
                         }
                     };
-                    info!("Attempting move: {}", mov);
+                    info!("Attempting move: {}", mov.uci());
                     // Already verified that mov is legal when parsing for uci move above
-                    if let Err(e) = board.make_move(mov) {
+                    if let Err(e) = board.try_move(mov) {
                         eprintln!("{e:?}");
                         continue;
                     }

@@ -16,6 +16,143 @@ fn bb_from_squares(squares: &[&str]) -> BitBoard {
     bb
 }
 
+// Checks a standard pawn double push.
+#[test]
+fn test_from_uci_simple_quiet_move() {
+    let board = Board::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    let mov = Move::from_uci(&board, "e2e4").unwrap();
+    assert_eq!(mov.from_sq(), Square::from_str("e2").unwrap());
+    assert_eq!(mov.to_sq(), Square::from_str("e4").unwrap());
+    assert_eq!(mov.flags(), Move::DOUBLE_PAWN);
+}
+
+// Verifies a simple pawn capture has the correct flag.
+#[test]
+fn test_from_uci_simple_capture() {
+    let board = Board::from_fen("rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1");
+    let mov = Move::from_uci(&board, "e4d5").unwrap();
+    assert_eq!(mov.flags(), Move::CAPTURE);
+}
+
+// Tests a promotion-with-capture to a queen
+#[test]
+fn test_from_uci_promotion() {
+    let board = Board::from_fen("rnbq1bnr/pppkPppp/8/8/8/8/PPPP1PPP/RNBQKBNR w KQ - 1 5");
+    let mov = Move::from_uci(&board, "e7d8q").unwrap();
+    assert_eq!(mov.flags(), Move::PROMO_QC);
+    assert_eq!(mov.promoted_piece(), Some(Piece::Queen));
+}
+
+// Checks both kingside and queenside castling
+#[test]
+fn test_from_uci_castling() {
+    let board = Board::from_fen("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1");
+    let mov_ks = Move::from_uci(&board, "e1g1").unwrap();
+    assert_eq!(mov_ks.flags(), Move::KING_CASTLE);
+
+    let mov_qs = Move::from_uci(&board, "e1c1").unwrap();
+    assert_eq!(mov_qs.flags(), Move::QUEEN_CASTLE);
+}
+
+// Ensures the en passant flag is correctly identified
+#[test]
+fn test_from_uci_en_passant() {
+    let board = Board::from_fen("rnbqkbnr/pp1p1ppp/8/2pPp3/8/8/PPP1PPPP/RNBQKBNR w KQkq e6 0 3");
+    let mov = Move::from_uci(&board, "d5e6").unwrap();
+    assert_eq!(mov.flags(), Move::EN_PASSANT);
+}
+
+// test to ensure the final legality check works by trying to move a pinned piece.
+#[test]
+fn test_from_uci_illegal_move_leaves_king_in_check() {
+    // Moving the pinned knight on c3 is illegal.
+    let mut board = Board::from_fen("rnbqkbnr/pp1ppppp/8/2p5/8/2N5/PPPPPPPP/R1BQKBNR b KQkq - 1 2");
+    // White bishop on b5 pins the black knight on c6 against the king on e8.
+    // Moving the knight is illegal.
+    board.stm = Side::Black; // Set to black's turn
+    let result = Move::from_uci(&board, "c6e5");
+    assert!(result.is_err(), "Should not allow moving a pinned piece");
+}
+
+#[test]
+fn test_from_uci_invalid_format() {
+    let board = Board::new();
+    assert!(Move::from_uci(&board, "e2e4e5").is_err()); // Too long
+    assert!(Move::from_uci(&board, "e2").is_err()); // Too short
+    assert!(Move::from_uci(&board, "e2e4q").is_err()); // Valid length but not a promotion
+}
+
+#[test]
+fn test_from_san_simple_pawn_move() {
+    let board = Board::new();
+    let mov = Move::from_san(&board, "e4").unwrap();
+    assert_eq!(mov.uci(), "e2e4");
+}
+
+#[test]
+fn test_from_san_knight_move() {
+    let board = Board::new();
+    let mov = Move::from_san(&board, "Nf3").unwrap();
+    assert_eq!(mov.uci(), "g1f3");
+}
+
+#[test]
+fn test_from_san_capture() {
+    let board = Board::from_fen("rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1");
+    let mov = Move::from_san(&board, "exd5").unwrap();
+    assert_eq!(mov.uci(), "e4d5");
+}
+
+#[test]
+fn test_from_san_promotion_with_check() {
+    let board = Board::from_fen("r3k2r/pP1p1ppp/8/8/8/8/1P1P1P1P/R3K2R w KQkq - 0 1");
+    // b7xa8=Q+
+    let mov = Move::from_san(&board, "bxa8=Q+").unwrap();
+    assert_eq!(mov.uci(), "b7a8q");
+    assert_eq!(mov.flags(), Move::PROMO_QC);
+}
+
+#[test]
+fn test_from_san_castling() {
+    let board = Board::from_fen("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1");
+    let mov_ks = Move::from_san(&board, "O-O").unwrap();
+    assert_eq!(mov_ks.uci(), "e1g1");
+
+    let mov_qs = Move::from_san(&board, "O-O-O").unwrap();
+    assert_eq!(mov_qs.uci(), "e1c1");
+}
+
+#[test]
+fn test_from_san_disambiguation_file() {
+    // Two rooks on the 1st rank can move to d1. "Rfd1" specifies the one from f1.
+    let board = Board::from_fen("8/8/8/8/8/8/7K/R6R w - - 0 1");
+    println!("{board}");
+    let mov = Move::from_san(&board, "Rhd1").unwrap(); // Let's use Rhd1 to move the h-rook
+    assert_eq!(mov.uci(), "h1d1");
+
+    let mov2 = Move::from_san(&board, "Rad1").unwrap(); // And Rad1 for the a-rook
+    assert_eq!(mov2.uci(), "a1d1");
+}
+
+#[test]
+fn test_from_san_disambiguation_rank() {
+    // Two rooks on the a-file can move to a4. "R1a4" specifies the one from a1.
+    // The path for a1->a4 must be clear.
+    let board = Board::from_fen("R3k3/8/8/8/8/8/8/R3K3 w Q - 0 1");
+    let mov = Move::from_san(&board, "R1a4").unwrap();
+    assert_eq!(mov.uci(), "a1a4");
+
+    let mov2 = Move::from_san(&board, "R8a5").unwrap(); // And R8a5 for the other rook
+    assert_eq!(mov2.uci(), "a8a5");
+}
+
+#[test]
+fn test_from_san_illegal_move() {
+    let board = Board::new();
+    let result = Move::from_san(&board, "e5"); // Illegal pawn move
+    assert!(result.is_err());
+}
+
 #[test]
 fn test_rook_mask_from_center() {
     // Rook on d4

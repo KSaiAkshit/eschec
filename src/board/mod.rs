@@ -235,7 +235,13 @@ impl Board {
     }
 
     pub fn make_null_move(&mut self) {
+        if let Some(ep_square) = self.enpassant_square {
+            self.hash ^= ZOBRIST.en_passant_file[ep_square.col()];
+        }
+        self.enpassant_square = None;
+
         self.stm = self.stm.flip();
+        self.hash ^= ZOBRIST.black_to_move;
     }
 
     /// The primary "unsafe" but fast method for applying a move.

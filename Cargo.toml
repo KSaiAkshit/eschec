@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 description = "A chess suite written in rust"
 authors = ["Akira"]
+default-run = "eschec"
 
 [profile.release]
 debug = true
@@ -17,7 +18,16 @@ inherits = "release"
 debug = 1
 
 [[bin]]
+name = "eschec"
+path = "src/main.rs"
+
+[[bin]]
 name = "magic_gen"
+path = "src/bin/magic_gen.rs"
+
+[[bin]]
+name = "eval_tester"
+path = "src/bin/eval_tester.rs"
 
 [dependencies]
 chrono = "0.4.41"

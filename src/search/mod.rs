@@ -102,10 +102,9 @@ impl Search {
         let span = trace_span!("search_root");
         let _guard = span.enter();
 
-        self.nodes_searched = 0;
+        self.prepare_for_search();
         self.start_time = Instant::now();
         self.search_running = search_running;
-        self.killer_moves = [[None; 2]; MAX_PLY];
 
         let mut legal_moves = MoveBuffer::new();
         board.generate_legal_moves(&mut legal_moves, false);
@@ -204,6 +203,14 @@ impl Search {
             time_taken: self.start_time.elapsed(),
             pruned_nodes: self.pruned_nodes,
         }
+    }
+
+    /// Reset Search state without clobbering TranspositionTable
+    fn prepare_for_search(&mut self) {
+        self.nodes_searched = 0;
+        self.pruned_nodes = 0;
+        self.killer_moves = [[None; 2]; MAX_PLY];
+        self.decay_history();
     }
 
     #[instrument(skip_all)]
@@ -449,7 +456,7 @@ impl Search {
     ) -> i32 {
         self.nodes_searched += 1;
 
-        if ply >= MAX_PLY {
+        if ply >= 3 {
             return evaluator.evaluate(board);
         }
 
@@ -584,12 +591,14 @@ mod tests {
     fn test_null_move_pruning() {
         init();
         let _ = utils::log::toggle_file_logging(true);
-        let mut search_with_null = Search::new(6);
-        let mut search_without_null = Search::new(6);
-        search_without_null.toggle_nmp();
+        let mut search_with_null = Search::new(7);
+        let mut search_without_null = Search::new(7);
 
-        let board =
-            Board::from_fen("r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/3P1N2/PPP2PPP/RNBQK2R w KQkq - 0 1");
+        assert_eq!(search_without_null.enable_nmp, true);
+        search_without_null.toggle_nmp();
+        assert_eq!(search_without_null.enable_nmp, false);
+
+        let board = Board::from_fen(KIWIPETE);
         println!("{board}");
         let evaluator = CompositeEvaluator::balanced();
 
@@ -612,6 +621,13 @@ mod tests {
             result_without.nodes_searched, time_without
         );
 
-        assert!(result_with.nodes_searched < result_without.nodes_searched);
+        assert_ne!(
+            result_with.nodes_searched, result_without.nodes_searched,
+            "Node counts should be different"
+        );
+        assert!(
+            result_with.nodes_searched < result_without.nodes_searched,
+            "NMP should reduce node count"
+        );
     }
 }

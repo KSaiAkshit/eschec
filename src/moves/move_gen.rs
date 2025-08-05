@@ -158,7 +158,7 @@ fn gen_legal_sliding_moves(
         .positions
         .get_piece_bb(board.stm.flip(), Piece::King)
         .lsb()
-        .unwrap() as usize;
+        .unwrap_or_default() as usize;
 
     while let Some(from_sq) = piece_bb.pop_lsb() {
         let is_pinned = attack_data.pin_ray_mask.contains_square(from_sq as usize);
@@ -220,7 +220,7 @@ fn gen_legal_knight_moves(
         .positions
         .get_piece_bb(board.stm.flip(), Piece::King)
         .lsb()
-        .unwrap() as usize;
+        .unwrap_or_default() as usize;
 
     while let Some(from_sq) = knights.pop_lsb() {
         let attacks = MOVE_TABLES.knight_moves[from_sq as usize] & !friendly_pieces;
@@ -261,8 +261,7 @@ fn gen_legal_pawn_moves(
         .positions
         .get_piece_bb(side.flip(), Piece::King)
         .lsb()
-        .expect("[gen_legal_pawn_moves] King not found. Need to handle")
-        as usize;
+        .unwrap_or_default() as usize;
 
     let promo_rank = if side == Side::White { 7 } else { 0 };
 

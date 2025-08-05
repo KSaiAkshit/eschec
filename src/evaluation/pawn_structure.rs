@@ -150,7 +150,7 @@ impl PawnStructureEvaluator {
             if shield_rank < 8 {
                 for df in [-1, 0, 1] {
                     let f = kfile as i8 + df;
-                    if f >= 0 && f < 8 {
+                    if (0..8).contains(&f) {
                         let sq = shield_rank * 8 + f as usize;
                         if friendly_pawns.contains_square(sq) {
                             score += self.shield_bonus;
