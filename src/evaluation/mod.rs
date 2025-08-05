@@ -16,6 +16,9 @@ use position::PositionEvaluator;
 pub trait Evaluator: Debug + Send + Sync {
     fn evaluate(&self, board: &Board) -> i32;
     fn name(&self) -> &str;
+    fn breakdown(&self, board: &Board) -> Option<(String, i32)> {
+        Some((self.name().to_string(), self.evaluate(board)))
+    }
 }
 
 #[derive(Debug, Default)]
@@ -49,6 +52,36 @@ impl CompositeEvaluator {
         self.weights.push(weight);
         self
     }
+
+    pub fn print_eval_breakdow(&self, board: &Board) {
+        let breakdown = self.breakdown(board);
+        println!("+-------------------+---------+----------+");
+        println!("|     Term          |  Score  |  Weight  |");
+        println!("+-------------------+---------+----------+");
+        let mut total = 0.0;
+        let weight_total: f32 = self.weights.iter().sum();
+        for (name, score, weight) in breakdown {
+            println!("| {:<17} | {:>7} | {:>8.2} |", name, score, weight);
+            total += score as f32 * weight;
+        }
+        println!("+-------------------+---------+----------+");
+        println!(
+            "|     Total         | {:>7.2} | {:>8.2} |",
+            total, weight_total
+        );
+        println!("+-------------------+---------+----------+");
+    }
+
+    fn breakdown(&self, board: &Board) -> Vec<(String, i32, f32)> {
+        self.evaluators
+            .iter()
+            .zip(self.weights.iter())
+            .filter_map(|(eval, &weight)| {
+                eval.breakdown(board)
+                    .map(|(name, score)| (name, score, weight))
+            })
+            .collect()
+    }
 }
 
 impl Evaluator for CompositeEvaluator {
@@ -68,31 +101,6 @@ impl Evaluator for CompositeEvaluator {
     fn name(&self) -> &str {
         &self.name
     }
-
-    // fn evaluate(&self, board: &Board) -> i32 {
-    //     let mut score = 0;
-    //     let mut per_eval_score = Vec::new();
-    //     for (eval, weight) in self.evaluators.iter().zip(self.weights.iter()) {
-    //         let s = eval.evaluate(board) as f32;
-    //         let weighted_score = (s * weight);
-    //         per_eval_score.push(weighted_score);
-    //         score += weighted_score as i32;
-    //     }
-    //     per_eval_score
-    //         .iter()
-    //         .zip(self.evaluators.iter())
-    //         .zip(self.weights.iter())
-    //         .for_each(|((sc, eval), weigth)| {
-    //             println!(
-    //                 "{}: contribution: {}, weight: {}, score: {}",
-    //                 eval.name(),
-    //                 (sc / score as f32) * 100.0,
-    //                 weigth,
-    //                 sc
-    //             )
-    //         });
-    //     score
-    // }
 }
 
 #[cfg(test)]
