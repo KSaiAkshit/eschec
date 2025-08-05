@@ -22,7 +22,7 @@ pub fn score_move(
     tt_move: Option<Move>,
     history: &[[i32; 64]; 64],
 ) -> i32 {
-    if tt_move.is_some() {
+    if tt_move.is_some_and(|tt_mv| tt_mv == mv) {
         return TT_MOVE_SCORE;
     }
     if mv.is_capture() {

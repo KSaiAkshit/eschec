@@ -66,8 +66,12 @@ impl TranspositionTable {
         let index = self.index(new_entry.hash);
         let entry = &mut self.entries[index];
 
-        // Always replace scheme.
-        // TODO: Maybe try depth-preferred replacement
-        *entry = new_entry;
+        // Depth-Preferred Replacement:
+        // Only replace an entry if the new one is from a deeper or equal search.
+        // This is to prevents shallow searches, like from NMP, from overwriting
+        // information from deeper searches.
+        if new_entry.depth >= entry.depth {
+            *entry = new_entry;
+        }
     }
 }

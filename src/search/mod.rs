@@ -306,10 +306,7 @@ impl Search {
             );
 
             if null_score >= beta {
-                if null_score >= MATE_THRESHOLD {
-                    return beta;
-                }
-                return null_score;
+                return beta;
             }
         }
 
@@ -591,8 +588,8 @@ mod tests {
     fn test_null_move_pruning() {
         init();
         let _ = utils::log::toggle_file_logging(true);
-        let mut search_with_null = Search::new(7);
-        let mut search_without_null = Search::new(7);
+        let mut search_with_null = Search::new(10);
+        let mut search_without_null = Search::new(10);
 
         assert_eq!(search_without_null.enable_nmp, true);
         search_without_null.toggle_nmp();
