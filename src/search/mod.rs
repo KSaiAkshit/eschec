@@ -221,7 +221,7 @@ impl Search {
         }
 
         if depth == 0 {
-            return self.quiescence_search(board, alpha, beta, evaluator);
+            return self.quiescence_search(board, ply, alpha, beta, evaluator);
         }
 
         if alpha >= beta {
@@ -442,11 +442,16 @@ impl Search {
     fn quiescence_search(
         &mut self,
         board: &Board,
+        ply: usize,
         mut alpha: i32,
         beta: i32,
         evaluator: &dyn Evaluator,
     ) -> i32 {
         self.nodes_searched += 1;
+
+        if ply >= MAX_PLY {
+            return evaluator.evaluate(board);
+        }
 
         if self.should_stop() {
             return 0;
@@ -466,7 +471,12 @@ impl Search {
 
         // Generate all moves if in check, otherwise use captures only
         let mut legal_moves = MoveBuffer::new();
-        board.generate_legal_moves(&mut legal_moves, !is_in_check);
+        board.generate_legal_moves(&mut legal_moves, true);
+
+        if is_in_check && legal_moves.is_empty() {
+            // return Losing Mate score
+            return adjust_score_for_ply(-MATE_SCORE, ply);
+        }
 
         sort_moves(
             board,
@@ -482,7 +492,7 @@ impl Search {
                 continue;
             }
 
-            let score = -self.quiescence_search(&board_copy, -beta, -alpha, evaluator);
+            let score = -self.quiescence_search(&board_copy, ply + 1, -beta, -alpha, evaluator);
 
             if score >= beta {
                 self.pruned_nodes += 1;
@@ -517,6 +527,9 @@ impl Search {
     }
 }
 
+// Adjusts Score to be relative to root.
+// To be called before entry is stored in TranspositionTable
+// Takes ply-dependent score and converts it to 'absolute' score
 fn has_non_pawn_material(board: &Board) -> bool {
     let side = board.stm;
     let side_pieces = board.positions.get_side_bb(side);
@@ -525,6 +538,8 @@ fn has_non_pawn_material(board: &Board) -> bool {
     (*side_pieces & !(*pawns | *king)).any()
 }
 
+// Adjusts Score to encode mate distance in the score
+// Takes ply-independent score and converts it to also hold ply info
 fn adjust_score_for_ply(score: i32, ply: usize) -> i32 {
     if score == i32::MIN {
         debug_assert!(false, "BUG: adjust_score_for_ply called with i32::MIN");
