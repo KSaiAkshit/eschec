@@ -13,3 +13,4 @@ dhat-heap.json
 gauntlet/engines/**
 gauntlet/results/**
 .envrc
+.direnv
