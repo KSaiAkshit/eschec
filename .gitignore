@@ -14,3 +14,4 @@ gauntlet/engines/**
 gauntlet/results/**
 .envrc
 .direnv
+config.json

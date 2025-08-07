@@ -33,10 +33,9 @@
           RUST_BACKTRACE = "full";
 
           # Optional: Add aliases for common commands if desired
-          # shellHook = ''
-          #   alias c="cargo"
-          #   alias j="just"
-          # '';
+          shellHook = ''
+            echo "Using flake"
+          '';
         };
 
         packages.eschec = pkgs.rustPlatform.buildRustPackage {

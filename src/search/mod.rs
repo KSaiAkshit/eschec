@@ -70,12 +70,38 @@ impl Search {
         }
     }
 
-    pub fn change_depth(&mut self, new_max_depth: u8) -> miette::Result<()> {
+    pub fn init(self, search_running: Option<Arc<AtomicBool>>) -> Self {
+        Self {
+            search_running,
+            ..self
+        }
+    }
+
+    pub fn set_depth(&mut self, new_max_depth: u8) -> miette::Result<()> {
         miette::ensure!(
             (new_max_depth as usize) < MAX_PLY,
             "New depth ({new_max_depth}) cannot be greater than {MAX_PLY}"
         );
         self.max_depth = new_max_depth;
+        self.max_time = None;
+        warn!(
+            "New depth set to {:?}, time limit removed: {:?}",
+            self.max_depth, self.max_time
+        );
+        Ok(())
+    }
+
+    pub fn set_time(&mut self, max_time_ms: u64) -> miette::Result<()> {
+        miette::ensure!(
+            !self.is_search_running(),
+            "Search already running, cannot change time limit!"
+        );
+        self.max_time = Some(Duration::from_millis(max_time_ms));
+        self.max_depth = (MAX_PLY - 1) as u8;
+        warn!(
+            "New time limit set to {:?}, max depth set to {}",
+            self.max_time, self.max_depth
+        );
         Ok(())
     }
 
@@ -85,11 +111,7 @@ impl Search {
     }
 
     pub fn toggle_nmp(&mut self) -> bool {
-        if self
-            .search_running
-            .as_ref()
-            .is_none_or(|flag| flag.load(Ordering::Relaxed))
-        {
+        if self.is_search_running() {
             self.enable_nmp = !self.enable_nmp;
             true
         } else {
@@ -97,19 +119,21 @@ impl Search {
         }
     }
 
+    fn is_search_running(&self) -> bool {
+        self.search_running
+            .as_ref()
+            .is_some_and(|flag| flag.load(Ordering::Relaxed))
+    }
+
     #[instrument(skip_all)]
-    pub fn find_best_move(
-        &mut self,
-        board: &Board,
-        evaluator: &dyn Evaluator,
-        search_running: Option<Arc<AtomicBool>>,
-    ) -> SearchResult {
+    pub fn find_best_move(&mut self, board: &Board, evaluator: &dyn Evaluator) -> SearchResult {
         let span = trace_span!("search_root");
         let _guard = span.enter();
 
+        info!("Finding best move");
+
         self.prepare_for_search();
         self.start_time = Instant::now();
-        self.search_running = search_running;
 
         let mut legal_moves = MoveBuffer::new();
         board.generate_legal_moves(&mut legal_moves, false);
@@ -552,7 +576,7 @@ fn has_non_pawn_material(board: &Board) -> bool {
 fn adjust_score_for_ply(score: i32, ply: usize) -> i32 {
     if score == i32::MIN {
         debug_assert!(false, "BUG: adjust_score_for_ply called with i32::MIN");
-        error!("BUG: adjust_score_for_ply called with i32::MIN");
+        trace!("BUG: adjust_score_for_ply called with i32::MIN");
         return -MATE_SCORE;
     }
     if score.abs() > MATE_THRESHOLD {
@@ -569,7 +593,7 @@ fn adjust_score_for_ply(score: i32, ply: usize) -> i32 {
 fn adjust_score_from_ply(score: i32, ply: usize) -> i32 {
     if score == i32::MIN {
         debug_assert!(false, "BUG: adjust_score_from_ply called with i32::MIN");
-        error!("BUG: adjust_score_from_ply called with i32::MIN");
+        trace!("BUG: adjust_score_from_ply called with i32::MIN");
         return -MATE_SCORE;
     }
     if score.abs() > MATE_THRESHOLD {
@@ -596,9 +620,9 @@ mod tests {
         let mut search_with_null = Search::new(10);
         let mut search_without_null = Search::new(10);
 
-        assert_eq!(search_without_null.enable_nmp, true);
+        assert!(search_without_null.enable_nmp);
         search_without_null.toggle_nmp();
-        assert_eq!(search_without_null.enable_nmp, false);
+        assert!(!search_without_null.enable_nmp);
 
         let board = Board::from_fen(KIWIPETE);
         println!("{board}");
@@ -606,12 +630,12 @@ mod tests {
 
         info!("Starting with null move pruning");
         let start = std::time::Instant::now();
-        let result_with = search_with_null.find_best_move(&board, &evaluator, None);
+        let result_with = search_with_null.find_best_move(&board, &evaluator);
         let time_with = start.elapsed();
 
         info!("Starting without null move pruning");
         let start = std::time::Instant::now();
-        let result_without = search_without_null.find_best_move(&board, &evaluator, None);
+        let result_without = search_without_null.find_best_move(&board, &evaluator);
         let time_without = start.elapsed();
 
         println!(

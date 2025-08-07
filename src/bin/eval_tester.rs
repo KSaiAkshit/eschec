@@ -51,10 +51,10 @@ fn main() -> miette::Result<()> {
         let start_time = Instant::now();
 
         for test in &tests {
-            let mut board = Board::from_fen(&test.fen);
+            let board = Board::from_fen(&test.fen);
             let evaluator = CompositeEvaluator::balanced();
 
-            let result = search.find_best_move(&mut board, &evaluator, None);
+            let result = search.find_best_move(&board, &evaluator);
             let engine_move = result.best_move.map(|m| m.uci()).unwrap_or_default();
 
             let score = *test.move_scores.get(&engine_move).unwrap_or(&0);
@@ -108,7 +108,7 @@ fn find_epd_files(path: &PathBuf) -> miette::Result<Vec<PathBuf>> {
     let mut files = Vec::new();
     if path.is_dir() {
         for entry in std::fs::read_dir(path).into_diagnostic()?.flatten() {
-            if entry.path().extension().map_or(false, |e| e == "epd") {
+            if entry.path().extension().is_some_and(|e| e == "epd") {
                 files.push(entry.path());
             }
         }

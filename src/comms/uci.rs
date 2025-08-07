@@ -1,11 +1,10 @@
-#![allow(unused)]
 use std::{
     io::BufRead,
     sync::{
         Arc, Mutex,
         atomic::{AtomicBool, Ordering},
     },
-    thread::{self, spawn},
+    thread::{self},
 };
 
 use crate::{
@@ -18,6 +17,7 @@ pub struct UciState {
     board: Board,
     search_depth: u8,
     evaluator: Arc<dyn Evaluator>,
+    search: Arc<Mutex<Search>>,
     search_running: Arc<AtomicBool>,
     best_move: Arc<Mutex<Option<(Square, Square)>>>,
     search_thread: Option<thread::JoinHandle<SearchResult>>,
@@ -29,6 +29,7 @@ impl Default for UciState {
         Self {
             board: Board::default(),
             search_depth: u8::default(),
+            search: Arc::default(),
             evaluator: Arc::new(CompositeEvaluator::default()),
             search_running: Arc::default(),
             best_move: Arc::default(),
@@ -50,12 +51,17 @@ impl Drop for UciState {
 impl UciState {
     pub fn new(depth: Option<u8>) -> Self {
         let depth = depth.unwrap_or(20);
+        let search_running = Arc::new(AtomicBool::new(false));
+        let search = Arc::new(Mutex::new(
+            Search::new(depth).init(Some(search_running.clone())),
+        ));
         Self {
             board: Board::new(),
             search_depth: depth,
+            search,
             evaluator: Arc::new(CompositeEvaluator::balanced()),
-            search_running: Arc::new(AtomicBool::new(false)),
             best_move: Arc::new(Mutex::new(None)),
+            search_running,
             search_thread: None,
             move_history: Vec::new(),
         }
@@ -64,6 +70,10 @@ impl UciState {
     fn reset(&mut self) {
         self.board = Board::new();
         *self.best_move.lock().unwrap() = None;
+        self.move_history.clear();
+        self.search = Arc::new(Mutex::new(
+            Search::new(self.search_depth).init(Some(self.search_running.clone())),
+        ))
     }
 }
 
@@ -137,14 +147,13 @@ fn cmd_position(
     Ok(())
 }
 
-#[instrument(skip(state))]
+#[instrument(skip_all)]
 fn cmd_go(state: &mut UciState, params: GoParams) {
-    state.search_running.store(true, Ordering::Relaxed);
-
     let board = state.board;
     let evaluator = state.evaluator.clone();
     let search_running = state.search_running.clone();
     let default_depth = state.search_depth;
+    let search = state.search.clone();
 
     // Time Management Logic
     let mut max_time_ms: Option<u64> = None;
@@ -166,14 +175,27 @@ fn cmd_go(state: &mut UciState, params: GoParams) {
         max_time_ms = Some(allocation.max(50));
     }
 
+    info!("Spawning thread");
     state.search_thread = Some(thread::spawn(move || {
-        let mut search = if let Some(time) = max_time_ms {
-            Search::with_time_control(default_depth, time)
-        } else {
-            Search::new(params.depth.unwrap_or(default_depth))
-        };
+        let result: SearchResult;
+        {
+            let mut search = search.lock().unwrap();
+            if let Some(time) = max_time_ms {
+                info!("changing time {:?}", max_time_ms);
+                if let Err(e) = search.set_time(time) {
+                    error!("{:?}", e);
+                }
+            } else {
+                info!("changing depth {:?}", params.depth.unwrap_or(default_depth));
+                search
+                    .set_depth(params.depth.unwrap_or(default_depth))
+                    .unwrap();
+            }
 
-        let result = search.find_best_move(&board, &*evaluator, Some(search_running));
+            search_running.store(true, Ordering::Relaxed);
+            result = search.find_best_move(&board, &*evaluator);
+            search_running.store(false, Ordering::Relaxed);
+        }
 
         if let Some(best_move) = result.best_move {
             println!("bestmove {}", best_move.uci());
