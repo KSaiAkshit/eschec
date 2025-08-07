@@ -7,7 +7,10 @@ use eschec::{
     evaluation::{CompositeEvaluator, Evaluator},
     moves::move_gen,
     prelude::MoveBuffer,
-    search::Search,
+    search::{
+        Search,
+        move_ordering::{score_move, sort_moves},
+    },
 };
 
 fn filter_captures(board: &Board) -> MoveBuffer {
@@ -189,6 +192,49 @@ fn bench_alpha_beta_versions(c: &mut Criterion) {
     group.finish();
 }
 
+fn bench_ordering(c: &mut Criterion) {
+    let board = Board::from_fen(KIWIPETE);
+
+    c.bench_function("prng_move_ordering", |b| {
+        b.iter_batched(
+            || {
+                let mut moves = MoveBuffer::new();
+                board.generate_legal_moves(&mut moves, false);
+                moves
+            },
+            |mut moves| {
+                sort_moves(
+                    &board,
+                    moves.as_mut_slice(),
+                    &[None; 2],
+                    None,
+                    &[[0; 64]; 64],
+                    0xABCDEF_ABCD,
+                );
+                black_box(moves)
+            },
+            BatchSize::SmallInput,
+        );
+    });
+
+    c.bench_function("classical_move_ordering", |b| {
+        b.iter_batched(
+            || {
+                let mut moves = MoveBuffer::new();
+                board.generate_legal_moves(&mut moves, false);
+                (moves, board)
+            },
+            |(mut moves, board)| {
+                moves.as_mut_slice().sort_unstable_by_key(|&m| {
+                    -score_move(&board, m, &[None; 2], None, &[[0; 64]; 64])
+                });
+                black_box(moves)
+            },
+            BatchSize::SmallInput,
+        );
+    });
+}
+
 fn bench_search(c: &mut Criterion) {
     let evaluator = CompositeEvaluator::balanced();
     let depth = 3;
@@ -208,6 +254,7 @@ criterion_group!(
     bench_move_generation,
     bench_evaluation,
     bench_alpha_beta_versions,
-    bench_search
+    bench_search,
+    bench_ordering
 );
 criterion_main!(benches);

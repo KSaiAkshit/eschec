@@ -48,7 +48,21 @@ pub fn sort_moves(
     killers: &[Option<Move>; 2],
     tt_move: Option<Move>,
     history: &[[i32; 64]; 64],
+    seed: u64,
 ) {
-    // Score is negated here because sort is ascending, but we want descending
-    moves.sort_by_key(|&m| -score_move(board, m, killers, tt_move, history));
+    let mut prng = Prng::init(seed);
+
+    let mut scored_moves: Vec<(i32, Move)> = moves
+        .iter()
+        .map(|&m| {
+            let base_score = score_move(board, m, killers, tt_move, history);
+            let final_score = base_score + (prng.rand() % 10) as i32;
+            (-final_score, m) // Negate for descending sort
+        })
+        .collect();
+
+    scored_moves.sort_unstable_by_key(|(score, _)| *score);
+    for (i, &(_, mv)) in scored_moves.iter().enumerate() {
+        moves[i] = mv;
+    }
 }

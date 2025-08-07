@@ -165,6 +165,8 @@ impl Search {
                 break;
             }
 
+            let seed = board.hash.wrapping_add(depth as u64);
+
             let mut alpha = i32::MIN + 1;
             let beta = i32::MAX;
 
@@ -174,6 +176,7 @@ impl Search {
                 &[None, None],
                 None,
                 &self.history,
+                seed,
             );
 
             let mut local_best_move: Option<Move> = legal_moves.first();
@@ -352,12 +355,14 @@ impl Search {
         }
 
         if ply < MAX_PLY {
+            let seed = board.hash.wrapping_add(ply as u64);
             sort_moves(
                 board,
                 legal_moves.as_mut_slice(),
                 &self.killer_moves[ply],
                 Some(tt_move),
                 &self.history,
+                seed,
             );
         }
 
@@ -511,12 +516,14 @@ impl Search {
             return adjust_score_for_ply(-MATE_SCORE, ply);
         }
 
+        let seed = board.hash.wrapping_add(ply as u64);
         sort_moves(
             board,
             legal_moves.as_mut_slice(),
             &[None, None],
             None,
             &self.history,
+            seed,
         );
 
         for mv in legal_moves {

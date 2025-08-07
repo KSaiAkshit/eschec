@@ -194,11 +194,8 @@ fn gen_legal_sliding_moves(
                 Move::QUIET
             };
             let current_move = Move::new(from_sq as u8, to_sq as u8, flag);
-            if is_capture
-                || (forcing_only && is_move_a_check(board, current_move, opponent_king_sq))
+            if !forcing_only || is_capture || is_move_a_check(board, current_move, opponent_king_sq)
             {
-                moves.push(current_move);
-            } else if !forcing_only {
                 moves.push(current_move);
             }
         }
@@ -234,11 +231,8 @@ fn gen_legal_knight_moves(
                 Move::QUIET
             };
             let current_move = Move::new(from_sq as u8, to_sq as u8, flag);
-            if is_capture
-                || (forcing_only && is_move_a_check(board, current_move, opponent_king_sq))
+            if !forcing_only || is_capture || is_move_a_check(board, current_move, opponent_king_sq)
             {
-                moves.push(current_move);
-            } else if !forcing_only {
                 moves.push(current_move);
             }
         }

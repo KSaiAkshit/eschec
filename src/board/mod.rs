@@ -1,9 +1,6 @@
 use crate::{
     board::zobrist::calculate_hash,
-    moves::{
-        attack_data::calculate_attack_data,
-        move_gen::{generate_forcing_moves, generate_legal_moves, generate_pseudo_legal_moves},
-    },
+    moves::{attack_data::calculate_attack_data, move_gen},
     prelude::*,
 };
 use miette::Context;
@@ -136,11 +133,11 @@ impl Board {
         fen::to_fen(self)
     }
 
-    pub fn generate_legal_moves(&self, buffer: &mut MoveBuffer, captures_only: bool) {
-        if !captures_only {
-            generate_legal_moves(self, buffer);
+    pub fn generate_legal_moves(&self, buffer: &mut MoveBuffer, forcing_only: bool) {
+        if !forcing_only {
+            move_gen::generate_legal_moves(self, buffer);
         } else {
-            generate_forcing_moves(self, buffer);
+            move_gen::generate_forcing_moves(self, buffer);
         }
     }
 
@@ -148,15 +145,15 @@ impl Board {
     fn get_legal_moves(&self, captures_only: bool) -> MoveBuffer {
         let mut buffer = MoveBuffer::new();
         if !captures_only {
-            generate_legal_moves(self, &mut buffer);
+            move_gen::generate_legal_moves(self, &mut buffer);
         } else {
-            generate_forcing_moves(self, &mut buffer);
+            move_gen::generate_forcing_moves(self, &mut buffer);
         }
         buffer
     }
 
     pub fn generate_pseudo_legal_moves(&self, buffer: &mut MoveBuffer) {
-        generate_pseudo_legal_moves(
+        move_gen::generate_pseudo_legal_moves(
             &self.positions,
             self.stm,
             self.castling_rights,

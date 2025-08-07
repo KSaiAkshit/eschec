@@ -2,7 +2,7 @@ use std::slice::SliceIndex;
 
 use crate::{consts::MAX_MOVES, prelude::Move};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct MoveBuffer {
     moves: [Move; MAX_MOVES],
     len: usize,
