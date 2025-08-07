@@ -2,7 +2,7 @@
 
 * Date: 2025-08-07 13:52
 * Commit (old): 81f468dc7204a6cf298ef2a698c96ef51163a5db (feat: add option to change hash table size)
-* Commit (new): be6f41584d4df750874b139928f8a2719c17adc9 (feat: persistent tt btw searches)
+* Commit (new): 16b4b56793c73fac1136847210110f581783182c (feat: persistent tt btw searches)
 ### transient vs persistent tt (across searches in the same game)
 Results of eschec_transient vs eschec_persistent (8+0.08, NULL, NULL, 2moves.pgn):
 Elo: 70.44 +/- 53.06, nElo: 148.15 +/- 107.67

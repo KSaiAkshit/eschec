@@ -5,7 +5,7 @@ DEPTH := "5"
 FEN := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 pgn_output_dir := 'gauntlet/results/'
 book_file := 'gauntlet/books/2moves.pgn'
-logs_dir := '/tmp/eschec_logs/'
+engine_logs_dir := '/tmp/eschec_logs/'
 export RUST_BACKTRACE := "full"
 
 alias up := update
@@ -48,7 +48,32 @@ gauntlet opponent='gnuchess' rounds='40' concurrency='4' tc='15+0.1': update
         -concurrency {{ concurrency }} \
         -draw movenumber=40 movecount=8 score=20 \
         -resign movecount=3 score=800 \
-        -recover
+        -recover -debug
+
+[doc("Run an SPRT test between two versions of the engine.")]
+[positional-arguments]
+sprt p1 p2 rounds='100' concurrency='4' tc='15+0.1':
+    # Print the configuration for this run
+    @echo "Starting gauntlet:"
+    @echo "  - Engine1: {{ BLUE }}{{ p1 }}{{ NORMAL }}"
+    @echo "  - Engine2: {{ BLUE }}{{ p2 }}{{ NORMAL }}"
+    @echo "  - Rounds: {{ GREEN }}{{ rounds }}x2{{ NORMAL }}"
+    @echo "  - Time Control: {{ CYAN }}{{ tc }}{{ NORMAL }}"
+    @echo "  - Output: {{ YELLOW }}{{ pgn_output_dir }}{{ p1 }}_vs_{{ p2 }}_sprt.txt{{ NORMAL }}"
+    @echo "-------------------------------------"
+
+    @echo "{{ GREEN }}Starting SPRT test...{{ NORMAL }}"
+    @fastchess \
+        -engine cmd=./gauntlet/engines/{{ p1 }} name={{ p1 }} \
+        -engine cmd=./gauntlet/engines/{{ p2 }} name={{ p2 }} \
+        -each tc={{ tc }} \
+        -rounds {{ rounds }} \
+        -concurrency {{ concurrency }} \
+        -openings file={{ book_file }} format=pgn order=random \
+        -sprt elo0=0 elo1=10 alpha=0.05 beta=0.05 \
+        -repeat -recover \
+        -log file={{ engine_logs_dir }}sprt_log.txt \
+        | tee {{ pgn_output_dir }}{{ p1 }}_vs_{{ p2 }}_sprt.txt
 
 [doc("Remove build artifacts and gauntlet artifacts")]
 clean:
@@ -70,7 +95,7 @@ run *args:
 [doc("Find the most recent file in the 'logs' directory and tail it")]
 @tail_log:
     echo "{{ MAGENTA }} Tailing log {{ NORMAL }}"
-    tail -f {{ logs_dir }}$(ls -t {{ logs_dir }} | head -n 1)
+    tail -f {{ engine_logs_dir }}$(ls -t {{ engine_logs_dir }} | head -n 1)
 
 [doc("Record perf for given pid")]
 record pid: setup
