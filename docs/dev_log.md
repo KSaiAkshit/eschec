@@ -1,5 +1,19 @@
 # Dev Log
 
+* Date: 2025-08-08 01:27
+* Commit (old): 8f52076ac009e2e1001ef120be07a5b44ce1d8a7 (feat: prng move ordering)
+* Commit (new): 2772023e4381b4fa208fb0d3a10c1a318f2cffd5 (feat: prng move ordering)
+
+### PRNG based tie-breaking in move-ordering
+Results of eschec_prng_mo vs eschec_persistent_tt (15+0.1, NULL, NULL, 2moves.pgn):
+Elo: 209.91 +/- 30.05, nElo: 603.02 +/- 68.10
+LOS: 100.00 %, DrawRatio: 6.00 %, PairsRatio: inf
+Games: 100, Wins: 54, Losses: 0, Draws: 46, Points: 77.0 (77.00 %)
+Ptnml(0-2): [0, 0, 3, 40, 7], WL/DD Ratio: 0.00
+LLR: 1.45 (49.4%) (-2.94, 2.94) [0.00, 10.00]
+
+---
+
 * Date: 2025-08-07 13:52
 * Commit (old): 81f468dc7204a6cf298ef2a698c96ef51163a5db (feat: add option to change hash table size)
 * Commit (new): 16b4b56793c73fac1136847210110f581783182c (feat: persistent tt btw searches)
@@ -27,4 +41,4 @@ Games: 200, Wins: 0, Losses: 1, Draws: 199, Points: 99.5 (49.75 %)
 Ptnml(0-2): [0, 1, 99, 0, 0], WL/DD Ratio: 0.00
 LLR: -0.37 (-12.6%) (-2.94, 2.94) [0.00, 10.00]
 
-----
+---
