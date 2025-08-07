@@ -79,6 +79,8 @@ pub enum SetSubcommand {
     LogLevel { level: LogLevel },
     /// Enable or diable logging to a file
     LogFile { enable: String },
+    /// Set Hash table size
+    Hash { size: u16 },
 }
 
 #[derive(Parser, Debug)]
@@ -299,6 +301,12 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
                         info!("Setting file logging to: {enable_bool}");
                         if let Err(e) = toggle_file_logging(enable_bool) {
                             error!("Failed to toggle file logging: {e:?}");
+                        }
+                    }
+                    SetSubcommand::Hash { size } => {
+                        info!("Changing Hash table size to {size}");
+                        if let Err(e) = search.change_hash_size(size as usize) {
+                            error!("Failed to chaing hash table size: \n{e:?}");
                         }
                     }
                 },

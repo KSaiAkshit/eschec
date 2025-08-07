@@ -1,4 +1,4 @@
-use crate::moves::move_info::Move;
+use crate::{consts::MAX_HASH, moves::move_info::Move};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ScoreTypes {
@@ -19,6 +19,9 @@ pub struct TranspositionEntry {
     pub best_move: Move,
 }
 
+impl TranspositionEntry {
+    pub const ENTRY_SIZE: usize = std::mem::size_of::<TranspositionEntry>();
+}
 impl Default for TranspositionEntry {
     fn default() -> Self {
         Self {
@@ -31,7 +34,7 @@ impl Default for TranspositionEntry {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct TranspositionTable {
     entries: Vec<TranspositionEntry>,
     size: usize,
@@ -39,13 +42,25 @@ pub struct TranspositionTable {
 
 impl TranspositionTable {
     pub fn new(size_mb: usize) -> Self {
-        let entry_size = std::mem::size_of::<TranspositionEntry>();
-        let num_entries = (size_mb * 1024 * 1024) / entry_size;
+        let num_entries = (size_mb * 1024 * 1024) / TranspositionEntry::ENTRY_SIZE;
         let size = num_entries.next_power_of_two();
         Self {
             entries: vec![TranspositionEntry::default(); size],
             size,
         }
+    }
+
+    pub fn change_size(&mut self, new_size_mb: usize) -> miette::Result<()> {
+        miette::ensure!(
+            new_size_mb <= MAX_HASH,
+            "Hash table size ({new_size_mb} MB) exceeds max allowed {MAX_HASH} MB"
+        );
+        let new_entries_num = (new_size_mb * 1024 * 1024) / TranspositionEntry::ENTRY_SIZE;
+        let new_size = new_entries_num.next_power_of_two();
+        self.entries
+            .resize_with(new_size, TranspositionEntry::default);
+
+        Ok(())
     }
 
     #[inline(always)]

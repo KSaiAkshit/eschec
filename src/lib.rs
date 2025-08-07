@@ -21,6 +21,7 @@ pub mod consts {
 
     pub const MAX_PLY: usize = 64;
     pub const MAX_MOVES: usize = 256;
+    pub const MAX_HASH: usize = 1024;
 
     pub const MATE_SCORE: i32 = 20_000;
     pub const MATE_THRESHOLD: i32 = MATE_SCORE - MAX_PLY as i32;

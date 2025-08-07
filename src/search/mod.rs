@@ -79,6 +79,11 @@ impl Search {
         Ok(())
     }
 
+    pub fn change_hash_size(&mut self, new_size_mb: usize) -> miette::Result<()> {
+        self.tt.change_size(new_size_mb)?;
+        Ok(())
+    }
+
     pub fn toggle_nmp(&mut self) -> bool {
         if self
             .search_running
