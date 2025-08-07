@@ -176,6 +176,8 @@ impl Board {
         }
     }
 
+    /// Method to unmake a move, but arguably, making a Copy of the board to make
+    /// a Move is and discarding the Copy later is faster.
     pub fn unmake_move(&mut self, move_data: &MoveInfo) -> miette::Result<()> {
         self.stm = self.stm.flip();
         self.castling_rights = move_data.castle_rights;

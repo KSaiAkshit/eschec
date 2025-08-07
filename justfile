@@ -97,9 +97,10 @@ run *args:
     echo "{{ MAGENTA }} Tailing log {{ NORMAL }}"
     tail -f {{ engine_logs_dir }}$(ls -t {{ engine_logs_dir }} | head -n 1)
 
-[doc("Record perf for given pid")]
-record pid: setup
-    perf record --call-graph dwarf -p {{ pid }}
+[doc("Record perf with given args")]
+record args="": setup
+    just build
+    perf record --call-graph dwarf ./target/release/eschec {{ args }}
 
 [doc("Run with given args along with dhat feature")]
 dhat-heap args="":

@@ -23,12 +23,23 @@ fn bench_board_ops(c: &mut Criterion) {
 
     group.bench_function("make_unmake_move_cycle", |b| {
         b.iter_batched(
-            Board::new, // Setup: create a fresh board
+            Board::new,
             |mut board| {
-                // Timed routine
                 let move_data = board.make_move(mov).unwrap();
                 board.unmake_move(&move_data).unwrap();
                 black_box(&board);
+            },
+            BatchSize::SmallInput,
+        );
+    });
+
+    group.bench_function("board_copy_make_move", |b| {
+        b.iter_batched(
+            Board::new,
+            |board| {
+                let mut board_copy = board;
+                board_copy.make_move(mov).unwrap();
+                black_box(&board_copy);
             },
             BatchSize::SmallInput,
         );

@@ -34,6 +34,8 @@ pub struct Search {
     killer_moves: [[Option<Move>; 2]; MAX_PLY],
     history: [[i32; 64]; 64],
     enable_nmp: bool,
+    hash_history: Vec<u64>, // TODO: Should this be a stack thing instead
+                            // of a Heap allocated Vec
 }
 
 impl Default for Search {
@@ -50,6 +52,7 @@ impl Default for Search {
             killer_moves: [[None; 2]; 64],
             history: [[0; 64]; 64],
             enable_nmp: true,
+            hash_history: Default::default(),
         }
     }
 }
@@ -134,6 +137,7 @@ impl Search {
 
         self.prepare_for_search();
         self.start_time = Instant::now();
+        self.hash_history.push(board.hash);
 
         let mut legal_moves = MoveBuffer::new();
         board.generate_legal_moves(&mut legal_moves, false);
@@ -144,6 +148,7 @@ impl Search {
             } else {
                 0 // stalemate
             };
+            self.hash_history.pop();
             return SearchResult {
                 best_move: None,
                 score,
@@ -188,12 +193,15 @@ impl Search {
                 }
 
                 let mut board_copy = *board;
-                if board_copy.make_move(m).is_err() {
+                if board_copy.make_move(m).is_err() { // Ply 1
                     continue;
                 }
+                self.hash_history.push(board_copy.hash);
 
                 trace!("Evaluating move: {}, α: {alpha}, β: {beta}", m.uci());
-                let score = -self.alpha_beta(&board_copy, depth - 1, 0, -beta, -alpha, evaluator);
+                let score = -self.alpha_beta(&board_copy, depth - 1, 1, -beta, -alpha, evaluator);
+
+                self.hash_history.pop();
 
                 if self.should_stop() {
                     break;
@@ -226,6 +234,7 @@ impl Search {
             }
         }
 
+        self.hash_history.pop();
         self.decay_history();
         SearchResult {
             best_move,
@@ -242,10 +251,11 @@ impl Search {
         self.nodes_searched = 0;
         self.pruned_nodes = 0;
         self.killer_moves = [[None; 2]; MAX_PLY];
+        self.hash_history.clear();
         self.decay_history();
     }
 
-    #[instrument(skip_all)]
+    // #[instrument(skip_all)]
     fn alpha_beta(
         &mut self,
         board: &Board,
@@ -275,6 +285,15 @@ impl Search {
         let is_in_check = board.is_in_check(board.stm);
 
         let current_hash = board.hash;
+        let repetition_count = self
+            .hash_history
+            .iter()
+            .filter(|&&hash| hash == current_hash)
+            .count();
+
+        if repetition_count >= 2 || board.halfmove_clock >= 100 {
+            return 0;
+        }
         let mut tt_move = Move::default();
 
         if let Some(entry) = self.tt.probe(current_hash)
@@ -378,6 +397,8 @@ impl Search {
 
             self.nodes_searched += 1;
 
+            self.hash_history.push(board_copy.hash);
+
             let mut score: i32;
             // Principal Variation search.
             // Use ZWS (zero window search) for moves other than the first move (PV)
@@ -398,6 +419,8 @@ impl Search {
                         -self.alpha_beta(&board_copy, depth - 1, ply + 1, -beta, -alpha, evaluator);
                 }
             }
+
+            self.hash_history.pop();
 
             if self.should_stop() {
                 return 0;
@@ -438,7 +461,7 @@ impl Search {
         }
 
         if best_score == i32::MIN + 1 {
-            eprintln!(
+            error!(
                 "Mad cooked: alpha: {alpha}, beta: {beta}, best_score: {best_score}, legal_moves searched: {}",
                 num_moves
             );
@@ -495,6 +518,17 @@ impl Search {
             return 0;
         }
 
+        let current_hash = board.hash;
+        let repetition_count = self
+            .hash_history
+            .iter()
+            .filter(|&&hash| hash == current_hash)
+            .count();
+
+        if repetition_count >= 2 || board.halfmove_clock >= 100 {
+            return 0;
+        }
+
         let is_in_check = board.is_in_check(board.stm);
 
         if !is_in_check {
@@ -532,7 +566,11 @@ impl Search {
                 continue;
             }
 
+            self.hash_history.push(board_copy.hash);
+
             let score = -self.quiescence_search(&board_copy, ply + 1, -beta, -alpha, evaluator);
+
+            self.hash_history.pop();
 
             if score >= beta {
                 self.pruned_nodes += 1;
@@ -583,7 +621,7 @@ fn has_non_pawn_material(board: &Board) -> bool {
 fn adjust_score_for_ply(score: i32, ply: usize) -> i32 {
     if score == i32::MIN {
         debug_assert!(false, "BUG: adjust_score_for_ply called with i32::MIN");
-        trace!("BUG: adjust_score_for_ply called with i32::MIN");
+        error!("BUG: adjust_score_for_ply called with i32::MIN");
         return -MATE_SCORE;
     }
     if score.abs() > MATE_THRESHOLD {
@@ -600,7 +638,7 @@ fn adjust_score_for_ply(score: i32, ply: usize) -> i32 {
 fn adjust_score_from_ply(score: i32, ply: usize) -> i32 {
     if score == i32::MIN {
         debug_assert!(false, "BUG: adjust_score_from_ply called with i32::MIN");
-        trace!("BUG: adjust_score_from_ply called with i32::MIN");
+        error!("BUG: adjust_score_from_ply called with i32::MIN");
         return -MATE_SCORE;
     }
     if score.abs() > MATE_THRESHOLD {
