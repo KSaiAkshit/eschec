@@ -183,7 +183,7 @@ impl Move {
         board.generate_legal_moves(&mut legal_moves, false);
 
         // Normalize the SAN string
-        let clean_san = san.trim_end_matches(|c| c == '+' || c == '#');
+        let clean_san = san.trim_end_matches(['+', '#']);
 
         // Handle castling
         if clean_san == "O-O" {
@@ -297,10 +297,11 @@ impl Move {
                     };
                 }
             } else if piece == Piece::Pawn {
-                if let Some(ep_square) = board.enpassant_square {
-                    if to == ep_square && (from.col() as i8 - to.col() as i8).abs() == 1 {
-                        flags = Move::EN_PASSANT;
-                    }
+                if let Some(ep_square) = board.enpassant_square
+                    && to == ep_square
+                    && (from.col() as i8 - to.col() as i8).abs() == 1
+                {
+                    flags = Move::EN_PASSANT;
                 }
                 if (from.row() as i8 - to.row() as i8).abs() == 2 {
                     flags = Move::DOUBLE_PAWN;
@@ -361,7 +362,7 @@ impl SanMove {
         let original_san = san.to_string();
 
         // 1. Check for promotion (same as before)
-        let promotion = match san.chars().rev().next() {
+        let promotion = match san.chars().next_back() {
             Some(p_char)
                 if "QRBN".contains(p_char) && san.ends_with(p_char) && san.contains('=') =>
             {
@@ -466,15 +467,13 @@ impl SanMove {
             }
         }
 
-        if let Some(file) = self.from_file {
-            if from_sq.file() != file {
-                return false;
-            }
+        if let Some(file) = self.from_file
+            && from_sq.file() != file
+        {
+            return false;
         }
-        if let Some(rank) = self.from_rank {
-            if from_sq.rank() != rank {
-                return false;
-            }
+        if let Some(rank) = self.from_rank && from_sq.rank() != rank {
+            return false;
         }
 
         true

@@ -5,7 +5,6 @@ pub mod magics;
 pub mod move_buffer;
 pub mod move_gen;
 pub mod move_info;
-pub mod precomputed;
 
 #[cfg(test)]
 mod tests;
@@ -94,7 +93,7 @@ impl Direction {
         }
     }
 
-    const fn deltas(&self) -> (i8, i8) {
+    pub const fn deltas(&self) -> (i8, i8) {
         match *self {
             Direction::NORTH => (1, 0),
             Direction::SOUTH => (-1, 0),

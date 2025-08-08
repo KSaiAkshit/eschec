@@ -31,5 +31,5 @@ impl MagicEntry {
 // This line includes the generated constants file at compile time.
 include!(concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/src/moves/magic_constants.rs"
+    "/src/precomputed/magic_constants.rs"
 ));

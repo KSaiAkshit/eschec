@@ -5,6 +5,7 @@ pub mod board;
 pub mod comms;
 pub mod evaluation;
 pub mod moves;
+pub mod precomputed;
 pub mod prelude;
 pub mod search;
 pub mod utils;

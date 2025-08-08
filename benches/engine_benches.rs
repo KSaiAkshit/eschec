@@ -209,7 +209,7 @@ fn bench_ordering(c: &mut Criterion) {
                     &[None; 2],
                     None,
                     &[[0; 64]; 64],
-                    0xABCDEF_ABCD,
+                    0xAB_CDEF_ABCD,
                 );
                 black_box(moves)
             },
