@@ -1,8 +1,22 @@
 # Dev Log
 
-* Date: 2025-08-08 01:27
-* Commit (old): 8f52076ac009e2e1001ef120be07a5b44ce1d8a7 (feat: prng move ordering)
-* Commit (new): 2772023e4381b4fa208fb0d3a10c1a318f2cffd5 (feat: prng move ordering)
+* Date: 2025-08-08
+* New: tag 'v0.1.3-repetition_detection'
+* Old: tag 'v0.1.2-prng_mo'
+
+### Threefold repetition detection and ply adjustment
+Results of eschec_repetition_detection vs eschec_prng_mo (15+0.1, NULL, NULL, 2moves.pgn):
+Elo: 66.82 +/- 33.08, nElo: 141.45 +/- 68.10
+LOS: 100.00 %, DrawRatio: 42.00 %, PairsRatio: 4.80
+Games: 100, Wins: 25, Losses: 6, Draws: 69, Points: 59.5 (59.50 %)
+Ptnml(0-2): [0, 5, 21, 24, 0], WL/DD Ratio: 0.05
+LLR: 0.85 (28.9%) (-2.94, 2.94) [0.00, 10.00]
+
+---
+
+* Date: 2025-08-08
+* New: tag 'v0.1.2-prng_mo'
+* Old: tag 'v0.1.1-persistent_tt'
 
 ### PRNG based tie-breaking in move-ordering
 Results of eschec_prng_mo vs eschec_persistent_tt (15+0.1, NULL, NULL, 2moves.pgn):
@@ -14,9 +28,10 @@ LLR: 1.45 (49.4%) (-2.94, 2.94) [0.00, 10.00]
 
 ---
 
-* Date: 2025-08-07 13:52
-* Commit (old): 81f468dc7204a6cf298ef2a698c96ef51163a5db (feat: add option to change hash table size)
-* Commit (new): 16b4b56793c73fac1136847210110f581783182c (feat: persistent tt btw searches)
+* Date: 2025-08-07
+* New: tag 'v0.1.1-persistent_tt'
+* Old: tag 'v0.1.0'
+
 ### transient vs persistent tt (across searches in the same game)
 Results of eschec_transient vs eschec_persistent (8+0.08, NULL, NULL, 2moves.pgn):
 Elo: 70.44 +/- 53.06, nElo: 148.15 +/- 107.67
