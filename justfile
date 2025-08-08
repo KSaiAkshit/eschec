@@ -39,7 +39,7 @@ gauntlet opponent='gnuchess' rounds='40' concurrency='4' tc='15+0.1': update
 
     @# Run the cutechess-cli command
     cutechess-cli \
-        -engine conf=lucia \
+        -engine conf=eschec \
         -engine conf={{ opponent }} \
         -each tc={{ tc }} \
         -rounds {{ rounds }} \
@@ -48,12 +48,12 @@ gauntlet opponent='gnuchess' rounds='40' concurrency='4' tc='15+0.1': update
         -concurrency {{ concurrency }} \
         -draw movenumber=40 movecount=8 score=20 \
         -resign movecount=3 score=800 \
-        -recover -debug
+        -recover
 
 [doc("Run an SPRT test between two versions of the engine.")]
 [positional-arguments]
 sprt p1 p2 rounds='100' concurrency='4' tc='15+0.1':
-    # Print the configuration for this run
+    @# Print the configuration for this run
     @echo "Starting gauntlet:"
     @echo "  - Engine1: {{ BLUE }}{{ p1 }}{{ NORMAL }}"
     @echo "  - Engine2: {{ BLUE }}{{ p2 }}{{ NORMAL }}"

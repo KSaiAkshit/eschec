@@ -1,5 +1,19 @@
 # Dev Log
 
+* Date: 2025-08-09
+* New: tag 'v0.1.4-pawn_masks'
+* Old: tag 'v0.1.3-repetition_detection'
+
+### Faster & appropriate pawn evaluation
+Results of eschec_pawn_masks vs eschec_repetition_detection (15+0.1, NULL, NULL, 2moves.pgn):
+Elo: 52.51 +/- 43.47, nElo: 83.99 +/- 68.10
+LOS: 99.22 %, DrawRatio: 50.00 %, PairsRatio: 3.17
+Games: 100, Wins: 25, Losses: 10, Draws: 65, Points: 57.5 (57.50 %)
+Ptnml(0-2): [2, 4, 25, 15, 4], WL/DD Ratio: 0.09
+LLR: 0.58 (19.8%) (-2.94, 2.94) [0.00, 10.00]
+
+---
+
 * Date: 2025-08-08
 * New: tag 'v0.1.3-repetition_detection'
 * Old: tag 'v0.1.2-prng_mo'

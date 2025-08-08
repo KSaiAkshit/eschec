@@ -256,8 +256,7 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
                 }
                 GameSubcommand::Evaluate => {
                     info!("Evaluating the current board state");
-                    let score = board.evaluate_position(&evaluator);
-                    info!("Score: {score}");
+                    evaluator.print_eval_breakdown(&board);
                 }
                 GameSubcommand::Clear => {
                     info!("Clearing screen");

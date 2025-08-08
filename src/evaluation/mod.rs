@@ -53,7 +53,7 @@ impl CompositeEvaluator {
         self
     }
 
-    pub fn print_eval_breakdow(&self, board: &Board) {
+    pub fn print_eval_breakdown(&self, board: &Board) {
         let breakdown = self.breakdown(board);
         println!("+-------------------+---------+----------+");
         println!("|     Term          |  Score  |  Weight  |");
