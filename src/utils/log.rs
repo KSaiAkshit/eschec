@@ -62,8 +62,10 @@ static LOG_HANDLES: LazyLock<LogHandles> = LazyLock::new(|| {
     let log_file = File::create(&log_filename)
         .unwrap_or_else(|_| panic!("Failed to create log file: {log_filename}"));
 
-    let (non_blocking_writer, _guard) = non_blocking(log_file);
-    std::mem::forget(_guard); // Keep the guard alive.
+    let (non_blocking_writer, guard) = non_blocking(log_file);
+    let g = Box::new(guard);
+    Box::leak(g);
+
 
     let file_layer = fmt::layer()
         .with_writer(non_blocking_writer)

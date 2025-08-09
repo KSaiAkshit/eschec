@@ -31,6 +31,15 @@ pub struct PawnTables {
     ///
     /// *Index: \[pawn_square\] -> BitBoard of 2 neighbours*
     pub connected_pawn_masks: [BitBoard; 64],
+
+    /// For King Safety evaluation: the full 4x3 (or smaller near edges)
+    /// zone of squares around the king, including two ranks "in front".
+    /// This is the area enemy pieces attack.
+    /// Ranks: king_rank [-1, 0, 1, 2]
+    /// Files: king_file [-1, 0, 1]
+    ///
+    /// *Index: \[Side\]\[king_square\] -> BitBoard*
+    pub king_attack_zone_masks: [[BitBoard; 64]; 2],
 }
 
 pub const PAWN_TABLES: PawnTables = PawnTables::new();
@@ -44,6 +53,7 @@ impl Default for PawnTables {
             pawn_front_square_masks: [[BitBoard(0); 64]; 2],
             pawn_backward_support_masks: [[BitBoard(0); 64]; 2],
             connected_pawn_masks: [BitBoard(0); 64],
+            king_attack_zone_masks: [[BitBoard(0); 64]; 2],
         }
     }
 }
@@ -57,9 +67,11 @@ impl PawnTables {
             pawn_front_square_masks: [[BitBoard(0); 64]; 2],
             pawn_backward_support_masks: [[BitBoard(0); 64]; 2],
             connected_pawn_masks: [BitBoard(0); 64],
+            king_attack_zone_masks: [[BitBoard(0); 64]; 2],
         };
         tables.init_adjacent_file_masks();
         tables.init_per_sq_masks();
+        tables.init_king_attack_zones();
         tables
     }
 
@@ -182,6 +194,58 @@ impl PawnTables {
                 neighbour_mask.set(rank * 8 + (file + 1));
             }
             self.connected_pawn_masks[sq_idx] = neighbour_mask;
+            sq_idx += 1;
+        }
+    }
+
+    const fn init_king_attack_zones(&mut self) {
+        let mut sq_idx: usize = 0;
+        while sq_idx < 64 {
+            let king_rank = sq_idx / 8;
+            let king_file = sq_idx % 8;
+
+            let mut white_zone = BitBoard(0);
+            let mut rank_delta: i8 = -1;
+            while rank_delta <= 2 {
+                let current_rank_i8 = king_rank as i8 + rank_delta;
+                if current_rank_i8 >= 0 && current_rank_i8 < 8 {
+                    let current_rank = current_rank_i8 as usize;
+
+                    let mut f_delta = -1;
+                    while f_delta <= 1 {
+                        let current_file_i8 = king_file as i8 + f_delta;
+                        if current_file_i8 >= 0 && current_file_i8 < 8 {
+                            white_zone.set(current_rank * 8 + current_file_i8 as usize);
+                        }
+                        f_delta += 1;
+                    }
+                }
+                rank_delta += 1;
+            }
+            white_zone.capture(sq_idx);
+            self.king_attack_zone_masks[Side::White.index()][sq_idx] = white_zone;
+
+            let mut black_zone = BitBoard(0);
+            let mut r_delta: i8 = -1;
+            while r_delta <= 2 {
+                let current_rank_i8 = king_rank as i8 - r_delta;
+                if current_rank_i8 >= 0 && current_rank_i8 < 8 {
+                    let current_rank = current_rank_i8 as usize;
+
+                    let mut f_delta = -1;
+                    while f_delta <= 1 {
+                        let current_file_i8 = king_file as i8 + f_delta;
+                        if current_file_i8 >= 0 && current_file_i8 < 8 {
+                            black_zone.set(current_rank * 8 + current_file_i8 as usize);
+                        }
+                        f_delta += 1;
+                    }
+                }
+                r_delta += 1;
+            }
+            black_zone.capture(sq_idx);
+            self.king_attack_zone_masks[Side::Black.index()][sq_idx] = black_zone;
+
             sq_idx += 1;
         }
     }

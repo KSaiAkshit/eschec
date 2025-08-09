@@ -94,6 +94,9 @@ impl Evaluator for CompositeEvaluator {
             .map(|(evaluator, &weight)| evaluator.evaluate(board) as f32 * weight)
             .sum::<f32>()
             / total_weight;
+        // NOTE: The jiggle might seem unusual as Evaluations are usually deterministic
+        // But the jiggle here is based on the position's Zobrist hash,
+        // so it is deterministic as well
         let jiggle = (board.hash % 5) as i32 - 2;
         score as i32 + jiggle
     }

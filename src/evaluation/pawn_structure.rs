@@ -8,7 +8,6 @@ pub struct PawnStructureEvaluator {
     backward_penalty: i32,
     passed_bonus: i32,
     connected_bonus: i32,
-    shield_bonus: i32,
 }
 
 impl Default for PawnStructureEvaluator {
@@ -26,7 +25,6 @@ impl PawnStructureEvaluator {
             backward_penalty: -8,
             passed_bonus: 10,
             connected_bonus: 2,
-            shield_bonus: 10,
         }
     }
     fn evaluate_side(&self, board: &Board, side: Side) -> i32 {
@@ -34,7 +32,6 @@ impl PawnStructureEvaluator {
         let opponent = side.flip();
         let opponent_pawns = board.positions.get_piece_bb(opponent, Piece::Pawn);
         let occupied = board.positions.get_occupied_bb();
-        let king_sq = board.positions.get_piece_bb(side, Piece::King).lsb();
 
         let mut score = 0;
 
@@ -67,12 +64,6 @@ impl PawnStructureEvaluator {
 
             let connected_neighbors = friendly_pawns & &PAWN_TABLES.connected_pawn_masks[sq_idx];
             score += connected_neighbors.pop_count() as i32 * self.connected_bonus;
-        }
-        if let Some(king_sq) = king_sq {
-            score += (friendly_pawns
-                & &PAWN_TABLES.king_shield_zone_masks[side.index()][king_sq as usize])
-                .pop_count() as i32
-                * self.shield_bonus;
         }
         score
     }
