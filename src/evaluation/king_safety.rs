@@ -43,7 +43,7 @@ impl KingSafetyEvaluator {
     pub fn new() -> Self {
         Self {
             name: "KingSafety".to_string(),
-            castling_bonus: 50,
+            castling_bonus: 20,
             pawn_shield_bonus_full: 20,    // Bonus for full pawn shield
             pawn_shield_bonus_partial: 10, // Bonus for partial pawn shield
             open_file_penalty: -40,        // Strong penalty for open files
@@ -52,12 +52,20 @@ impl KingSafetyEvaluator {
     fn evaluate_castling(&self, rights: CastlingRights, side: Side) -> i32 {
         let mut score = 0;
 
-        if rights.can_castle(side, true) {
+        if rights.has_castled(side) {
             score += self.castling_bonus;
+
+            return score;
+        }
+
+        // Subtracting some score here so that having two rights
+        // is worth less than having castled.
+        if rights.can_castle(side, true) {
+            score += (self.castling_bonus / 2) - 5;
         }
 
         if rights.can_castle(side, false) {
-            score += self.castling_bonus;
+            score += (self.castling_bonus / 2) - 5;
         }
 
         score

@@ -6,6 +6,9 @@ FEN := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 pgn_output_dir := 'gauntlet/results/'
 book_file := 'gauntlet/books/2moves.pgn'
 engine_logs_dir := '/tmp/eschec_logs/'
+repo_url := env('REPO_URL')
+OUT_DIR := "/tmp/out_dir"
+BIN_NAME := "eschec"
 export RUST_BACKTRACE := "full"
 
 alias up := update
@@ -19,6 +22,40 @@ default: play
 [doc("Print help")]
 help:
     just -l
+
+build-all-tags:
+    #!/usr/bin/bash
+    set -euo pipefail
+
+    TMP_DIR="$(mktemp -d)"
+    echo "Cloning repo into $TMP_DIR"
+    git clone --quiet "{{ repo_url }}" "$TMP_DIR"
+
+    pushd "$TMP_DIR" > /dev/null
+
+    echo "Fetching tags..."
+    git fetch --tags --quiet
+    TAGS=$(git tag)
+
+    for tag in $TAGS; do
+        echo "Building for tag: $tag"
+        git checkout --quiet "$tag"
+
+        just build
+
+        if [ -f "{{ BIN_NAME }}" ]; then
+            cp "{{ BIN_NAME }}" "{{ OUT_DIR }}/{{ BIN_NAME }}-${tag}"
+        elif [ -f "target/release/{{BIN_NAME}}" ]; then
+            cp "target/release/{{BIN_NAME}}" "{{OUT_DIR}}/{{BIN_NAME}}-${tag}"
+        else
+            echo "Warning: Could not find built binary for $tag"
+        fi
+    done
+
+    popd > /dev/null
+    rm -rf "$TMP_DIR"
+    echo "All binaries saved to {{OUT_DIR}}"
+    
 
 [doc("Build and symlink binary")]
 update:
@@ -39,11 +76,11 @@ gauntlet opponent='gnuchess' rounds='40' concurrency='4' tc='15+0.1': update
 
     @# Run the cutechess-cli command
     cutechess-cli \
-        -engine conf=eschec \
+        -engine conf=lucia \
         -engine conf={{ opponent }} \
         -each tc={{ tc }} \
         -rounds {{ rounds }} \
-        -openings file={{ book_file }} format=pgn order=random \
+        -openings file={{ book_file }} format=pgn order=random policy=round \
         -pgnout {{ pgn_output_dir }}eschec_vs_{{ opponent }}.txt \
         -concurrency {{ concurrency }} \
         -draw movenumber=40 movecount=8 score=20 \
@@ -77,8 +114,8 @@ sprt p1 p2 rounds='100' concurrency='4' tc='15+0.1':
 
 [doc("Remove build artifacts and gauntlet artifacts")]
 clean:
-    rm -rf ./gauntlet/results/ ./gauntlet/engines/
-    mkdir ./gauntlet/results ./gauntlet/engines
+    rm -rf ./gauntlet/results/
+    mkdir ./gauntlet/results
 
 [doc("Run the engine in play mode")]
 play:

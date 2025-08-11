@@ -88,7 +88,7 @@ impl Search {
         self.max_depth = new_max_depth;
         self.max_time = None;
         warn!(
-            "New depth set to {:?}, time limit removed: {:?}",
+            "New depth set to {:?}, time limit set to: {:?}",
             self.max_depth, self.max_time
         );
         Ok(())
@@ -193,7 +193,8 @@ impl Search {
                 }
 
                 let mut board_copy = *board;
-                if board_copy.make_move(m).is_err() { // Ply 1
+                if board_copy.make_move(m).is_err() {
+                    // Ply 1
                     continue;
                 }
                 self.hash_history.push(board_copy.hash);

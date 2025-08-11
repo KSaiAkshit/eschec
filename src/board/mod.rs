@@ -4,8 +4,6 @@ use crate::{
     prelude::*,
 };
 use miette::Context;
-#[cfg(feature = "random")]
-use rand::prelude::*;
 use std::fmt::Display;
 
 pub mod components;
@@ -280,7 +278,7 @@ impl Board {
         }
         self.enpassant_square = None;
         // XOR out prev castling rights.
-        self.hash ^= ZOBRIST.castling[self.castling_rights.0 as usize];
+        self.hash ^= ZOBRIST.castling[self.castling_rights.get_rights() as usize];
 
         // Update Board State
         // This covers normal captures and promotion-captures.
@@ -339,6 +337,7 @@ impl Board {
                 self.hash ^= ZOBRIST.pieces[self.stm.index()][Piece::rook()][rook_from.index()];
                 // XOR in rook from destination sq
                 self.hash ^= ZOBRIST.pieces[self.stm.index()][Piece::rook()][rook_to.index()];
+                self.castling_rights.set_castled(self.stm);
             }
             Move::QUEEN_CASTLE => {
                 let (rook_from, rook_to) = (
@@ -373,7 +372,7 @@ impl Board {
         // Final state update
         self.update_castling_rights(from, to);
         // XOR in updated castling rights;
-        self.hash ^= ZOBRIST.castling[self.castling_rights.0 as usize];
+        self.hash ^= ZOBRIST.castling[self.castling_rights.get_rights() as usize];
 
         if piece == Piece::Pawn || m.is_capture() {
             self.halfmove_clock = 0
@@ -461,133 +460,12 @@ impl Board {
         self.is_stalemate(self.stm) || self.halfmove_clock >= 100 || self.is_insufficient_material()
     }
 
-    #[cfg(feature = "random")]
-    pub fn suggest_rand_move(&self) -> miette::Result<(Square, Square)> {
-        info!("This is RNGesus");
-        let mut rng = rand::rng();
-        let mut possible_end_bits: Vec<usize> = Vec::default();
-        let mut from = Square::default();
-        let mut to = Square::default();
-        while possible_end_bits.is_empty() {
-            // Choose a piece at random
-            let (piece, _) = Piece::all()
-                .choose(&mut rng)
-                .expect("Should be able to choose at random");
-            // Generate moves for the randomly selected piece
-            let moves = MoveGen::new(piece, self.stm, self);
-
-            // Get the position of the Piece on the current board
-            let piece_state = self.positions.get_piece_bb(&self.stm, &piece);
-            let piece_idx = piece_state.get_set_bits();
-
-            let piece_choice = piece_idx
-                .choose(&mut rng)
-                .expect("Should be able to get a random piece idx");
-            let m = moves.attack_bb[*piece_choice];
-            possible_end_bits = m.get_set_bits();
-            if possible_end_bits.is_empty() {
-                continue;
-            }
-            from = Square::new(*piece_choice).expect("Should be valid piece choice");
-            let end_bit = possible_end_bits
-                .choose(&mut rng)
-                .expect("Should be able to get random to square");
-            to = Square::new(*end_bit).expect("Should be valid square");
-        }
-        Ok((from, to))
-    }
-
     pub fn evaluate_position(&self, evaluator: &dyn Evaluator) -> i32 {
         evaluator.evaluate(self)
     }
 
     pub fn get_piece_at(&self, square: Square) -> Option<Piece> {
         self.positions.get_piece_at(&square).map(|(piece, _)| piece)
-    }
-
-    pub fn handle_special_rules(&mut self, from: Square, to: Square) -> miette::Result<()> {
-        let old_ep_square = self.enpassant_square;
-        self.enpassant_square = None;
-
-        match self.get_piece_at(from) {
-            Some(Piece::Pawn) => {
-                match old_ep_square {
-                    // Enpassant capture
-                    Some(ep_square) if to == ep_square => {
-                        let captured_pawn_square = Square::new(match self.stm {
-                            Side::White => ep_square.index() - 8,
-                            Side::Black => ep_square.index() + 8,
-                        })
-                        .unwrap();
-
-                        self.positions.remove_piece(
-                            self.stm.flip(),
-                            Piece::Pawn,
-                            captured_pawn_square.index(),
-                        )?;
-                    }
-                    _ => {}
-                }
-
-                let is_double_push = match self.stm {
-                    Side::White => from.index() / 8 == 1 && to.index() / 8 == 3,
-                    Side::Black => from.index() / 8 == 6 && to.index() / 8 == 4,
-                };
-
-                if is_double_push {
-                    let skipped_square = Square::new(match self.stm {
-                        Side::White => from.index() + 8,
-                        Side::Black => from.index() - 8,
-                    })
-                    .expect("Should be able to construct a valid skipped square");
-                    self.enpassant_square = Some(skipped_square);
-                }
-
-                self.halfmove_clock = 0;
-            }
-            Some(Piece::King) => {
-                match self.stm {
-                    Side::White => self
-                        .castling_rights
-                        .remove_right(&CastlingRights::WHITE_CASTLING),
-                    Side::Black => self
-                        .castling_rights
-                        .remove_right(&CastlingRights::BLACK_CASTLING),
-                }
-                let file_diff = (to.col() as i8) - (from.col() as i8);
-                if file_diff.abs() == 2 {
-                    // this is a castling move
-                    let rook_from_file = if file_diff.is_positive() { 7 } else { 0 }; // kingside or queenside A1/H1
-                    let rook_to_file = if file_diff.is_positive() { 5 } else { 3 }; // kingside or queenside C1/F1
-
-                    let rank = from.row();
-                    let rook_from = Square::new(rank * 8 + rook_from_file).unwrap();
-                    let rook_to = Square::new(rank * 8 + rook_to_file).unwrap();
-
-                    self.positions.move_piece(rook_from, rook_to)?;
-                }
-            }
-            Some(Piece::Rook) => match (self.stm, from.index()) {
-                (Side::White, 0) => self
-                    .castling_rights
-                    .remove_right(&CastlingRights(CastlingRights::WHITE_000)),
-                (Side::White, 7) => self
-                    .castling_rights
-                    .remove_right(&CastlingRights(CastlingRights::WHITE_00)),
-                (Side::Black, 56) => self
-                    .castling_rights
-                    .remove_right(&CastlingRights(CastlingRights::BLACK_000)),
-                (Side::Black, 63) => self
-                    .castling_rights
-                    .remove_right(&CastlingRights(CastlingRights::BLACK_00)),
-                _ => {}
-            },
-            None => {
-                miette::bail!("No piece at from ({from}) square");
-            }
-            _ => {}
-        }
-        Ok(())
     }
 
     fn recalculate_material(&mut self) {

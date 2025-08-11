@@ -67,7 +67,7 @@ pub fn calculate_hash(board: &Board) -> u64 {
         }
     });
 
-    hash ^= ZOBRIST.castling[board.castling_rights.0 as usize];
+    hash ^= ZOBRIST.castling[board.castling_rights.get_rights() as usize];
 
     if let Some(ep_sq) = board.enpassant_square {
         let opponent_pawns = board.positions.get_piece_bb(board.stm.flip(), Piece::Pawn);

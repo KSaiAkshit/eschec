@@ -629,11 +629,20 @@ impl BoardState {
 
 /// Castling rights are stored in a [`u8`], which is divided into the following parts:
 /// ```text
-/// 0 1 0 1   1                1               0                0
-/// ^^^^^^^   ^                ^               ^                ^
-/// unused    Black queen side Black king side White queen side White king side
+/// Bit: 7 6 5 4 3 2 1 0
+///      - - B W q k Q K
+///      | | | | | | | |
+///      | | | | | | | +-- White kingside right
+///      | | | | | | +---- White queenside right
+///      | | | | | +------ Black kingside right
+///      | | | | +-------- Black queenside right
+///      | | | +---------- White has castled
+///      | | +------------ Black has castled
+///      | +-------------- (unused)
+///      +---------------- (unused)
 /// ```
 #[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
+#[repr(transparent)]
 pub struct CastlingRights(pub u8);
 
 impl CastlingRights {
@@ -646,22 +655,36 @@ impl CastlingRights {
     pub const BLACK_00: u8 = 0b00000100;
     /// Black Queen side castling
     pub const BLACK_000: u8 = 0b00001000;
+    /// White King has castled
+    pub const WHITE_CASTLED: u8 = 0b00010000;
+    /// Black King has castled
+    pub const BLACK_CASTLED: u8 = 0b00100000;
 
     pub const KING_SIDE: Self = Self(Self::BLACK_00 | Self::WHITE_00);
     pub const QUEEN_SIDE: Self = Self(Self::BLACK_000 | Self::WHITE_000);
     pub const WHITE_CASTLING: Self = Self(Self::WHITE_00 | Self::WHITE_000);
     pub const BLACK_CASTLING: Self = Self(Self::BLACK_00 | Self::BLACK_000);
     pub const ANY_CASTLING: Self = Self(Self::BLACK_CASTLING.0 | Self::WHITE_CASTLING.0);
-    pub fn add_right(&mut self, rights: CastlingRights) {
+    pub const RIGHTS_MASK: u8 = 0b00001111;
+
+    #[inline(always)]
+    pub const fn add_right(&mut self, rights: CastlingRights) {
         self.0 |= rights.0;
     }
-    pub fn all() -> Self {
+    #[inline(always)]
+    pub const fn all() -> Self {
         Self::ANY_CASTLING
     }
-    pub fn allows(&self, rights: CastlingRights) -> bool {
+    #[inline(always)]
+    pub const fn allows(&self, rights: CastlingRights) -> bool {
         self.0 & rights.0 != Self::NO_CASTLING
     }
-    pub fn can_castle(&self, side: Side, kingside: bool) -> bool {
+    #[inline(always)]
+    pub const fn get_rights(&self) -> u8 {
+        self.0 & Self::RIGHTS_MASK
+    }
+    #[inline(always)]
+    pub const fn can_castle(&self, side: Side, kingside: bool) -> bool {
         match (side, kingside) {
             (Side::White, true) => self.allows(CastlingRights(CastlingRights::WHITE_00)),
             (Side::White, false) => self.allows(CastlingRights(CastlingRights::WHITE_000)),
@@ -669,26 +692,60 @@ impl CastlingRights {
             (Side::Black, false) => self.allows(CastlingRights(CastlingRights::BLACK_000)),
         }
     }
-    pub fn black_only() -> Self {
-        Self::BLACK_CASTLING
+    #[inline(always)]
+    pub const fn set_castled(&mut self, side: Side) {
+        match side {
+            Side::White => {
+                self.0 |= Self::WHITE_CASTLED;
+                self.remove_right(&CastlingRights::WHITE_CASTLING);
+            }
+            Side::Black => {
+                self.0 |= Self::BLACK_CASTLED;
+                self.remove_right(&CastlingRights::BLACK_CASTLING);
+            }
+        }
     }
-    pub fn empty() -> Self {
+    #[inline(always)]
+    pub const fn has_castled(&self, side: Side) -> bool {
+        match side {
+            Side::White => self.0 & Self::WHITE_CASTLED != 0,
+            Side::Black => self.0 & Self::BLACK_CASTLED != 0,
+        }
+    }
+    #[inline(always)]
+    pub const fn unset_castled(&mut self, side: Side) {
+        match side {
+            Side::White => self.0 &= !Self::WHITE_CASTLED,
+            Side::Black => self.0 &= !Self::BLACK_CASTLED,
+        }
+    }
+    #[inline(always)]
+    pub const fn empty() -> Self {
         Self(Self::NO_CASTLING)
     }
-    pub fn is_empty(&self) -> bool {
+    #[inline(always)]
+    pub const fn is_empty(&self) -> bool {
         self.0 == 0b0000
     }
-    pub fn king_side() -> Self {
+    #[inline(always)]
+    pub const fn king_side() -> Self {
         Self::KING_SIDE
     }
-    pub fn queen_side() -> Self {
+    #[inline(always)]
+    pub const fn queen_side() -> Self {
         Self::QUEEN_SIDE
     }
-    pub fn remove_right(&mut self, rights: &CastlingRights) {
+    #[inline(always)]
+    pub const fn remove_right(&mut self, rights: &CastlingRights) {
         self.0 &= !rights.0
     }
-    pub fn white_only() -> Self {
+    #[inline(always)]
+    pub const fn white_only() -> Self {
         Self::WHITE_CASTLING
+    }
+    #[inline(always)]
+    pub const fn black_only() -> Self {
+        Self::BLACK_CASTLING
     }
 }
 
@@ -747,10 +804,12 @@ impl Default for CastlingRights {
 ///    ^(bit 0)
 ///```
 #[derive(Default, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+#[repr(transparent)]
 pub struct Square(usize);
 impl Square {
     /// Returns a Square from a given index. Will return None if index is out of bounds
     /// index should be [0, 63]
+    #[inline(always)]
     pub const fn new(index: usize) -> Option<Self> {
         if index < 64 {
             return Some(Self(index));
@@ -761,12 +820,14 @@ impl Square {
     /// Returns a Square from a given File and Rank.
     /// Will return None if either File or Rank are out of bounds.
     /// Rank < 7, File < 8
+    #[inline(always)]
     pub const fn from_coords(file: usize, rank: usize) -> Option<Self> {
         if file < 8 && rank < 8 {
             return Some(Square(rank * 8 + file));
         }
         None
     }
+
     pub fn enpassant_from_index(file: char, rank: char) -> miette::Result<Self> {
         let file = file.to_ascii_lowercase();
         if !('a'..='h').contains(&file) {
@@ -786,36 +847,50 @@ impl Square {
         let square_index = row_index * 8 + col_index;
         Ok(Square(square_index))
     }
+
+    #[inline(always)]
     pub const fn coords(&self) -> (usize, usize) {
         let rank = self.0 / 8;
         let file = self.0 % 8;
         (rank, file)
     }
 
+    #[inline(always)]
     pub const fn get_neighbor(&self, dir: Direction) -> Square {
         Self((self.0 as i8 + dir.value()) as usize)
     }
 
+    #[inline(always)]
     pub const fn row(&self) -> usize {
         self.0 / 8
     }
 
+    #[inline(always)]
     pub const fn col(&self) -> usize {
         self.0 % 8
     }
 
     /// NOTE: Rank is 1 indexed
+    #[inline(always)]
     pub const fn rank(&self) -> usize {
         self.0 / 8 + 1
     }
 
     /// NOTE: File is 1 indexed
+    #[inline(always)]
     pub const fn file(&self) -> usize {
         self.0 % 8 + 1
     }
 
+    #[inline(always)]
     pub const fn index(&self) -> usize {
         self.0
+    }
+}
+
+impl From<Square> for usize {
+    fn from(value: Square) -> Self {
+        value.0
     }
 }
 
