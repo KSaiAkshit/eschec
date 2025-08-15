@@ -1,5 +1,18 @@
 # Dev Log
 
+* Date: 2025-08-15
+* New: tag 'v0.1.5-king_safetyv2'
+* Old: tag 'v0.1.4-pawn_masks'
+
+Results of eschec vs eschec_pawn_masks (15+0.1, NULL, NULL, 2moves.pgn):
+Elo: 10.43 +/- 17.99, nElo: 19.76 +/- 34.05
+LOS: 87.23 %, DrawRatio: 53.00 %, PairsRatio: 1.19
+Games: 400, Wins: 67, Losses: 55, Draws: 278, Points: 206.0 (51.50 %)
+Ptnml(0-2): [1, 42, 106, 46, 5], WL/DD Ratio: 0.12
+LLR: 0.49 (16.7%) (-2.94, 2.94) [0.00, 10.00]
+
+---
+
 * Date: 2025-08-09
 * New: tag 'v0.1.4-pawn_masks'
 * Old: tag 'v0.1.3-repetition_detection'
