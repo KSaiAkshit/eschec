@@ -33,9 +33,10 @@ pub struct Search {
     tt: TranspositionTable,
     killer_moves: [[Option<Move>; 2]; MAX_PLY],
     history: [[i32; 64]; 64],
+    hash_history: Vec<u64>, // TODO: Should this be a stack thing instead // of a Heap allocated Vec
     enable_nmp: bool,
-    hash_history: Vec<u64>, // TODO: Should this be a stack thing instead
-                            // of a Heap allocated Vec
+    emit_info: bool,
+    in_progress: bool,
 }
 
 impl Default for Search {
@@ -51,8 +52,10 @@ impl Default for Search {
             tt: TranspositionTable::new(16),
             killer_moves: [[None; 2]; 64],
             history: [[0; 64]; 64],
-            enable_nmp: true,
             hash_history: Default::default(),
+            enable_nmp: true,
+            emit_info: true,
+            in_progress: false,
         }
     }
 }
@@ -96,7 +99,7 @@ impl Search {
 
     pub fn set_time(&mut self, max_time_ms: u64) -> miette::Result<()> {
         miette::ensure!(
-            !self.is_search_running(),
+            !self.in_progress,
             "Search already running, cannot change time limit!"
         );
         self.max_time = Some(Duration::from_millis(max_time_ms));
@@ -114,7 +117,7 @@ impl Search {
     }
 
     pub fn toggle_nmp(&mut self) -> bool {
-        if self.is_search_running() {
+        if !self.in_progress {
             self.enable_nmp = !self.enable_nmp;
             true
         } else {
@@ -122,14 +125,15 @@ impl Search {
         }
     }
 
-    fn is_search_running(&self) -> bool {
-        self.search_running
-            .as_ref()
-            .is_some_and(|flag| flag.load(Ordering::Relaxed))
+    pub fn set_emit_info(&mut self, enabled: bool) {
+        debug!("setting emit_info to: {enabled}");
+        self.emit_info = enabled;
     }
 
     #[instrument(skip_all)]
     pub fn find_best_move(&mut self, board: &Board, evaluator: &dyn Evaluator) -> SearchResult {
+        self.start();
+
         let span = trace_span!("search_root");
         let _guard = span.enter();
 
@@ -149,6 +153,7 @@ impl Search {
                 0 // stalemate
             };
             self.hash_history.pop();
+            self.finish();
             return SearchResult {
                 best_move: None,
                 score,
@@ -216,7 +221,7 @@ impl Search {
                 alpha = max(alpha, local_best_score);
             }
 
-            if !self.should_stop() {
+            if !self.should_stop() && self.emit_info {
                 completed_depth = depth;
                 best_move = local_best_move;
                 best_score = local_best_score;
@@ -237,6 +242,7 @@ impl Search {
 
         self.hash_history.pop();
         self.decay_history();
+        self.finish();
         SearchResult {
             best_move,
             score: best_score,
@@ -582,9 +588,23 @@ impl Search {
         alpha
     }
 
+    fn start(&mut self) {
+        self.in_progress = true;
+        if let Some(flag) = &self.search_running {
+            flag.store(true, Ordering::Release);
+        }
+    }
+
+    fn finish(&mut self) {
+        self.in_progress = false;
+        if let Some(flag) = &self.search_running {
+            flag.store(false, Ordering::Release);
+        }
+    }
+
     fn should_stop(&self) -> bool {
         if let Some(flag) = &self.search_running
-            && !flag.load(Ordering::Relaxed)
+            && !flag.load(Ordering::Acquire)
         {
             return true;
         }
