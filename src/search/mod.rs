@@ -11,6 +11,9 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
 
+const ASP_START_WINDOW: i32 = 48;
+const ASP_MAX_WINDOW: i32 = 4096;
+
 #[derive(Debug, Default)]
 pub struct SearchResult {
     pub best_move: Option<Move>,
@@ -35,6 +38,7 @@ pub struct Search {
     history: [[i32; 64]; 64],
     hash_history: Vec<u64>, // TODO: Should this be a stack thing instead // of a Heap allocated Vec
     enable_nmp: bool,
+    enable_asp: bool,
     emit_info: bool,
     in_progress: bool,
 }
@@ -54,6 +58,7 @@ impl Default for Search {
             history: [[0; 64]; 64],
             hash_history: Default::default(),
             enable_nmp: true,
+            enable_asp: true,
             emit_info: true,
             in_progress: false,
         }
@@ -116,9 +121,18 @@ impl Search {
         Ok(())
     }
 
-    pub fn toggle_nmp(&mut self) -> bool {
+    pub fn set_nmp(&mut self, enabled: bool) -> bool {
         if !self.in_progress {
-            self.enable_nmp = !self.enable_nmp;
+            self.enable_nmp = enabled;
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn set_asp(&mut self, enabled: bool) -> bool {
+        if !self.in_progress {
+            self.enable_asp = enabled;
             true
         } else {
             false
@@ -128,6 +142,156 @@ impl Search {
     pub fn set_emit_info(&mut self, enabled: bool) {
         debug!("setting emit_info to: {enabled}");
         self.emit_info = enabled;
+    }
+
+    pub fn clear_tt(&mut self) {
+        self.tt.clear();
+    }
+
+    fn sort_moves(
+        &self,
+        board: &Board,
+        legal_moves: &mut MoveBuffer,
+        hint: Option<Move>,
+        depth: u8,
+    ) {
+        let seed = board.hash.wrapping_add(depth as u64);
+        sort_moves(
+            board,
+            legal_moves.as_mut_slice(),
+            &[None, None],
+            hint,
+            &self.history,
+            seed,
+        );
+    }
+
+    #[instrument(skip_all)]
+    fn root_search_attempt(
+        &mut self,
+        board: &Board,
+        evaluator: &dyn Evaluator,
+        depth: u8,
+        alpha_base: i32,
+        beta_base: i32,
+        legal_moves: &MoveBuffer,
+    ) -> (Option<Move>, i32) {
+        let mut alpha = alpha_base;
+        let beta = beta_base;
+
+        let mut local_best_move: Option<Move> = legal_moves.first();
+        let mut local_best_score: i32 = i32::MIN + 1;
+
+        for &m in legal_moves {
+            if self.should_stop() {
+                break;
+            }
+
+            let mut board_copy = *board;
+            if let Err(e) = board_copy.make_move(m) {
+                error!(
+                    "Making move on board (fen: {:?}) failed with error: {}",
+                    board_copy.to_fen(),
+                    e
+                );
+                continue;
+            }
+
+            self.hash_history.push(board_copy.hash);
+
+            let score = -self.alpha_beta(&board_copy, depth - 1, 1, -beta, -alpha, evaluator);
+
+            self.hash_history.pop();
+
+            if self.should_stop() {
+                break;
+            }
+
+            if score > local_best_score {
+                local_best_score = score;
+                local_best_move = Some(m);
+            }
+
+            alpha = max(alpha, local_best_score);
+
+            if alpha >= beta {
+                break;
+            }
+        }
+
+        (local_best_move, local_best_score)
+    }
+
+    #[instrument(skip_all)]
+    fn root_search_with_aspiration(
+        &mut self,
+        board: &Board,
+        evaluator: &dyn Evaluator,
+        depth: u8,
+        legal_moves: &mut MoveBuffer,
+        prev_best_move: Option<Move>,
+        prev_score: i32,
+    ) -> (Option<Move>, i32) {
+        // Always sort root moves before attempts to prefer last iteration's best move
+
+        self.sort_moves(board, legal_moves, prev_best_move, depth);
+
+        let use_asp =
+            self.enable_asp && depth > 1 && prev_score.abs() < MATE_THRESHOLD - ASP_MAX_WINDOW;
+
+        let mut window = ASP_START_WINDOW;
+        let mut alpha_base = if use_asp {
+            prev_score.saturating_sub(window)
+        } else {
+            i32::MIN + 1
+        };
+        let mut beta_base = if use_asp {
+            prev_score.saturating_add(window)
+        } else {
+            i32::MAX
+        };
+        trace!("Using ASP: {use_asp}");
+
+        let mut tries: usize = 0;
+        loop {
+            if self.should_stop() {
+                return (legal_moves.first(), i32::MIN + 1);
+            }
+            trace!("ASP window: ({alpha_base}, {beta_base})");
+
+            let (best_move, best_score) = self.root_search_attempt(
+                board,
+                evaluator,
+                depth,
+                alpha_base,
+                beta_base,
+                legal_moves,
+            );
+
+            if !use_asp {
+                return (best_move, best_score);
+            }
+
+            if !(alpha_base..=beta_base).contains(&best_score) {
+                tries += 1;
+                if tries >= 4 {
+                    debug!("Tried ASP 4 times. No-doy");
+                    return (best_move, best_score);
+                }
+                // Symmetric widening around prev_score
+                // Fail high (> beta) and Fail low (< alpha) treated the same
+                // Other methods to try:
+                // - Asymmentric widening: Increase/decrease based on fail high/low
+                // -- Re-centring around boundary
+                // - Re-center around best_score instead of prev_score;
+                window = window.saturating_mul(2).min(ASP_MAX_WINDOW);
+                alpha_base = prev_score.saturating_sub(window);
+                beta_base = prev_score.saturating_add(window);
+                continue;
+            } else {
+                return (best_move, best_score);
+            }
+        }
     }
 
     #[instrument(skip_all)]
@@ -169,63 +333,36 @@ impl Search {
         let mut best_score = i32::MIN + 1;
         let mut completed_depth = u8::default();
 
+        // Prev score for Aspiration windows
+        let mut prev_score = 0;
+
         // Iterative deepening
         for depth in 1..=self.max_depth {
             if self.should_stop() {
                 break;
             }
 
-            let seed = board.hash.wrapping_add(depth as u64);
+            debug!("Depth is {depth}");
 
-            let mut alpha = i32::MIN + 1;
-            let beta = i32::MAX;
-
-            sort_moves(
+            let (local_best_move, local_best_score) = self.root_search_with_aspiration(
                 board,
-                legal_moves.as_mut_slice(),
-                &[None, None],
-                None,
-                &self.history,
-                seed,
+                evaluator,
+                depth,
+                &mut legal_moves,
+                best_move,
+                prev_score,
             );
 
-            let mut local_best_move: Option<Move> = legal_moves.first();
-            let mut local_best_score = i32::MIN + 1;
-
-            for &m in &legal_moves {
-                if self.should_stop() {
-                    break;
-                }
-
-                let mut board_copy = *board;
-                if board_copy.make_move(m).is_err() {
-                    // Ply 1
-                    continue;
-                }
-                self.hash_history.push(board_copy.hash);
-
-                trace!("Evaluating move: {}, α: {alpha}, β: {beta}", m.uci());
-                let score = -self.alpha_beta(&board_copy, depth - 1, 1, -beta, -alpha, evaluator);
-
-                self.hash_history.pop();
-
-                if self.should_stop() {
-                    break;
-                }
-
-                if score > local_best_score {
-                    local_best_score = score;
-                    local_best_move = Some(m);
-                }
-
-                alpha = max(alpha, local_best_score);
+            if self.should_stop() {
+                break;
             }
 
-            if !self.should_stop() && self.emit_info {
-                completed_depth = depth;
-                best_move = local_best_move;
-                best_score = local_best_score;
+            completed_depth = depth;
+            best_move = local_best_move;
+            best_score = local_best_score;
+            prev_score = best_score;
 
+            if self.emit_info {
                 let best_move_uci = best_move.unwrap().uci();
                 let msg = format!(
                     "info depth {} score cp {} nodes {} nps {} pv {}",
@@ -241,7 +378,6 @@ impl Search {
         }
 
         self.hash_history.pop();
-        self.decay_history();
         self.finish();
         SearchResult {
             best_move,
@@ -606,15 +742,21 @@ impl Search {
         if let Some(flag) = &self.search_running
             && !flag.load(Ordering::Acquire)
         {
+            debug!("Stop signal recieved");
             return true;
         }
 
         if let Some(max_time) = self.max_time
             && self.start_time.elapsed() >= max_time
         {
+            debug!("Max time utilized");
             return true;
         }
-        self.nodes_limit.is_some_and(|l| self.nodes_searched >= l)
+        if self.nodes_limit.is_some_and(|l| self.nodes_searched >= l) {
+            debug!("Node limit exhausted");
+            return true;
+        }
+        false
     }
     fn decay_history(&mut self) {
         trace!("Decaying history by 2");
@@ -687,7 +829,7 @@ mod tests {
         let mut search_without_null = Search::new(10);
 
         assert!(search_without_null.enable_nmp);
-        search_without_null.toggle_nmp();
+        search_without_null.set_nmp(false);
         assert!(!search_without_null.enable_nmp);
 
         let board = Board::from_fen(KIWIPETE);

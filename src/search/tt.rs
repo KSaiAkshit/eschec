@@ -89,4 +89,10 @@ impl TranspositionTable {
             *entry = new_entry;
         }
     }
+
+    pub fn clear(&mut self) {
+        for e in self.entries.iter_mut() {
+            *e = TranspositionEntry::default();
+        }
+    }
 }

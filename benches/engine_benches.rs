@@ -240,11 +240,50 @@ fn bench_search(c: &mut Criterion) {
     let depth = 7;
     let mut search = Search::new(depth);
 
+    search.set_emit_info(false);
+
     c.bench_function(&format!("search_depth_{depth}"), |b| {
         b.iter_batched(
             || Board::from_fen(KIWIPETE),
-            |board| black_box(search.find_best_move(&board, &evaluator)),
+            |board| {
+                search.clear_tt();
+                black_box(search.find_best_move(&board, &evaluator))
+            },
             BatchSize::SmallInput,
+        );
+    });
+
+    let mut group = c.benchmark_group(format!("search_cold_tt_depth_{depth}"));
+
+    group.bench_function("asp_off", |b| {
+        b.iter_batched(
+            || {
+                let board = Board::from_fen(KIWIPETE);
+                let mut search = Search::new(depth);
+                search.set_emit_info(false);
+                search.set_asp(false);
+                (board, search)
+            },
+            |(board, mut search)| {
+                black_box(search.find_best_move(&board, &evaluator));
+            },
+            BatchSize::LargeInput,
+        );
+    });
+
+    group.bench_function("asp_on", |b| {
+        b.iter_batched(
+            || {
+                let board = Board::from_fen(KIWIPETE);
+                let mut search = Search::new(depth);
+                search.set_emit_info(false);
+                search.set_asp(true);
+                (board, search)
+            },
+            |(board, mut search)| {
+                black_box(search.find_best_move(&board, &evaluator));
+            },
+            BatchSize::LargeInput,
         );
     });
 }
