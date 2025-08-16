@@ -1,9 +1,68 @@
 # Dev Log
 
+* Date: 2025-08-16
+* New: tag '' TODO:
+* Old: tag 'v0.1.5-king_safetyv2'
+
+### stricter bounds, asymmetric widening, "centered" on prev score
+
+#### 8moves_v3.epd
+Results of eschec vs eschec_king_safetyv2 (15+0.1, NULL, NULL, 8moves_v3.pgn):
+Elo: 26.11 +/- 31.23, nElo: 40.51 +/- 48.15
+LOS: 95.04 %, DrawRatio: 42.00 %, PairsRatio: 1.32
+Games: 200, Wins: 45, Losses: 30, Draws: 125, Points: 107.5 (53.75 %)
+Ptnml(0-2): [1, 24, 42, 25, 8], WL/DD Ratio: 0.11
+LLR: 0.60 (20.3%) (-2.94, 2.94) [0.00, 10.00]
+
+#### balanced_book.epd
+Results of eschec vs eschec_king_safetyv2 (15+0.1, NULL, NULL, balanced_book.epd):
+Elo: 41.89 +/- 33.28, nElo: 61.39 +/- 48.15
+LOS: 99.38 %, DrawRatio: 32.00 %, PairsRatio: 1.72
+Games: 200, Wins: 63, Losses: 39, Draws: 98, Points: 112.0 (56.00 %)
+Ptnml(0-2): [2, 23, 32, 35, 8], WL/DD Ratio: 0.60
+LLR: 0.92 (31.1%) (-2.94, 2.94) [0.00, 10.00]
+
+#### 2moves.pgn
+Results of eschec vs eschec_king_safetyv2 (15+0.1, NULL, NULL, 2moves.pgn):
+Elo: 34.86 +/- 80.64, nElo: 47.72 +/- 107.67
+LOS: 80.75 %, DrawRatio: 35.00 %, PairsRatio: 1.17
+Games: 40, Wins: 10, Losses: 6, Draws: 24, Points: 22.0 (55.00 %)
+Ptnml(0-2): [0, 6, 7, 4, 3], WL/DD Ratio: 0.00
+LLR: 0.15 (5.1%) (-2.94, 2.94) [0.00, 10.00]
+
+
+### stricter bounds, symmetric widening, centered on current best score
+Results of eschec vs eschec_king_safetyv2 (15+0.1, NULL, NULL, 2moves.pgn):
+Elo: 70.44 +/- 69.23, nElo: 114.24 +/- 107.67
+LOS: 98.12 %, DrawRatio: 55.00 %, PairsRatio: 3.50
+Games: 40, Wins: 10, Losses: 2, Draws: 28, Points: 24.0 (60.00 %)
+Ptnml(0-2): [0, 2, 11, 4, 3], WL/DD Ratio: 0.00
+LLR: 0.35 (11.9%) (-2.94, 2.94) [0.00, 10.00]
+
+### stricter bounds, symmetric widening, centered on prev score
+Results of eschec vs eschec_king_safetyv2 (15+0.1, NULL, NULL, 2moves.pgn):
+Elo: 70.44 +/- 82.58, nElo: 96.36 +/- 107.67
+LOS: 96.03 %, DrawRatio: 40.00 %, PairsRatio: 3.00
+Games: 40, Wins: 12, Losses: 4, Draws: 24, Points: 24.0 (60.00 %)
+Ptnml(0-2): [1, 2, 8, 6, 3], WL/DD Ratio: 0.00
+LLR: 0.27 (9.2%) (-2.94, 2.94) [0.00, 10.00]
+
+### symmetric widening, centered on prev score
+Results of eschec vs eschec_king_safetyv2 (15+0.1, NULL, NULL, 2moves.pgn):
+Elo: 8.69 +/- 66.67, nElo: 14.21 +/- 107.67
+LOS: 60.20 %, DrawRatio: 40.00 %, PairsRatio: 1.00
+Games: 40, Wins: 12, Losses: 11, Draws: 17, Points: 20.5 (51.25 %)
+Ptnml(0-2): [0, 6, 8, 5, 1], WL/DD Ratio: 1.67
+LLR: 0.03 (1.0%) (-2.94, 2.94) [0.00, 10.00]
+
+
+---
+
 * Date: 2025-08-15
 * New: tag 'v0.1.5-king_safetyv2'
 * Old: tag 'v0.1.4-pawn_masks'
 
+### Introduced more penalties & bonuses for king safety
 Results of eschec vs eschec_pawn_masks (15+0.1, NULL, NULL, 2moves.pgn):
 Elo: 10.43 +/- 17.99, nElo: 19.76 +/- 34.05
 LOS: 87.23 %, DrawRatio: 53.00 %, PairsRatio: 1.19

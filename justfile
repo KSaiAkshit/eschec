@@ -4,7 +4,7 @@ flags := "--release"
 DEPTH := "5"
 FEN := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 pgn_output_dir := 'gauntlet/results/'
-book_file := 'gauntlet/books/2moves.pgn'
+book_file := 'gauntlet/books/8moves_v3.pgn'
 engine_logs_dir := '/tmp/eschec_logs/'
 repo_url := env('REPO_URL')
 OUT_DIR := "/tmp/out_dir"
@@ -109,8 +109,9 @@ sprt p1 p2 rounds='100' concurrency='4' tc='15+0.1':
         -openings file={{ book_file }} format=pgn order=random \
         -sprt elo0=0 elo1=10 alpha=0.05 beta=0.05 \
         -repeat -recover \
+        -pgnout {{ pgn_output_dir }}{{ p1 }}_vs_{{ p2 }}_sprt.txt \
         -log file={{ engine_logs_dir }}sprt_log.txt \
-        | tee {{ pgn_output_dir }}{{ p1 }}_vs_{{ p2 }}_sprt.txt
+        | tee {{ pgn_output_dir }}{{ p1 }}_vs_{{ p2 }}_sprt_log.txt
 
 [doc("Remove build artifacts and gauntlet artifacts")]
 clean:

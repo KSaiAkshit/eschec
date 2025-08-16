@@ -166,7 +166,7 @@ impl Search {
         );
     }
 
-    #[instrument(skip_all)]
+    // #[instrument(skip_all)]
     fn root_search_attempt(
         &mut self,
         board: &Board,
@@ -222,7 +222,7 @@ impl Search {
         (local_best_move, local_best_score)
     }
 
-    #[instrument(skip_all)]
+    // #[instrument(skip_all)]
     fn root_search_with_aspiration(
         &mut self,
         board: &Board,
@@ -272,29 +272,48 @@ impl Search {
                 return (best_move, best_score);
             }
 
-            if !(alpha_base..=beta_base).contains(&best_score) {
+            if tries >= 4 {
+                debug!("Tried ASP 4 times, No-doy");
+                return (best_move, best_score);
+            }
+
+            if best_score <= alpha_base {
+                // Fail Low
                 tries += 1;
-                if tries >= 4 {
-                    debug!("Tried ASP 4 times. No-doy");
-                    return (best_move, best_score);
-                }
-                // Symmetric widening around prev_score
-                // Fail high (> beta) and Fail low (< alpha) treated the same
-                // Other methods to try:
-                // - Asymmentric widening: Increase/decrease based on fail high/low
-                // -- Re-centring around boundary
-                // - Re-center around best_score instead of prev_score;
                 window = window.saturating_mul(2).min(ASP_MAX_WINDOW);
                 alpha_base = prev_score.saturating_sub(window);
+            } else if best_score >= beta_base {
+                // Fail High
+                tries += 1;
+                window = window.saturating_mul(2).min(ASP_MAX_WINDOW);
                 beta_base = prev_score.saturating_add(window);
-                continue;
             } else {
                 return (best_move, best_score);
             }
+
+            // if alpha_base >= best_score || best_score >= beta_base {
+            //     tries += 1;
+            //     if tries >= 4 {
+            //         debug!("Tried ASP 4 times. No-doy");
+            //         return (best_move, best_score);
+            //     }
+            //     // Symmetric widening around prev_score
+            //     // Fail high (> beta) and Fail low (< alpha) treated the same
+            //     // Other methods to try:
+            //     // - Asymmentric widening: Increase/decrease based on fail high/low
+            //     // -- Re-centring around boundary
+            //     // - Re-center around best_score instead of prev_score;
+            //     window = window.saturating_mul(2).min(ASP_MAX_WINDOW);
+            //     alpha_base = best_score.saturating_sub(window);
+            //     beta_base = best_score.saturating_add(window);
+            //     continue;
+            // } else {
+            //     return (best_move, best_score);
+            // }
         }
     }
 
-    #[instrument(skip_all)]
+    // #[instrument(skip_all)]
     pub fn find_best_move(&mut self, board: &Board, evaluator: &dyn Evaluator) -> SearchResult {
         self.start();
 
@@ -337,9 +356,9 @@ impl Search {
         let mut prev_score = 0;
 
         // Iterative deepening
-        for depth in 1..=self.max_depth {
+        'id_loop: for depth in 1..=self.max_depth {
             if self.should_stop() {
-                break;
+                break 'id_loop;
             }
 
             debug!("Depth is {depth}");
@@ -354,7 +373,7 @@ impl Search {
             );
 
             if self.should_stop() {
-                break;
+                break 'id_loop;
             }
 
             completed_depth = depth;
@@ -362,7 +381,7 @@ impl Search {
             best_score = local_best_score;
             prev_score = best_score;
 
-            if self.emit_info {
+            if std::hint::likely(self.emit_info) {
                 let best_move_uci = best_move.unwrap().uci();
                 let msg = format!(
                     "info depth {} score cp {} nodes {} nps {} pv {}",
@@ -543,7 +562,7 @@ impl Search {
             self.hash_history.push(board_copy.hash);
 
             let mut score: i32;
-            // Principal Variation search.
+            // Principal Variation search (PVS)
             // Use ZWS (zero window search) for moves other than the first move (PV)
             // Reduces nodes searched massively
             if mv == best_move_this_node {
