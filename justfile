@@ -4,7 +4,7 @@ flags := "--release"
 DEPTH := "5"
 FEN := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 pgn_output_dir := 'gauntlet/results/'
-book_file := 'gauntlet/books/8moves_v3.pgn'
+book_dir := 'gauntlet/books/'
 engine_logs_dir := '/tmp/eschec_logs/'
 repo_url := env('REPO_URL')
 OUT_DIR := "/tmp/out_dir"
@@ -18,6 +18,10 @@ alias b := build
 alias r := run
 
 default: play
+
+@wa book:
+  echo '{{ book_dir }}{{ book }}'
+  echo 'File type: {{ extension(book_dir + book) }}'
 
 [doc("Print help")]
 help:
@@ -55,7 +59,6 @@ build-all-tags:
     popd > /dev/null
     rm -rf "$TMP_DIR"
     echo "All binaries saved to {{OUT_DIR}}"
-    
 
 [doc("Build and symlink binary")]
 update:
@@ -65,11 +68,12 @@ update:
 
 [doc("Run a gauntlet match against another engine using cutechess-cli")]
 [positional-arguments]
-gauntlet opponent='gnuchess' rounds='40' concurrency='4' tc='15+0.1': update
+gauntlet opponent='gnuchess' rounds='40' concurrency='4' book='8moves_v3.pgn' tc='15+0.1': update
     @# Print the configuration for this run
     @echo "Starting gauntlet:"
     @echo "  - Opponent: {{ BLUE }}{{ opponent }}{{ NORMAL }}"
     @echo "  - Rounds: {{ GREEN }}{{ rounds }}{{ NORMAL }}"
+    @echo "  - Book: {{ MAGENTA }}{{ book }}{{ NORMAL }}"
     @echo "  - Time Control: {{ CYAN }}{{ tc }}{{ NORMAL }}"
     @echo "  - PGN Output: {{ YELLOW }}{{ pgn_output_dir }}eschec_vs_{{ opponent }}{{ NORMAL }}"
     @echo "-------------------------------------"
@@ -80,7 +84,7 @@ gauntlet opponent='gnuchess' rounds='40' concurrency='4' tc='15+0.1': update
         -engine conf={{ opponent }} \
         -each tc={{ tc }} \
         -rounds {{ rounds }} \
-        -openings file={{ book_file }} format=pgn order=random policy=round \
+        -openings file={{ book_dir }}{{book}} format={{ extension(book_dir + book)}} order=random policy=round \
         -pgnout {{ pgn_output_dir }}eschec_vs_{{ opponent }}.txt \
         -concurrency {{ concurrency }} \
         -draw movenumber=40 movecount=8 score=20 \
@@ -89,12 +93,13 @@ gauntlet opponent='gnuchess' rounds='40' concurrency='4' tc='15+0.1': update
 
 [doc("Run an SPRT test between two versions of the engine.")]
 [positional-arguments]
-sprt p1 p2 rounds='100' concurrency='4' tc='15+0.1':
+sprt p1 p2 rounds='100' concurrency='4' book='8moves_v3' tc='15+0.1':
     @# Print the configuration for this run
     @echo "Starting gauntlet:"
     @echo "  - Engine1: {{ BLUE }}{{ p1 }}{{ NORMAL }}"
     @echo "  - Engine2: {{ BLUE }}{{ p2 }}{{ NORMAL }}"
     @echo "  - Rounds: {{ GREEN }}{{ rounds }}x2{{ NORMAL }}"
+    @echo "  - Book: {{ MAGENTA }}{{ book }}{{ NORMAL }}"
     @echo "  - Time Control: {{ CYAN }}{{ tc }}{{ NORMAL }}"
     @echo "  - Output: {{ YELLOW }}{{ pgn_output_dir }}{{ p1 }}_vs_{{ p2 }}_sprt.txt{{ NORMAL }}"
     @echo "-------------------------------------"
@@ -106,7 +111,7 @@ sprt p1 p2 rounds='100' concurrency='4' tc='15+0.1':
         -each tc={{ tc }} \
         -rounds {{ rounds }} \
         -concurrency {{ concurrency }} \
-        -openings file={{ book_file }} format=pgn order=random \
+        -openings file={{ book_dir }}{{book}} format={{ extension(book_dir + book)}} order=random \
         -sprt elo0=0 elo1=10 alpha=0.05 beta=0.05 \
         -repeat -recover \
         -pgnout {{ pgn_output_dir }}{{ p1 }}_vs_{{ p2 }}_sprt.txt \

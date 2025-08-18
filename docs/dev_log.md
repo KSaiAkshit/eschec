@@ -1,12 +1,37 @@
 # Dev Log
 
+* Date: 2025-08-18
+* New: tag 'v0.1.7-late_move_red'
+* Old: tag 'v0.1.6-aspiration_win'
+
+### fixed depth late move reduction (reduction = 1)
+
+#### 8moves_v3.pgn
+Results of eschec vs eschec_aspiration_win (15+0.1, NULL, NULL, 8moves_v3.pgn):
+Elo: 77.71 +/- 33.03, nElo: 117.50 +/- 48.15
+LOS: 100.00 %, DrawRatio: 47.00 %, PairsRatio: 3.42
+Games: 200, Wins: 67, Losses: 23, Draws: 110, Points: 122.0 (61.00 %)
+Ptnml(0-2): [1, 11, 47, 25, 16], WL/DD Ratio: 0.27
+LLR: 1.71 (57.9%) (-2.94, 2.94) [0.00, 10.00]
+
+#### balanced_book.epd
+Results of eschec vs eschec_aspiration_win (15+0.1, NULL, NULL, balanced_book.epd):
+Elo: 123.02 +/- 40.58, nElo: 159.46 +/- 48.15
+LOS: 100.00 %, DrawRatio: 25.00 %, PairsRatio: 3.69
+Games: 200, Wins: 102, Losses: 34, Draws: 64, Points: 134.0 (67.00 %)
+Ptnml(0-2): [1, 15, 25, 33, 26], WL/DD Ratio: 2.12
+LLR: 2.19 (74.4%) (-2.94, 2.94) [0.00, 10.00]
+
+
+---
+
 * Date: 2025-08-16
-* New: tag '' TODO:
+* New: tag 'v0.1.6-asipration_win'
 * Old: tag 'v0.1.5-king_safetyv2'
 
 ### stricter bounds, asymmetric widening, "centered" on prev score
 
-#### 8moves_v3.epd
+#### 8moves_v3.pgn
 Results of eschec vs eschec_king_safetyv2 (15+0.1, NULL, NULL, 8moves_v3.pgn):
 Elo: 26.11 +/- 31.23, nElo: 40.51 +/- 48.15
 LOS: 95.04 %, DrawRatio: 42.00 %, PairsRatio: 1.32

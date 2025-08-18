@@ -39,6 +39,7 @@ pub struct Search {
     hash_history: Vec<u64>, // TODO: Should this be a stack thing instead // of a Heap allocated Vec
     enable_nmp: bool,
     enable_asp: bool,
+    enable_lmr: bool,
     emit_info: bool,
     in_progress: bool,
 }
@@ -56,9 +57,10 @@ impl Default for Search {
             tt: TranspositionTable::new(16),
             killer_moves: [[None; 2]; 64],
             history: [[0; 64]; 64],
-            hash_history: Default::default(),
+            hash_history: Vec::with_capacity(256),
             enable_nmp: true,
             enable_asp: true,
+            enable_lmr: true,
             emit_info: true,
             in_progress: false,
         }
@@ -123,7 +125,18 @@ impl Search {
 
     pub fn set_nmp(&mut self, enabled: bool) -> bool {
         if !self.in_progress {
+            warn!("Setting NMP to; {enabled}");
             self.enable_nmp = enabled;
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn set_lmr(&mut self, enabled: bool) -> bool {
+        if !self.in_progress {
+            warn!("Setting LMR to; {enabled}");
+            self.enable_lmr = enabled;
             true
         } else {
             false
@@ -132,6 +145,7 @@ impl Search {
 
     pub fn set_asp(&mut self, enabled: bool) -> bool {
         if !self.in_progress {
+            warn!("Setting ASP to; {enabled}");
             self.enable_asp = enabled;
             true
         } else {
@@ -277,6 +291,7 @@ impl Search {
                 return (best_move, best_score);
             }
 
+            // - Asymmentric widening: Increase/decrease based on fail high/low
             if best_score <= alpha_base {
                 // Fail Low
                 tries += 1;
@@ -290,26 +305,6 @@ impl Search {
             } else {
                 return (best_move, best_score);
             }
-
-            // if alpha_base >= best_score || best_score >= beta_base {
-            //     tries += 1;
-            //     if tries >= 4 {
-            //         debug!("Tried ASP 4 times. No-doy");
-            //         return (best_move, best_score);
-            //     }
-            //     // Symmetric widening around prev_score
-            //     // Fail high (> beta) and Fail low (< alpha) treated the same
-            //     // Other methods to try:
-            //     // - Asymmentric widening: Increase/decrease based on fail high/low
-            //     // -- Re-centring around boundary
-            //     // - Re-center around best_score instead of prev_score;
-            //     window = window.saturating_mul(2).min(ASP_MAX_WINDOW);
-            //     alpha_base = best_score.saturating_sub(window);
-            //     beta_base = best_score.saturating_add(window);
-            //     continue;
-            // } else {
-            //     return (best_move, best_score);
-            // }
         }
     }
 
@@ -551,22 +546,57 @@ impl Search {
         let mut best_score = i32::MIN + 1;
         let num_moves = legal_moves.len();
 
-        for mv in legal_moves {
+        for (move_index, &mv) in legal_moves.iter().enumerate() {
             let mut board_copy = *board;
             board_copy
                 .make_move(mv)
                 .expect("Should be safe since we use legal moves");
 
             self.nodes_searched += 1;
-
             self.hash_history.push(board_copy.hash);
 
             let mut score: i32;
+            let is_quiet = mv.is_quiet();
+            let lmr_allowed =
+                self.enable_lmr && depth >= 3 && move_index > 2 && is_quiet && !is_in_check;
             // Principal Variation search (PVS)
             // Use ZWS (zero window search) for moves other than the first move (PV)
             // Reduces nodes searched massively
             if mv == best_move_this_node {
+                // PV move: full depth search
                 score = -self.alpha_beta(&board_copy, depth - 1, ply + 1, -beta, -alpha, evaluator);
+            } else if lmr_allowed {
+                let reduction = 1; // TODO: To be tuned later
+
+                score = -self.alpha_beta(
+                    &board_copy,
+                    depth - 1 - reduction,
+                    ply + 1,
+                    -alpha - 1,
+                    -alpha,
+                    evaluator,
+                );
+                // Fail-high: Verify that improvement wasn't a fluke
+                if score > alpha {
+                    score = -self.alpha_beta(
+                        &board_copy,
+                        depth - 1,
+                        ply + 1,
+                        -alpha - 1,
+                        -alpha,
+                        evaluator,
+                    );
+                    if score > alpha && score < beta {
+                        score = -self.alpha_beta(
+                            &board_copy,
+                            depth - 1,
+                            ply + 1,
+                            -beta,
+                            -alpha,
+                            evaluator,
+                        );
+                    }
+                }
             } else {
                 score = -self.alpha_beta(
                     &board_copy,

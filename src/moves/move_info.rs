@@ -112,6 +112,12 @@ impl Move {
         (self.flags() >> 12) >= 0b1000
     }
 
+    /// Returns true if this move is quiet
+    #[inline]
+    pub const fn is_quiet(&self) -> bool {
+        matches!(self.flags(), Self::QUIET)
+    }
+
     /// Returns true if this move is a castling
     #[inline]
     pub const fn is_castling(&self) -> bool {
@@ -472,7 +478,9 @@ impl SanMove {
         {
             return false;
         }
-        if let Some(rank) = self.from_rank && from_sq.rank() != rank {
+        if let Some(rank) = self.from_rank
+            && from_sq.rank() != rank
+        {
             return false;
         }
 

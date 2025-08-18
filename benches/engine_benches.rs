@@ -286,6 +286,38 @@ fn bench_search(c: &mut Criterion) {
             BatchSize::LargeInput,
         );
     });
+
+    group.bench_function("lmr_off", |b| {
+        b.iter_batched(
+            || {
+                let board = Board::from_fen(KIWIPETE);
+                let mut search = Search::new(depth);
+                search.set_emit_info(false);
+                search.set_lmr(false);
+                (board, search)
+            },
+            |(board, mut search)| {
+                black_box(search.find_best_move(&board, &evaluator));
+            },
+            BatchSize::LargeInput,
+        );
+    });
+
+    group.bench_function("lmr_on", |b| {
+        b.iter_batched(
+            || {
+                let board = Board::from_fen(KIWIPETE);
+                let mut search = Search::new(depth);
+                search.set_emit_info(false);
+                search.set_lmr(true);
+                (board, search)
+            },
+            |(board, mut search)| {
+                black_box(search.find_best_move(&board, &evaluator));
+            },
+            BatchSize::LargeInput,
+        );
+    });
 }
 
 criterion_group!(
