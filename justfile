@@ -68,7 +68,7 @@ update:
 
 [doc("Run a gauntlet match against another engine using cutechess-cli")]
 [positional-arguments]
-gauntlet opponent='gnuchess' rounds='40' concurrency='4' book='8moves_v3.pgn' tc='15+0.1': update
+gauntlet opponent='gnuchess' rounds='40' concurrency='4' book='8moves_v3.pgn' tc='1:30+1': update
     @# Print the configuration for this run
     @echo "Starting gauntlet:"
     @echo "  - Opponent: {{ BLUE }}{{ opponent }}{{ NORMAL }}"
@@ -80,7 +80,7 @@ gauntlet opponent='gnuchess' rounds='40' concurrency='4' book='8moves_v3.pgn' tc
 
     @# Run the cutechess-cli command
     cutechess-cli \
-        -engine conf=lucia \
+        -engine conf=eschec \
         -engine conf={{ opponent }} \
         -each tc={{ tc }} \
         -rounds {{ rounds }} \

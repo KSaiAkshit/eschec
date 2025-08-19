@@ -702,7 +702,7 @@ impl Search {
     ) -> i32 {
         self.nodes_searched += 1;
 
-        if ply >= 3 {
+        if ply >= self.max_depth as usize + 16 || ply >= MAX_PLY - 1 {
             return evaluator.evaluate(board);
         }
 
@@ -726,7 +726,7 @@ impl Search {
         if !is_in_check {
             let stand_pat_score = evaluator.evaluate(board);
 
-            if stand_pat_score > beta {
+            if stand_pat_score >= beta {
                 self.pruned_nodes += 1;
                 return beta; // Fail high
             }
@@ -735,26 +735,26 @@ impl Search {
 
         // Generate all moves if in check, otherwise use captures only
         let mut legal_moves = MoveBuffer::new();
-        board.generate_legal_moves(&mut legal_moves, true);
+        board.generate_legal_moves(&mut legal_moves, !is_in_check);
+        if !is_in_check {
+            legal_moves.retain(|m| m.is_capture() || m.is_promotion());
+        }
 
         if is_in_check && legal_moves.is_empty() {
             // return Losing Mate score
             return adjust_score_for_ply(-MATE_SCORE, ply);
         }
 
-        let seed = board.hash.wrapping_add(ply as u64);
-        sort_moves(
-            board,
-            legal_moves.as_mut_slice(),
-            &[None, None],
-            None,
-            &self.history,
-            seed,
-        );
+        self.sort_moves(board, &mut legal_moves, None, ply as u8);
 
         for mv in legal_moves {
             let mut board_copy = *board;
-            if board_copy.make_move(mv).is_err() {
+            if let Err(e) = board_copy.make_move(mv) {
+                error!(
+                    "Making move on board (fen: {:?}) failed with error: {}",
+                    board_copy.to_fen(),
+                    e
+                );
                 continue;
             }
 

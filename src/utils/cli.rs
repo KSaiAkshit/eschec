@@ -20,7 +20,7 @@ pub enum Commands {
         #[arg(short, long, default_value = START_FEN)]
         fen: Option<String>,
         /// set search depth
-        #[arg(short, long, default_value = "5")]
+        #[arg(short, long, default_value = "32")]
         depth: Option<u8>,
     },
 

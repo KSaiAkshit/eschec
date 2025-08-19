@@ -1,6 +1,22 @@
 # Dev Log
 
 * Date: 2025-08-18
+* New: tag 'v0.1.8-q_search'
+* Old: tag 'v0.1.7-late_move_red'
+
+### Generate evasions and captures based on check status
+
+#### 8moves_v3.pgn
+Results of eschec_q_search vs eschec_late_move_red (15+0.1, NULL, NULL, 8moves_v3.pgn):
+Elo: 214.85 +/- 60.11, nElo: 316.29 +/- 68.10
+LOS: 100.00 %, DrawRatio: 14.00 %, PairsRatio: 13.33
+Games: 100, Wins: 59, Losses: 4, Draws: 37, Points: 77.5 (77.50 %)
+Ptnml(0-2): [0, 3, 7, 22, 18], WL/DD Ratio: 0.17
+LLR: 1.47 (50.0%) (-2.94, 2.94) [0.00, 10.00]
+
+---
+
+* Date: 2025-08-18
 * New: tag 'v0.1.7-late_move_red'
 * Old: tag 'v0.1.6-aspiration_win'
 

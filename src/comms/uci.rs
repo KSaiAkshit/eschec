@@ -147,7 +147,7 @@ fn cmd_position(
     Ok(())
 }
 
-#[instrument(skip_all)]
+// #[instrument(skip_all)]
 fn cmd_go(state: &mut UciState, params: GoParams) {
     let board = state.board;
     let evaluator = state.evaluator.clone();
