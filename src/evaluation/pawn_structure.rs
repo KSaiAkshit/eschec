@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PawnStructureEvaluator {
     name: String,
     isolated_penalty: i32,
@@ -82,5 +82,8 @@ impl Evaluator for PawnStructureEvaluator {
     }
     fn name(&self) -> &str {
         &self.name
+    }
+    fn clone_box(&self) -> Box<dyn Evaluator> {
+        Box::new(self.clone())
     }
 }

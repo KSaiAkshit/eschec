@@ -238,7 +238,7 @@ fn bench_ordering(c: &mut Criterion) {
 fn bench_search(c: &mut Criterion) {
     let evaluator = CompositeEvaluator::balanced();
     let depth = 7;
-    let mut search = Search::new(depth);
+    let mut search = Search::new(evaluator.clone_box(), depth);
 
     search.set_emit_info(false);
 
@@ -247,7 +247,7 @@ fn bench_search(c: &mut Criterion) {
             || Board::from_fen(KIWIPETE),
             |board| {
                 search.clear_tt();
-                black_box(search.find_best_move(&board, &evaluator))
+                black_box(search.find_best_move(&board))
             },
             BatchSize::SmallInput,
         );
@@ -259,13 +259,13 @@ fn bench_search(c: &mut Criterion) {
         b.iter_batched(
             || {
                 let board = Board::from_fen(KIWIPETE);
-                let mut search = Search::new(depth);
+                let mut search = Search::new(evaluator.clone_box(),depth);
                 search.set_emit_info(false);
                 search.set_asp(false);
                 (board, search)
             },
             |(board, mut search)| {
-                black_box(search.find_best_move(&board, &evaluator));
+                black_box(search.find_best_move(&board));
             },
             BatchSize::LargeInput,
         );
@@ -275,13 +275,13 @@ fn bench_search(c: &mut Criterion) {
         b.iter_batched(
             || {
                 let board = Board::from_fen(KIWIPETE);
-                let mut search = Search::new(depth);
+                let mut search = Search::new(evaluator.clone_box(),depth);
                 search.set_emit_info(false);
                 search.set_asp(true);
                 (board, search)
             },
             |(board, mut search)| {
-                black_box(search.find_best_move(&board, &evaluator));
+                black_box(search.find_best_move(&board));
             },
             BatchSize::LargeInput,
         );
@@ -291,13 +291,13 @@ fn bench_search(c: &mut Criterion) {
         b.iter_batched(
             || {
                 let board = Board::from_fen(KIWIPETE);
-                let mut search = Search::new(depth);
+                let mut search = Search::new(evaluator.clone_box(),depth);
                 search.set_emit_info(false);
                 search.set_lmr(false);
                 (board, search)
             },
             |(board, mut search)| {
-                black_box(search.find_best_move(&board, &evaluator));
+                black_box(search.find_best_move(&board));
             },
             BatchSize::LargeInput,
         );
@@ -307,13 +307,13 @@ fn bench_search(c: &mut Criterion) {
         b.iter_batched(
             || {
                 let board = Board::from_fen(KIWIPETE);
-                let mut search = Search::new(depth);
+                let mut search = Search::new(evaluator.clone_box(), depth);
                 search.set_emit_info(false);
                 search.set_lmr(true);
                 (board, search)
             },
             |(board, mut search)| {
-                black_box(search.find_best_move(&board, &evaluator));
+                black_box(search.find_best_move(&board));
             },
             BatchSize::LargeInput,
         );

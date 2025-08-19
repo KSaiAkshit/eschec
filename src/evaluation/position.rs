@@ -1,6 +1,6 @@
 use super::*;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PositionEvaluator {
     name: String,
     piece_square_tables: [[i32; 64]; 6],
@@ -141,6 +141,10 @@ impl Evaluator for PositionEvaluator {
 
     fn name(&self) -> &str {
         &self.name
+    }
+
+    fn clone_box(&self) -> Box<dyn Evaluator> {
+        Box::new(self.clone())
     }
 }
 

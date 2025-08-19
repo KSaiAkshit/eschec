@@ -16,6 +16,7 @@ use position::PositionEvaluator;
 pub trait Evaluator: Debug + Send + Sync {
     fn evaluate(&self, board: &Board) -> i32;
     fn name(&self) -> &str;
+    fn clone_box(&self) -> Box<dyn Evaluator>;
     fn breakdown(&self, board: &Board) -> Option<(String, i32)> {
         Some((self.name().to_string(), self.evaluate(board)))
     }
@@ -26,6 +27,17 @@ pub struct CompositeEvaluator {
     name: String,
     evaluators: Vec<Box<dyn Evaluator>>,
     weights: Vec<f32>,
+}
+
+impl Clone for CompositeEvaluator {
+    fn clone(&self) -> Self {
+        let cloned_evals = self.evaluators.iter().map(|e| e.clone_box()).collect();
+        Self {
+            name: self.name().to_string(),
+            evaluators: cloned_evals,
+            weights: self.weights.clone(),
+        }
+    }
 }
 
 impl CompositeEvaluator {
@@ -103,6 +115,19 @@ impl Evaluator for CompositeEvaluator {
 
     fn name(&self) -> &str {
         &self.name
+    }
+
+    fn clone_box(&self) -> Box<dyn Evaluator> {
+        let cloned_evals: Vec<Box<dyn Evaluator>> = self
+            .evaluators
+            .iter()
+            .map(|eval| eval.clone_box())
+            .collect();
+        Box::new(CompositeEvaluator {
+            evaluators: cloned_evals,
+            weights: self.weights.clone(),
+            name: self.name().to_owned(),
+        })
     }
 }
 

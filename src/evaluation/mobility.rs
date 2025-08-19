@@ -1,7 +1,7 @@
 use crate::prelude::*;
 
 const MOBILITY_WEIGHTS: [i32; NUM_PIECES] = [1, 3, 3, 5, 9, 0];
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MobilityEvaluator {
     name: String,
     mobility_weights: [i32; NUM_PIECES],
@@ -58,5 +58,9 @@ impl Evaluator for MobilityEvaluator {
 
     fn name(&self) -> &str {
         &self.name
+    }
+
+    fn clone_box(&self) -> Box<dyn Evaluator> {
+        Box::new(self.clone())
     }
 }

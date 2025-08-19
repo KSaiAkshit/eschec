@@ -19,10 +19,6 @@ alias r := run
 
 default: play
 
-@wa book:
-  echo '{{ book_dir }}{{ book }}'
-  echo 'File type: {{ extension(book_dir + book) }}'
-
 [doc("Print help")]
 help:
     just -l
@@ -68,7 +64,7 @@ update:
 
 [doc("Run a gauntlet match against another engine using cutechess-cli")]
 [positional-arguments]
-gauntlet opponent='gnuchess' rounds='40' concurrency='4' book='8moves_v3.pgn' tc='1:30+1': update
+gauntlet opponent='gnuchess' rounds='40' concurrency='4' book='8moves_v3.pgn' tc='30+0.3': update
     @# Print the configuration for this run
     @echo "Starting gauntlet:"
     @echo "  - Opponent: {{ BLUE }}{{ opponent }}{{ NORMAL }}"
@@ -93,7 +89,7 @@ gauntlet opponent='gnuchess' rounds='40' concurrency='4' book='8moves_v3.pgn' tc
 
 [doc("Run an SPRT test between two versions of the engine.")]
 [positional-arguments]
-sprt p1 p2 rounds='100' concurrency='4' book='8moves_v3' tc='15+0.1':
+sprt p1 p2 rounds='100' concurrency='4' book='8moves_v3.pgn' tc='30+0.3':
     @# Print the configuration for this run
     @echo "Starting gauntlet:"
     @echo "  - Engine1: {{ BLUE }}{{ p1 }}{{ NORMAL }}"

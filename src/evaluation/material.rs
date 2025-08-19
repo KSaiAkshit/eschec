@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MaterialEvaluator {
     name: String,
 }
@@ -51,5 +51,9 @@ impl Evaluator for MaterialEvaluator {
 
     fn name(&self) -> &str {
         &self.name
+    }
+
+    fn clone_box(&self) -> Box<dyn Evaluator> {
+        Box::new(self.clone())
     }
 }

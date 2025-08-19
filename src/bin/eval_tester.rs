@@ -39,7 +39,8 @@ fn main() -> miette::Result<()> {
     let mut grand_total_score = 0;
     let mut grand_max_score = 0;
 
-    let mut search = Search::new(cli.depth);
+    let evaluator = CompositeEvaluator::balanced();
+    let mut search = Search::new(Box::new(evaluator), cli.depth);
 
     for file_path in epd_files {
         println!("Running test suite: {}", file_path.display());
@@ -52,9 +53,8 @@ fn main() -> miette::Result<()> {
 
         for test in &tests {
             let board = Board::from_fen(&test.fen);
-            let evaluator = CompositeEvaluator::balanced();
 
-            let result = search.find_best_move(&board, &evaluator);
+            let result = search.find_best_move(&board);
             let engine_move = result.best_move.map(|m| m.uci()).unwrap_or_default();
 
             let score = *test.move_scores.get(&engine_move).unwrap_or(&0);

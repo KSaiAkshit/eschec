@@ -14,7 +14,7 @@ const SAFETY_TABLE: [i32; 100] = [
     500, 500, 500, 500, 500, 500, 500, 500, 500, 500
 ];
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct KingSafetyEvaluator {
     name: String,
     // Bonus
@@ -229,5 +229,9 @@ impl Evaluator for KingSafetyEvaluator {
 
     fn name(&self) -> &str {
         &self.name
+    }
+
+    fn clone_box(&self) -> Box<dyn Evaluator> {
+        Box::new(self.clone())
     }
 }

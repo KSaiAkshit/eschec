@@ -53,7 +53,8 @@ impl UciState {
         let depth = depth.unwrap_or(20);
         let search_running = Arc::new(AtomicBool::new(false));
         let search = Arc::new(Mutex::new(
-            Search::new(depth).init(Some(search_running.clone())),
+            Search::new(Box::new(CompositeEvaluator::balanced()), depth)
+                .init(Some(search_running.clone())),
         ));
         Self {
             board: Board::new(),
@@ -72,7 +73,8 @@ impl UciState {
         *self.best_move.lock().unwrap() = None;
         self.move_history.clear();
         self.search = Arc::new(Mutex::new(
-            Search::new(self.search_depth).init(Some(self.search_running.clone())),
+            Search::new(Box::new(CompositeEvaluator::balanced()), self.search_depth)
+                .init(Some(self.search_running.clone())),
         ))
     }
 }
@@ -180,6 +182,10 @@ fn cmd_go(state: &mut UciState, params: GoParams) {
         let result: SearchResult;
         {
             let mut search = search.lock().unwrap();
+            let e = evaluator.clone_box();
+            search
+                .set_evaluator(e)
+                .expect("Should be able to set evaluator");
             if let Some(time) = max_time_ms {
                 info!("changing time {:?}", max_time_ms);
                 if let Err(e) = search.set_time(time) {
@@ -193,7 +199,7 @@ fn cmd_go(state: &mut UciState, params: GoParams) {
             }
 
             search_running.store(true, Ordering::Relaxed);
-            result = search.find_best_move(&board, &*evaluator);
+            result = search.find_best_move(&board);
             search_running.store(false, Ordering::Relaxed);
         }
 

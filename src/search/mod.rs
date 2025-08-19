@@ -13,6 +13,28 @@ use std::time::{Duration, Instant};
 
 const ASP_START_WINDOW: i32 = 48;
 const ASP_MAX_WINDOW: i32 = 4096;
+#[rustfmt::skip]
+const LMR_TABLE: [i32; 64] = [
+    0,   0,   50,  75,  95,  110, 123, 134, 144, 153, 161, 168, 175, 181, 187, 192,
+    197, 202, 206, 210, 214, 218, 221, 224, 227, 230, 233, 235, 238, 240, 242, 244,
+    246, 248, 250, 252, 254, 256, 257, 259, 261, 262, 264, 265, 267, 268, 270, 271,
+    272, 274, 275, 276, 277, 278, 280, 281, 282, 283, 284, 285, 286, 287, 288, 289,
+];
+
+#[derive(Clone, Copy)]
+struct SearchContext {
+    ply: usize,
+    is_pv_node: bool,
+}
+
+impl SearchContext {
+    fn new_child(&self, is_pv_child: bool) -> Self {
+        SearchContext {
+            ply: self.ply + 1,
+            is_pv_node: is_pv_child,
+        }
+    }
+}
 
 #[derive(Debug, Default)]
 pub struct SearchResult {
@@ -29,6 +51,7 @@ pub struct Search {
     max_depth: u8,
     nodes_searched: u64,
     start_time: Instant,
+    evaluator: Box<dyn Evaluator>,
     max_time: Option<Duration>,
     nodes_limit: Option<u64>,
     pruned_nodes: u64,
@@ -50,6 +73,7 @@ impl Default for Search {
             max_depth: Default::default(),
             nodes_searched: Default::default(),
             start_time: Instant::now(),
+            evaluator: Box::new(CompositeEvaluator::default()),
             max_time: Default::default(),
             nodes_limit: Default::default(),
             pruned_nodes: Default::default(),
@@ -68,16 +92,22 @@ impl Default for Search {
 }
 
 impl Search {
-    pub fn new(max_depth: u8) -> Self {
+    pub fn new(evaluator: Box<dyn Evaluator>, max_depth: u8) -> Self {
         Self {
             max_depth,
+            evaluator,
             ..Default::default()
         }
     }
 
-    pub fn with_time_control(max_depth: u8, max_time_ms: u64) -> Self {
+    pub fn with_time_control(
+        evaluator: Box<dyn Evaluator>,
+        max_depth: u8,
+        max_time_ms: u64,
+    ) -> Self {
         Self {
             max_depth,
+            evaluator,
             max_time: Some(Duration::from_millis(max_time_ms)),
             ..Default::default()
         }
@@ -115,6 +145,20 @@ impl Search {
             "New time limit set to {:?}, max depth set to {}",
             self.max_time, self.max_depth
         );
+        Ok(())
+    }
+
+    pub fn set_evaluator(&mut self, eval: Box<dyn Evaluator>) -> miette::Result<()> {
+        miette::ensure!(
+            !self.in_progress,
+            "Search already running, cannot change evaluator"
+        );
+        warn!(
+            "Changing evaluator from {} to {}",
+            self.evaluator.name(),
+            eval.name()
+        );
+        self.evaluator = eval;
         Ok(())
     }
 
@@ -184,7 +228,6 @@ impl Search {
     fn root_search_attempt(
         &mut self,
         board: &Board,
-        evaluator: &dyn Evaluator,
         depth: u8,
         alpha_base: i32,
         beta_base: i32,
@@ -213,7 +256,12 @@ impl Search {
 
             self.hash_history.push(board_copy.hash);
 
-            let score = -self.alpha_beta(&board_copy, depth - 1, 1, -beta, -alpha, evaluator);
+            let root_child_context = SearchContext {
+                ply: 1,
+                is_pv_node: true,
+            };
+
+            let score = -self.alpha_beta(&board_copy, root_child_context, depth - 1, -beta, -alpha);
 
             self.hash_history.pop();
 
@@ -240,7 +288,6 @@ impl Search {
     fn root_search_with_aspiration(
         &mut self,
         board: &Board,
-        evaluator: &dyn Evaluator,
         depth: u8,
         legal_moves: &mut MoveBuffer,
         prev_best_move: Option<Move>,
@@ -273,14 +320,8 @@ impl Search {
             }
             trace!("ASP window: ({alpha_base}, {beta_base})");
 
-            let (best_move, best_score) = self.root_search_attempt(
-                board,
-                evaluator,
-                depth,
-                alpha_base,
-                beta_base,
-                legal_moves,
-            );
+            let (best_move, best_score) =
+                self.root_search_attempt(board, depth, alpha_base, beta_base, legal_moves);
 
             if !use_asp {
                 return (best_move, best_score);
@@ -309,7 +350,7 @@ impl Search {
     }
 
     // #[instrument(skip_all)]
-    pub fn find_best_move(&mut self, board: &Board, evaluator: &dyn Evaluator) -> SearchResult {
+    pub fn find_best_move(&mut self, board: &Board) -> SearchResult {
         self.start();
 
         let span = trace_span!("search_root");
@@ -360,7 +401,6 @@ impl Search {
 
             let (local_best_move, local_best_score) = self.root_search_with_aspiration(
                 board,
-                evaluator,
                 depth,
                 &mut legal_moves,
                 best_move,
@@ -416,18 +456,17 @@ impl Search {
     fn alpha_beta(
         &mut self,
         board: &Board,
+        context: SearchContext,
         depth: u8,
-        ply: usize,
         mut alpha: i32,
         mut beta: i32,
-        evaluator: &dyn Evaluator,
     ) -> i32 {
         if self.should_stop() {
             return 0; // Neutral score because search was stopped
         }
 
         if depth == 0 {
-            return self.quiescence_search(board, ply, alpha, beta, evaluator);
+            return self.quiescence_search(board, context, alpha, beta);
         }
 
         if alpha >= beta {
@@ -438,6 +477,7 @@ impl Search {
             return alpha;
         }
 
+        let ply = context.ply;
         let original_alpha = alpha;
         let is_in_check = board.is_in_check(board.stm);
 
@@ -504,14 +544,9 @@ impl Search {
             let mut null_board = *board;
             null_board.make_null_move();
 
-            let null_score = -self.alpha_beta(
-                &null_board,
-                null_depth,
-                ply + 1,
-                -beta,
-                -beta + 1,
-                evaluator,
-            );
+            let child_context = context.new_child(false);
+            let null_score =
+                -self.alpha_beta(&null_board, child_context, null_depth, -beta, -beta + 1);
 
             if null_score >= beta {
                 return beta;
@@ -556,60 +591,43 @@ impl Search {
             self.hash_history.push(board_copy.hash);
 
             let mut score: i32;
-            let is_quiet = mv.is_quiet();
-            let lmr_allowed =
-                self.enable_lmr && depth >= 3 && move_index > 2 && is_quiet && !is_in_check;
-            // Principal Variation search (PVS)
-            // Use ZWS (zero window search) for moves other than the first move (PV)
-            // Reduces nodes searched massively
-            if mv == best_move_this_node {
-                // PV move: full depth search
-                score = -self.alpha_beta(&board_copy, depth - 1, ply + 1, -beta, -alpha, evaluator);
-            } else if lmr_allowed {
-                let reduction = 1; // TODO: To be tuned later
 
-                score = -self.alpha_beta(
-                    &board_copy,
-                    depth - 1 - reduction,
-                    ply + 1,
-                    -alpha - 1,
-                    -alpha,
-                    evaluator,
-                );
-                // Fail-high: Verify that improvement wasn't a fluke
+            let is_pv_move = move_index == 0;
+            let child_is_pv = context.is_pv_node && is_pv_move;
+            // Starts as non-PV unless the parent is PV and this is the first move
+            let mut child_context = context.new_child(child_is_pv);
+
+            let move_gives_check = &board_copy.is_in_check(board_copy.stm);
+
+            let lmr_allowed = self.enable_lmr
+                && depth >= 3
+                && move_index >= 3
+                && !mv.is_capture()
+                && !mv.is_promotion()
+                && !is_in_check
+                && !move_gives_check;
+
+            if is_pv_move {
+                score = self.pv_search(&board_copy, child_context, depth, alpha, beta);
+            } else if lmr_allowed {
+                let mut reduction = self.lm_reduction(depth, move_index);
+
+                if context.is_pv_node {
+                    reduction = reduction.saturating_sub(1);
+                }
+                reduction = reduction.min(depth - 1);
+
+                let red_depth = (depth - 1).saturating_sub(reduction);
+
+                score = -self.alpha_beta(&board_copy, child_context, red_depth, -alpha - 1, -alpha);
+
                 if score > alpha {
-                    score = -self.alpha_beta(
-                        &board_copy,
-                        depth - 1,
-                        ply + 1,
-                        -alpha - 1,
-                        -alpha,
-                        evaluator,
-                    );
-                    if score > alpha && score < beta {
-                        score = -self.alpha_beta(
-                            &board_copy,
-                            depth - 1,
-                            ply + 1,
-                            -beta,
-                            -alpha,
-                            evaluator,
-                        );
-                    }
+                    // Since LMR Failed-High, this node should now be PV node
+                    child_context.is_pv_node = true;
+                    score = self.zw_search(&board_copy, child_context, depth, alpha, beta);
                 }
             } else {
-                score = -self.alpha_beta(
-                    &board_copy,
-                    depth - 1,
-                    ply + 1,
-                    -alpha - 1,
-                    -alpha,
-                    evaluator,
-                );
-                if score > alpha && score < beta {
-                    score =
-                        -self.alpha_beta(&board_copy, depth - 1, ply + 1, -beta, -alpha, evaluator);
-                }
+                score = self.zw_search(&board_copy, child_context, depth, alpha, beta);
             }
 
             self.hash_history.pop();
@@ -695,15 +713,14 @@ impl Search {
     fn quiescence_search(
         &mut self,
         board: &Board,
-        ply: usize,
+        context: SearchContext,
         mut alpha: i32,
         beta: i32,
-        evaluator: &dyn Evaluator,
     ) -> i32 {
         self.nodes_searched += 1;
 
-        if ply >= self.max_depth as usize + 16 || ply >= MAX_PLY - 1 {
-            return evaluator.evaluate(board);
+        if context.ply >= self.max_depth as usize + 16 || context.ply >= MAX_PLY - 1 {
+            return self.evaluator.evaluate(board);
         }
 
         if self.should_stop() {
@@ -724,7 +741,7 @@ impl Search {
         let is_in_check = board.is_in_check(board.stm);
 
         if !is_in_check {
-            let stand_pat_score = evaluator.evaluate(board);
+            let stand_pat_score = self.evaluator.evaluate(board);
 
             if stand_pat_score >= beta {
                 self.pruned_nodes += 1;
@@ -742,10 +759,10 @@ impl Search {
 
         if is_in_check && legal_moves.is_empty() {
             // return Losing Mate score
-            return adjust_score_for_ply(-MATE_SCORE, ply);
+            return adjust_score_for_ply(-MATE_SCORE, context.ply);
         }
 
-        self.sort_moves(board, &mut legal_moves, None, ply as u8);
+        self.sort_moves(board, &mut legal_moves, None, context.ply as u8);
 
         for mv in legal_moves {
             let mut board_copy = *board;
@@ -760,7 +777,8 @@ impl Search {
 
             self.hash_history.push(board_copy.hash);
 
-            let score = -self.quiescence_search(&board_copy, ply + 1, -beta, -alpha, evaluator);
+            let child_context = context.new_child(context.is_pv_node);
+            let score = -self.quiescence_search(&board_copy, child_context, -beta, -alpha);
 
             self.hash_history.pop();
 
@@ -771,6 +789,38 @@ impl Search {
             alpha = max(alpha, score)
         }
         alpha
+    }
+
+    /// Full-window search for the first move (PV-move)
+    #[inline(always)]
+    fn pv_search(
+        &mut self,
+        board: &Board,
+        context: SearchContext,
+        depth: u8,
+        alpha: i32,
+        beta: i32,
+    ) -> i32 {
+        -self.alpha_beta(board, context, depth - 1, -beta, -alpha)
+    }
+
+    /// Zero-window search for non-PV moves, with a re-search on fail-high.
+    #[inline(always)]
+    fn zw_search(
+        &mut self,
+        board: &Board,
+        context: SearchContext,
+        depth: u8,
+        alpha: i32,
+        beta: i32,
+    ) -> i32 {
+        let mut score = -self.alpha_beta(board, context, depth - 1, -alpha - 1, -alpha);
+        if score > alpha && score < beta {
+            // if zws fals high, re-search with full window and make this new PV
+            let re_search_child_context = context.new_child(true);
+            score = -self.alpha_beta(board, re_search_child_context, depth - 1, -beta, -alpha);
+        }
+        score
     }
 
     fn start(&mut self) {
@@ -806,6 +856,14 @@ impl Search {
             return true;
         }
         false
+    }
+    fn lm_reduction(&self, depth: u8, move_index: usize) -> u8 {
+        let base_reduction =
+            (LMR_TABLE[(depth as usize).min(63)] * LMR_TABLE[move_index.min(63)]) / 10_000;
+
+        let r = base_reduction;
+
+        (r as u8).min(depth - 1)
     }
     fn decay_history(&mut self) {
         trace!("Decaying history by 2");
@@ -874,8 +932,10 @@ mod tests {
     fn test_null_move_pruning() {
         init();
         let _ = utils::log::toggle_file_logging(true);
-        let mut search_with_null = Search::new(10);
-        let mut search_without_null = Search::new(10);
+        let evaluator = CompositeEvaluator::balanced();
+        let mut search_with_null = Search::new(Box::new(evaluator), 10);
+        let evaluator = CompositeEvaluator::balanced();
+        let mut search_without_null = Search::new(Box::new(evaluator), 10);
 
         assert!(search_without_null.enable_nmp);
         search_without_null.set_nmp(false);
@@ -883,16 +943,15 @@ mod tests {
 
         let board = Board::from_fen(KIWIPETE);
         println!("{board}");
-        let evaluator = CompositeEvaluator::balanced();
 
         info!("Starting with null move pruning");
         let start = std::time::Instant::now();
-        let result_with = search_with_null.find_best_move(&board, &evaluator);
+        let result_with = search_with_null.find_best_move(&board);
         let time_with = start.elapsed();
 
         info!("Starting without null move pruning");
         let start = std::time::Instant::now();
-        let result_without = search_without_null.find_best_move(&board, &evaluator);
+        let result_without = search_without_null.find_best_move(&board);
         let time_without = start.elapsed();
 
         println!(

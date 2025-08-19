@@ -153,7 +153,8 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
 
     let mut board = Board::from_fen(&fen);
     let evaluator = CompositeEvaluator::balanced();
-    let mut search = Search::with_time_control(depth, 10_000);
+    let mut search =
+        Search::with_time_control(Box::new(CompositeEvaluator::balanced()), depth, 10_000);
 
     let stdin = std::io::stdin();
 
@@ -240,7 +241,7 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
                 }
                 GameSubcommand::Hint => {
                     info!("Here's a Hint. Support for multiple hints coming soon");
-                    let result = search.find_best_move(&board, &evaluator);
+                    let result = search.find_best_move(&board);
                     if let Some(mov) = result.best_move {
                         info!("Best move: {} ", mov.uci());
                         info!(

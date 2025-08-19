@@ -1,6 +1,30 @@
 # Dev Log
 
 * Date: 2025-08-18
+* New: tag 'v0.1.9-better_lmr'
+* Old: tag 'v0.1.8-q_search'
+
+### dynamic lmr depth
+
+#### 8moves_v3.pgn
+Results of eschec vs eschec_q_search (15+0.1, NULL, NULL, 8moves_v3.pgn):
+Elo: -0.00 +/- 29.36, nElo: 0.00 +/- 48.15
+LOS: 50.00 %, DrawRatio: 47.00 %, PairsRatio: 0.96
+Games: 200, Wins: 36, Losses: 36, Draws: 128, Points: 100.0 (50.00 %)
+Ptnml(0-2): [3, 24, 47, 22, 4], WL/DD Ratio: 0.15
+LLR: -0.08 (-2.8%) (-2.94, 2.94) [0.00, 10.00]
+
+#### balanced_book.epd
+Results of eschec vs eschec_q_search (15+0.1, NULL, NULL, balanced_book.epd):
+Elo: 31.35 +/- 32.44, nElo: 46.94 +/- 48.15
+LOS: 97.20 %, DrawRatio: 38.00 %, PairsRatio: 1.48
+Games: 200, Wins: 57, Losses: 39, Draws: 104, Points: 109.0 (54.50 %)
+Ptnml(0-2): [2, 23, 38, 29, 8], WL/DD Ratio: 0.46
+LLR: 0.69 (23.6%) (-2.94, 2.94) [0.00, 10.00]
+
+---
+
+* Date: 2025-08-18
 * New: tag 'v0.1.8-q_search'
 * Old: tag 'v0.1.7-late_move_red'
 

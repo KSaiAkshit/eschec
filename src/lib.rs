@@ -1,5 +1,5 @@
 #![cfg_attr(feature = "simd", feature(portable_simd))]
-#![feature(slice_index_methods, likely_unlikely)]
+#![feature(slice_index_methods, likely_unlikely, f16)]
 
 pub mod board;
 pub mod comms;
