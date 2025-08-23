@@ -23,7 +23,8 @@ impl MobilityEvaluator {
 
     fn calculate_mobility_score(&self, board: &Board) -> i32 {
         let mut buffer = MoveBuffer::new();
-        // NOTE: Use pseudo legal moves here;
+        // NOTE: Using pseudo legal moves here so that its faster
+        // and is good enough for this.
         board.generate_pseudo_legal_moves(&mut buffer);
         let mut score = 0;
 
@@ -37,7 +38,7 @@ impl MobilityEvaluator {
 }
 
 impl Evaluator for MobilityEvaluator {
-    fn evaluate(&self, board: &Board) -> i32 {
+    fn evaluate(&self, board: &Board) -> Score {
         let current_player_mobility = self.calculate_mobility_score(board);
 
         // To calculate for the opponent, we need a board state from their perspective.
@@ -47,7 +48,8 @@ impl Evaluator for MobilityEvaluator {
         let opponent_mobility = self.calculate_mobility_score(&opponent_board);
 
         // The final score is the difference in mobility.
-        let score = current_player_mobility - opponent_mobility;
+        // TODO: How to taper here?
+        let score = Score::splat(current_player_mobility - opponent_mobility);
 
         if board.stm == Side::White {
             score

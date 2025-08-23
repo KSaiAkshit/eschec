@@ -1,5 +1,7 @@
 use crate::prelude::*;
 
+// TODO: Does tapering eval help here?
+
 #[derive(Debug, Clone)]
 pub struct MaterialEvaluator {
     name: String,
@@ -22,7 +24,7 @@ impl MaterialEvaluator {
 }
 
 impl Evaluator for MaterialEvaluator {
-    fn evaluate(&self, board: &Board) -> i32 {
+    fn evaluate(&self, board: &Board) -> Score {
         // Source: https://www.chessprogramming.org/Simplified_Evaluation_Function
         // 4 rules of thumb
         // 1.) Avoid expaching one minor piece for 3 pawns
@@ -37,9 +39,7 @@ impl Evaluator for MaterialEvaluator {
         // Q + P = 2R
         // ```
 
-        let white_material = board.material[Side::White.index()] as i32;
-        let black_material = board.material[Side::Black.index()] as i32;
-        let score: i32 = white_material - black_material;
+        let score = board.material[Side::White.index()] - board.material[Side::Black.index()];
 
         // Convert to side-to-move perspective
         if board.stm == Side::White {

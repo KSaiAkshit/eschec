@@ -7,6 +7,7 @@ pub struct PawnStructureEvaluator {
     doubled_penalty: i32,
     backward_penalty: i32,
     passed_bonus: i32,
+    passed_pawn_rank_scale: i32,
     connected_bonus: i32,
 }
 
@@ -24,6 +25,7 @@ impl PawnStructureEvaluator {
             doubled_penalty: -10,
             backward_penalty: -8,
             passed_bonus: 10,
+            passed_pawn_rank_scale: 10,
             connected_bonus: 2,
         }
     }
@@ -36,7 +38,7 @@ impl PawnStructureEvaluator {
         let mut score = 0;
 
         for sq_idx in friendly_pawns.iter_bits() {
-            let _rank = sq_idx / 8;
+            let rank = sq_idx / 8;
             let file = sq_idx % 8;
 
             if (friendly_pawns & &PAWN_TABLES.pawn_adjacent_files_masks[file]).is_empty() {
@@ -50,7 +52,7 @@ impl PawnStructureEvaluator {
             if (opponent_pawns & &PAWN_TABLES.passed_pawn_blocking_masks[side.index()][sq_idx])
                 .is_empty()
             {
-                score += self.passed_bonus;
+                score += self.passed_bonus + rank as i32 * self.passed_pawn_rank_scale;
             }
 
             let is_blocked_in_front =
@@ -70,10 +72,10 @@ impl PawnStructureEvaluator {
 }
 
 impl Evaluator for PawnStructureEvaluator {
-    fn evaluate(&self, board: &Board) -> i32 {
+    fn evaluate(&self, board: &Board) -> Score {
         let white_score = self.evaluate_side(board, Side::White);
         let black_score = self.evaluate_side(board, Side::Black);
-        let score = white_score - black_score;
+        let score = Score::splat(white_score - black_score);
         if board.stm == Side::White {
             score
         } else {

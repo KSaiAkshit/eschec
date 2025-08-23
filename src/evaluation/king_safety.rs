@@ -195,7 +195,7 @@ impl KingSafetyEvaluator {
 }
 
 impl Evaluator for KingSafetyEvaluator {
-    fn evaluate(&self, board: &Board) -> i32 {
+    fn evaluate(&self, board: &Board) -> Score {
         let mut white_score = 0;
         let mut black_score = 0;
 
@@ -218,7 +218,10 @@ impl Evaluator for KingSafetyEvaluator {
             black_score -= SAFETY_TABLE[attack_units.min(99) as usize];
         }
 
-        let score = white_score - black_score;
+        let mg_score = white_score - black_score;
+        let eg_score = mg_score / 4; // NOTE: KingSafety is much less relevant in endgame
+
+        let score = Score::new(mg_score, eg_score);
 
         if board.stm == Side::White {
             score

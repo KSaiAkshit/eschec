@@ -470,11 +470,8 @@ impl Search {
         }
 
         if alpha >= beta {
-            debug_assert!(
-                false,
-                "Invalid alpha-beta window: alpha: {alpha}, beta: {beta}"
-            );
-            return alpha;
+            error!("Invalid alpha-beta window: alpha: {alpha}, beta: {beta}");
+            panic!("Invalid alpha-beta window: alpha: {alpha}, beta: {beta}");
         }
 
         let ply = context.ply;
@@ -720,7 +717,7 @@ impl Search {
         self.nodes_searched += 1;
 
         if context.ply >= self.max_depth as usize + 16 || context.ply >= MAX_PLY - 1 {
-            return self.evaluator.evaluate(board);
+            return board.evaluate_position(&*self.evaluator);
         }
 
         if self.should_stop() {
@@ -741,7 +738,7 @@ impl Search {
         let is_in_check = board.is_in_check(board.stm);
 
         if !is_in_check {
-            let stand_pat_score = self.evaluator.evaluate(board);
+            let stand_pat_score = board.evaluate_position(&*self.evaluator);
 
             if stand_pat_score >= beta {
                 self.pruned_nodes += 1;

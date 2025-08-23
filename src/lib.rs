@@ -24,6 +24,11 @@ pub mod consts {
     pub const MAX_MOVES: usize = 256;
     pub const MAX_HASH: usize = 1024;
 
+    pub const MIDGAME_PHASE: i32 = 0;
+    pub const ENDGAME_PHASE: i32 = 256;
+
+    pub const TOTAL_PHASE: i32 = 24;
+
     pub const MATE_SCORE: i32 = 20_000;
     pub const MATE_THRESHOLD: i32 = MATE_SCORE - MAX_PLY as i32;
 

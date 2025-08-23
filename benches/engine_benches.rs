@@ -75,7 +75,7 @@ fn alpha_beta_two_loops(
     evaluator: &dyn Evaluator,
 ) -> i32 {
     if depth == 0 {
-        return evaluator.evaluate(board);
+        return board.evaluate_position(evaluator);
     }
 
     let mut pseudo_legal_moves = MoveBuffer::new();
@@ -125,7 +125,7 @@ fn alpha_beta_one_loop(
     evaluator: &dyn Evaluator,
 ) -> i32 {
     if depth == 0 {
-        return evaluator.evaluate(board);
+        return board.evaluate_position(evaluator);
     }
 
     let mut pseudo_legal_moves = MoveBuffer::new();
@@ -259,7 +259,7 @@ fn bench_search(c: &mut Criterion) {
         b.iter_batched(
             || {
                 let board = Board::from_fen(KIWIPETE);
-                let mut search = Search::new(evaluator.clone_box(),depth);
+                let mut search = Search::new(evaluator.clone_box(), depth);
                 search.set_emit_info(false);
                 search.set_asp(false);
                 (board, search)
@@ -275,7 +275,7 @@ fn bench_search(c: &mut Criterion) {
         b.iter_batched(
             || {
                 let board = Board::from_fen(KIWIPETE);
-                let mut search = Search::new(evaluator.clone_box(),depth);
+                let mut search = Search::new(evaluator.clone_box(), depth);
                 search.set_emit_info(false);
                 search.set_asp(true);
                 (board, search)
@@ -291,7 +291,7 @@ fn bench_search(c: &mut Criterion) {
         b.iter_batched(
             || {
                 let board = Board::from_fen(KIWIPETE);
-                let mut search = Search::new(evaluator.clone_box(),depth);
+                let mut search = Search::new(evaluator.clone_box(), depth);
                 search.set_emit_info(false);
                 search.set_lmr(false);
                 (board, search)

@@ -8,14 +8,17 @@ pub use crate::board::{
 };
 pub use crate::comms::*;
 pub use crate::consts::*;
-pub use crate::evaluation::{self, CompositeEvaluator, Evaluator};
+pub use crate::evaluation::{
+    self, CompositeEvaluator, Evaluator,
+    score::{Phase, Score},
+};
 pub use crate::moves::magics;
 pub use crate::moves::{
     self, Direction,
     move_buffer::MoveBuffer,
     move_info::{Move, MoveInfo},
 };
-pub use crate::precomputed::{ move_tables::MOVE_TABLES, pawn_tables::PAWN_TABLES };
+pub use crate::precomputed::{move_tables::MOVE_TABLES, pawn_tables::PAWN_TABLES};
 pub use crate::search::{self, Search, SearchResult};
 pub use crate::utils::{self, cli::*, log::*, perft::*, prng::*};
 pub use miette::{self, Context, IntoDiagnostic, Result};

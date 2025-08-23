@@ -1,5 +1,6 @@
 use crate::{
     board::zobrist::calculate_hash,
+    evaluation::score::Phase,
     moves::{attack_data::calculate_attack_data, move_gen},
     prelude::*,
 };
@@ -29,7 +30,7 @@ pub struct Board {
     ///  The number of the full moves in a game. It starts at 1, and is incremented after each Black's move.
     pub fullmove_counter: u8,
     /// Material left for each side [White, Black]
-    pub material: [u32; 2],
+    pub material: [Score; 2],
     /// Zobrist hash
     pub hash: u64,
 }
@@ -98,7 +99,7 @@ impl Display for Board {
         writeln!(f, "Fullmove counter: {}", self.fullmove_counter)?;
         writeln!(
             f,
-            "Material balance: W:{} B:{}",
+            "Material balance: W: {} B: {}",
             self.material[Side::White.index()],
             self.material[Side::Black.index()]
         )?;
@@ -290,7 +291,7 @@ impl Board {
                 .remove_piece(opponent, captured_piece, to.index())?;
             // XOR out key for removed piece
             self.hash ^= ZOBRIST.pieces[opponent.index()][captured_piece.index()][to.index()];
-            self.material[opponent.index()] -= captured_piece.value();
+            self.material[opponent.index()] -= captured_piece.score();
         }
 
         // Move the piece from 'from' to 'to'
@@ -325,7 +326,7 @@ impl Board {
                     .remove_piece(opponent, Piece::Pawn, captured_pawn_idx)?;
                 // XOR out captured opponent pawn
                 self.hash ^= ZOBRIST.pieces[opponent.index()][Piece::pawn()][captured_pawn_idx];
-                self.material[opponent.index()] -= Piece::Pawn.value();
+                self.material[opponent.index()] -= Piece::Pawn.score();
             }
             Move::KING_CASTLE => {
                 let (rook_from, rook_to) = (
@@ -355,12 +356,12 @@ impl Board {
                 // The pawn is already at the 'to' square, so we replace it.
                 self.positions
                     .remove_piece(self.stm, Piece::Pawn, to.index())?;
-                self.material[self.stm.index()] -= Piece::Pawn.value();
+                self.material[self.stm.index()] -= Piece::Pawn.score();
                 // XOR out pawn
                 self.hash ^= ZOBRIST.pieces[self.stm.index()][Piece::pawn()][to.index()];
 
                 self.positions.set(self.stm, promo_piece, to.index())?;
-                self.material[self.stm.index()] += promo_piece.value();
+                self.material[self.stm.index()] += promo_piece.score();
                 // XOR in promote piece
                 self.hash ^= ZOBRIST.pieces[self.stm.index()][promo_piece.index()][to.index()];
             }
@@ -443,6 +444,24 @@ impl Board {
         }
     }
 
+    pub fn game_phase(&self) -> Phase {
+        let mut phase = TOTAL_PHASE;
+
+        let mut i = 0;
+        while i < 6 {
+            let piece = Piece::PIECES[i];
+            phase -=
+                self.positions.get_piece_bb(Side::White, piece).pop_count() as i32 * piece.phase();
+            phase -=
+                self.positions.get_piece_bb(Side::Black, piece).pop_count() as i32 * piece.phase();
+            i += 1;
+        }
+
+        let scaled_phase = (phase * ENDGAME_PHASE + (TOTAL_PHASE / 2)) / TOTAL_PHASE;
+
+        Phase(scaled_phase)
+    }
+
     pub fn is_in_check(&self, side: Side) -> bool {
         let attack_data = calculate_attack_data(self, side);
         attack_data.in_check
@@ -461,7 +480,8 @@ impl Board {
     }
 
     pub fn evaluate_position(&self, evaluator: &dyn Evaluator) -> i32 {
-        evaluator.evaluate(self)
+        let phase = self.game_phase();
+        evaluator.evaluate(self).taper(phase)
     }
 
     pub fn get_piece_at(&self, square: Square) -> Option<Piece> {
@@ -470,14 +490,14 @@ impl Board {
 
     fn recalculate_material(&mut self) {
         // Reset material
-        self.material = [0; 2];
+        self.material = [Score::default(); 2];
         for side in [Side::White, Side::Black] {
             let side_index = side.index();
             for piece in Piece::colored_pieces(side) {
                 let piece_bb = self.positions.get_piece_bb(side, piece);
                 let piece_count = piece_bb.0.count_ones();
-                let piece_value = piece.value();
-                self.material[side_index] += piece_count * piece_value;
+                let piece_value = piece.score();
+                self.material[side_index] += piece_value * piece_count as i32;
             }
         }
     }
@@ -644,16 +664,14 @@ mod material_tests {
     fn test_initial_material_balance() {
         let mut board = Board::new();
         board.recalculate_material();
-        // Initial material for each side should be:
-        // 8 pawns (8 * 100 = 800)
-        // 2 knights (2 * 320 = 640)
-        // 2 bishops (2 * 330 = 660)
-        // 2 rooks (2 * 500 = 1000)
-        // 1 queen (1 * 900 = 900)
-        // 1 king (1 * 20000 = 20000)
-        // Total: 24000
-        assert_eq!(board.material[Side::White.index()], 24000);
-        assert_eq!(board.material[Side::Black.index()], 24000);
+        assert_eq!(
+            board.material[Side::White.index()],
+            Score::new(24039, 23868)
+        );
+        assert_eq!(
+            board.material[Side::Black.index()],
+            Score::new(24039, 23868)
+        );
     }
 
     #[test]
@@ -662,8 +680,14 @@ mod material_tests {
         board.recalculate_material();
         // Standard position with a missing f2 pawn on white's side
 
-        assert_eq!(board.material[Side::White.index()], 23900); // 24000 - 100 = 23900
-        assert_eq!(board.material[Side::Black.index()], 24000);
+        assert_eq!(
+            board.material[Side::White.index()],
+            Score::new(23957, 23774)
+        );
+        assert_eq!(
+            board.material[Side::Black.index()],
+            Score::new(24039, 23868)
+        );
     }
 
     #[test]

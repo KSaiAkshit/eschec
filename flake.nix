@@ -27,6 +27,7 @@
             pkgs.cargo-nextest
             pkgs.cargo-flamegraph
             pkgs.fastchess
+            pkgs.flamelens
             pkgs.cutechess
           ];
 

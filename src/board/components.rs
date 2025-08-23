@@ -1,12 +1,12 @@
 use std::{
-    fmt::Display,
+    fmt::{Display, Write},
     ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, Not},
     str::FromStr,
 };
 
 use miette::Context;
 
-use crate::moves::Direction;
+use crate::prelude::*;
 
 #[derive(Debug, Default, Hash, PartialEq, Eq, PartialOrd, Clone, Copy)]
 #[repr(transparent)]
@@ -90,15 +90,17 @@ impl BitBoard {
 
     pub fn print_bitboard(&self) -> String {
         const LAST_BIT: u64 = 63;
-        let mut out = String::new();
+        let mut out = String::with_capacity(8 * 8 * 2);
         for rank in 0..8 {
             for file in (0..8).rev() {
                 let mask = 1u64 << (LAST_BIT - (rank * 8) - file);
                 let char = if self.0 & mask != 0 { '1' } else { '0' };
-                out = out + &char.to_string() + " ";
+                write!(out, "{} ", char).expect("");
+                // out = out + &char.to_string() + " ";
             }
             out = out.trim().to_owned();
-            out += "\n";
+            writeln!(out).unwrap();
+            // out += "\n";
         }
         out
     }
@@ -394,6 +396,31 @@ impl Piece {
         }
     }
 
+    #[inline(always)]
+    pub const fn phase(&self) -> i32 {
+        match self {
+            Piece::Pawn => 0,
+            Piece::Bishop => 1,
+            Piece::Knight => 1,
+            Piece::Rook => 2,
+            Piece::Queen => 4,
+            Piece::King => 0,
+        }
+    }
+
+    #[inline(always)]
+    pub const fn score(&self) -> Score {
+        match self {
+            Piece::Pawn => Score::new(82, 94),
+            Piece::Knight => Score::new(337, 281),
+            Piece::Bishop => Score::new(365, 297),
+            Piece::Rook => Score::new(477, 512),
+            Piece::Queen => Score::new(1025, 936),
+            Piece::King => Score::new(20_000, 20_000),
+        }
+    }
+
+    #[inline(always)]
     pub const fn index(&self) -> usize {
         match self {
             Piece::Pawn => 0,
