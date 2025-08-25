@@ -1,6 +1,84 @@
 # Dev Log
 
 * Date: 2025-08-18
+* Curr: tag: "wip-tapered_eval"
+
+### Curr vs king_safetyv2
+```
+Results of eschec vs eschec_king_safetyv2 (30+0.3, NULL, NULL, 8moves_v3.pgn):
+Elo: 254.73 +/- 204.85, nElo: 303.94 +/- 139.00
+LOS: 100.00 %, DrawRatio: 16.67 %, PairsRatio: 9.00
+Games: 24, Wins: 16, Losses: 1, Draws: 7, Points: 19.5 (81.25 %)
+Ptnml(0-2): [0, 1, 2, 2, 7], WL/DD Ratio: 0.00
+LLR: 2.97 (100.8%) (-2.94, 2.94) [0.00, 100.00]
+--------------------------------------------------
+SPRT ([0.00, 100.00]) completed - H1 was accepted
+```
+
+### Curr vs pawn_masks
+```
+Results of eschec vs eschec_pawn_masks (30+0.3, NULL, NULL, 8moves_v3.pgn):
+Elo: 207.81 +/- 121.43, nElo: 297.92 +/- 128.69
+LOS: 100.00 %, DrawRatio: 14.29 %, PairsRatio: 11.00
+Games: 28, Wins: 16, Losses: 1, Draws: 11, Points: 21.5 (76.79 %)
+Ptnml(0-2): [0, 1, 2, 6, 5], WL/DD Ratio: 0.00
+LLR: 3.15 (106.9%) (-2.94, 2.94) [0.00, 100.00]
+--------------------------------------------------
+SPRT ([0.00, 100.00]) completed - H1 was accepted
+
+```
+
+### Curr vs repetition_detection
+```
+Results of eschec vs eschec_repetition_detection (30+0.3, NULL, NULL, 8moves_v3.pgn):
+Elo: 338.04 +/- 125.48, nElo: 737.02 +/- 139.00
+LOS: 100.00 %, DrawRatio: 0.00 %, PairsRatio: inf
+Games: 24, Wins: 18, Losses: 0, Draws: 6, Points: 21.0 (87.50 %)
+Ptnml(0-2): [0, 0, 0, 6, 6], WL/DD Ratio: -nan
+LLR: 3.25 (110.4%) (-2.94, 2.94) [0.00, 100.00]
+--------------------------------------------------
+SPRT ([0.00, 100.00]) completed - H1 was accepted
+```
+
+### Curr vs prng_mo
+```
+Results of eschec vs eschec_prng_mo (30+0.3, NULL, NULL, 8moves_v3.pgn):
+Elo: 190.85 +/- 82.03, nElo: 375.27 +/- 128.69
+LOS: 100.00 %, DrawRatio: 21.43 %, PairsRatio: inf
+Games: 28, Wins: 14, Losses: 0, Draws: 14, Points: 21.0 (75.00 %)
+Ptnml(0-2): [0, 0, 3, 8, 3], WL/DD Ratio: 0.00
+LLR: 2.99 (101.5%) (-2.94, 2.94) [0.00, 100.00]
+--------------------------------------------------
+SPRT ([0.00, 100.00]) completed - H1 was accepted
+```
+
+### Curr vs persistent_tt
+```
+Results of eschec vs eschec_persistent_tt (30+0.3, NULL, NULL, 8moves_v3.pgn):
+Elo: 279.59 +/- 151.64, nElo: 439.48 +/- 139.00
+LOS: 100.00 %, DrawRatio: 16.67 %, PairsRatio: inf
+Games: 24, Wins: 16, Losses: 0, Draws: 8, Points: 20.0 (83.33 %)
+Ptnml(0-2): [0, 0, 2, 4, 6], WL/DD Ratio: 0.00
+LLR: 3.05 (103.6%) (-2.94, 2.94) [0.00, 100.00]
+--------------------------------------------------
+SPRT ([0.00, 100.00]) completed - H1 was accepted
+```
+
+### Curr vs transient_tt
+```
+Results of eschec vs eschec_transient_tt (30+0.3, NULL, NULL, 8moves_v3.pgn):
+Elo: 270.68 +/- 44.94, nElo: 446.07 +/- 50.20
+LOS: 100.00 %, DrawRatio: 15.22 %, PairsRatio: inf
+Games: 184, Wins: 121, Losses: 1, Draws: 62, Points: 152.0 (82.61 %)
+Ptnml(0-2): [0, 0, 14, 36, 42], WL/DD Ratio: 0.08
+LLR: 2.95 (100.2%) (-2.94, 2.94) [0.00, 10.00]
+--------------------------------------------------
+SPRT ([0.00, 10.00]) completed - H1 was accepted
+```
+
+---
+
+* Date: 2025-08-18
 * New: tag 'v0.1.9-better_lmr'
 * Old: tag 'v0.1.8-q_search'
 

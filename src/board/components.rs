@@ -521,6 +521,11 @@ impl BoardState {
     }
 
     #[inline(always)]
+    pub const fn mailbox(&self) -> &[Option<PieceInfo>; 64] {
+        &self.mailbox
+    }
+
+    #[inline(always)]
     pub const fn get_piece_bb(&self, side: Side, piece: Piece) -> &BitBoard {
         &self.all_pieces[side.index()][piece.index()]
     }

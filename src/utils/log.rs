@@ -34,6 +34,7 @@ pub struct LogHandles {
 }
 
 static LOG_HANDLES: LazyLock<LogHandles> = LazyLock::new(|| {
+    #[cfg(feature = "dev-tools")]
     color_backtrace::install();
 
     // Console Layer with its own reloadable filter
@@ -65,7 +66,6 @@ static LOG_HANDLES: LazyLock<LogHandles> = LazyLock::new(|| {
     let (non_blocking_writer, guard) = non_blocking(log_file);
     let g = Box::new(guard);
     Box::leak(g);
-
 
     let file_layer = fmt::layer()
         .with_writer(non_blocking_writer)

@@ -24,32 +24,41 @@ path = "src/main.rs"
 [[bin]]
 name = "magic_gen"
 path = "src/bin/magic_gen.rs"
+required-features = ["rayon"]
 
 [[bin]]
 name = "eval_tester"
 path = "src/bin/eval_tester.rs"
 
 [dependencies]
+# Logging
 chrono = "0.4.41"
-clap = { version = "4.5.38", features = ["derive"] }
-color-backtrace = "0.7.0"
-dhat = { version = "0.3.3", optional = true }
-miette = { version = "7.5.0", features = ["fancy"] }
-rand = "0.9.2"
-rayon = { version = "1.10.0", optional = true }
-shell-words = "1.1.0"
 tracing = "0.1.41"
 tracing-appender = "0.2.3"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+# Cli and error
+clap = { version = "4.5.38", features = ["derive"] }
+miette = { version = "7.5.0", features = ["fancy"] }
+shell-words = "1.1.0"
+
+rand = "0.9.2"
+# Optional
+color-backtrace = { version = "0.7.0", optional = true }
+dhat = { version = "0.3.3", optional = true }
+rayon = { version = "1.10.0", optional = true }
 
 [dev-dependencies]
 criterion = "0.6.0"
 
 [features]
-default = ["simd"]
-dhat-heap = ["dep:dhat"]
-rayon = ["dep:rayon"]
+default = ["dev-tools"]
 simd = []
+# Feature for heap profiling
+dhat-heap = ["dep:dhat"]
+# Feature for the magic number generator binary
+rayon = ["dep:rayon"]
+# Feature for development-only tools
+dev-tools = ["dep:color-backtrace"]
 
 [[bench]]
 name = "board_benches"
