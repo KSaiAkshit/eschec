@@ -3,6 +3,55 @@
 * Date: 2025-08-18
 * Curr: tag: "wip-tapered_eval"
 
+### Curr vs q_search
+```
+Results of eschec vs eschec_dynamic_lmr (30+0.3, NULL, NULL, 8moves_v3.pgn):
+Elo: 88.74 +/- 56.57, nElo: 169.90 +/- 102.66
+LOS: 99.94 %, DrawRatio: 36.36 %, PairsRatio: 6.00
+Games: 44, Wins: 14, Losses: 3, Draws: 27, Points: 27.5 (62.50 %)
+Ptnml(0-2): [0, 2, 8, 11, 1], WL/DD Ratio: 0.14
+LLR: 3.10 (105.3%) (-2.94, 2.94) [0.00, 100.00]
+--------------------------------------------------
+SPRT ([0.00, 100.00]) completed - H1 was accepted
+```
+
+### Curr vs q_search
+```
+Results of eschec vs eschec_q_search (30+0.3, NULL, NULL, 8moves_v3.pgn):
+Elo: 67.25 +/- 55.55, nElo: 103.46 +/- 82.58
+LOS: 99.30 %, DrawRatio: 38.24 %, PairsRatio: 2.50
+Games: 68, Wins: 21, Losses: 8, Draws: 39, Points: 40.5 (59.56 %)
+Ptnml(0-2): [0, 6, 13, 11, 4], WL/DD Ratio: 0.18
+LLR: 3.07 (104.4%) (-2.94, 2.94) [0.00, 100.00]
+--------------------------------------------------
+SPRT ([0.00, 100.00]) completed - H1 was accepted
+```
+
+### Curr vs late_move_red
+```
+Results of eschec vs eschec_late_move_red (30+0.3, NULL, NULL, 8moves_v3.pgn):
+Elo: 279.59 +/- 120.80, nElo: 525.27 +/- 139.00
+LOS: 100.00 %, DrawRatio: 8.33 %, PairsRatio: inf
+Games: 24, Wins: 17, Losses: 1, Draws: 6, Points: 20.0 (83.33 %)
+Ptnml(0-2): [0, 0, 1, 6, 5], WL/DD Ratio: inf
+LLR: 3.04 (103.2%) (-2.94, 2.94) [0.00, 100.00]
+--------------------------------------------------
+SPRT ([0.00, 100.00]) completed - H1 was accepted
+```
+
+
+### Curr vs aspiration_win
+```
+Results of eschec vs eschec_aspiration_win (30+0.3, NULL, NULL, 8moves_v3.pgn):
+Elo: 175.73 +/- 89.96, nElo: 297.12 +/- 124.33
+LOS: 100.00 %, DrawRatio: 13.33 %, PairsRatio: 12.00
+Games: 30, Wins: 15, Losses: 1, Draws: 14, Points: 22.0 (73.33 %)
+Ptnml(0-2): [0, 1, 2, 9, 3], WL/DD Ratio: 0.00
+LLR: 3.09 (104.9%) (-2.94, 2.94) [0.00, 100.00]
+--------------------------------------------------
+SPRT ([0.00, 100.00]) completed - H1 was accepted
+```
+
 ### Curr vs king_safetyv2
 ```
 Results of eschec vs eschec_king_safetyv2 (30+0.3, NULL, NULL, 8moves_v3.pgn):
@@ -79,7 +128,7 @@ SPRT ([0.00, 10.00]) completed - H1 was accepted
 ---
 
 * Date: 2025-08-18
-* New: tag 'v0.1.9-better_lmr'
+* New: tag 'v0.1.9-dynamic_lmr'
 * Old: tag 'v0.1.8-q_search'
 
 ### dynamic lmr log

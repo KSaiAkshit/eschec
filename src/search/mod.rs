@@ -13,13 +13,6 @@ use std::time::{Duration, Instant};
 
 const ASP_START_WINDOW: i32 = 48;
 const ASP_MAX_WINDOW: i32 = 4096;
-#[rustfmt::skip]
-const LMR_TABLE: [i32; 64] = [
-    0,   0,   50,  75,  95,  110, 123, 134, 144, 153, 161, 168, 175, 181, 187, 192,
-    197, 202, 206, 210, 214, 218, 221, 224, 227, 230, 233, 235, 238, 240, 242, 244,
-    246, 248, 250, 252, 254, 256, 257, 259, 261, 262, 264, 265, 267, 268, 270, 271,
-    272, 274, 275, 276, 277, 278, 280, 281, 282, 283, 284, 285, 286, 287, 288, 289,
-];
 
 #[derive(Clone, Copy)]
 struct SearchContext {
@@ -855,17 +848,9 @@ impl Search {
         false
     }
     fn lm_reduction(&self, depth: u8, mv: Move, move_index: usize) -> u8 {
-        let base_reduction = if mv.is_quiet() {
-            // 1.35 + ((depth as f16).ln() * (move_index as f16).ln()) / 2.75
-            0.7844 + ((depth as f16).ln() * (move_index as f16).ln()) / 2.4696
-        } else {
-            // 0.2 + ((depth as f16).ln() * (move_index as f16).ln()) / 3.35
-            3.0
-        };
+        let base_reduction = 0.20 + ((depth as f16).ln() * (move_index as f16).ln()) / 3.35;
 
-        let r = base_reduction;
-
-        (r as u8).min(depth - 1)
+        (base_reduction as u8).min(depth - 1)
     }
     fn decay_history(&mut self) {
         trace!("Decaying history by 2");

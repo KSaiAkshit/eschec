@@ -54,10 +54,10 @@ impl CompositeEvaluator {
         let mut evaluator = CompositeEvaluator::new("Balanced");
         evaluator
             .add_evaluator(Box::new(MaterialEvaluator::new()), 5)
-            .add_evaluator(Box::new(PositionEvaluator::new()), 2)
-            .add_evaluator(Box::new(MobilityEvaluator::new()), 1)
             .add_evaluator(Box::new(KingSafetyEvaluator::new()), 3)
-            .add_evaluator(Box::new(PawnStructureEvaluator::new()), 1);
+            .add_evaluator(Box::new(PositionEvaluator::new()), 2)
+            .add_evaluator(Box::new(PawnStructureEvaluator::new()), 2)
+            .add_evaluator(Box::new(MobilityEvaluator::new()), 1);
         evaluator
     }
 
