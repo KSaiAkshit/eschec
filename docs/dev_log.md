@@ -4,7 +4,17 @@
 * New: tag 'v0.1.9-better_lmr'
 * Old: tag 'v0.1.8-q_search'
 
-### dynamic lmr depth
+### dynamic lmr log
+
+#### 8moves_v3.pgn
+Results of eschec vs eschec_dynamic_lmr (30+0.3, NULL, NULL, 8moves_v3.pgn):
+Elo: 33.11 +/- 32.21, nElo: 49.93 +/- 48.15
+LOS: 97.89 %, DrawRatio: 45.00 %, PairsRatio: 1.62
+Games: 200, Wins: 49, Losses: 30, Draws: 121, Points: 109.5 (54.75 %)
+Ptnml(0-2): [3, 18, 45, 25, 9], WL/DD Ratio: 0.15
+LLR: 0.74 (25.0%) (-2.94, 2.94) [0.00, 10.00]
+
+### dynamic lmr depth table
 
 #### 8moves_v3.pgn
 Results of eschec vs eschec_q_search (15+0.1, NULL, NULL, 8moves_v3.pgn):

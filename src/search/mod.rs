@@ -610,7 +610,7 @@ impl Search {
             if is_pv_move {
                 score = self.pv_search(&board_copy, child_context, depth, alpha, beta);
             } else if lmr_allowed {
-                let mut reduction = self.lm_reduction(depth, move_index);
+                let mut reduction = self.lm_reduction(depth, mv, move_index);
 
                 if context.is_pv_node {
                     reduction = reduction.saturating_sub(1);
@@ -857,9 +857,14 @@ impl Search {
         }
         false
     }
-    fn lm_reduction(&self, depth: u8, move_index: usize) -> u8 {
-        let base_reduction =
-            (LMR_TABLE[(depth as usize).min(63)] * LMR_TABLE[move_index.min(63)]) / 10_000;
+    fn lm_reduction(&self, depth: u8, mv: Move, move_index: usize) -> u8 {
+        let base_reduction = if mv.is_quiet() {
+            // 1.35 + ((depth as f16).ln() * (move_index as f16).ln()) / 2.75
+            0.7844 + ((depth as f16).ln() * (move_index as f16).ln()) / 2.4696
+        } else {
+            // 0.2 + ((depth as f16).ln() * (move_index as f16).ln()) / 3.35
+            3.0
+        };
 
         let r = base_reduction;
 
