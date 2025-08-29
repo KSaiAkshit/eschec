@@ -33,6 +33,17 @@ fn bench_board_ops(c: &mut Criterion) {
         );
     });
 
+    group.bench_function("static_exhange_eval_see", |b| {
+        b.iter_batched(
+            || (Board::from_fen(KIWIPETE), Move::new(21, 54, Move::CAPTURE)),
+            |(board, mv)| {
+                let a = board.see(mv);
+                black_box(a);
+            },
+            BatchSize::SmallInput,
+        );
+    });
+
     group.bench_function("board_copy_make_move", |b| {
         b.iter_batched(
             Board::new,

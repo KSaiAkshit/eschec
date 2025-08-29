@@ -96,9 +96,17 @@ fn bench_zobrist_hash(c: &mut Criterion) {
 
     let legal_ep_fen = "4k3/8/8/8/3pP3/8/8/4K3 b - e3 0 1";
 
-    group.bench_function("calculate_hash", |b| {
+    group.bench_function("calculate_hash_legal_ep", |b| {
         b.iter_batched(
             || Board::from_fen(legal_ep_fen),
+            |board| black_box(calculate_hash(&board)),
+            BatchSize::SmallInput,
+        )
+    });
+
+    group.bench_function("calculate_hash_kiwipete", |b| {
+        b.iter_batched(
+            || Board::from_fen(KIWIPETE),
             |board| black_box(calculate_hash(&board)),
             BatchSize::SmallInput,
         )

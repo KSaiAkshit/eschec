@@ -600,7 +600,7 @@ impl Search {
             if is_pv_move {
                 score = self.pv_search(&board_copy, child_context, depth, alpha, beta);
             } else if lmr_allowed {
-                let mut reduction = self.lm_reduction(depth, mv, move_index);
+                let mut reduction = self.lm_reduction(depth, move_index);
 
                 if context.is_pv_node {
                     reduction = reduction.saturating_sub(1);
@@ -710,6 +710,7 @@ impl Search {
         self.nodes_searched += 1;
 
         if context.ply >= self.max_depth as usize + 16 || context.ply >= MAX_PLY - 1 {
+            warn!("HI: {}", context.ply);
             return board.evaluate_position(&*self.evaluator);
         }
 
@@ -778,6 +779,7 @@ impl Search {
             }
             alpha = max(alpha, score)
         }
+        warn!("HI: {}", context.ply);
         alpha
     }
 
@@ -847,7 +849,7 @@ impl Search {
         }
         false
     }
-    fn lm_reduction(&self, depth: u8, mv: Move, move_index: usize) -> u8 {
+    fn lm_reduction(&self, depth: u8, move_index: usize) -> u8 {
         let base_reduction = 0.20 + ((depth as f16).ln() * (move_index as f16).ln()) / 3.35;
 
         (base_reduction as u8).min(depth - 1)

@@ -283,8 +283,8 @@ impl Side {
 pub enum Piece {
     #[default]
     Pawn,
-    Bishop,
     Knight,
+    Bishop,
     Rook,
     Queen,
     King,
@@ -293,8 +293,8 @@ impl Display for Piece {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self {
             Piece::Pawn => write!(f, "Pawn"),
-            Piece::Bishop => write!(f, "Bishop"),
             Piece::Knight => write!(f, "Knight"),
+            Piece::Bishop => write!(f, "Bishop"),
             Piece::Rook => write!(f, "Rook"),
             Piece::Queen => write!(f, "Queen"),
             Piece::King => write!(f, "King"),
@@ -304,8 +304,8 @@ impl Display for Piece {
 impl Piece {
     pub const PIECES: [Piece; 6] = [
         Piece::Pawn,
-        Piece::Bishop,
         Piece::Knight,
+        Piece::Bishop,
         Piece::Rook,
         Piece::Queen,
         Piece::King,
@@ -431,22 +431,28 @@ impl Piece {
             Piece::King => 5,
         }
     }
-    pub fn value(&self) -> u32 {
-        u32::from(*self)
-    }
-}
 
-impl From<Piece> for u32 {
-    fn from(value: Piece) -> Self {
-        match value {
+    #[inline(always)]
+    pub const fn victim_score(&self) -> i32 {
+        match self {
             Piece::Pawn => 100,
-            Piece::Knight => 320,
-            Piece::Bishop => 330,
+            Piece::Knight => 325,
+            Piece::Bishop => 325,
             Piece::Rook => 500,
-            Piece::Queen => 900,
-            Piece::King => 20000,
+            Piece::Queen => 1000,
+            Piece::King => 20_000,
         }
     }
+    // pub const fn victim_score(&self) -> i32 {
+    //     match self {
+    //         Piece::Pawn => 100,
+    //         Piece::Knight => 320,
+    //         Piece::Bishop => 330,
+    //         Piece::Rook => 500,
+    //         Piece::Queen => 900,
+    //         Piece::King => 20_000,
+    //     }
+    // }
 }
 
 /// Compact struct to hold piece and side

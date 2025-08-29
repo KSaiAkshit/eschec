@@ -31,7 +31,7 @@
             pkgs.cutechess
           ];
 
-          RUST_BACKTRACE = "1";
+          # RUST_BACKTRACE = "1";
 
           # Optional: Add aliases for common commands if desired
           shellHook = ''

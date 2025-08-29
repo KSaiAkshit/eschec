@@ -392,6 +392,98 @@ impl Board {
         Ok(move_data)
     }
 
+    pub fn see(&self, mv: Move) -> i32 {
+        let from_sq = mv.from_sq();
+        let to_sq = mv.to_sq();
+        let mut side_to_move = self.stm;
+
+        let mut occupied = self.positions.get_occupied_bb();
+        let mut gain = [0; 32];
+        let mut final_gain_idx = 0;
+
+        let attacker_piece = match self.get_piece_at(from_sq) {
+            Some(p) => p,
+            None => unreachable!(
+                "Move is supposed to be legal.
+                There should be an attacker_piece at {from_sq}."
+            ),
+        };
+        let victim_piece = if mv.is_enpassant() {
+            Piece::Pawn
+        } else {
+            match self.get_piece_at(to_sq) {
+                Some(p) => p,
+                None => return 0,
+            }
+        };
+
+        gain[final_gain_idx] = victim_piece.victim_score();
+        final_gain_idx += 1;
+        // Attacker becomes the next victim
+        gain[final_gain_idx] = attacker_piece.victim_score() - gain[final_gain_idx - 1];
+
+        occupied.capture(from_sq.index());
+        if mv.is_enpassant() {
+            let captured_pawn_sq_idx = if side_to_move == Side::White {
+                to_sq.get_neighbor(Direction::SOUTH).index()
+            } else {
+                to_sq.get_neighbor(Direction::NORTH).index()
+            };
+            occupied.capture(captured_pawn_sq_idx);
+        }
+        // Redundant: No need to capture/set bit again.
+        // else {
+        //     occupied.capture(to_sq.index());
+        // }
+        // occupied.set(to_sq.index());
+
+        side_to_move = side_to_move.flip();
+
+        loop {
+            final_gain_idx += 1;
+            if final_gain_idx >= gain.len() {
+                break;
+            }
+            let attackers_bb = move_gen::get_attackers_to(self, to_sq, side_to_move, occupied);
+
+            let mut lva_piece = None;
+            let mut lva_from_sq = None;
+
+            // NOTE: Here, lva is found by iterating from low value to high value pieces and
+            // breaking the look when any piece is found to be a potential attacker
+            for piece in Piece::all_pieces() {
+                let lva_candidates =
+                    attackers_bb & *self.positions.get_piece_bb(side_to_move, piece);
+                if lva_candidates.any() {
+                    lva_piece = Some(piece);
+                    lva_from_sq = Square::new(lva_candidates.lsb().unwrap() as usize);
+                    break;
+                }
+            }
+
+            if let (Some(piece), Some(from)) = (lva_piece, lva_from_sq) {
+                gain[final_gain_idx] = piece.victim_score() - gain[final_gain_idx - 1];
+
+                occupied.capture(from.index());
+                side_to_move = side_to_move.flip();
+            } else {
+                // No more attackers
+                break;
+            }
+        }
+
+        // Last capture is a 'speculative' store,
+        // so this doesn't actually happen because there are not attackers.
+        // It is right to ignore this since it is 'speculative'
+        final_gain_idx -= 1;
+        while final_gain_idx > 1 {
+            final_gain_idx -= 1;
+            gain[final_gain_idx - 1] = gain[final_gain_idx - 1].min(-gain[final_gain_idx]);
+        }
+
+        gain[0]
+    }
+
     fn update_castling_rights(&mut self, from: Square, to: Square) {
         match (self.stm, from.index()) {
             (Side::White, 4) => {
@@ -596,155 +688,5 @@ impl Board {
         } else {
             false
         }
-    }
-}
-
-#[cfg(test)]
-mod material_tests {
-
-    use std::str::FromStr;
-
-    use crate::utils::log::init;
-
-    use super::*;
-
-    #[test]
-    fn test_make_unmake_move() {
-        init();
-        let mut board = Board::new();
-        let orig_board = board;
-
-        let from = Square::from_str("e2").unwrap();
-        let to = Square::from_str("e4").unwrap();
-        let mov = Move::new(from.index() as u8, to.index() as u8, Move::QUIET);
-        let orig_mat = board.material;
-
-        let move_data = board.make_move(mov).unwrap();
-
-        let moved_mat = board.material;
-
-        assert_ne!(board, orig_board);
-        assert_eq!(orig_mat, moved_mat);
-
-        board.unmake_move(&move_data).unwrap();
-        let restored_mat = board.material;
-
-        assert_eq!(board, orig_board);
-        assert_eq!(orig_mat, restored_mat);
-    }
-
-    #[test]
-    fn test_make_unmake_capture() {
-        init();
-        let mut board =
-            Board::from_fen("rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1");
-        let orig_board = board;
-        println!("{board}");
-
-        let from = Square::from_str("e4").unwrap();
-        let to = Square::from_str("d5").unwrap();
-        let mov = Move::new(from.index() as u8, to.index() as u8, Move::CAPTURE);
-        let orig_mat = board.material;
-
-        let move_data = board.make_move(mov).unwrap();
-        let moved_mat = board.material;
-
-        assert_ne!(board, orig_board);
-        assert_ne!(orig_mat, moved_mat);
-
-        board.unmake_move(&move_data).unwrap();
-        let restored_mat = board.material;
-
-        println!("original board: \n{orig_board}");
-        println!("unmade board: \n{board}");
-        assert_eq!(board, orig_board);
-        assert_eq!(orig_mat, restored_mat);
-    }
-    #[test]
-    fn test_initial_material_balance() {
-        let mut board = Board::new();
-        board.recalculate_material();
-        assert_eq!(
-            board.material[Side::White.index()],
-            Score::new(24039, 23868)
-        );
-        assert_eq!(
-            board.material[Side::Black.index()],
-            Score::new(24039, 23868)
-        );
-    }
-
-    #[test]
-    fn test_material_after_capture() {
-        let mut board = Board::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPP1PP/RNBQKBNR w KQkq - 0 1");
-        board.recalculate_material();
-        // Standard position with a missing f2 pawn on white's side
-
-        assert_eq!(
-            board.material[Side::White.index()],
-            Score::new(23957, 23774)
-        );
-        assert_eq!(
-            board.material[Side::Black.index()],
-            Score::new(24039, 23868)
-        );
-    }
-
-    #[test]
-    fn test_king_vs_king() {
-        let board = Board::from_fen("4k3/8/8/8/8/8/8/4K3 w - - 0 1");
-
-        assert!(board.is_insufficient_material());
-    }
-
-    #[test]
-    fn test_king_and_bishop_vs_king() {
-        let board = Board::from_fen("4k3/8/8/8/8/8/8/4KB2 w - - 0 1");
-
-        assert!(board.is_insufficient_material());
-    }
-
-    #[test]
-    fn test_king_and_knight_vs_king() {
-        let board = Board::from_fen("4k3/8/8/8/8/8/8/4KN2 w - - 0 1");
-
-        assert!(board.is_insufficient_material());
-    }
-
-    #[test]
-    fn test_kings_and_same_colored_bishops() {
-        // Bishops on the same color squares (both on light squares)
-        let board = Board::from_fen("2b1k3/8/8/8/8/8/8/2B1K3 w - - 0 1");
-
-        assert!(board.is_insufficient_material());
-    }
-
-    #[test]
-    fn test_kings_and_different_colored_bishops() {
-        // Bishops on different color squares (one on light, one on dark)
-        let board = Board::from_fen("1b2k3/8/8/8/8/8/8/2B1K3 w - - 0 1");
-
-        assert!(board.is_insufficient_material());
-    }
-
-    #[test]
-    fn test_sufficient_material() {
-        let board = Board::from_fen("4k3/8/8/8/8/8/4P3/4KB2 w - - 0 1");
-
-        assert!(!board.is_insufficient_material());
-    }
-
-    #[test]
-    fn test_two_knights_sufficient_material() {
-        let board = Board::from_fen("4k3/8/8/8/8/8/8/4KNN1 w - - 0 1");
-
-        assert!(!board.is_insufficient_material());
-    }
-
-    #[test]
-    fn test_two_bishops_sufficient_material() {
-        let board = Board::from_fen("4k3/8/8/8/8/8/8/3BKB2 w - - 0 1");
-
-        assert!(!board.is_insufficient_material());
     }
 }

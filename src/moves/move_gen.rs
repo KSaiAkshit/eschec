@@ -58,6 +58,34 @@ pub fn generate_forcing_moves(board: &Board, moves: &mut MoveBuffer) {
     gen_legal_king_moves(board, &attack_data, moves, true);
 }
 
+pub fn get_attackers_to(board: &Board, square: Square, side: Side, occupied: BitBoard) -> BitBoard {
+    let sq_idx = square.index();
+    let opponent = side.flip();
+    let mut attackers = BitBoard::default();
+
+    let pawn_attacks = MOVE_TABLES.get_pawn_attacks(sq_idx, opponent);
+    attackers |= pawn_attacks & *board.positions.get_piece_bb(side, Piece::Pawn) & occupied;
+
+    attackers |= MOVE_TABLES.knight_moves[sq_idx]
+        & *board.positions.get_piece_bb(side, Piece::Knight)
+        & occupied;
+
+    attackers |= MOVE_TABLES.king_moves[sq_idx]
+        & *board.positions.get_piece_bb(side, Piece::King)
+        & occupied;
+
+    let bishops_queens = board.positions.get_diag_sliders_bb(side);
+    let rooks_queens = board.positions.get_orhto_sliders_bb(side);
+
+    let bishop_attacks = MOVE_TABLES.get_bishop_attacks_generic(sq_idx, occupied);
+    attackers |= bishop_attacks & bishops_queens & occupied;
+
+    let rook_attacks = MOVE_TABLES.get_rook_attacks_generic(sq_idx, occupied);
+    attackers |= rook_attacks & rooks_queens & occupied;
+
+    attackers
+}
+
 fn gen_legal_king_moves(
     board: &Board,
     attack_data: &AttackData,

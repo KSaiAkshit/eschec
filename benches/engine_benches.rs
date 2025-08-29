@@ -13,17 +13,13 @@ use eschec::{
     },
 };
 
-fn filter_captures(board: &Board) -> MoveBuffer {
-    let mut moves = MoveBuffer::new();
-    board.generate_legal_moves(&mut moves, false);
-    moves.retain(|mv| mv.is_capture());
-    moves
+fn filter_captures(board: &Board, buffer: &mut MoveBuffer) {
+    board.generate_legal_moves(buffer, false);
+    buffer.retain(|mv| mv.is_capture());
 }
 
-fn gen_captures(board: &Board) -> MoveBuffer {
-    let mut captures = MoveBuffer::new();
-    move_gen::generate_forcing_moves(board, &mut captures);
-    captures
+fn gen_captures(board: &Board, buffer: &mut MoveBuffer) {
+    move_gen::generate_forcing_moves(board, buffer);
 }
 
 fn bench_move_generation(c: &mut Criterion) {
@@ -39,18 +35,24 @@ fn bench_move_generation(c: &mut Criterion) {
         );
     });
 
-    c.bench_function("captures_iter_filter", |b| {
+    c.bench_function("generate_retain_captures", |b| {
         b.iter_batched(
-            || Board::from_fen(KIWIPETE),
-            |board| black_box(filter_captures(&board)),
+            || (Board::from_fen(KIWIPETE), MoveBuffer::new()),
+            |(board, mut buffer)| {
+                filter_captures(&board, &mut buffer);
+                black_box(buffer)
+            },
             BatchSize::SmallInput,
         );
     });
 
-    c.bench_function("captures_move_gen", |b| {
+    c.bench_function("generate_forcing_moves", |b| {
         b.iter_batched(
-            || Board::from_fen(KIWIPETE),
-            |board| black_box(gen_captures(&board)),
+            || (Board::from_fen(KIWIPETE), MoveBuffer::new()),
+            |(board, mut buffer)| {
+                gen_captures(&board, &mut buffer);
+                black_box(buffer)
+            },
             BatchSize::SmallInput,
         );
     });
@@ -235,14 +237,17 @@ fn bench_ordering(c: &mut Criterion) {
     });
 }
 
-fn bench_search(c: &mut Criterion) {
+fn bench_search_hot_tt(c: &mut Criterion) {
     let evaluator = CompositeEvaluator::balanced();
     let depth = 7;
     let mut search = Search::new(evaluator.clone_box(), depth);
 
     search.set_emit_info(false);
 
-    c.bench_function(&format!("search_depth_{depth}"), |b| {
+    let mut group = c.benchmark_group(format!("search_hot_tt_depth_{depth}"));
+    let group = group.sample_size(10);
+
+    group.bench_function(format!("search_depth_{depth}"), |b| {
         b.iter_batched(
             || Board::from_fen(KIWIPETE),
             |board| {
@@ -252,8 +257,14 @@ fn bench_search(c: &mut Criterion) {
             BatchSize::SmallInput,
         );
     });
+}
+
+fn bench_search_cold_tt(c: &mut Criterion) {
+    let evaluator = CompositeEvaluator::balanced();
+    let depth = 7;
 
     let mut group = c.benchmark_group(format!("search_cold_tt_depth_{depth}"));
+    let group = group.sample_size(10);
 
     group.bench_function("asp_off", |b| {
         b.iter_batched(
@@ -325,7 +336,8 @@ criterion_group!(
     bench_move_generation,
     bench_evaluation,
     bench_alpha_beta_versions,
-    bench_search,
+    bench_search_cold_tt,
+    bench_search_hot_tt,
     bench_ordering
 );
 criterion_main!(benches);

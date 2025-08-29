@@ -1,18 +1,11 @@
 use crate::prelude::*;
-const VICTIM_SCORES: [i32; NUM_PIECES] = [
-    100,    // Pawn
-    320,    // Knight
-    330,    // Bishop
-    500,    // Rook
-    900,    // Queen
-    20_000, // King
-];
 
 // Using large offsets to create distinct "buckets" for move types.
 // This ensures that any capture is scored higher than any killer move, etc.
 const TT_MOVE_SCORE: i32 = 3_000_000;
 const MVV_LVA_OFFSET: i32 = 2_000_000;
 const KILLER_MOVE_SCORE: i32 = 1_000_000;
+const BAD_CAPTURE_SCORE: i32 = 900_000;
 // TODO: Add more scores here
 
 pub fn score_move(
@@ -26,14 +19,13 @@ pub fn score_move(
         return TT_MOVE_SCORE;
     }
     if mv.is_capture() {
-        let attacker = board.get_piece_at(mv.from_sq()).unwrap_or_default();
-        let victim = if mv.is_enpassant() {
-            Piece::Pawn
+        let see_score = board.see(mv);
+        if see_score > 0 {
+            // Most Valuable Victim - Least Valuable Attacker
+            MVV_LVA_OFFSET + see_score
         } else {
-            board.get_piece_at(mv.to_sq()).unwrap_or_default()
-        };
-        // Most Valuable Victim - Least Valuable Attacker
-        MVV_LVA_OFFSET + VICTIM_SCORES[victim.index()] - VICTIM_SCORES[attacker.index()]
+            BAD_CAPTURE_SCORE + see_score
+        }
     } else if killers.contains(&Some(mv)) {
         KILLER_MOVE_SCORE
     } else {
