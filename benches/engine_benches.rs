@@ -9,7 +9,7 @@ use eschec::{
     prelude::MoveBuffer,
     search::{
         Search,
-        move_ordering::{score_move, sort_moves},
+        move_ordering::{MainSearchPolicy, QSearchPolicy, sort_moves},
     },
 };
 
@@ -197,7 +197,7 @@ fn bench_alpha_beta_versions(c: &mut Criterion) {
 fn bench_ordering(c: &mut Criterion) {
     let board = Board::from_fen(KIWIPETE);
 
-    c.bench_function("prng_move_ordering", |b| {
+    c.bench_function("main_search_move_ordering", |b| {
         b.iter_batched(
             || {
                 let mut moves = MoveBuffer::new();
@@ -205,7 +205,7 @@ fn bench_ordering(c: &mut Criterion) {
                 moves
             },
             |mut moves| {
-                sort_moves(
+                sort_moves::<MainSearchPolicy>(
                     &board,
                     moves.as_mut_slice(),
                     &[None; 2],
@@ -219,17 +219,22 @@ fn bench_ordering(c: &mut Criterion) {
         );
     });
 
-    c.bench_function("classical_move_ordering", |b| {
+    c.bench_function("q_search_move_ordering", |b| {
         b.iter_batched(
             || {
                 let mut moves = MoveBuffer::new();
                 board.generate_legal_moves(&mut moves, false);
-                (moves, board)
+                moves
             },
-            |(mut moves, board)| {
-                moves.as_mut_slice().sort_unstable_by_key(|&m| {
-                    -score_move(&board, m, &[None; 2], None, &[[0; 64]; 64])
-                });
+            |mut moves| {
+                sort_moves::<QSearchPolicy>(
+                    &board,
+                    moves.as_mut_slice(),
+                    &[None; 2],
+                    None,
+                    &[[0; 64]; 64],
+                    0xAB_CDEF_ABCD,
+                );
                 black_box(moves)
             },
             BatchSize::SmallInput,

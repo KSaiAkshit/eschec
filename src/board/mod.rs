@@ -178,7 +178,7 @@ impl Board {
     /// Method to unmake a move, but arguably, making a Copy of the board to make
     /// a Move is and discarding the Copy later is faster.
     pub fn unmake_move(&mut self, move_data: &MoveInfo) -> miette::Result<()> {
-        self.stm = self.stm.flip();
+        self.stm = move_data.stm;
         self.castling_rights = move_data.castle_rights;
         self.enpassant_square = move_data.enpassant_square;
         self.halfmove_clock = move_data.halfmove_clock;
@@ -194,6 +194,9 @@ impl Board {
 
         // Restore moved piece
         if let Some(promoted_piece) = move_data.promotion {
+            self.material[self.stm.index()] -= promoted_piece.score();
+            self.material[self.stm.index()] += Piece::Pawn.score();
+            dbg!(&self.material);
             self.positions
                 .remove_piece(self.stm, promoted_piece, to.index())?;
             self.positions.set(self.stm, Piece::Pawn, from.index())?;
@@ -203,6 +206,7 @@ impl Board {
 
         // Restore captured pieces
         if let Some(captured) = move_data.captured_piece {
+            self.material[opponent.index()] += captured.score();
             if move_data.is_en_passant {
                 let captured_idx = match self.stm {
                     Side::White => to.index() - 8,
@@ -228,7 +232,7 @@ impl Board {
             self.positions.move_piece(rook_from_sq, rook_to_sq)?;
         }
 
-        self.material = move_data.material;
+        // self.material = move_data.material;
         Ok(())
     }
 
@@ -258,6 +262,7 @@ impl Board {
         let move_data = MoveInfo {
             from,
             to,
+            stm: self.stm,
             piece_moved: piece,
             castle_rights: self.castling_rights,
             enpassant_square: self.enpassant_square,
@@ -266,7 +271,7 @@ impl Board {
             is_castling: m.is_castling(),
             is_en_passant: m.is_enpassant(),
             promotion: m.promoted_piece(),
-            material: self.material,
+            // material: self.material,
             captured_piece: if m.is_enpassant() {
                 Some(Piece::Pawn)
             } else {
@@ -560,7 +565,7 @@ impl Board {
     }
 
     pub fn is_checkmate(&self, side: Side) -> bool {
-        self.is_in_check(side) && !self.get_legal_moves(false).is_empty()
+        self.is_in_check(side) && self.get_legal_moves(false).is_empty()
     }
 
     pub fn is_stalemate(&self, side: Side) -> bool {

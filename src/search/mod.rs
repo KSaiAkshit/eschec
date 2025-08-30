@@ -1,4 +1,6 @@
-use crate::search::move_ordering::sort_moves;
+use crate::search::move_ordering::{
+    MainSearchPolicy, MoveScoringPolicy, QSearchPolicy, sort_moves,
+};
 use crate::search::tt::{ScoreTypes, TranspositionEntry, TranspositionTable};
 use tracing::*;
 
@@ -199,18 +201,18 @@ impl Search {
         self.tt.clear();
     }
 
-    fn sort_moves(
+    fn sort_moves<P: MoveScoringPolicy>(
         &self,
         board: &Board,
         legal_moves: &mut MoveBuffer,
         hint: Option<Move>,
-        depth: u8,
+        depth: usize,
     ) {
         let seed = board.hash.wrapping_add(depth as u64);
-        sort_moves(
+        sort_moves::<P>(
             board,
             legal_moves.as_mut_slice(),
-            &[None, None],
+            &self.killer_moves[depth],
             hint,
             &self.history,
             seed,
@@ -288,7 +290,7 @@ impl Search {
     ) -> (Option<Move>, i32) {
         // Always sort root moves before attempts to prefer last iteration's best move
 
-        self.sort_moves(board, legal_moves, prev_best_move, depth);
+        self.sort_moves::<MainSearchPolicy>(board, legal_moves, prev_best_move, depth as usize);
 
         let use_asp =
             self.enable_asp && depth > 1 && prev_score.abs() < MATE_THRESHOLD - ASP_MAX_WINDOW;
@@ -556,15 +558,7 @@ impl Search {
         }
 
         if ply < MAX_PLY {
-            let seed = board.hash.wrapping_add(ply as u64);
-            sort_moves(
-                board,
-                legal_moves.as_mut_slice(),
-                &self.killer_moves[ply],
-                Some(tt_move),
-                &self.history,
-                seed,
-            );
+            self.sort_moves::<MainSearchPolicy>(board, &mut legal_moves, Some(tt_move), ply);
         }
 
         let mut best_move_this_node = legal_moves.first().unwrap();
@@ -710,7 +704,6 @@ impl Search {
         self.nodes_searched += 1;
 
         if context.ply >= self.max_depth as usize + 16 || context.ply >= MAX_PLY - 1 {
-            warn!("HI: {}", context.ply);
             return board.evaluate_position(&*self.evaluator);
         }
 
@@ -753,7 +746,7 @@ impl Search {
             return adjust_score_for_ply(-MATE_SCORE, context.ply);
         }
 
-        self.sort_moves(board, &mut legal_moves, None, context.ply as u8);
+        self.sort_moves::<QSearchPolicy>(board, &mut legal_moves, None, context.ply);
 
         for mv in legal_moves {
             let mut board_copy = *board;
@@ -779,7 +772,6 @@ impl Search {
             }
             alpha = max(alpha, score)
         }
-        warn!("HI: {}", context.ply);
         alpha
     }
 

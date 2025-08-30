@@ -391,6 +391,16 @@ fn test_en_passant_make_unmake_symmetry() {
     // Make the move and get the data to unmake it.
     let move_data = board.make_move(ep_move).unwrap();
 
+    dbg!(move_data);
+    println!(
+        "Material after move -> W: {} B: {}",
+        board.material[0], board.material[1]
+    );
+    println!(
+        "Material after move -> W: {} B: {}",
+        board.material[0], board.material[1]
+    );
+
     // Assert the captured black pawn on d5 is gone.
     assert!(
         board
@@ -402,6 +412,10 @@ fn test_en_passant_make_unmake_symmetry() {
     // Unmake the move.
     board.unmake_move(&move_data).unwrap();
 
+    assert_eq!(
+        board.material, original_board.material,
+        "Scores are not restored perfectly"
+    );
     assert_eq!(
         board, original_board,
         "Board state was not perfectly restored after unmaking en passant move"

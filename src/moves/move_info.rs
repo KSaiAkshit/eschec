@@ -8,6 +8,7 @@ use crate::prelude::*;
 pub struct MoveInfo {
     pub from: Square,
     pub to: Square,
+    pub stm: Side, // prev
     pub piece_moved: Piece,
     pub captured_piece: Option<Piece>,
     pub promotion: Option<Piece>,
@@ -17,7 +18,7 @@ pub struct MoveInfo {
     pub enpassant_square: Option<Square>, // prev
     pub halfmove_clock: u8,               // prev
     pub zobrist_hash: u64,                // prev
-    pub material: [Score; 2],             // prev
+                                          // pub material: [Score; 2],             // prev
 }
 
 impl MoveInfo {

@@ -1,17 +1,66 @@
 use criterion::{BatchSize, Criterion, criterion_group, criterion_main};
 use std::{hint::black_box, str::FromStr};
 
-use eschec::{
-    board::{
-        Board,
-        components::{BoardState, Piece, Side, Square},
-    },
-    consts::KIWIPETE,
-    moves::move_info::Move,
-};
+use eschec::prelude::*;
 
 fn setup_board_state() -> BoardState {
     Board::from_fen(KIWIPETE).positions
+}
+
+fn bench_search_loop(c: &mut Criterion) {
+    let mut group = c.benchmark_group("Search_Loop");
+    const DEPTH: u8 = 5; // A small but non-trivial depth
+
+    fn search_copy(board: Board, depth: u8) -> u64 {
+        if depth == 0 {
+            return 1;
+        }
+        let mut nodes = 0;
+        let mut moves = MoveBuffer::new();
+        board.generate_legal_moves(&mut moves, false);
+        for mv in moves {
+            let mut board_copy = board;
+            board_copy.make_move(mv).unwrap();
+            nodes += search_copy(board_copy, depth - 1);
+        }
+        nodes
+    }
+    // Benchmark with the Copy approach
+    group.bench_function("search_with_copy", |b| {
+        b.iter_batched(
+            Board::new,
+            |board| {
+                black_box(search_copy(board, DEPTH));
+            },
+            BatchSize::SmallInput,
+        );
+    });
+
+    fn search_unmake(board: &mut Board, depth: u8) -> u64 {
+        if depth == 0 {
+            return 1;
+        }
+        let mut nodes = 0;
+        let mut moves = MoveBuffer::new();
+        board.generate_legal_moves(&mut moves, false);
+        for mv in moves {
+            let move_info = board.make_move(mv).unwrap();
+            nodes += search_unmake(board, depth - 1);
+            board.unmake_move(&move_info).unwrap();
+        }
+        nodes
+    }
+
+    // Benchmark with the Make/Unmake approach
+    group.bench_function("search_with_unmake", |b| {
+        b.iter_batched(
+            Board::new,
+            |mut board| {
+                black_box(search_unmake(&mut board, DEPTH));
+            },
+            BatchSize::SmallInput,
+        );
+    });
 }
 
 // Board Struct Benchmarks
@@ -104,5 +153,10 @@ fn bench_boardstate_ops(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, bench_board_ops, bench_boardstate_ops);
+criterion_group!(
+    benches,
+    bench_board_ops,
+    bench_boardstate_ops,
+    bench_search_loop
+);
 criterion_main!(benches);

@@ -21,7 +21,7 @@ Found 5 outliers among 100 measurements (5.00%)
   3 (3.00%) high mild
   2 (2.00%) high severe
 --
-pseudo_legal 
+pseudo_legal
 --
 search_depth_5          time:   [580.13 ms 585.00 ms 590.72 ms]
 change: [−61.786% −61.414% −60.981%] (p = 0.00 < 0.05)

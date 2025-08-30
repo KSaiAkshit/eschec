@@ -221,7 +221,7 @@ fn cmd_stop(state: &mut UciState) {
 
 fn cmd_setoption(name: &str, value: &str) -> miette::Result<()> {
     match name {
-        "Debug Log File" => {
+        "LogFile" => {
             let enable = value.to_lowercase() == "true";
             toggle_file_logging(enable)?;
             info!("Set file logging to {enable}");
@@ -241,6 +241,6 @@ fn cmd_uci() {
     println!("id name {}", env!("CARGO_PKG_NAME"));
     println!("id author {}", env!("CARGO_PKG_AUTHORS"));
     println!();
-    println!("option name Debug Log File type string default");
+    println!("option name LogFile type string default");
     println!("uciok");
 }

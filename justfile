@@ -108,10 +108,10 @@ sprt p1 p2 rounds='100' concurrency='4' book='8moves_v3.pgn' tc='30+0.3':
         -rounds {{ rounds }} \
         -concurrency {{ concurrency }} \
         -openings file={{ book_dir }}{{book}} format={{ extension(book_dir + book)}} order=random \
-        -sprt elo0=0 elo1=100 alpha=0.05 beta=0.05 \
+        -sprt elo0=0 elo1=10 alpha=0.05 beta=0.05 \
         -repeat -recover \
         -pgnout {{ pgn_output_dir }}{{ p1 }}_vs_{{ p2 }}_sprt.txt \
-        -log file={{ engine_logs_dir }}sprt_log.txt \
+        -log file={{ engine_logs_dir }}sprt_log.txt level=info \
         | tee {{ pgn_output_dir }}{{ p1 }}_vs_{{ p2 }}_sprt_log.txt
 
 [doc("Remove build artifacts and gauntlet artifacts")]
