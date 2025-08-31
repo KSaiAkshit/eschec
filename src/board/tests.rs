@@ -2,6 +2,24 @@ use super::{Board, Move, Piece, Square};
 use std::str::FromStr;
 
 #[cfg(test)]
+mod bitboard_tests {
+    use crate::prelude::*;
+
+    #[test]
+    fn test_bb_lsb() {
+        let bb = BitBoard(0b001000);
+        let expected_lsb = 3;
+        let lsb = bb.lsb();
+        assert!(lsb.is_some(), "BitBoard::lsb() expected to return Some(x)");
+        assert_eq!(
+            lsb,
+            Some(expected_lsb),
+            "BitBoard::lsb() does not match expectations"
+        );
+    }
+}
+
+#[cfg(test)]
 mod see_tests {
     use super::*;
     use crate::prelude::*;

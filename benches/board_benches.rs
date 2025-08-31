@@ -1,7 +1,7 @@
 use criterion::{BatchSize, Criterion, criterion_group, criterion_main};
 use std::{hint::black_box, str::FromStr};
 
-use eschec::prelude::*;
+use eschec::{moves::attack_data::calculate_attack_data, prelude::*};
 
 fn setup_board_state() -> BoardState {
     Board::from_fen(KIWIPETE).positions
@@ -69,6 +69,26 @@ fn bench_board_ops(c: &mut Criterion) {
     let from = Square::new(12).unwrap(); // e2
     let to = Square::new(28).unwrap(); // e4
     let mov = Move::new(from.index() as u8, to.index() as u8, Move::QUIET);
+
+    group.bench_function("calculate_attack_data_white", |b| {
+        b.iter_batched(
+            || Board::from_fen(KIWIPETE),
+            |board| {
+                black_box(calculate_attack_data(&board, board.stm));
+            },
+            BatchSize::SmallInput,
+        );
+    });
+
+    group.bench_function("calculate_attack_data_black", |b| {
+        b.iter_batched(
+            || Board::from_fen(KIWIPETE),
+            |board| {
+                black_box(calculate_attack_data(&board, board.stm.flip()));
+            },
+            BatchSize::SmallInput,
+        );
+    });
 
     group.bench_function("make_unmake_move_cycle", |b| {
         b.iter_batched(

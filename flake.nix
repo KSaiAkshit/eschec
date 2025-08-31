@@ -26,6 +26,8 @@
             pkgs.just
             pkgs.cargo-nextest
             pkgs.cargo-flamegraph
+            pkgs.cargo-show-asm
+            pkgs.cargo-modules
             pkgs.fastchess
             pkgs.flamelens
             pkgs.cutechess

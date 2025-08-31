@@ -61,7 +61,7 @@ fn bench_bitboard_ops(c: &mut Criterion) {
     group.bench_function("count_ones", |b| {
         b.iter_batched(
             || INITIAL_PIECES_BB,
-            |bb| black_box(bb.count_ones()),
+            |bb| black_box(bb.pop_count()),
             BatchSize::SmallInput,
         );
     });

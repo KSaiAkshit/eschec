@@ -316,7 +316,7 @@ impl MoveTables {
         attacks.and(ally_pieces.not())
     }
 
-    pub const fn get_bishop_moves(
+    pub fn get_bishop_moves(
         &self,
         from: usize,
         ally_pieces: BitBoard,
@@ -327,7 +327,7 @@ impl MoveTables {
         attacks.and(ally_pieces.not())
     }
 
-    pub const fn get_queen_moves(
+    pub fn get_queen_moves(
         &self,
         from: usize,
         ally_pieces: BitBoard,
@@ -352,9 +352,9 @@ impl MoveTables {
         }
 
         let maybe_blocker = if forward {
-            blockers.lsb()
+            blockers.const_lsb()
         } else {
-            blockers.msb()
+            blockers.const_msb()
         };
         if let Some(index) = maybe_blocker {
             let blocker_mask = 1u64 << index;
@@ -496,7 +496,7 @@ impl MoveTables {
         n_attacks | s_attacks | e_attacks | w_attacks
     }
 
-    const fn get_rook_attacks_bb(&self, from: usize, blockers: BitBoard) -> BitBoard {
+    pub const fn get_rook_attacks_bb(&self, from: usize, blockers: BitBoard) -> BitBoard {
         let entry = &self.rook_magics[from];
         let blockers_masked = blockers.and(entry.mask);
         let index = ((blockers_masked.0.wrapping_mul(entry.magic)) >> entry.shift) as usize;
@@ -504,7 +504,7 @@ impl MoveTables {
         magics::ROOK_ATTACKS[magics::ROOK_ATTACK_OFFSETS[from] + index]
     }
 
-    const fn get_bishop_attacks_bb(&self, square: usize, blockers: BitBoard) -> BitBoard {
+    pub const fn get_bishop_attacks_bb(&self, square: usize, blockers: BitBoard) -> BitBoard {
         let entry = &self.bishop_magics[square];
         let blockers_masked = blockers.and(entry.mask);
         let index = ((blockers_masked.0.wrapping_mul(entry.magic)) >> entry.shift) as usize;

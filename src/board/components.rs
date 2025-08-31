@@ -78,14 +78,21 @@ impl BitBoard {
         self.0 |= 1 << pos;
     }
 
-    #[inline(always)]
+    // #[inline(always)]
     pub const fn capture(&mut self, index: usize) {
         self.0 &= !(1 << index);
     }
 
     #[inline(always)]
-    pub const fn pop_count(&self) -> u32 {
-        self.0.count_ones()
+    pub fn pop_count(&self) -> u32 {
+        #[cfg(all(target_arch = "x86_64", target_feature = "popcnt"))]
+        {
+            unsafe { std::arch::x86_64::_popcnt64(self.0 as i64) as u32 }
+        }
+        #[cfg(not(all(target_arch = "x86_64", target_feature = "popcnt")))]
+        {
+            self.0.count_ones()
+        }
     }
 
     pub fn print_bitboard(&self) -> String {
@@ -106,7 +113,22 @@ impl BitBoard {
     }
 
     #[inline(always)]
-    pub const fn lsb(&self) -> Option<u64> {
+    pub fn lsb(&self) -> Option<u64> {
+        if self.0 == 0 {
+            return None;
+        }
+        #[cfg(all(target_arch = "x86_64", target_feature = "bmi1"))]
+        {
+            Some(unsafe { std::arch::x86_64::_tzcnt_u64(self.0) })
+        }
+        #[cfg(not(all(target_arch = "x86_64", target_feature = "bmi1")))]
+        {
+            Some(self.0.trailing_zeros() as u64)
+        }
+    }
+
+    #[inline(always)]
+    pub const fn const_lsb(&self) -> Option<u64> {
         if self.0 == 0 {
             None
         } else {
@@ -115,10 +137,18 @@ impl BitBoard {
     }
 
     #[inline(always)]
-    pub const fn pop_lsb(&mut self) -> Option<u64> {
+    pub fn pop_lsb(&mut self) -> Option<u64> {
         if self.0 == 0 {
-            None
-        } else {
+            return None;
+        }
+        #[cfg(all(target_arch = "x86_64", target_feature = "bmi1"))]
+        {
+            let idx = self.0.trailing_zeros() as u64;
+            self.0 = unsafe { std::arch::x86_64::_blsr_u64(self.0) }; // Clear the least significant bit
+            Some(idx)
+        }
+        #[cfg(not(all(target_arch = "x86_64", target_feature = "bmi1")))]
+        {
             let idx = self.0.trailing_zeros();
             self.0 &= self.0 - 1; // Clear the least significant bit
             Some(idx as u64)
@@ -126,7 +156,7 @@ impl BitBoard {
     }
 
     #[inline(always)]
-    pub const fn msb(&self) -> Option<u64> {
+    pub fn msb(&self) -> Option<u64> {
         if self.0 == 0 {
             None
         } else {
@@ -135,7 +165,16 @@ impl BitBoard {
     }
 
     #[inline(always)]
-    pub const fn pop_msb(&mut self) -> Option<u64> {
+    pub const fn const_msb(&self) -> Option<u64> {
+        if self.0 == 0 {
+            None
+        } else {
+            Some(63 - self.0.leading_zeros() as u64)
+        }
+    }
+
+    #[inline(always)]
+    pub fn pop_msb(&mut self) -> Option<u64> {
         if self.0 == 0 {
             None
         } else {
@@ -143,11 +182,6 @@ impl BitBoard {
             self.0 &= !(1u64 << idx); // Clear the most significant bit
             Some(idx as u64)
         }
-    }
-
-    #[inline(always)]
-    pub const fn count_ones(&self) -> u32 {
-        self.0.count_ones()
     }
 
     #[inline(always)]
@@ -185,7 +219,7 @@ impl BitBoard {
     }
 
     #[inline(always)]
-    pub const fn get_closest_bit(&self, forward: bool) -> Option<u64> {
+    pub fn get_closest_bit(&self, forward: bool) -> Option<u64> {
         if self.is_empty() {
             None
         } else if forward {
