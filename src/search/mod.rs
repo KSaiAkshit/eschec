@@ -518,11 +518,7 @@ impl Search {
         }
 
         if alpha >= beta {
-            debug_assert!(
-                false,
-                "Invalid initial alpha-beta window: alpha: {alpha}, beta: {beta}"
-            );
-            return alpha;
+            panic!("Invalid alpha-beta window: alpha: {alpha}, beta: {beta}")
         }
 
         let window = beta.checked_sub(alpha);
@@ -541,6 +537,7 @@ impl Search {
                 -self.alpha_beta(&null_board, child_context, null_depth, -beta, -beta + 1);
 
             if null_score >= beta {
+                self.pruned_nodes += 1;
                 return beta;
             }
         }
@@ -718,20 +715,25 @@ impl Search {
             .filter(|&&hash| hash == current_hash)
             .count();
 
+        // TODO: Make these constants
         if repetition_count >= 2 || board.halfmove_clock >= 100 {
             return 0;
         }
 
         let is_in_check = board.is_in_check(board.stm);
 
+        let stand_pat_score;
+
         if !is_in_check {
-            let stand_pat_score = board.evaluate_position(&*self.evaluator);
+            stand_pat_score = board.evaluate_position(&*self.evaluator);
 
             if stand_pat_score >= beta {
                 self.pruned_nodes += 1;
                 return beta; // Fail high
             }
             alpha = max(alpha, stand_pat_score);
+        } else {
+            stand_pat_score = i32::MIN;
         }
 
         // Generate all moves if in check, otherwise use captures only
@@ -749,6 +751,38 @@ impl Search {
         self.sort_moves::<QSearchPolicy>(board, &mut legal_moves, None, context.ply);
 
         for mv in legal_moves {
+            if !is_in_check {
+                // Delta Pruning
+                if mv.is_capture() {
+                    let captured_piece_value = if mv.is_enpassant() {
+                        Piece::Pawn.victim_score()
+                    } else if let Some(p) = board.get_piece_at(mv.to_sq()) {
+                        p.victim_score()
+                    } else {
+                        unreachable!(
+                            "If move is a capture, then it should either be enpassant or 'to' sq should hold a piece"
+                        )
+                    };
+                    const DELTA_MARGIN: i32 = 700;
+                    if stand_pat_score
+                        + captured_piece_value
+                        + if mv.is_promotion() {
+                            DELTA_MARGIN + 200
+                        } else {
+                            DELTA_MARGIN
+                        }
+                        < alpha
+                    {
+                        self.pruned_nodes += 1;
+                        continue; // Skip this move
+                    }
+                }
+                // SEE pruning
+                if board.see(mv) < 0 {
+                    self.pruned_nodes += 1;
+                    continue;
+                }
+            }
             let mut board_copy = *board;
             if let Err(e) = board_copy.make_move(mv) {
                 error!(

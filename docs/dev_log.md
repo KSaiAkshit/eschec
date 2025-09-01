@@ -1,30 +1,38 @@
 # Dev Log
 
+* Date: 2025-09-06
+* New: tag 'v0.1.11-delta_see_pruning'
+* Old: tag: 'v0.1.10-tapered_eval'
+
+### introduce q-search move ordering (see based), see & delta pruning
+```
+Results of eschec vs eschec_tapered_eval (30+0.3, NULL, NULL, 8moves_v3.pgn):
+Elo: 23.76 +/- 12.23, nElo: 42.06 +/- 21.58
+LOS: 99.99 %, DrawRatio: 53.21 %, PairsRatio: 1.74
+Games: 996, Wins: 197, Losses: 129, Draws: 670, Points: 532.0 (53.41 %)
+Ptnml(0-2): [13, 72, 265, 130, 18], WL/DD Ratio: 0.13
+LLR: 2.96 (100.6%) (-2.94, 2.94) [0.00, 10.00]
+--------------------------------------------------
+SPRT ([0.00, 10.00]) completed - H1 was accepted
+```
+
+```
+Results of eschec vs eschec_tapered_eval (30+0.3, NULL, NULL, balanced_book.epd):
+Elo: 50.36 +/- 37.98, nElo: 80.04 +/- 59.27
+LOS: 99.59 %, DrawRatio: 45.45 %, PairsRatio: 2.27
+Games: 132, Wins: 33, Losses: 14, Draws: 85, Points: 75.5 (57.20 %)
+Ptnml(0-2): [1, 10, 30, 19, 6], WL/DD Ratio: 0.07
+LLR: 3.17 (107.5%) (-2.94, 2.94) [0.00, 100.00]
+--------------------------------------------------
+SPRT ([0.00, 100.00]) completed - H1 was accepted
+```
+---
+
 * Date: 2025-08-18
-* Curr: tag: "wip-tapered_eval"
+* Curr: tag: 'v0.1.10-tapered_eval'
 
 ### Curr vs q_search
 ```
-Results of eschec vs eschec_dynamic_lmr (30+0.3, NULL, NULL, 8moves_v3.pgn):
-Elo: 88.74 +/- 56.57, nElo: 169.90 +/- 102.66
-LOS: 99.94 %, DrawRatio: 36.36 %, PairsRatio: 6.00
-Games: 44, Wins: 14, Losses: 3, Draws: 27, Points: 27.5 (62.50 %)
-Ptnml(0-2): [0, 2, 8, 11, 1], WL/DD Ratio: 0.14
-LLR: 3.10 (105.3%) (-2.94, 2.94) [0.00, 100.00]
---------------------------------------------------
-SPRT ([0.00, 100.00]) completed - H1 was accepted
-```
-
-### Curr vs q_search
-```
-Results of eschec vs eschec_q_search (30+0.3, NULL, NULL, 8moves_v3.pgn):
-Elo: 67.25 +/- 55.55, nElo: 103.46 +/- 82.58
-LOS: 99.30 %, DrawRatio: 38.24 %, PairsRatio: 2.50
-Games: 68, Wins: 21, Losses: 8, Draws: 39, Points: 40.5 (59.56 %)
-Ptnml(0-2): [0, 6, 13, 11, 4], WL/DD Ratio: 0.18
-LLR: 3.07 (104.4%) (-2.94, 2.94) [0.00, 100.00]
---------------------------------------------------
-SPRT ([0.00, 100.00]) completed - H1 was accepted
 ```
 
 ### Curr vs late_move_red
@@ -128,20 +136,10 @@ SPRT ([0.00, 10.00]) completed - H1 was accepted
 ---
 
 * Date: 2025-08-18
-* New: tag 'v0.1.9-dynamic_lmr'
+* New: tag 'v0.1.9-better_lmr'
 * Old: tag 'v0.1.8-q_search'
 
-### dynamic lmr log
-
-#### 8moves_v3.pgn
-Results of eschec vs eschec_dynamic_lmr (30+0.3, NULL, NULL, 8moves_v3.pgn):
-Elo: 33.11 +/- 32.21, nElo: 49.93 +/- 48.15
-LOS: 97.89 %, DrawRatio: 45.00 %, PairsRatio: 1.62
-Games: 200, Wins: 49, Losses: 30, Draws: 121, Points: 109.5 (54.75 %)
-Ptnml(0-2): [3, 18, 45, 25, 9], WL/DD Ratio: 0.15
-LLR: 0.74 (25.0%) (-2.94, 2.94) [0.00, 10.00]
-
-### dynamic lmr depth table
+### dynamic lmr depth
 
 #### 8moves_v3.pgn
 Results of eschec vs eschec_q_search (15+0.1, NULL, NULL, 8moves_v3.pgn):
