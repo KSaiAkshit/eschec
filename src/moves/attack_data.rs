@@ -157,12 +157,11 @@ pub fn calculate_attack_data(board: &Board, side: Side) -> AttackData {
     // Bishop + Queen
     for diag_sq in board.positions.get_diag_sliders_bb(opponent).iter_bits() {
         attack_data.opp_attack_map |=
-            MOVE_TABLES.get_bishop_attacks_generic(diag_sq, all_pieces_no_king);
+            MOVE_TABLES.get_bishop_attacks_bb(diag_sq, all_pieces_no_king);
     }
     // Rook + Queen
-    for orhto_sq in board.positions.get_orhto_sliders_bb(opponent).iter_bits() {
-        attack_data.opp_attack_map |=
-            MOVE_TABLES.get_rook_attacks_generic(orhto_sq, all_pieces_no_king);
+    for ortho_sq in board.positions.get_orhto_sliders_bb(opponent).iter_bits() {
+        attack_data.opp_attack_map |= MOVE_TABLES.get_rook_attacks_bb(ortho_sq, all_pieces_no_king);
     }
 
     attack_data
