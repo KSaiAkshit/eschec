@@ -46,15 +46,18 @@ rand = "0.9.2"
 color-backtrace = { version = "0.7.0", optional = true }
 dhat = { version = "0.3.3", optional = true }
 rayon = { version = "1.10.0", optional = true }
+indicatif = { version = "0.18.0", default-features = false, optional = true, features = ["unicode-width", "rayon"] }
 
 [dev-dependencies]
 criterion = "0.6.0"
 
 [features]
-default = ["dev-tools"]
+default = ["dev-tools", "parallel"]
 simd = []
 # Feature for heap profiling
 dhat-heap = ["dep:dhat"]
+# Feature for rayon and indicatif for eval_tester
+parallel = ["rayon", "indicatif/rayon"]
 # Feature for the magic number generator binary
 rayon = ["dep:rayon"]
 # Feature for development-only tools

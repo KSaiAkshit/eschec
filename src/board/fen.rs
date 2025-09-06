@@ -66,7 +66,7 @@ pub fn parse_fen(fen: &str) -> miette::Result<Board> {
     let mut board = Board::default();
     if parts.len() != 6 {
         miette::bail!(
-            "Not enough segments in given FEN string, need 6, got: {}",
+            "Not enough segments in given FEN string '{fen}', need 6, got: {}",
             parts.len()
         );
     }

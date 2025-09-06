@@ -6,6 +6,9 @@ FEN := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 pgn_output_dir := 'gauntlet/results/'
 book_dir := 'gauntlet/books/'
 engine_logs_dir := '/tmp/eschec_logs/'
+test_suite_dir := './test_suites/sts'
+test_suite_blitz_file := './test_suites/sts/sts_blitz.epd'
+epd_test_depth := "8"
 repo_url := env('REPO_URL')
 OUT_DIR := "/tmp/out_dir"
 BIN_NAME := "eschec"
@@ -45,8 +48,8 @@ build-all-tags:
 
         if [ -f "{{ BIN_NAME }}" ]; then
             cp "{{ BIN_NAME }}" "{{ OUT_DIR }}/{{ BIN_NAME }}-${tag}"
-        elif [ -f "target/release/{{BIN_NAME}}" ]; then
-            cp "target/release/{{BIN_NAME}}" "{{OUT_DIR}}/{{BIN_NAME}}-${tag}"
+        elif [ -f "target/release/{{ BIN_NAME }}" ]; then
+            cp "target/release/{{ BIN_NAME }}" "{{ OUT_DIR }}/{{ BIN_NAME }}-${tag}"
         else
             echo "Warning: Could not find built binary for $tag"
         fi
@@ -54,7 +57,7 @@ build-all-tags:
 
     popd > /dev/null
     rm -rf "$TMP_DIR"
-    echo "All binaries saved to {{OUT_DIR}}"
+    echo "All binaries saved to {{ OUT_DIR }}"
 
 [doc("Build and symlink binary")]
 update:
@@ -80,7 +83,7 @@ gauntlet opponent='gnuchess' rounds='40' concurrency='4' book='8moves_v3.pgn' tc
         -engine conf={{ opponent }} \
         -each tc={{ tc }} \
         -rounds {{ rounds }} \
-        -openings file={{ book_dir }}{{book}} format={{ extension(book_dir + book)}} order=random policy=round \
+        -openings file={{ book_dir }}{{ book }} format={{ extension(book_dir + book) }} order=random policy=round \
         -pgnout {{ pgn_output_dir }}eschec_vs_{{ opponent }}.txt \
         -concurrency {{ concurrency }} \
         -draw movenumber=40 movecount=8 score=20 \
@@ -107,12 +110,37 @@ sprt p1 p2 rounds='100' concurrency='4' book='8moves_v3.pgn' tc='30+0.3':
         -each tc={{ tc }} \
         -rounds {{ rounds }} \
         -concurrency {{ concurrency }} \
-        -openings file={{ book_dir }}{{book}} format={{ extension(book_dir + book)}} order=random \
+        -openings file={{ book_dir }}{{ book }} format={{ extension(book_dir + book) }} order=random \
         -sprt elo0=0 elo1=10 alpha=0.05 beta=0.05 \
         -repeat -recover \
         -pgnout {{ pgn_output_dir }}{{ p1 }}_vs_{{ p2 }}_sprt.txt \
         -log file={{ engine_logs_dir }}sprt_log.txt level=info \
         | tee {{ pgn_output_dir }}{{ p1 }}_vs_{{ p2 }}_sprt_log.txt
+
+[doc("Run a full validation test at a fixed depth")]
+[group("eval")]
+eval_validation_test:
+    cargo run --release --features parallel --bin eval_tester {{ test_suite_dir }} -d {{ epd_test_depth }} --threads 0 \
+    | tee {{ pgn_output_dir }}eval_validation_test_log.txt
+
+
+[doc("Run a fast 'smoke_test' on a small set of positions")]
+[group("eval")]
+eval_blitz_test:
+    cargo run {{ flags }} --features parallel --bin eval_tester {{ test_suite_blitz_file }} -d {{ epd_test_depth }} --threads 0  \
+    | tee {{ pgn_output_dir }}eval_blitz_test.txt
+
+[doc("Run eval_tester sequentially with given time control.")]
+[group("eval")]
+eval_test_seq tc='stc' suite='{{ test_suite_dir }}':
+    cargo run {{ flags }} --bin eval_tester {{ suite }} -t {{ tc }} \
+    | tee {{ pgn_output_dir }}eval_test_{{ tc }}_sequential.txt
+
+[doc("Run eval_tester with given time control and threads")]
+[group("eval")]
+eval_test threads="6" tc='stc' suite='{{ test_suite_dir }}':
+    cargo run {{ flags }} --features parallel --bin eval_tester {{ suite }} -t {{ tc }} --threads {{ threads }} \
+    | tee {{ pgn_output_dir }}eval_test_{{ tc }}_{{ threads }}threads.txt
 
 [doc("Remove build artifacts and gauntlet artifacts")]
 clean:

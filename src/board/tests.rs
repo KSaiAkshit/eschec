@@ -66,7 +66,7 @@ mod see_tests {
         } else {
             occupied.capture(to_sq.index());
         }
-        occupied.set(to_sq.index());
+        // occupied.set(to_sq.index());
 
         capture_sequence.push(victim_piece);
         capture_sequence.push(attacker_piece);

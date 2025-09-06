@@ -351,7 +351,7 @@ impl Search {
         let span = trace_span!("search_root");
         let _guard = span.enter();
 
-        info!("Finding best move");
+        debug!("Finding best move with max_depth: {}, max_time: {:?}", self.max_depth, self.max_time);
 
         self.prepare_for_search();
         self.start_time = Instant::now();
