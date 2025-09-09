@@ -6,6 +6,8 @@ use super::*;
 pub struct PositionEvaluator {
     name: String,
     piece_square_tables: [[Score; NUM_SQUARES]; 6],
+    rook_open_file_bonus: Score,
+    rook_semi_file_bonus: Score,
 }
 
 impl Default for PositionEvaluator {
@@ -13,6 +15,8 @@ impl Default for PositionEvaluator {
         Self {
             name: "Position".to_string(),
             piece_square_tables: [[Score::default(); NUM_SQUARES]; 6],
+            rook_open_file_bonus: Score::default(),
+            rook_semi_file_bonus: Score::default(),
         }
     }
 }
@@ -173,7 +177,32 @@ impl PositionEvaluator {
                 const_zip(mg_queen_table, eg_queen_table),
                 const_zip(mg_king_table, eg_king_table),
             ],
+            rook_open_file_bonus: Score::new(40, 20),
+            rook_semi_file_bonus: Score::new(20, 10),
         }
+    }
+
+    fn evaluate_rook_files(&self, board: &Board, side: Side) -> Score {
+        let mut score = Score::default();
+        let rooks = board.positions.get_piece_bb(side, Piece::Rook);
+        let friendly_pawns = board.positions.get_piece_bb(side, Piece::Pawn);
+        let opponent_pawns = board.positions.get_piece_bb(side.flip(), Piece::Pawn);
+
+        for rook_sq in rooks.iter_bits() {
+            let file_mask = BitBoard(FILE_MASKS[rook_sq % 8]);
+
+            let friendly_pawns_on_file = (file_mask & *friendly_pawns).any();
+            let opponent_pawns_on_file = (file_mask & *opponent_pawns).any();
+
+            if !friendly_pawns_on_file {
+                if !opponent_pawns_on_file {
+                    score += self.rook_open_file_bonus;
+                } else {
+                    score += self.rook_semi_file_bonus
+                }
+            }
+        }
+        score
     }
 }
 
@@ -198,6 +227,8 @@ impl Evaluator for PositionEvaluator {
                 score -= piece_table[mirrored_idx];
             }
         }
+        score += self.evaluate_rook_files(board, Side::White);
+        score -= self.evaluate_rook_files(board, Side::Black);
 
         // Convert to side-to-move perspective
         if board.stm == Side::White {

@@ -8,9 +8,11 @@ use std::{
 };
 
 #[cfg(feature = "parallel")]
-use indicatif::{ParallelProgressIterator, ProgressBar, ProgressStyle};
-#[cfg(feature = "parallel")]
-use rayon::prelude::*;
+use {
+    indicatif::{ProgressBar, ProgressStyle},
+    rayon::prelude::*,
+    std::time::Duration,
+};
 
 const EXPECTED_MOVES_WIDTH: usize = 24;
 const MAX_ID_LEN: usize = 24;
@@ -239,11 +241,15 @@ fn run_tests_parallel(cli: EvalCli) -> miette::Result<()> {
                 .into_diagnostic()?
                 .progress_chars("#>-");
         pb.set_style(pb_style);
+        pb.enable_steady_tick(Duration::from_millis(100));
 
         let test_results: Vec<TestResult> = tests
             .par_iter()
-            .progress_with(pb.clone())
-            .map(|test| run_single_test(test, &cli))
+            .map(|test| {
+                let result = run_single_test(test, &cli);
+                pb.inc(1);
+                result
+            })
             .collect();
 
         pb.finish_with_message("Done");
@@ -430,7 +436,6 @@ fn find_epd_files(path: &PathBuf) -> miette::Result<Vec<PathBuf>> {
         let mut entries: Vec<_> = read_dir(path).into_diagnostic()?.flatten().collect();
         entries.sort_by_key(|a| a.path());
         for entry in entries {
-            dbg!(&entry);
             let entry_path = entry.path();
             if entry_path.extension().is_some_and(|e| e == "epd") {
                 files.push(entry_path);

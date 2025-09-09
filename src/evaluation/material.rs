@@ -1,16 +1,16 @@
 use crate::prelude::*;
 
-// TODO: Does tapering eval help here?
-
 #[derive(Debug, Clone)]
 pub struct MaterialEvaluator {
     name: String,
+    bishop_pair_bonus: Score,
 }
 
 impl Default for MaterialEvaluator {
     fn default() -> Self {
         Self {
             name: "Material".to_string(),
+            bishop_pair_bonus: Score::default(),
         }
     }
 }
@@ -19,7 +19,30 @@ impl MaterialEvaluator {
     pub fn new() -> Self {
         Self {
             name: "Material".to_string(),
+            bishop_pair_bonus: Score::new(26, 40),
         }
+    }
+    fn evaluate_bishop_pair(&self, board: &Board) -> Score {
+        let mut score = Score::default();
+
+        if board
+            .positions
+            .get_piece_bb(Side::White, Piece::Bishop)
+            .pop_count()
+            >= 2
+        {
+            score += self.bishop_pair_bonus;
+        }
+
+        if board
+            .positions
+            .get_piece_bb(Side::Black, Piece::Bishop)
+            .pop_count()
+            >= 2
+        {
+            score -= self.bishop_pair_bonus
+        }
+        score
     }
 }
 
@@ -39,7 +62,8 @@ impl Evaluator for MaterialEvaluator {
         // Q + P = 2R
         // ```
 
-        let score = board.material[Side::White.index()] - board.material[Side::Black.index()];
+        let mut score = board.material[Side::White.index()] - board.material[Side::Black.index()];
+        score += self.evaluate_bishop_pair(board);
 
         // Convert to side-to-move perspective
         if board.stm == Side::White {

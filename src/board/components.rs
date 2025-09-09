@@ -477,16 +477,6 @@ impl Piece {
             Piece::King => 20_000,
         }
     }
-    // pub const fn victim_score(&self) -> i32 {
-    //     match self {
-    //         Piece::Pawn => 100,
-    //         Piece::Knight => 320,
-    //         Piece::Bishop => 330,
-    //         Piece::Rook => 500,
-    //         Piece::Queen => 900,
-    //         Piece::King => 20_000,
-    //     }
-    // }
 }
 
 /// Compact struct to hold piece and side
