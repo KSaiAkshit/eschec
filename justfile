@@ -132,13 +132,13 @@ eval_blitz_test:
 
 [doc("Run eval_tester sequentially with given time control.")]
 [group("eval")]
-eval_test_seq tc='stc' suite='{{ test_suite_dir }}':
+eval_test_seq tc='stc' suite=test_suite_dir:
     cargo run {{ flags }} --bin eval_tester {{ suite }} -t {{ tc }} \
     | tee {{ pgn_output_dir }}eval_test_{{ tc }}_sequential.txt
 
 [doc("Run eval_tester with given time control and threads")]
 [group("eval")]
-eval_test threads="6" tc='stc' suite='{{ test_suite_dir }}':
+eval_test threads="6" tc='stc' suite=test_suite_dir:
     cargo run {{ flags }} --features parallel --bin eval_tester {{ suite }} -t {{ tc }} --threads {{ threads }} \
     | tee {{ pgn_output_dir }}eval_test_{{ tc }}_{{ threads }}threads.txt
 
@@ -201,6 +201,10 @@ flame *args: setup
 [doc("lint the codebase")]
 lint:
     cargo clippy --all-targets --all-features -- -D warnings
+
+[doc("check the codebase")]
+check:
+    cargo check --all-targets --all-features
 
 [doc("check format")]
 fmt-check:

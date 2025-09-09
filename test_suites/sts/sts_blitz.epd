@@ -4,7 +4,7 @@
 3r1r2/pkp4p/1np1p3/3P4/1b2N3/1P3P2/1B4PP/2R2RK1 b - - bm exd5; id "Recapturing.041"; c0 "exd5=10, Nxd5=3, Rxd5=3, cxd5=4";
 3rr1k1/pb1n1pp1/2q2b1p/2p5/2P1p2N/1P2B1P1/P1QR1PBP/3R2K1 b - - bm Ne5; c0 "Ne5=10, Bxh4=7, Nf8=7, g6=7"; id "Knight Outposts/Repositioning/Centralization.038";
 r2qr1k1/pp3pbp/5np1/2p2b2/8/2PP1Q2/PPB3PP/RNB2RK1 b - - bm c4; id "Undermine.083"; c0 "c4=10, Bg4=3, Ng4=2, Qd7=3";
-3qr2k/p5r1/1pRp1n1b/1P1Pp2p/1P3p1P/2N1nP1Q/1R3BP1/5BK1 w - - bm Bxe3; c0 "Bxe3=10"; id " Bishop vs Knight.041";
+3qr2k/p5r1/1pRp1n1b/1P1Pp2p/1P3p1P/2N1nP1Q/1R3BP1/5BK1 w - - bm Bxe3; c0 "Bxe3=10"; id "Bishop vs Knight.041";
 3r1rk1/1b2p1bp/pp6/4Pp1n/B2n4/2NNBP1p/PP3KPP/3RR3 w - - bm Bxd4; c0 "Bxd4=10, Bb3+=4, Ne2=6, gxh3=3"; id "Bishop vs Knight.042";
 r1b2r1k/1p2qpb1/1np3pp/p7/3P4/PBN2N2/1PQ2PPP/3R1RK1 w - - bm Rfe1; c0 "Rfe1=10, Qc1=7, Qd2=6, h3=7"; id "Open Files and Diagonals.080";
 8/5r2/1pp2p1R/p3n3/4Pp1p/2P2P1k/4K2P/R7 b - - bm Rg7; c0 "Rg7=10, b5=3"; id "Open Files and Diagonals.074";

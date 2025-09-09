@@ -4,17 +4,16 @@ use std::{
     collections::HashMap,
     fs::{File, read_dir},
     io::{BufRead, BufReader},
-    path::{Path, PathBuf},
-    time::{Duration, Instant},
+    path::PathBuf,
 };
 
-// Use conditional compilation (cfg) to only include these when the 'parallel' feature is enabled
 #[cfg(feature = "parallel")]
-use indicatif::{ProgressBar, ProgressStyle};
+use indicatif::{ParallelProgressIterator, ProgressBar, ProgressStyle};
 #[cfg(feature = "parallel")]
 use rayon::prelude::*;
 
 const EXPECTED_MOVES_WIDTH: usize = 24;
+const MAX_ID_LEN: usize = 24;
 
 /// A scored EPD test runner for Eschec engine using STS
 #[derive(Parser, Debug)]
@@ -107,8 +106,6 @@ fn main() -> miette::Result<()> {
     eschec::utils::log::init();
     let cli = EvalCli::parse();
 
-    // The core logic is now split into two functions.
-    // We call the appropriate one based on whether the "parallel" feature is enabled.
     #[cfg(feature = "parallel")]
     {
         // Configure Rayon Thread Pool
@@ -135,7 +132,7 @@ fn main() -> miette::Result<()> {
     }
 }
 
-// #[cfg(not(feature = "parallel"))]
+#[cfg(not(feature = "parallel"))]
 fn run_tests_sequential(cli: EvalCli) -> miette::Result<()> {
     let epd_files = find_epd_files(&cli.path)?;
     miette::ensure!(
@@ -236,21 +233,17 @@ fn run_tests_parallel(cli: EvalCli) -> miette::Result<()> {
         let num_tests = tests.len();
 
         let pb = ProgressBar::new(num_tests as u64);
-        pb.enable_steady_tick(Duration::from_millis(100));
-        pb.set_style(
+        let pb_style =
             ProgressStyle::default_bar()
                 .template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} ({percent}%)")
                 .into_diagnostic()?
-                .progress_chars("#>-"),
-        );
+                .progress_chars("#>-");
+        pb.set_style(pb_style);
 
         let test_results: Vec<TestResult> = tests
             .par_iter()
-            .map(|test| {
-                let result = run_single_test(test, &cli);
-                pb.inc(1);
-                result
-            })
+            .progress_with(pb.clone())
+            .map(|test| run_single_test(test, &cli))
             .collect();
 
         pb.finish_with_message("Done");
@@ -274,7 +267,7 @@ fn run_tests_parallel(cli: EvalCli) -> miette::Result<()> {
             }
         }
 
-        println!("{:-<160}", "");
+        println!("\n{:-<160}", "");
         passes.sort();
         for pass in &passes {
             println!("{}", pass);
@@ -345,32 +338,36 @@ fn run_single_test(test: &EPDTest, cli: &EvalCli) -> TestResult {
     let expected_moves_str =
         parse_expected_moves(&test.move_scores).unwrap_or_else(|| "...".to_string());
 
+    let truncated_id = truncate_with_elipses(&test.id, MAX_ID_LEN);
+
     let log_message = if score < max_score_for_pos {
         Some(format!(
-            "[{}{:<4}{}] ID: {:<15} | S: {:>2}/{} | Ex: {:<width$} | Got: {:<6} | FEN: {}",
+            "[{}{:<4}{}] ID: {:<width1$} | S: {:>2}/{} | Ex: {:<width2$} | Got: {:<6} | FEN: {}",
             RED,
             "FAIL",
             RESET,
-            test.id,
+            truncated_id,
             score,
             max_score_for_pos,
             expected_moves_str,
             engine_move_uci,
             test.fen,
-            width = EXPECTED_MOVES_WIDTH
+            width1 = MAX_ID_LEN,
+            width2 = EXPECTED_MOVES_WIDTH
         ))
     } else {
         Some(format!(
-            "[{}{:<4}{}] ID: {:<15} | S: {:>2}/{} | Ex: {:<width$} | Got: {:<6}",
+            "[{}{:<4}{}] ID: {:<width1$} | S: {:>2}/{} | Ex: {:<width2$} | Got: {:<6}",
             GREEN,
             "PASS",
             RESET,
-            test.id,
+            truncated_id,
             score,
             max_score_for_pos,
             expected_moves_str,
             engine_move_uci,
-            width = EXPECTED_MOVES_WIDTH
+            width1 = MAX_ID_LEN,
+            width2 = EXPECTED_MOVES_WIDTH
         ))
     };
 
@@ -383,37 +380,6 @@ fn run_single_test(test: &EPDTest, cli: &EvalCli) -> TestResult {
     }
 }
 
-fn print_suite_summary(
-    file_path: &Path,
-    suite_score: i32,
-    suite_max_score: i32,
-    suite_bm_correct: u64,
-    num_tests: usize,
-    cli: &EvalCli,
-    duration: Duration,
-) {
-    let percentage = (suite_score as f64 / suite_max_score as f64) * 100.0;
-    let bm_percentage = (suite_bm_correct as f64 / num_tests as f64) * 100.0;
-
-    println!("{:-<60}", "");
-    println!("Suite Summary for: {}", file_path.display());
-    println!(
-        "STS Score: {}/{} ({:.2}%)",
-        suite_score, suite_max_score, percentage
-    );
-    println!(
-        "Best Move (bm) Accuracy: {}/{} ({:.2}%)",
-        suite_bm_correct, num_tests, bm_percentage
-    );
-    if let Some(d) = cli.depth {
-        println!("Search depth: {d}");
-    } else {
-        println!("Time control: {}", cli.time_control);
-    }
-    println!("Time taken: {:.2?}", duration);
-    println!();
-}
-
 fn print_thematic_summary(results: &[SuiteResultSummary]) {
     if results.is_empty() {
         return;
@@ -424,62 +390,47 @@ fn print_thematic_summary(results: &[SuiteResultSummary]) {
     let grand_bm_correct: u64 = results.iter().map(|r| r.bm_correct).sum();
     let grand_total_tests: usize = results.iter().map(|r| r.num_tests).sum();
 
-    println!("===================== Thematic Summary =====================");
+    println!("{}", "=".repeat(75));
+    println!("THEMATIC SUMMARY");
+    println!("{}", "=".repeat(75));
     println!(
-        "| {:<20} | {:<15} | {:<18} |",
-        "Theme", "STS Score", "Best Move Accuracy"
+        "{:<25} {:>12} {:>15} {:>18}",
+        "Theme", "STS Score", "STS %", "Best Move %"
     );
-    println!("|----------------------|-----------------|--------------------|");
+    println!("{}", "-".repeat(75));
 
     for result in results {
         let percentage = (result.score as f64 / result.max_score as f64) * 100.0;
         let bm_percentage = (result.bm_correct as f64 / result.num_tests as f64) * 100.0;
+
+        // Truncate theme name for display (max 25 characters) - regular truncation
+        let truncated_theme = truncate_with_elipses(&result.name, 25);
+
         println!(
-            "| {:<20} | {:>7}/{:<7} | {:>7}/{:<10} |",
-            result.name,
-            format!("{} ({:.1}%)", result.score, percentage),
-            result.max_score,
-            format!("{} ({:.1}%)", result.bm_correct, bm_percentage),
-            result.num_tests
+            "{:<25} {:>6}/{:<5} {:>15.1}% {:>10.1}%",
+            truncated_theme, result.score, result.max_score, percentage, bm_percentage
         );
     }
-    println!("|----------------------|-----------------|--------------------|");
 
-    print_grand_total_summary(
-        grand_total_score,
-        grand_max_score,
-        grand_bm_correct,
-        grand_total_tests,
+    println!("{}", "-".repeat(75));
+
+    let grand_percentage = (grand_total_score as f64 / grand_max_score as f64) * 100.0;
+    let grand_bm_percentage = (grand_bm_correct as f64 / grand_total_tests as f64) * 100.0;
+
+    println!(
+        "{:<25} {:>6}/{:<5} {:>15.1}% {:>10.1}%",
+        "OVERALL", grand_total_score, grand_max_score, grand_percentage, grand_bm_percentage
     );
-}
-
-fn print_grand_total_summary(
-    grand_total_score: i32,
-    grand_max_score: i32,
-    grand_bm_correct: u64,
-    grand_total_tests: usize,
-) {
-    if grand_max_score > 0 {
-        let grand_percentage = (grand_total_score as f64 / grand_max_score as f64) * 100.0;
-        let grand_bm_percentage = (grand_bm_correct as f64 / grand_total_tests as f64) * 100.0;
-        println!("==============================================================");
-        println!("Overall Results");
-        println!(
-            "Total STS Score: {}/{} ({:.2}%)",
-            grand_total_score, grand_max_score, grand_percentage
-        );
-        println!(
-            "Total Best Move (bm) Accuracy: {}/{} ({:.2}%)",
-            grand_bm_correct, grand_total_tests, grand_bm_percentage
-        );
-        println!("==============================================================");
-    }
+    println!("{}", "=".repeat(75));
 }
 
 fn find_epd_files(path: &PathBuf) -> miette::Result<Vec<PathBuf>> {
     let mut files = Vec::new();
     if path.is_dir() {
-        for entry in read_dir(path).into_diagnostic()?.flatten() {
+        let mut entries: Vec<_> = read_dir(path).into_diagnostic()?.flatten().collect();
+        entries.sort_by_key(|a| a.path());
+        for entry in entries {
+            dbg!(&entry);
             let entry_path = entry.path();
             if entry_path.extension().is_some_and(|e| e == "epd") {
                 files.push(entry_path);
@@ -546,6 +497,7 @@ fn parse_epd_line(line: &str) -> miette::Result<EPDTest> {
     let board = Board::from_fen(&fen);
 
     let mut id = String::from("unknown");
+    let mut theme = String::from("unknown");
     let mut best_move = None;
     let mut move_scores = HashMap::new();
 
@@ -591,10 +543,14 @@ fn parse_epd_line(line: &str) -> miette::Result<EPDTest> {
             }
         }
     }
+    if let Some(last_period) = id.rfind('.') {
+        theme = id.split_at(last_period).0.to_string();
+    }
 
     Ok(EPDTest {
         fen,
         id,
+        theme,
         best_move,
         move_scores,
     })
@@ -614,4 +570,24 @@ fn parse_expected_moves(s: &HashMap<String, i32>) -> Option<String> {
 
 fn parse_quoted_string(s: &str) -> Option<String> {
     s.strip_prefix('"')?.strip_suffix('"').map(str::to_owned)
+}
+
+fn truncate_with_elipses(s: &str, max_len: usize) -> String {
+    if s.len() < max_len {
+        return s.to_string();
+    }
+
+    if let Some(last_dot_pose) = s.rfind('.') {
+        let ending_part = &s[last_dot_pose..];
+        if ending_part.len() > 1 && ending_part[1..].chars().all(|c| c.is_ascii_digit()) {
+            let ellipsis = "...";
+            let available_for_start = max_len.saturating_sub(ending_part.len() + ellipsis.len());
+
+            if available_for_start > 0 {
+                let start_part = &s[..available_for_start.min(s.len() - ending_part.len())];
+                return format!("{start_part}{ellipsis}{ending_part}");
+            }
+        }
+    }
+    format!("{}...", &s[..max_len.saturating_sub(3)])
 }
