@@ -1,3 +1,5 @@
+use std::mem::MaybeUninit;
+
 use crate::prelude::*;
 
 // Using large offsets to create distinct "buckets" for move types.
@@ -72,7 +74,7 @@ impl MoveScoringPolicy for QSearchPolicy {
     }
 }
 
-// Sorts a slice of moves in-place from best to worst based on their score
+/// Sorts a slice of moves in-place from best to worst based on their score
 pub fn sort_moves<P: MoveScoringPolicy>(
     board: &Board,
     moves: &mut [Move],
@@ -81,19 +83,25 @@ pub fn sort_moves<P: MoveScoringPolicy>(
     history: &[[i32; 64]; 64],
     seed: u64,
 ) {
+    let num_moves = moves.len();
+    let mut scored_moves: [MaybeUninit<(i32, Move)>; MAX_MOVES] =
+        unsafe { MaybeUninit::uninit().assume_init() };
     let mut prng = Prng::init(seed);
 
-    let mut scored_moves: Vec<(i32, Move)> = moves
-        .iter()
-        .map(|&m| {
-            let base_score = P::score(board, m, killers, tt_move, history);
-            let final_score = base_score + (prng.rand() % 10) as i32;
-            (-final_score, m) // Negate for descending sort
-        })
-        .collect();
+    for i in 0..num_moves {
+        let base_score = P::score(board, moves[i], killers, tt_move, history);
+        let final_score = base_score.saturating_add((prng.rand() % 10) as i32);
+        scored_moves[i].write((-final_score, moves[i])); // Negate for descending sort
+    }
 
-    scored_moves.sort_unstable_by_key(|(score, _)| *score);
-    for (i, &(_, mv)) in scored_moves.iter().enumerate() {
-        moves[i] = mv;
+    let scored_slice = unsafe {
+        let ptr = scored_moves.as_mut_ptr() as *mut (i32, Move);
+        std::slice::from_raw_parts_mut(ptr, num_moves)
+    };
+
+    scored_slice.sort_unstable_by_key(|(score, _)| *score);
+
+    for i in 0..num_moves {
+        moves[i] = scored_slice[i].1;
     }
 }

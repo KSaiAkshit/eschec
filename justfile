@@ -171,7 +171,6 @@ record args="": setup
 
 [doc("Run with given args along with dhat feature")]
 dhat-heap args="":
-    RUSTFLAGS="-Cprofile-use" \
     DHAT_PROFILE=1 \
     cargo run --profile release-dhat --features dhat-heap --bin eschec -- {{ args }}
 
