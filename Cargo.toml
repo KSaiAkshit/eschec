@@ -38,10 +38,8 @@ tracing-appender = "0.2.3"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 # Cli and error
 clap = { version = "4.5.38", features = ["derive"] }
-miette = { version = "7.5.0", features = ["fancy"] }
+miette = { version = "7.5.0", default-features = false, features = ["fancy"] }
 shell-words = "1.1.0"
-
-rand = "0.9.2"
 # Optional
 color-backtrace = { version = "0.7.0", optional = true }
 dhat = { version = "0.3.3", optional = true }

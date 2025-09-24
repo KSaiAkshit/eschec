@@ -351,7 +351,10 @@ impl Search {
         let span = trace_span!("search_root");
         let _guard = span.enter();
 
-        debug!("Finding best move with max_depth: {}, max_time: {:?}", self.max_depth, self.max_time);
+        debug!(
+            "Finding best move with max_depth: {}, max_time: {:?}",
+            self.max_depth, self.max_time
+        );
 
         self.prepare_for_search();
         self.start_time = Instant::now();
@@ -946,7 +949,7 @@ mod tests {
     #[test]
     fn test_null_move_pruning() {
         init();
-        let _ = utils::log::toggle_file_logging(true);
+        // let _ = utils::log::toggle_file_logging(true);
         let evaluator = CompositeEvaluator::balanced();
         let mut search_with_null = Search::new(Box::new(evaluator), 10);
         let evaluator = CompositeEvaluator::balanced();

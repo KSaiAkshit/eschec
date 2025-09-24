@@ -1,4 +1,4 @@
-#[derive(Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct Prng {
     state: u64,
 }

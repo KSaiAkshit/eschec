@@ -1,7 +1,5 @@
 use std::sync::LazyLock;
 
-use rand::{Rng, SeedableRng, rngs::StdRng};
-
 use crate::prelude::*;
 
 pub static ZOBRIST: LazyLock<ZobristKeys> = LazyLock::new(ZobristKeys::new);
@@ -31,26 +29,26 @@ impl Default for ZobristKeys {
 
 impl ZobristKeys {
     pub fn new() -> Self {
-        let mut rng = StdRng::seed_from_u64(1070373321345817214);
+        let mut rng = Prng::init(1070373321345817214);
         let mut keys = Self {
-            black_to_move: rng.random(),
+            black_to_move: rng.rand(),
             ..Default::default()
         };
 
         for side in Side::SIDES {
             Piece::all_pieces().for_each(|piece| {
                 for square in 0..NUM_SQUARES {
-                    keys.pieces[side.index()][piece.index()][square] = rng.random();
+                    keys.pieces[side.index()][piece.index()][square] = rng.rand();
                 }
             })
         }
 
         for i in 0..NUM_CASTLING_RIGHTS {
-            keys.castling[i] = rng.random();
+            keys.castling[i] = rng.rand();
         }
 
         for i in 0..NUM_FILES {
-            keys.en_passant_file[i] = rng.random();
+            keys.en_passant_file[i] = rng.rand();
         }
 
         keys
@@ -70,11 +68,9 @@ pub fn calculate_hash(board: &Board) -> u64 {
     hash ^= ZOBRIST.castling[board.castling_rights.get_rights() as usize];
 
     if let Some(ep_sq) = board.enpassant_square {
-        let opponent_pawns = board.positions.get_piece_bb(board.stm.flip(), Piece::Pawn);
-
-        let legal_ep_capture_sq = MOVE_TABLES.get_pawn_attacks(ep_sq.index(), board.stm);
-
-        if (*opponent_pawns & legal_ep_capture_sq).any() {
+        let potential_attackers = MOVE_TABLES.get_pawn_attacks(ep_sq.index(), board.stm.flip());
+        let our_pawns = board.positions.get_piece_bb(board.stm, Piece::Pawn);
+        if (*our_pawns & potential_attackers).any() {
             hash ^= ZOBRIST.en_passant_file[ep_sq.col()];
         }
     }
@@ -90,6 +86,95 @@ pub fn calculate_hash(board: &Board) -> u64 {
 mod tests {
     use super::*;
     use crate::consts::KIWIPETE;
+    use std::collections::HashMap;
+
+    fn get_positional_fen(fen: &str) -> String {
+        fen.split_whitespace()
+            .take(4)
+            .collect::<Vec<&str>>()
+            .join(" ")
+    }
+
+    /// Recursively explores the move tree to a given depth, checking for Zobrist hash collisions.
+    fn perft_collision_driver(
+        board: &mut Board,
+        depth: u8,
+        nodes: &mut u64,
+        hashes: &mut HashMap<u64, String>,
+    ) -> miette::Result<()> {
+        if depth == 0 {
+            *nodes += 1;
+            let current_fen = board.to_fen()?;
+            let current_positional_fen = get_positional_fen(&current_fen);
+
+            if let Some(existing_fen) = hashes.get(&board.hash) {
+                let existing_positional_fen = get_positional_fen(existing_fen);
+                if *existing_positional_fen != current_positional_fen {
+                    miette::bail!(
+                        "Zobrist hash collision detected!\n\
+                        Hash: {}\n\
+                        Position 1 FEN: {existing_fen}\n\
+                        Position 2 FEN: {current_fen}\n\
+                        ",
+                        board.hash
+                    )
+                }
+            } else {
+                let calculated_hash = calculate_hash(board);
+                if board.hash != calculated_hash {
+                    miette::bail!(
+                        "Incremental hash mismatch!\n\
+                        Board FEN: {current_fen}\n\
+                        Board.hash:      {}\n\
+                        Calculated hash: {calculated_hash}
+                        ",
+                        board.hash
+                    )
+                }
+                hashes.insert(board.hash, current_fen);
+            }
+            return Ok(());
+        }
+
+        let mut legal_moves = MoveBuffer::new();
+        board.generate_legal_moves(&mut legal_moves, false);
+
+        for mov in legal_moves {
+            let move_data = board.make_move(mov)?;
+            perft_collision_driver(board, depth - 1, nodes, hashes)?;
+            board.unmake_move(&move_data).unwrap();
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    #[ignore]
+    fn test_zobrist_collisions_with_perft() {
+        let mut board = Board::new();
+        let mut nodes = 0;
+        let mut hashes: HashMap<u64, String> = HashMap::new();
+
+        const PERFT_DEPTH: u8 = 7;
+
+        println!(
+            "Starting collision test with perft at depth {}...",
+            PERFT_DEPTH
+        );
+
+        let result = perft_collision_driver(&mut board, PERFT_DEPTH, &mut nodes, &mut hashes);
+
+        println!(
+            "Test finished. Visited {} leaf nodes, found {} unique positions/hashes.",
+            nodes,
+            hashes.len()
+        );
+
+        if let Err(e) = result {
+            panic!("{}", e);
+        }
+    }
+
     #[test]
     fn different_hash() {
         let legal_ep_fen = "4k3/8/8/8/3pP3/8/8/4K3 b - e3 0 1";

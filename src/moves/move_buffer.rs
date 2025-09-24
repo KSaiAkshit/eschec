@@ -1,5 +1,8 @@
 use std::slice::SliceIndex;
 
+#[cfg(feature = "parallel")]
+use rayon::iter::{IntoParallelIterator, IntoParallelRefIterator, IntoParallelRefMutIterator};
+
 use crate::{consts::MAX_MOVES, prelude::Move};
 
 #[derive(Clone, Copy, Debug)]
@@ -21,7 +24,7 @@ impl MoveBuffer {
             len: 0,
         }
     }
-    pub fn push(&mut self, m: Move) {
+    pub const fn push(&mut self, m: Move) {
         assert!(self.len < MAX_MOVES, "MoveBuffer Overflow!");
         self.moves[self.len] = m;
         self.len += 1;
@@ -35,19 +38,19 @@ impl MoveBuffer {
 
     /// Returns true if the buffer is empty.
     #[inline(always)]
-    pub fn is_empty(&self) -> bool {
+    pub const fn is_empty(&self) -> bool {
         self.len == 0
     }
 
     /// Returns the number of moves in the buffer.
     #[inline(always)]
-    pub fn len(&self) -> usize {
+    pub const fn len(&self) -> usize {
         self.len
     }
 
     /// Clears the buffer (sets len to zero).
     #[inline(always)]
-    pub fn clear(&mut self) {
+    pub const fn clear(&mut self) {
         self.len = 0;
     }
 
@@ -117,6 +120,11 @@ impl MoveBuffer {
     }
 }
 
+/// An iterator that yields references to the moves in a `MoveBuffer`.
+///
+/// This struct is created by the [`iter()`](MoveBuffer::iter) method on `MoveBuffer`
+/// or when iterating over a `&MoveBuffer` in a `for` loop. You should not need to
+/// construct this manually.
 pub struct MoveBufferIter<'a> {
     buf: &'a MoveBuffer,
     pos: usize,
@@ -146,6 +154,22 @@ impl<'a> ExactSizeIterator for MoveBufferIter<'a> {
     }
 }
 
+/// Enables iterating over a `&MoveBuffer` with a `for` loop.
+///
+/// This implementation allows for idiomatic, read-only iteration over the moves
+/// contained within the buffer.
+///
+/// # Example
+/// ```
+/// # use eschec::prelude::{Move, MoveBuffer};
+/// let mut buffer = MoveBuffer::new();
+/// buffer.push(Move::new(0, 1, 0));
+///
+/// for mov in &buffer {
+///     // mov is a &Move
+///     println!("{:?}", mov);
+/// }
+/// ```
 impl<'a> IntoIterator for &'a MoveBuffer {
     type Item = &'a Move;
     type IntoIter = MoveBufferIter<'a>;
@@ -154,6 +178,24 @@ impl<'a> IntoIterator for &'a MoveBuffer {
     }
 }
 
+/// Enables iterating mutably over a `&mut MoveBuffer` with a `for` loop.
+///
+/// This implementation allows for idiomatic, mutable iteration, enabling in-place
+/// modification of the moves within the buffer. It delegates to the standard slice
+/// iterator for optimal performance.
+///
+/// # Example
+/// ```
+/// # use eschec::prelude::{Move, MoveBuffer};
+/// let mut buffer = MoveBuffer::new();
+/// buffer.push(Move::new(0, 1, 0));
+///
+/// for mov in &mut buffer {
+///     // mov is a &mut Move, so it can be modified.
+///     *mov = Move::new(2, 3, 0);
+/// }
+/// assert_eq!(buffer.first(), Some(Move::new(2, 3, 0)));
+/// ```
 impl<'a> IntoIterator for &'a mut MoveBuffer {
     type Item = &'a mut Move;
     type IntoIter = std::slice::IterMut<'a, Move>;
@@ -162,6 +204,10 @@ impl<'a> IntoIterator for &'a mut MoveBuffer {
     }
 }
 
+/// An iterator that consumes a `MoveBuffer` and yields its moves by value.
+///
+/// This struct is created when iterating over a `MoveBuffer` by value in a `for` loop.
+/// You should not need to construct this manually.
 pub struct MoveBufferIntoIter {
     buf: MoveBuffer,
     pos: usize,
@@ -192,10 +238,68 @@ impl ExactSizeIterator for MoveBufferIntoIter {
     }
 }
 
+/// Enables consuming a `MoveBuffer` with a `for` loop, yielding moves by value.
+///
+/// This implementation allows for idiomatic iteration that takes ownership of the
+/// moves from the buffer.
+///
+/// # Example
+/// ```
+/// # use eschec::prelude::{Move, MoveBuffer};
+/// let mut buffer = MoveBuffer::new();
+/// buffer.push(Move::new(0, 1, 0));
+///
+/// for mov in buffer {
+///     // mov is a Move (by value), not a reference.
+///     println!("{:?}", mov);
+/// }
+/// // `buffer` has been moved and cannot be used here anymore.
+/// ```
 impl IntoIterator for MoveBuffer {
     type Item = Move;
     type IntoIter = MoveBufferIntoIter;
     fn into_iter(self) -> Self::IntoIter {
         MoveBufferIntoIter { buf: self, pos: 0 }
+    }
+}
+
+/// Implementation for parallel iteration over borrowed `MoveBuffer` (`&MoveBuffer`).
+#[cfg(feature = "parallel")]
+impl<'a> IntoParallelIterator for &'a MoveBuffer {
+    type Item = &'a Move;
+    type Iter = rayon::slice::Iter<'a, Move>;
+
+    fn into_par_iter(self) -> Self::Iter {
+        self.moves[..self.len].par_iter()
+    }
+}
+
+/// Implementation for parallel iteration over a mutable `MoveBuffer` (`&mut MoveBuffer`).
+///
+/// This allows you to use `.par_iter_mut()` to modify moves in parallel.
+#[cfg(feature = "parallel")]
+impl<'a> IntoParallelIterator for &'a mut MoveBuffer {
+    type Item = &'a mut Move;
+    type Iter = rayon::slice::IterMut<'a, Move>;
+
+    fn into_par_iter(self) -> Self::Iter {
+        self.moves[..self.len].par_iter_mut()
+    }
+}
+
+/// Implementation for parallel iteration that consumes the `MoveBuffer`.
+///
+/// This allows you to use `.into_par_iter()` to get a parallel iterator that
+/// takes ownership of the moves. This is less common but can be useful.
+#[cfg(feature = "parallel")]
+impl IntoParallelIterator for MoveBuffer {
+    type Item = Move;
+    type Iter = rayon::vec::IntoIter<Move>;
+
+    fn into_par_iter(self) -> Self::Iter {
+        // To create a consuming parallel iterator, the slice first needs to be converted
+        //  into an owned Vec, and then use its parallel iterator.
+        let vec: Vec<Move> = self.moves[..self.len].to_vec();
+        vec.into_par_iter()
     }
 }
