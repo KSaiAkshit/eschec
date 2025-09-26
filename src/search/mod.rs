@@ -231,7 +231,7 @@ impl Search {
         let mut alpha = alpha_base;
         let beta = beta_base;
 
-        let mut local_best_move: Option<Move> = legal_moves.first();
+        let mut local_best_move: Option<Move> = legal_moves.first().copied();
         let mut local_best_score: i32 = i32::MIN + 1;
 
         for &m in legal_moves {
@@ -311,7 +311,7 @@ impl Search {
         let mut tries: usize = 0;
         loop {
             if self.should_stop() {
-                return (legal_moves.first(), i32::MIN + 1);
+                return (legal_moves.first().copied(), i32::MIN + 1);
             }
             trace!("ASP window: ({alpha_base}, {beta_base})");
 
@@ -382,7 +382,7 @@ impl Search {
         }
 
         // Initialized to first move as fallback
-        let mut best_move = legal_moves.first();
+        let mut best_move = legal_moves.first().copied();
         let mut best_score = i32::MIN + 1;
         let mut completed_depth = u8::default();
 
@@ -561,7 +561,7 @@ impl Search {
             self.sort_moves::<MainSearchPolicy>(board, &mut legal_moves, Some(tt_move), ply);
         }
 
-        let mut best_move_this_node = legal_moves.first().unwrap();
+        let mut best_move_this_node = legal_moves.first().copied().unwrap();
         let mut best_score = i32::MIN + 1;
         let num_moves = legal_moves.len();
 

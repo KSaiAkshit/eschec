@@ -1,10 +1,14 @@
-use std::slice::SliceIndex;
+use std::slice::{Iter, IterMut, SliceIndex};
 
 #[cfg(feature = "parallel")]
 use rayon::iter::{IntoParallelIterator, IntoParallelRefIterator, IntoParallelRefMutIterator};
 
 use crate::{consts::MAX_MOVES, prelude::Move};
 
+/// A fixed-size, stack-allocated buffer for storing chess moves.
+///
+/// It holds up to `MAX_MOVES` (256) and tracks the
+/// number of moves currently stored.
 #[derive(Clone, Copy, Debug)]
 pub struct MoveBuffer {
     moves: [Move; MAX_MOVES],
@@ -18,12 +22,19 @@ impl Default for MoveBuffer {
 }
 
 impl MoveBuffer {
+    /// Creates a new, empty `MoveBuffer`.
     pub const fn new() -> Self {
         Self {
             moves: [Move(0); MAX_MOVES],
             len: 0,
         }
     }
+
+    /// Adds a move to the end of the buffer.
+    ///
+    /// # Panics
+    /// Panics if the buffer is full.
+    #[inline(always)]
     pub const fn push(&mut self, m: Move) {
         assert!(self.len < MAX_MOVES, "MoveBuffer Overflow!");
         self.moves[self.len] = m;
@@ -33,7 +44,7 @@ impl MoveBuffer {
     /// Returns true if the buffer contains the given move.
     #[inline(always)]
     pub fn contains(&self, m: &Move) -> bool {
-        self.moves[..self.len].contains(m)
+        self.as_slice().contains(m)
     }
 
     /// Returns true if the buffer is empty.
@@ -54,46 +65,46 @@ impl MoveBuffer {
         self.len = 0;
     }
 
-    /// Returns a slice of the moves.
+    /// Returns a slice containing all the moves in the buffer.
     #[inline(always)]
     pub fn as_slice(&self) -> &[Move] {
         &self.moves[..self.len]
     }
 
-    /// Returns  the first move, or None if the buffer is empty.
-    pub fn first(&self) -> Option<Move> {
-        if self.len > 0 {
-            Some(self.moves[0])
-        } else {
-            None
-        }
+    /// Returns a mutable slice containing all the moves in the buffer.
+    #[inline(always)]
+    pub fn as_mut_slice(&mut self) -> &mut [Move] {
+        &mut self.moves[..self.len]
     }
 
-    /// Returns the last move, or None if empty.
-    pub fn last(&self) -> Option<Move> {
-        if self.len > 0 {
-            Some(self.moves[self.len - 1])
-        } else {
-            None
-        }
+    /// Returns a reference to the first move, or `None` if the buffer is empty.
+    pub fn first(&self) -> Option<&Move> {
+        self.as_slice().first()
     }
 
+    /// Returns a reference to the last move, or `None` if the buffer is empty.
+    pub fn last(&self) -> Option<&Move> {
+        self.as_slice().last()
+    }
+
+    /// Retains only the elements specified by the predicate.
+    ///
+    /// In-place filtering of the buffer. Moves for which `pred` returns `false` are removed.
     pub fn retain<F>(&mut self, mut pred: F)
     where
         F: FnMut(&Move) -> bool,
     {
-        let mut write = 0;
-        for read in 0..self.len {
-            if pred(&self.moves[read]) {
-                if write != read {
-                    self.moves[write] = self.moves[read];
-                }
-                write += 1;
+        let mut len = 0;
+        for i in 0..self.len {
+            if pred(&self.moves[i]) {
+                self.moves.swap(len, i);
+                len += 1;
             }
         }
-        self.len = write
+        self.len = len;
     }
 
+    /// Returns a reference to a move or sub-slice, or `None` if out of bounds.
     pub fn get<I>(&self, index: I) -> Option<&I::Output>
     where
         I: SliceIndex<Self>,
@@ -101,63 +112,25 @@ impl MoveBuffer {
         index.get(self)
     }
 
-    /// Returns a mutable slice of the moves.
-    #[inline(always)]
-    pub fn as_mut_slice(&mut self) -> &mut [Move] {
-        &mut self.moves[..self.len]
-    }
-
     /// Returns an iterator over the moves.
+    /// This is a convenience wrapper around the slice's iterator.
     #[inline(always)]
-    pub fn iter(&self) -> impl Iterator<Item = &Move> {
-        self.moves[..self.len].iter()
+    pub fn iter(&self) -> Iter<'_, Move> {
+        self.as_slice().iter()
     }
 
     /// Returns a mutable iterator over the moves.
+    /// This is a convenience wrapper around the slice's mutable iterator.
     #[inline(always)]
-    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut Move> {
-        self.moves[..self.len].iter_mut()
-    }
-}
-
-/// An iterator that yields references to the moves in a `MoveBuffer`.
-///
-/// This struct is created by the [`iter()`](MoveBuffer::iter) method on `MoveBuffer`
-/// or when iterating over a `&MoveBuffer` in a `for` loop. You should not need to
-/// construct this manually.
-pub struct MoveBufferIter<'a> {
-    buf: &'a MoveBuffer,
-    pos: usize,
-}
-
-impl<'a> Iterator for MoveBufferIter<'a> {
-    type Item = &'a Move;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.pos < self.buf.len {
-            let item = &self.buf.moves[self.pos];
-            self.pos += 1;
-            Some(item)
-        } else {
-            None
-        }
-    }
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        let remaining = self.buf.len - self.pos;
-        (remaining, Some(remaining))
-    }
-}
-
-impl<'a> ExactSizeIterator for MoveBufferIter<'a> {
-    fn len(&self) -> usize {
-        self.buf.len - self.pos
+    pub fn iter_mut(&mut self) -> IterMut<'_, Move> {
+        self.as_mut_slice().iter_mut()
     }
 }
 
 /// Enables iterating over a `&MoveBuffer` with a `for` loop.
 ///
-/// This implementation allows for idiomatic, read-only iteration over the moves
-/// contained within the buffer.
+/// This implementation allows for read-only iteration over the moves
+/// contained within the buffer by delegating to the standard slice iterator.
 ///
 /// # Example
 /// ```
@@ -172,17 +145,19 @@ impl<'a> ExactSizeIterator for MoveBufferIter<'a> {
 /// ```
 impl<'a> IntoIterator for &'a MoveBuffer {
     type Item = &'a Move;
-    type IntoIter = MoveBufferIter<'a>;
+    type IntoIter = Iter<'a, Move>;
+
+    #[inline(always)]
     fn into_iter(self) -> Self::IntoIter {
-        MoveBufferIter { buf: self, pos: 0 }
+        self.as_slice().iter()
     }
 }
 
 /// Enables iterating mutably over a `&mut MoveBuffer` with a `for` loop.
 ///
-/// This implementation allows for idiomatic, mutable iteration, enabling in-place
+/// This implementation allows for mutable iteration, enabling in-place
 /// modification of the moves within the buffer. It delegates to the standard slice
-/// iterator for optimal performance.
+/// iterator.
 ///
 /// # Example
 /// ```
@@ -194,20 +169,38 @@ impl<'a> IntoIterator for &'a MoveBuffer {
 ///     // mov is a &mut Move, so it can be modified.
 ///     *mov = Move::new(2, 3, 0);
 /// }
-/// assert_eq!(buffer.first(), Some(Move::new(2, 3, 0)));
+/// assert_eq!(buffer.first(), Some(&Move::new(2, 3, 0)));
 /// ```
 impl<'a> IntoIterator for &'a mut MoveBuffer {
     type Item = &'a mut Move;
-    type IntoIter = std::slice::IterMut<'a, Move>;
+    type IntoIter = IterMut<'a, Move>;
+
+    #[inline(always)]
     fn into_iter(self) -> Self::IntoIter {
-        self.moves[..self.len].iter_mut()
+        self.as_mut_slice().iter_mut()
     }
 }
 
-/// An iterator that consumes a `MoveBuffer` and yields its moves by value.
+/// Enables consuming a `MoveBuffer` with a `for` loop, yielding moves by value.
 ///
-/// This struct is created when iterating over a `MoveBuffer` by value in a `for` loop.
-/// You should not need to construct this manually.
+/// This implementation allows for iteration that takes ownership of the
+/// moves from the buffer.
+///
+/// **Note:** This operation involves a heap allocation to convert the internal
+/// array slice into a `Vec` before iterating. It is less performant than borrowed iteration.
+///
+/// # Example
+/// ```
+/// # use eschec::prelude::{Move, MoveBuffer};
+/// let mut buffer = MoveBuffer::new();
+/// buffer.push(Move::new(0, 1, 0));
+///
+/// for mov in buffer {
+///     // mov is a Move (by value), not a reference.
+///     println!("{:?}", mov);
+/// }
+/// // `buffer` has been moved and cannot be used here anymore.
+/// ```
 pub struct MoveBufferIntoIter {
     buf: MoveBuffer,
     pos: usize,
@@ -232,45 +225,26 @@ impl Iterator for MoveBufferIntoIter {
     }
 }
 
-impl ExactSizeIterator for MoveBufferIntoIter {
-    fn len(&self) -> usize {
-        self.buf.len - self.pos
-    }
-}
+impl ExactSizeIterator for MoveBufferIntoIter {}
 
-/// Enables consuming a `MoveBuffer` with a `for` loop, yielding moves by value.
-///
-/// This implementation allows for idiomatic iteration that takes ownership of the
-/// moves from the buffer.
-///
-/// # Example
-/// ```
-/// # use eschec::prelude::{Move, MoveBuffer};
-/// let mut buffer = MoveBuffer::new();
-/// buffer.push(Move::new(0, 1, 0));
-///
-/// for mov in buffer {
-///     // mov is a Move (by value), not a reference.
-///     println!("{:?}", mov);
-/// }
-/// // `buffer` has been moved and cannot be used here anymore.
-/// ```
 impl IntoIterator for MoveBuffer {
     type Item = Move;
     type IntoIter = MoveBufferIntoIter;
+
+    #[inline(always)]
     fn into_iter(self) -> Self::IntoIter {
         MoveBufferIntoIter { buf: self, pos: 0 }
     }
 }
 
-/// Implementation for parallel iteration over borrowed `MoveBuffer` (`&MoveBuffer`).
+/// Implementation for parallel iteration over a borrowed `MoveBuffer` (`&MoveBuffer`).
 #[cfg(feature = "parallel")]
 impl<'a> IntoParallelIterator for &'a MoveBuffer {
     type Item = &'a Move;
     type Iter = rayon::slice::Iter<'a, Move>;
 
     fn into_par_iter(self) -> Self::Iter {
-        self.moves[..self.len].par_iter()
+        self.as_slice().par_iter()
     }
 }
 
@@ -283,22 +257,22 @@ impl<'a> IntoParallelIterator for &'a mut MoveBuffer {
     type Iter = rayon::slice::IterMut<'a, Move>;
 
     fn into_par_iter(self) -> Self::Iter {
-        self.moves[..self.len].par_iter_mut()
+        self.as_mut_slice().par_iter_mut()
     }
 }
 
 /// Implementation for parallel iteration that consumes the `MoveBuffer`.
 ///
 /// This allows you to use `.into_par_iter()` to get a parallel iterator that
-/// takes ownership of the moves. This is less common but can be useful.
+/// takes ownership of the moves.
+///
+/// **Note:** This operation involves a heap allocation.
 #[cfg(feature = "parallel")]
 impl IntoParallelIterator for MoveBuffer {
     type Item = Move;
     type Iter = rayon::vec::IntoIter<Move>;
 
     fn into_par_iter(self) -> Self::Iter {
-        // To create a consuming parallel iterator, the slice first needs to be converted
-        //  into an owned Vec, and then use its parallel iterator.
         let vec: Vec<Move> = self.moves[..self.len].to_vec();
         vec.into_par_iter()
     }

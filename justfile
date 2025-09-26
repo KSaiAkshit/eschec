@@ -10,6 +10,8 @@ test_suite_dir := './test_suites/sts'
 test_suite_blitz_file := './test_suites/sts/sts_blitz.epd'
 epd_test_depth := "8"
 repo_url := env('REPO_URL')
+perf_reps := "5"
+perf_stat_events := "cycles,instructions,branches,branch-misses,cache-references,cache-misses"
 OUT_DIR := "/tmp/out_dir"
 BIN_NAME := "eschec"
 export RUST_BACKTRACE := "full"
@@ -60,10 +62,17 @@ build-all-tags:
     echo "All binaries saved to {{ OUT_DIR }}"
 
 [doc("Build and symlink binary")]
-update:
+update bin="eschec":
     -rm ./gauntlet/engines/eschec
-    just build
+    just build {{ bin }}
     cp target/release/eschec gauntlet/engines/
+
+[doc("Warmup with the given binary and then run perf stat on it")]
+stat bin:
+    @echo "Warming up 3x"
+    @for i in $(seq 1 3); do {{ bin }}; done
+    @echo "{{ MAGENTA }}Starting perf stat{{ NORMAL }}"
+    perf stat -r {{ perf_reps }} -e {{ perf_stat_events }} {{ bin }}
 
 [doc("Run a gauntlet match against another engine using cutechess-cli")]
 [positional-arguments]
@@ -184,8 +193,8 @@ test:
     cargo nextest run
 
 [doc("Build in release mode")]
-@build:
-    cargo build --bin eschec {{ flags }}
+@build bin="eschec":
+    cargo build --bin {{ bin }} {{ flags }}
 
 [doc("Set some variables for debugging")]
 @setup:
