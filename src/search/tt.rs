@@ -1,4 +1,11 @@
+use std::u8;
+
+#[cfg(target_arch = "x86_64")]
+use std::arch::x86_64::{_MM_HINT_T0, _mm_prefetch};
+
 use crate::{consts::MAX_HASH, moves::move_info::Move};
+
+const NUM_ENTRIES_PER_CLUSTER: usize = 4;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ScoreTypes {
@@ -34,19 +41,35 @@ impl Default for TranspositionEntry {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Copy, Default)]
+pub struct Cluster {
+    entries: [TranspositionEntry; NUM_ENTRIES_PER_CLUSTER],
+}
+
+impl Cluster {
+    pub const CLUSTER_SIZE: usize = std::mem::size_of::<Cluster>();
+}
+
+#[derive(Debug)]
 pub struct TranspositionTable {
-    entries: Vec<TranspositionEntry>,
+    clusters: Vec<Cluster>,
     size: usize,
+}
+
+/// Default to 16 MB Transposition Table
+impl Default for TranspositionTable {
+    fn default() -> Self {
+        Self::new(16)
+    }
 }
 
 impl TranspositionTable {
     pub fn new(size_mb: usize) -> Self {
         let num_entries = (size_mb * 1024 * 1024) / TranspositionEntry::ENTRY_SIZE;
-        let size = num_entries.next_power_of_two();
+        let num_clusters = (num_entries / NUM_ENTRIES_PER_CLUSTER).next_power_of_two();
         Self {
-            entries: vec![TranspositionEntry::default(); size],
-            size,
+            clusters: vec![Cluster::default(); num_clusters],
+            size: num_clusters,
         }
     }
 
@@ -56,9 +79,9 @@ impl TranspositionTable {
             "Hash table size ({new_size_mb} MB) exceeds max allowed {MAX_HASH} MB"
         );
         let new_entries_num = (new_size_mb * 1024 * 1024) / TranspositionEntry::ENTRY_SIZE;
-        let new_size = new_entries_num.next_power_of_two();
-        self.entries
-            .resize_with(new_size, TranspositionEntry::default);
+        let new_size = (new_entries_num / NUM_ENTRIES_PER_CLUSTER).next_power_of_two();
+        self.clusters.resize_with(new_size, Cluster::default);
+        self.size = new_size;
 
         Ok(())
     }
@@ -69,30 +92,50 @@ impl TranspositionTable {
     }
 
     pub fn probe(&self, hash: u64) -> Option<&TranspositionEntry> {
-        let entry = &self.entries[self.index(hash)];
-        if entry.hash == hash {
-            Some(entry)
-        } else {
-            None
+        let index = self.index(hash);
+        #[cfg(target_arch = "x86_64")]
+        unsafe {
+            let ptr = self.clusters.as_ptr().cast::<i8>();
+            _mm_prefetch(ptr.add(index * Cluster::CLUSTER_SIZE), _MM_HINT_T0);
         }
+        let cluster = &self.clusters[self.index(hash)];
+        cluster.entries.iter().find(|&entry| entry.hash == hash)
     }
 
     pub fn store(&mut self, new_entry: TranspositionEntry) {
         let index = self.index(new_entry.hash);
-        let entry = &mut self.entries[index];
+        let cluster = &mut self.clusters[index];
 
         // Depth-Preferred Replacement:
         // Only replace an entry if the new one is from a deeper or equal search.
         // This is to prevents shallow searches, like from NMP, from overwriting
         // information from deeper searches.
-        if new_entry.depth >= entry.depth {
-            *entry = new_entry;
+        for entry in &mut cluster.entries {
+            if entry.hash == new_entry.hash {
+                if new_entry.depth >= entry.depth {
+                    *entry = new_entry;
+                }
+                return;
+            }
+        }
+
+        let mut replace_idx = 0;
+        let mut min_depth = u8::MAX;
+        for (i, entry) in cluster.entries.iter().enumerate() {
+            if entry.depth < min_depth {
+                min_depth = entry.depth;
+                replace_idx = i;
+            }
+        }
+
+        if new_entry.depth >= min_depth {
+            cluster.entries[replace_idx] = new_entry;
         }
     }
 
     pub fn clear(&mut self) {
-        for e in self.entries.iter_mut() {
-            *e = TranspositionEntry::default();
+        for c in self.clusters.iter_mut() {
+            *c = Cluster::default();
         }
     }
 }

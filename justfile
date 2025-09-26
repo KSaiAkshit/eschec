@@ -68,11 +68,12 @@ update bin="eschec":
     cp target/release/eschec gauntlet/engines/
 
 [doc("Warmup with the given binary and then run perf stat on it")]
-stat bin:
+stat bin: setup
     @echo "Warming up 3x"
     @for i in $(seq 1 3); do {{ bin }}; done
     @echo "{{ MAGENTA }}Starting perf stat{{ NORMAL }}"
-    perf stat -r {{ perf_reps }} -e {{ perf_stat_events }} {{ bin }}
+    perf stat -v -r {{ perf_reps }} -e {{ perf_stat_events }} {{ bin }}
+    notify-send "Done stating"
 
 [doc("Run a gauntlet match against another engine using cutechess-cli")]
 [positional-arguments]
