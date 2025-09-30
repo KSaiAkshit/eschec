@@ -31,7 +31,7 @@ r6r/ppk1npp1/1b2p2p/2pnP2P/4N3/2p2N2/PPPB1PP1/1K1RR3 w - - bm Bxc3; id "Recaptur
 2r2nk1/1b3ppp/p2q1n2/1p1p4/3B1P1Q/1P1NP1P1/P5BP/2R3K1 w - - bm Bxf6; c0 "Bxf6=10, Bc5=2, Rxc8=7, f5=4"; id "Bishop vs Knight.025";
 r1qr2k1/1b1nbpp1/1P6/p1B1p2p/4P3/3B3Q/2P1N1PP/RR1N3K b - - bm Nxc5; id "Recapturing.069"; c0 "Nxc5=10, Bg5=6";
 3k1r1r/p2n1p1p/q2p2pQ/1p2P3/2pP4/P4N2/5PPP/2R1R1K1 w - - bm a4; id "Undermine.049"; c0 "a4=10, Ng5=5, Qh4+=8, exd6=6";
-r7/p1r2nk1/1pNq1np1/1P1p1p2/P2Qp3/4P1P1/2R1P1BP/2R3K1 b - - bm Ng5; id "Knight Outposts/Centralization/Repositioning.023"; c0 "Ng5=10, Rac8=4, Rb7=3, Re8=3";
+r7/p1r2nk1/1pNq1np1/1P1p1p2/P2Qp3/4P1P1/2R1P1BP/2R3K1 b - - bm Ng5; id "Knight Outposts/Repositioning/Centralization.023"; c0 "Ng5=10, Rac8=4, Rb7=3, Re8=3";
 2r1r2k/q6p/6p1/3R1p2/1p1P1B2/2bQPBP1/5P1P/6K1 w - - bm Qb5; c0 "Qb5=10, Kg2=5, Rb5=5"; id "Square Vacancy.032";
 1rb3k1/2pn2pp/p2p4/4p3/1pP4q/1P1PBP1P/1PQ2P2/R3R1K1 w - - bm c5; id "Undermine.020"; c0 "c5=10, Kf1=5, Kg2=5, Ra5=5";
 r5k1/1p5p/p1p1qrnP/2B1pb2/R1P5/2P2B2/P2Q2P1/5RK1 w - - bm Qg5; c0 "Qg5=10, Qb2=1, Rb4=6"; id "Square Vacancy.024";

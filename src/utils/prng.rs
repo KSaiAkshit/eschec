@@ -4,24 +4,24 @@ pub struct Prng {
 }
 
 impl Prng {
-    pub fn init(seed: u64) -> Self {
+    pub const fn init(seed: u64) -> Self {
         Self { state: seed }
     }
 
-    pub fn rand(&mut self) -> u64 {
+    pub const fn rand(&mut self) -> u64 {
         self.next_u64()
     }
 
-    pub fn sparse_rand(&mut self) -> u64 {
+    pub const fn sparse_rand(&mut self) -> u64 {
         self.next_u64() & self.next_u64() & self.next_u64()
     }
 
-    pub fn singular_bit(&mut self) -> u64 {
+    pub const fn singular_bit(&mut self) -> u64 {
         let random_shift = self.rand() % 64;
         1u64 << random_shift
     }
 
-    fn next_u64(&mut self) -> u64 {
+    const fn next_u64(&mut self) -> u64 {
         self.state ^= self.state >> 12;
         self.state ^= self.state << 25;
         self.state ^= self.state >> 27;

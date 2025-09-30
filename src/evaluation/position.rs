@@ -8,6 +8,7 @@ pub struct PositionEvaluator {
     piece_square_tables: [[Score; NUM_SQUARES]; 6],
     rook_open_file_bonus: Score,
     rook_semi_file_bonus: Score,
+    knight_outpost_bonus: Score,
 }
 
 impl Default for PositionEvaluator {
@@ -17,11 +18,40 @@ impl Default for PositionEvaluator {
             piece_square_tables: [[Score::default(); NUM_SQUARES]; 6],
             rook_open_file_bonus: Score::default(),
             rook_semi_file_bonus: Score::default(),
+            knight_outpost_bonus: Score::default(),
         }
     }
 }
 
 impl PositionEvaluator {
+    const KNIGHT_OUTPOST_MASK: [BitBoard; 2] = {
+        let mut f = 2;
+        let mut files_mask = BitBoard(0);
+        while f <= 5 {
+            files_mask = files_mask.or(BitBoard(FILE_MASKS[f]));
+            f += 1;
+        }
+
+        let mut r = 3;
+        let mut white_rows = BitBoard(0);
+        while r <= 6 {
+            white_rows = white_rows.or(BitBoard(RANK_MASKS[r]));
+            r += 1;
+        }
+
+        let white_outpost_mask = files_mask.and(white_rows);
+
+        let mut r = 1;
+        let mut black_rows = BitBoard(0);
+        while r <= 4 {
+            black_rows = black_rows.or(BitBoard(RANK_MASKS[r]));
+            r += 1;
+        }
+
+        let black_outpost_mask = files_mask.and(black_rows);
+
+        [white_outpost_mask, black_outpost_mask]
+    };
     pub fn new() -> Self {
         // Just advance
         #[rustfmt::skip]
@@ -179,14 +209,47 @@ impl PositionEvaluator {
             ],
             rook_open_file_bonus: Score::new(40, 20),
             rook_semi_file_bonus: Score::new(20, 10),
+            knight_outpost_bonus: Score::new(30, 15),
         }
     }
 
-    fn evaluate_rook_files(&self, board: &Board, side: Side) -> Score {
+    fn evaluate_side(&self, board: &Board, side: Side) -> Score {
         let mut score = Score::default();
-        let rooks = board.positions.get_piece_bb(side, Piece::Rook);
+        let side_idx = side.index();
+        let opp_idx = side.flip().index();
         let friendly_pawns = board.positions.get_piece_bb(side, Piece::Pawn);
         let opponent_pawns = board.positions.get_piece_bb(side.flip(), Piece::Pawn);
+
+        // Knight outposts
+        let knights = board.positions.get_piece_bb(side, Piece::Knight);
+
+        for knight_sq_idx in knights.iter_bits() {
+            let is_outpost_rank =
+                (Self::KNIGHT_OUTPOST_MASK[side_idx] & BitBoard(1 << knight_sq_idx)).any();
+
+            if !is_outpost_rank {
+                continue;
+            }
+
+            // Check the squares behind from which a friendly pawn could attack the knight's square
+            let pawn_support_squares =
+                PAWN_TABLES.pawn_backward_support_masks[side_idx][knight_sq_idx];
+            let is_supported_by_pawn = (pawn_support_squares & *friendly_pawns).any();
+
+            if is_supported_by_pawn {
+                // Check th squares from which an enemy pawn could attack the knights square
+                let pawn_attack_squares =
+                    PAWN_TABLES.pawn_backward_support_masks[opp_idx][knight_sq_idx];
+                let is_attackable_by_pawn = (pawn_attack_squares & *opponent_pawns).any();
+
+                if !is_attackable_by_pawn {
+                    score += self.knight_outpost_bonus;
+                }
+            }
+        }
+
+        // Rook open/semi-open files
+        let rooks = board.positions.get_piece_bb(side, Piece::Rook);
 
         for rook_sq in rooks.iter_bits() {
             let file_mask = BitBoard(FILE_MASKS[rook_sq % 8]);
@@ -202,6 +265,7 @@ impl PositionEvaluator {
                 }
             }
         }
+
         score
     }
 }
@@ -227,8 +291,8 @@ impl Evaluator for PositionEvaluator {
                 score -= piece_table[mirrored_idx];
             }
         }
-        score += self.evaluate_rook_files(board, Side::White);
-        score -= self.evaluate_rook_files(board, Side::Black);
+        score += self.evaluate_side(board, Side::White);
+        score -= self.evaluate_side(board, Side::Black);
 
         // Convert to side-to-move perspective
         if board.stm == Side::White {
