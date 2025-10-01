@@ -397,7 +397,7 @@ impl Board {
         Ok(move_data)
     }
 
-    pub fn see(&self, mv: Move) -> i32 {
+    pub fn static_exchange_evaluation(&self, mv: Move) -> i32 {
         let from_sq = mv.from_sq();
         let to_sq = mv.to_sq();
         let mut side_to_move = self.stm;
@@ -617,9 +617,11 @@ impl Board {
         });
 
         // If both sides have only their kings, it's insufficient material
-        if white_pieces.0.count_ones() == 1 && black_pieces.0.count_ones() == 1 {
+        if white_pieces.pop_count() == 1 && black_pieces.pop_count() == 1 {
             return true;
         }
+
+        // TODO: change all count_ones to pop_count. The logic is wrong!
 
         // King and Bishop vs King (White or Black can have King and Bishop)
         if (white_counts[Piece::King.index()] == 1

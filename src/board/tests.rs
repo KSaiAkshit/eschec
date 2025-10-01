@@ -148,7 +148,7 @@ mod see_tests {
         let board = Board::from_fen(fen);
         let mv = Move::from_uci(&board, "e1e5").unwrap();
         let (free_see1, _seq) = see(&board, mv);
-        let see1 = board.see(mv);
+        let see1 = board.static_exchange_evaluation(mv);
 
         assert_eq!(
             see1, free_see1,
@@ -158,7 +158,7 @@ mod see_tests {
         let board = Board::from_fen(fen);
         let mv = Move::from_uci(&board, "d3e5").unwrap();
         let (free_see2, _seq) = see(&board, mv);
-        let see2 = board.see(mv);
+        let see2 = board.static_exchange_evaluation(mv);
         assert_eq!(
             see2, free_see2,
             "Free function and member function should return same val for pos #2"

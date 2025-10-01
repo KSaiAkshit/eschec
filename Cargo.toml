@@ -24,7 +24,7 @@ path = "src/main.rs"
 [[bin]]
 name = "magic_gen"
 path = "src/bin/magic_gen.rs"
-required-features = ["rayon"]
+required-features = ["parallel"]
 
 [[bin]]
 name = "eval_tester"
@@ -54,10 +54,8 @@ default = ["dev-tools", "parallel"]
 simd = []
 # Feature for heap profiling
 dhat-heap = ["dep:dhat"]
-# Feature for rayon and indicatif for eval_tester
-parallel = ["rayon", "indicatif/rayon"]
-# Feature for the magic number generator binary
-rayon = ["dep:rayon"]
+# Feature for rayon and indicatif for eval_tester and magic_gen
+parallel = ["dep:rayon", "indicatif/rayon"]
 # Feature for development-only tools
 dev-tools = ["dep:color-backtrace"]
 

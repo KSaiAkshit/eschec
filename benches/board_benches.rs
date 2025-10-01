@@ -106,7 +106,7 @@ fn bench_board_ops(c: &mut Criterion) {
         b.iter_batched(
             || (Board::from_fen(KIWIPETE), Move::new(21, 54, Move::CAPTURE)),
             |(board, mv)| {
-                let a = board.see(mv);
+                let a = board.static_exchange_evaluation(mv);
                 black_box(a);
             },
             BatchSize::SmallInput,

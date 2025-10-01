@@ -551,7 +551,7 @@ impl Search {
         if legal_moves.is_empty() {
             self.nodes_searched += 1; // Terminal nodes_search
             return if board.is_in_check(board.stm) {
-                -20_000 + ply as i32 // Checkmate
+                -MATE_SCORE + ply as i32 // Checkmate
             } else {
                 0 // Stalemate
             };
@@ -781,7 +781,7 @@ impl Search {
                     }
                 }
                 // SEE pruning
-                if board.see(mv) < 0 {
+                if board.static_exchange_evaluation(mv) < 0 {
                     self.pruned_nodes += 1;
                     continue;
                 }

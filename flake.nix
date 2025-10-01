@@ -24,6 +24,7 @@
             rustToolchain
             pkgs.bacon
             pkgs.just
+            pkgs.cargo-bloat
             pkgs.cargo-nextest
             pkgs.cargo-flamegraph
             pkgs.cargo-show-asm

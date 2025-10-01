@@ -35,7 +35,7 @@ impl MoveScoringPolicy for MainSearchPolicy {
             return TT_MOVE_SCORE;
         }
         if mv.is_capture() {
-            let see_score = board.see(mv);
+            let see_score = board.static_exchange_evaluation(mv);
             if see_score > 0 {
                 // Most Valuable Victim - Least Valuable Attacker
                 MVV_LVA_OFFSET + see_score
@@ -61,7 +61,7 @@ impl MoveScoringPolicy for QSearchPolicy {
         _history: &[[i32; NUM_SQUARES]; NUM_SQUARES],
     ) -> i32 {
         if mv.is_capture() {
-            MVV_LVA_OFFSET + board.see(mv)
+            MVV_LVA_OFFSET + board.static_exchange_evaluation(mv)
         } else if mv.is_promotion() {
             if mv.promoted_piece() == Some(Piece::Queen) {
                 PROMOTION_SCORE

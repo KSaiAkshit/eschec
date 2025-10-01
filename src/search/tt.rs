@@ -1,5 +1,3 @@
-use std::u8;
-
 #[cfg(target_arch = "x86_64")]
 use std::arch::x86_64::{_MM_HINT_T0, _mm_prefetch};
 
