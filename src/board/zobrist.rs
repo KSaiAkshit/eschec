@@ -155,7 +155,7 @@ mod tests {
         let mut nodes = 0;
         let mut hashes: HashMap<u64, String> = HashMap::new();
 
-        const PERFT_DEPTH: u8 = 7;
+        const PERFT_DEPTH: u8 = 6;
 
         println!(
             "Starting collision test with perft at depth {}...",

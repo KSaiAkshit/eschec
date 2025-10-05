@@ -134,20 +134,16 @@ impl Board {
 
     pub fn generate_legal_moves(&self, buffer: &mut MoveBuffer, forcing_only: bool) {
         if !forcing_only {
-            move_gen::generate_legal_moves(self, buffer);
+            move_gen::generate_legal_moves::<move_gen::AllMoves>(self, buffer);
         } else {
-            move_gen::generate_forcing_moves(self, buffer);
+            move_gen::generate_legal_moves::<move_gen::ForcingMoves>(self, buffer);
         }
     }
 
     /// Only to be used internally;
     fn get_legal_moves(&self, captures_only: bool) -> MoveBuffer {
         let mut buffer = MoveBuffer::new();
-        if !captures_only {
-            move_gen::generate_legal_moves(self, &mut buffer);
-        } else {
-            move_gen::generate_forcing_moves(self, &mut buffer);
-        }
+        self.generate_legal_moves(&mut buffer, captures_only);
         buffer
     }
 
@@ -171,7 +167,13 @@ impl Board {
             let _ = self.make_move(m)?;
             Ok(())
         } else {
-            miette::bail!("Illegal move from {}", m);
+            let mut possible_moves = String::new();
+            for mv in legal_moves {
+                possible_moves.push_str(&mv.uci());
+                possible_moves.push(' ');
+            }
+            println!("Possibe moves: {possible_moves}");
+            miette::bail!("Illegal move for {} from {}", &self.stm, m.uci());
         }
     }
 
@@ -255,7 +257,7 @@ impl Board {
         let to = m.to_sq();
         let piece = self
             .get_piece_at(from)
-            .context("A piece should exist at from sq")?;
+            .with_context(|| format!("A piece should exist at {from} sq"))?;
         let opponent = self.stm.flip();
 
         // Store current state for unmake

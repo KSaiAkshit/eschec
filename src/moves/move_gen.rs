@@ -17,45 +17,41 @@ use crate::{
     prelude::*,
 };
 
+pub trait MoveGenType {
+    const FORCING_ONLY: bool;
+}
+
+pub struct AllMoves;
+impl MoveGenType for AllMoves {
+    const FORCING_ONLY: bool = false;
+}
+
+pub struct ForcingMoves;
+impl MoveGenType for ForcingMoves {
+    const FORCING_ONLY: bool = true;
+}
+
 // ===================================================================
 //                      LEGAL MOVE GENERATION
 // ===================================================================
 
 /// Generates all strictly legal moves for the current side to move.
 /// It accounts for checks, pins, and all special move rules.
-pub fn generate_legal_moves(board: &Board, moves: &mut MoveBuffer) {
+pub fn generate_legal_moves<T: MoveGenType>(board: &Board, moves: &mut MoveBuffer) {
     let side = board.stm;
     let attack_data = calculate_attack_data(board, side);
 
     if attack_data.double_check {
-        gen_legal_king_moves(board, &attack_data, moves, false);
+        gen_legal_king_moves::<T>(board, &attack_data, moves);
         return;
     }
 
-    gen_legal_king_moves(board, &attack_data, moves, false);
-    gen_legal_pawn_moves(board, &attack_data, moves, false);
-    gen_legal_knight_moves(board, &attack_data, moves, false);
-    gen_legal_sliding_moves(board, Piece::Bishop, &attack_data, moves, false);
-    gen_legal_sliding_moves(board, Piece::Rook, &attack_data, moves, false);
-    gen_legal_sliding_moves(board, Piece::Queen, &attack_data, moves, false);
-}
-
-/// Generates all strictly legal forcing moves for the current side to move.
-/// Used by Quiescences search
-pub fn generate_forcing_moves(board: &Board, moves: &mut MoveBuffer) {
-    let side = board.stm;
-    let attack_data = calculate_attack_data(board, side);
-
-    if attack_data.double_check {
-        gen_legal_king_moves(board, &attack_data, moves, true);
-    }
-
-    gen_legal_pawn_moves(board, &attack_data, moves, true);
-    gen_legal_knight_moves(board, &attack_data, moves, true);
-    gen_legal_sliding_moves(board, Piece::Bishop, &attack_data, moves, true);
-    gen_legal_sliding_moves(board, Piece::Rook, &attack_data, moves, true);
-    gen_legal_sliding_moves(board, Piece::Queen, &attack_data, moves, true);
-    gen_legal_king_moves(board, &attack_data, moves, true);
+    gen_legal_king_moves::<T>(board, &attack_data, moves);
+    gen_legal_pawn_moves::<T>(board, &attack_data, moves);
+    gen_legal_knight_moves::<T>(board, &attack_data, moves);
+    gen_legal_sliding_moves::<T>(board, Piece::Bishop, &attack_data, moves);
+    gen_legal_sliding_moves::<T>(board, Piece::Rook, &attack_data, moves);
+    gen_legal_sliding_moves::<T>(board, Piece::Queen, &attack_data, moves);
 }
 
 pub fn get_attackers_to(board: &Board, square: Square, side: Side, occupied: BitBoard) -> BitBoard {
@@ -86,11 +82,10 @@ pub fn get_attackers_to(board: &Board, square: Square, side: Side, occupied: Bit
     attackers
 }
 
-fn gen_legal_king_moves(
+fn gen_legal_king_moves<T: MoveGenType>(
     board: &Board,
     attack_data: &AttackData,
     moves: &mut MoveBuffer,
-    forcing_only: bool,
 ) {
     let side = board.stm;
     let from_sq = attack_data.king_sq;
@@ -102,7 +97,7 @@ fn gen_legal_king_moves(
     while let Some(to_sq) = legal_targets.pop_lsb() {
         if !attack_data.opp_attack_map.contains_square(to_sq as usize) {
             let is_capture = board.positions.is_occupied(to_sq as usize);
-            if !forcing_only || is_capture {
+            if !T::FORCING_ONLY || is_capture {
                 let flag = if is_capture {
                     Move::CAPTURE
                 } else {
@@ -114,7 +109,7 @@ fn gen_legal_king_moves(
     }
 
     // Castling
-    if !forcing_only && !attack_data.in_check {
+    if !T::FORCING_ONLY && !attack_data.in_check {
         let all_pieces =
             board.positions.get_side_bb(Side::White) | board.positions.get_side_bb(Side::Black);
         match side {
@@ -171,12 +166,11 @@ fn gen_legal_king_moves(
     }
 }
 
-fn gen_legal_sliding_moves(
+fn gen_legal_sliding_moves<T: MoveGenType>(
     board: &Board,
     piece: Piece,
     attack_data: &AttackData,
     moves: &mut MoveBuffer,
-    forcing_only: bool,
 ) {
     let side = board.stm;
     let friendly_pieces = board.positions.get_side_bb(side);
@@ -222,7 +216,9 @@ fn gen_legal_sliding_moves(
                 Move::QUIET
             };
             let current_move = Move::new(from_sq as u8, to_sq as u8, flag);
-            if !forcing_only || is_capture || is_move_a_check(board, current_move, opponent_king_sq)
+            if !T::FORCING_ONLY
+                || is_capture
+                || is_move_a_check(board, current_move, opponent_king_sq)
             {
                 moves.push(current_move);
             }
@@ -230,11 +226,10 @@ fn gen_legal_sliding_moves(
     }
 }
 
-fn gen_legal_knight_moves(
+fn gen_legal_knight_moves<T: MoveGenType>(
     board: &Board,
     attack_data: &AttackData,
     moves: &mut MoveBuffer,
-    forcing_only: bool,
 ) {
     let side = board.stm;
     let friendly_pieces = board.positions.get_side_bb(side);
@@ -259,7 +254,9 @@ fn gen_legal_knight_moves(
                 Move::QUIET
             };
             let current_move = Move::new(from_sq as u8, to_sq as u8, flag);
-            if !forcing_only || is_capture || is_move_a_check(board, current_move, opponent_king_sq)
+            if !T::FORCING_ONLY
+                || is_capture
+                || is_move_a_check(board, current_move, opponent_king_sq)
             {
                 moves.push(current_move);
             }
@@ -267,11 +264,10 @@ fn gen_legal_knight_moves(
     }
 }
 
-fn gen_legal_pawn_moves(
+fn gen_legal_pawn_moves<T: MoveGenType>(
     board: &Board,
     attack_data: &AttackData,
     moves: &mut MoveBuffer,
-    forcing_only: bool,
 ) {
     let side = board.stm;
     let pawns = board.positions.get_piece_bb(side, Piece::Pawn);
@@ -298,7 +294,7 @@ fn gen_legal_pawn_moves(
         };
 
         // Pushes
-        if !forcing_only {
+        if !T::FORCING_ONLY {
             let push_dir = if side == Side::White {
                 Direction::NORTH
             } else {

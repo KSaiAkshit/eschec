@@ -19,7 +19,7 @@ fn filter_captures(board: &Board, buffer: &mut MoveBuffer) {
 }
 
 fn gen_captures(board: &Board, buffer: &mut MoveBuffer) {
-    move_gen::generate_forcing_moves(board, buffer);
+    move_gen::generate_legal_moves::<move_gen::ForcingMoves>(board, buffer);
 }
 
 fn bench_move_generation(c: &mut Criterion) {

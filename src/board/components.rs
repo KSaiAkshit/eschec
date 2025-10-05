@@ -267,12 +267,6 @@ pub enum Side {
     Black,
 }
 
-impl From<Side> for bool {
-    fn from(value: Side) -> Self {
-        value == Side::White
-    }
-}
-
 impl Display for Side {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self {
@@ -386,42 +380,42 @@ impl Piece {
     pub fn icon(&self, stm: Side) -> char {
         match &self {
             Piece::Pawn => {
-                if stm.into() {
+                if stm == Side::White {
                     '♟'
                 } else {
                     '♙'
                 }
             }
             Piece::Bishop => {
-                if stm.into() {
+                if stm == Side::White {
                     '♝'
                 } else {
                     '♗'
                 }
             }
             Piece::Knight => {
-                if stm.into() {
+                if stm == Side::White {
                     '♞'
                 } else {
                     '♘'
                 }
             }
             Piece::Rook => {
-                if stm.into() {
+                if stm == Side::White {
                     '♜'
                 } else {
                     '♖'
                 }
             }
             Piece::Queen => {
-                if stm.into() {
+                if stm == Side::White {
                     '♛'
                 } else {
                     '♕'
                 }
             }
             Piece::King => {
-                if stm.into() {
+                if stm == Side::White {
                     '♚'
                 } else {
                     '♔'

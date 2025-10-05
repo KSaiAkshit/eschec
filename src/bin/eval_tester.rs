@@ -122,7 +122,10 @@ fn main() -> miette::Result<()> {
             .num_threads(num_threads)
             .build_global()
             .into_diagnostic()?;
-        info!("Running in parallel with {} threads", num_threads);
+        info!(
+            "Running in parallel with {} threads with time-control: {}",
+            num_threads, cli.time_control
+        );
         run_tests_parallel(cli)
     }
     #[cfg(not(feature = "parallel"))]
