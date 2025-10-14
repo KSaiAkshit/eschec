@@ -252,6 +252,13 @@ impl Iterator for BitBoardIterator {
         let exact = self.remaining.count_ones() as usize;
         (exact, Some(exact))
     }
+
+    fn count(self) -> usize
+    where
+        Self: Sized,
+    {
+        self.remaining.count_ones() as usize
+    }
 }
 
 impl ExactSizeIterator for BitBoardIterator {

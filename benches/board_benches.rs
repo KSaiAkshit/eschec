@@ -102,7 +102,7 @@ fn bench_board_ops(c: &mut Criterion) {
         );
     });
 
-    group.bench_function("static_exhange_eval_see", |b| {
+    group.bench_function("static_exchange_eval_see", |b| {
         b.iter_batched(
             || (Board::from_fen(KIWIPETE), Move::new(21, 54, Move::CAPTURE)),
             |(board, mv)| {

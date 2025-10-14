@@ -70,3 +70,7 @@ harness = false
 [[bench]]
 name = "primitive_benches"
 harness = false
+
+[[bench]]
+name = "move_ordering_benches"
+harness = false

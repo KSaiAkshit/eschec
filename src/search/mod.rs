@@ -1,10 +1,10 @@
-use crate::search::move_ordering::{
-    MainSearchPolicy, MoveScoringPolicy, QSearchPolicy, sort_moves,
-};
+use crate::search::move_ordering::{MainSearchPolicy, MoveScoringPolicy, sort_moves};
+use crate::search::move_picker::MovePicker;
 use crate::search::tt::{ScoreTypes, TranspositionEntry, TranspositionTable};
 use tracing::*;
 
 pub mod move_ordering;
+pub mod move_picker;
 pub mod tt;
 
 use crate::prelude::*;
@@ -41,8 +41,94 @@ pub struct SearchResult {
     pub pruned_nodes: u64,
 }
 
+#[derive(Debug, Clone)]
+pub struct SearchConfig {
+    enable_nmp: bool,
+    enable_asp: bool,
+    enable_lmr: bool,
+    emit_info: bool,
+    collect_stats: bool,
+}
+
+impl Default for SearchConfig {
+    fn default() -> Self {
+        Self {
+            enable_nmp: true,
+            enable_asp: true,
+            enable_lmr: true,
+            emit_info: true,
+            collect_stats: true,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct CutoffStats {
+    pub total_nodes: u64,
+    pub cutoff_nodes: u64,
+    pub cutoff_at_move: [u64; 64],
+}
+
+impl Default for CutoffStats {
+    fn default() -> Self {
+        Self {
+            total_nodes: Default::default(),
+            cutoff_nodes: Default::default(),
+            cutoff_at_move: [0; 64],
+        }
+    }
+}
+
+impl CutoffStats {
+    pub fn log_summary(&self, depth: u8) {
+        if self.total_nodes == 0 {
+            return;
+        }
+
+        let cutoff_rate = 100.0 * self.cutoff_nodes as f64 / self.total_nodes as f64;
+
+        // Calculate average move index at cutoff
+        let total_cutoff_moves: u64 = self
+            .cutoff_at_move
+            .iter()
+            .enumerate()
+            .map(|(i, &count)| i as u64 * count)
+            .sum();
+        let avg_cutoff_index = if self.cutoff_nodes > 0 {
+            total_cutoff_moves as f64 / self.cutoff_nodes as f64
+        } else {
+            0.0
+        };
+
+        error!(
+            target: "cutoff_stats",
+            "CUTOFF_STATS depth={} total_nodes={} cutoff_nodes={} cutoff_rate={:.2} avg_cutoff_at={:.2}",
+            depth, self.total_nodes, self.cutoff_nodes, cutoff_rate, avg_cutoff_index
+        );
+
+        let histogram: Vec<String> = self
+            .cutoff_at_move
+            .iter()
+            .take(20)
+            .enumerate()
+            .filter(|&(_, &count)| count > 0)
+            .map(|(i, count)| format!("{}:{}", i, count))
+            .collect();
+
+        if !histogram.is_empty() {
+            error!(
+                target: "cutoff_stats",
+                "CUTOFF_HISTOGRAM depth={} data=[{}]",
+                depth,
+                histogram.join(",")
+            );
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct Search {
+    config: SearchConfig,
     max_depth: u8,
     nodes_searched: u64,
     start_time: Instant,
@@ -54,11 +140,8 @@ pub struct Search {
     tt: TranspositionTable,
     killer_moves: [[Option<Move>; 2]; MAX_PLY],
     history: [[i32; 64]; 64],
+    cutoff_stats: CutoffStats,
     hash_history: Vec<u64>, // TODO: Should this be a stack thing instead // of a Heap allocated Vec
-    enable_nmp: bool,
-    enable_asp: bool,
-    enable_lmr: bool,
-    emit_info: bool,
     in_progress: bool,
 }
 
@@ -76,12 +159,10 @@ impl Default for Search {
             tt: TranspositionTable::new(16),
             killer_moves: [[None; 2]; 64],
             history: [[0; 64]; 64],
+            cutoff_stats: CutoffStats::default(),
             hash_history: Vec::with_capacity(256),
-            enable_nmp: true,
-            enable_asp: true,
-            enable_lmr: true,
-            emit_info: true,
             in_progress: false,
+            config: SearchConfig::default(),
         }
     }
 }
@@ -165,7 +246,20 @@ impl Search {
     pub fn set_nmp(&mut self, enabled: bool) -> bool {
         if !self.in_progress {
             warn!("Setting NMP to; {enabled}");
-            self.enable_nmp = enabled;
+            self.config.enable_nmp = enabled;
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn set_stat_collect(&mut self, enabled: bool) -> bool {
+        if !self.in_progress {
+            warn!(
+                "Collecting stats {}",
+                if enabled { "enabled" } else { "disabled" }
+            );
+            self.config.collect_stats = enabled;
             true
         } else {
             false
@@ -175,7 +269,7 @@ impl Search {
     pub fn set_lmr(&mut self, enabled: bool) -> bool {
         if !self.in_progress {
             warn!("Setting LMR to; {enabled}");
-            self.enable_lmr = enabled;
+            self.config.enable_lmr = enabled;
             true
         } else {
             false
@@ -185,7 +279,7 @@ impl Search {
     pub fn set_asp(&mut self, enabled: bool) -> bool {
         if !self.in_progress {
             warn!("Setting ASP to; {enabled}");
-            self.enable_asp = enabled;
+            self.config.enable_asp = enabled;
             true
         } else {
             false
@@ -194,7 +288,7 @@ impl Search {
 
     pub fn set_emit_info(&mut self, enabled: bool) {
         debug!("setting emit_info to: {enabled}");
-        self.emit_info = enabled;
+        self.config.emit_info = enabled;
     }
 
     pub fn clear_tt(&mut self) {
@@ -292,8 +386,9 @@ impl Search {
 
         self.sort_moves::<MainSearchPolicy>(board, legal_moves, prev_best_move, depth as usize);
 
-        let use_asp =
-            self.enable_asp && depth > 1 && prev_score.abs() < MATE_THRESHOLD - ASP_MAX_WINDOW;
+        let use_asp = self.config.enable_asp
+            && depth > 1
+            && prev_score.abs() < MATE_THRESHOLD - ASP_MAX_WINDOW;
 
         let mut window = ASP_START_WINDOW;
         let mut alpha_base = if use_asp {
@@ -414,7 +509,7 @@ impl Search {
             best_score = local_best_score;
             prev_score = best_score;
 
-            if std::hint::likely(self.emit_info) {
+            if std::hint::likely(self.config.emit_info) {
                 let best_move_uci = best_move.unwrap().uci();
                 let msg = format!(
                     "info depth {} score cp {} nodes {} nps {} pv {}",
@@ -430,6 +525,7 @@ impl Search {
         }
 
         self.hash_history.pop();
+        self.cutoff_stats.log_summary(completed_depth);
         self.finish();
         SearchResult {
             best_move,
@@ -448,6 +544,7 @@ impl Search {
         self.killer_moves = [[None; 2]; MAX_PLY];
         self.hash_history.clear();
         self.decay_history();
+        self.cutoff_stats = CutoffStats::default();
     }
 
     // #[instrument(skip_all)]
@@ -556,16 +653,24 @@ impl Search {
                 0 // Stalemate
             };
         }
-
-        if ply < MAX_PLY {
-            self.sort_moves::<MainSearchPolicy>(board, &mut legal_moves, Some(tt_move), ply);
+        if self.config.collect_stats {
+            self.cutoff_stats.total_nodes += 1;
         }
 
         let mut best_move_this_node = legal_moves.first().copied().unwrap();
         let mut best_score = i32::MIN + 1;
-        let num_moves = legal_moves.len();
 
-        for (move_index, &mv) in legal_moves.iter().enumerate() {
+        let mut picker = MovePicker::new(
+            board,
+            legal_moves.as_mut_slice(),
+            &self.killer_moves[ply],
+            Some(tt_move),
+            &self.history,
+        );
+
+        let mut move_index = 0;
+
+        while let Some(mv) = picker.next_best() {
             let mut board_copy = *board;
             board_copy
                 .make_move(mv)
@@ -583,7 +688,7 @@ impl Search {
 
             let move_gives_check = &board_copy.is_in_check(board_copy.stm);
 
-            let lmr_allowed = self.enable_lmr
+            let lmr_allowed = self.config.enable_lmr
                 && depth >= 3
                 && move_index >= 3
                 && !mv.is_capture()
@@ -628,6 +733,10 @@ impl Search {
             alpha = max(alpha, score);
 
             if alpha >= beta {
+                if self.config.collect_stats {
+                    self.cutoff_stats.cutoff_nodes += 1;
+                    self.cutoff_stats.cutoff_at_move[move_index] += 1;
+                }
                 self.pruned_nodes += 1;
 
                 // This is beta cutoff (Fail-High)
@@ -652,12 +761,12 @@ impl Search {
                 self.tt.store(entry_to_score);
                 return beta;
             }
+            move_index += 1;
         }
 
         if best_score == i32::MIN + 1 {
             error!(
-                "Mad cooked: alpha: {alpha}, beta: {beta}, best_score: {best_score}, legal_moves searched: {}",
-                num_moves
+                "Mad cooked: alpha: {alpha}, beta: {beta}, best_score: {best_score}, legal_moves searched: {move_index}",
             );
         }
 
@@ -686,7 +795,7 @@ impl Search {
     fn is_nmp_allowed(&self, board: &Board, depth: u8, ply: usize, window: Option<i32>) -> bool {
         let null_reduction = if depth >= 6 { 4 } else { 2 };
         let null_depth = depth.saturating_sub(null_reduction);
-        self.enable_nmp
+        self.config.enable_nmp
             && depth >= 5
             && null_depth >= 2
             && window.is_some_and(|win| win > 1)
@@ -751,9 +860,9 @@ impl Search {
             return adjust_score_for_ply(-MATE_SCORE, context.ply);
         }
 
-        self.sort_moves::<QSearchPolicy>(board, &mut legal_moves, None, context.ply);
+        let mut picker = MovePicker::new_qsearch(board, legal_moves.as_mut_slice());
 
-        for mv in legal_moves {
+        while let Some(mv) = picker.next_best() {
             if !is_in_check {
                 // Delta Pruning
                 if mv.is_capture() {
@@ -955,9 +1064,9 @@ mod tests {
         let evaluator = CompositeEvaluator::balanced();
         let mut search_without_null = Search::new(Box::new(evaluator), 10);
 
-        assert!(search_without_null.enable_nmp);
+        assert!(search_without_null.config.enable_nmp);
         search_without_null.set_nmp(false);
-        assert!(!search_without_null.enable_nmp);
+        assert!(!search_without_null.config.enable_nmp);
 
         let board = Board::from_fen(KIWIPETE);
         println!("{board}");

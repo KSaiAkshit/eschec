@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::io::stderr;
 use std::path::Path;
-use std::sync::{LazyLock, Mutex};
+use std::sync::{LazyLock, Mutex, OnceLock};
 
 use crate::board::zobrist::ZOBRIST;
 use chrono::Local;
@@ -37,6 +37,8 @@ static LOG_HANDLES: LazyLock<LogHandles> = LazyLock::new(|| {
     #[cfg(feature = "dev-tools")]
     color_backtrace::install();
 
+    static LOCK_GUARD: OnceLock<non_blocking::WorkerGuard> = OnceLock::new();
+
     // Console Layer with its own reloadable filter
     let console_filter = EnvFilter::builder()
         .with_default_directive(Level::INFO.into())
@@ -64,8 +66,9 @@ static LOG_HANDLES: LazyLock<LogHandles> = LazyLock::new(|| {
         .unwrap_or_else(|_| panic!("Failed to create log file: {log_filename}"));
 
     let (non_blocking_writer, guard) = non_blocking(log_file);
-    let g = Box::new(guard);
-    Box::leak(g);
+    LOCK_GUARD
+        .set(guard)
+        .expect("LOCK_GUARD already initialized");
 
     let file_layer = fmt::layer()
         .with_writer(non_blocking_writer)
