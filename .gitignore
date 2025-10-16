@@ -15,3 +15,4 @@ gauntlet/results/**
 .envrc
 .direnv
 config.json
+flamegraph.svg
