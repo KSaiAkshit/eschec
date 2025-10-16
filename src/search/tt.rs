@@ -96,8 +96,14 @@ impl TranspositionTable {
             let ptr = self.clusters.as_ptr().cast::<i8>();
             _mm_prefetch(ptr.add(index * Cluster::CLUSTER_SIZE), _MM_HINT_T0);
         }
-        let cluster = &self.clusters[self.index(hash)];
-        cluster.entries.iter().find(|&entry| entry.hash == hash)
+        let cluster = &self.clusters[index];
+        for i in 0..NUM_ENTRIES_PER_CLUSTER {
+            let entry = &cluster.entries[i];
+            if entry.hash == hash {
+                return Some(entry);
+            }
+        }
+        None
     }
 
     pub fn store(&mut self, new_entry: TranspositionEntry) {

@@ -13,9 +13,18 @@ codegen-units = 1
 panic = "abort"
 opt-level = 3
 
+[profile.bench]
+inherits = "release"
+
 [profile.release-dhat]
 inherits = "release"
 debug = 1
+
+[build]
+rustflags = [
+    "-C", "target-cpu=native",
+    "-C", "target-features=+bmi1,+bmi2,+popcnt"
+]
 
 [[bin]]
 name = "eschec"

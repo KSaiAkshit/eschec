@@ -4,6 +4,7 @@ flags := "--release"
 DEPTH := "5"
 FEN := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 pgn_output_dir := 'gauntlet/results/'
+engines_dir := "./gauntlet/engines"
 book_dir := 'gauntlet/books/'
 engine_logs_dir := '/tmp/eschec_logs/'
 test_suite_dir := './test_suites/sts'
@@ -63,9 +64,10 @@ build-all-tags:
 
 [doc("Build and symlink binary")]
 update bin="eschec":
-    -rm ./gauntlet/engines/eschec
+    -rm {{engines_dir}}/eschec_old
+    mv {{engines_dir}}/eschec {{engines_dir}}/eschec_old
     just build {{ bin }}
-    cp target/release/eschec gauntlet/engines/
+    cp target/release/eschec {{engines_dir}}
 
 [doc("Warmup with the given binary and then run perf stat on it")]
 stat bin: setup

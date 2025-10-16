@@ -18,7 +18,7 @@ fn bench_bitboard_ops(c: &mut Criterion) {
         b.iter_batched(
             || INITIAL_PIECES_BB,
             |mut bb| {
-                while let Some(bit) = bb.pop_lsb() {
+                while let Some(bit) = bb.try_pop_lsb() {
                     black_box(bit);
                 }
             },

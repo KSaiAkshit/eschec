@@ -35,8 +35,11 @@ impl MoveBuffer {
     /// # Panics
     /// Panics if the buffer is full.
     #[inline(always)]
-    pub const fn push(&mut self, m: Move) {
-        assert!(self.len < MAX_MOVES, "MoveBuffer Overflow!");
+    pub fn push(&mut self, m: Move) {
+        debug_assert!(self.len < MAX_MOVES, "MoveBuffer Overflow!");
+        unsafe {
+            core::hint::assert_unchecked(self.len < MAX_MOVES);
+        }
         self.moves[self.len] = m;
         self.len += 1;
     }
@@ -59,7 +62,7 @@ impl MoveBuffer {
         self.len
     }
 
-    /// Clears the buffer (sets len to zero).
+    /// Clears the buffer (only sets len to zero).
     #[inline(always)]
     pub const fn clear(&mut self) {
         self.len = 0;

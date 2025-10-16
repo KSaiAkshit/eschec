@@ -60,7 +60,7 @@ pub fn calculate_hash(board: &Board) -> u64 {
 
     Piece::all().for_each(|(piece, side)| {
         let mut piece_bb = *board.positions.get_piece_bb(side, piece);
-        while let Some(sq) = piece_bb.pop_lsb() {
+        while let Some(sq) = piece_bb.try_pop_lsb() {
             hash ^= ZOBRIST.pieces[side.index()][piece.index()][sq as usize];
         }
     });

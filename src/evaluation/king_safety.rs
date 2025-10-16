@@ -159,7 +159,7 @@ impl KingSafetyEvaluator {
             }
 
             let mut opponent_pieces_bb = *board.positions.get_piece_bb(opponent, piece_type);
-            while let Some(from_sq) = opponent_pieces_bb.pop_lsb() {
+            while let Some(from_sq) = opponent_pieces_bb.try_pop_lsb() {
                 let attacks_from_piece = match piece_type {
                     Piece::Pawn => MOVE_TABLES.get_pawn_attacks(from_sq as usize, opponent),
                     Piece::Bishop => MOVE_TABLES

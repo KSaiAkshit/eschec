@@ -94,7 +94,8 @@ fn gen_legal_king_moves<T: MoveGenType>(
 
     let mut legal_targets = king_moves & !friendly_pieces;
 
-    while let Some(to_sq) = legal_targets.pop_lsb() {
+    while legal_targets.any() {
+        let to_sq = legal_targets.pop_lsb();
         if !attack_data.opp_attack_map.contains_square(to_sq as usize) {
             let is_capture = board.positions.is_occupied(to_sq as usize);
             if !T::FORCING_ONLY || is_capture {
@@ -182,7 +183,8 @@ fn gen_legal_sliding_moves<T: MoveGenType>(
         .lsb()
         .unwrap_or_default() as usize;
 
-    while let Some(from_sq) = piece_bb.pop_lsb() {
+    while piece_bb.any() {
+        let from_sq = piece_bb.pop_lsb();
         let is_pinned = attack_data.pin_ray_mask.contains_square(from_sq as usize);
         let mut move_mask = if is_pinned {
             MOVE_TABLES.get_ray(
@@ -208,7 +210,8 @@ fn gen_legal_sliding_moves<T: MoveGenType>(
         };
 
         let mut legal_targets = attacks & move_mask;
-        while let Some(to_sq) = legal_targets.pop_lsb() {
+        while legal_targets.any() {
+            let to_sq = legal_targets.pop_lsb();
             let is_capture = enemy_pieces.contains_square(to_sq as usize);
             let flag = if is_capture {
                 Move::CAPTURE
@@ -234,7 +237,7 @@ fn gen_legal_knight_moves<T: MoveGenType>(
     let side = board.stm;
     let friendly_pieces = board.positions.get_side_bb(side);
     let enemy_pieces = board.positions.get_side_bb(side.flip());
-    let mut knights =
+    let mut knights_bb =
         *board.positions.get_piece_bb(side, Piece::Knight) & !attack_data.pin_ray_mask;
     let opponent_king_sq = board
         .positions
@@ -242,11 +245,13 @@ fn gen_legal_knight_moves<T: MoveGenType>(
         .lsb()
         .unwrap_or_default() as usize;
 
-    while let Some(from_sq) = knights.pop_lsb() {
+    while knights_bb.any() {
+        let from_sq = knights_bb.pop_lsb();
         let attacks = MOVE_TABLES.knight_moves[from_sq as usize] & !friendly_pieces;
         let mut legal_targets = attacks & attack_data.check_ray_mask;
 
-        while let Some(to_sq) = legal_targets.pop_lsb() {
+        while legal_targets.any() {
+            let to_sq = legal_targets.pop_lsb();
             let is_capture = enemy_pieces.contains_square(to_sq as usize);
             let flag = if enemy_pieces.contains_square(to_sq as usize) {
                 Move::CAPTURE
@@ -284,7 +289,8 @@ fn gen_legal_pawn_moves<T: MoveGenType>(
     let promo_rank = if side == Side::White { 7 } else { 0 };
 
     let mut pawns_bb = *pawns;
-    while let Some(from_sq) = pawns_bb.pop_lsb() {
+    while pawns_bb.any() {
+        let from_sq = pawns_bb.pop_lsb();
         let from_sq_u = from_sq as usize;
         let is_pinned = attack_data.pin_ray_mask.contains_square(from_sq_u);
         let pin_dir = if is_pinned {
@@ -358,7 +364,8 @@ fn gen_legal_pawn_moves<T: MoveGenType>(
         // Captures
         let attacks = MOVE_TABLES.get_pawn_attacks(from_sq_u, side);
         let mut capture_targets = attacks & *enemy_pieces;
-        while let Some(to_sq) = capture_targets.pop_lsb() {
+        while capture_targets.any() {
+            let to_sq = capture_targets.pop_lsb();
             let to_sq_u = to_sq as usize;
             let capture_dir = Direction::get_dir(from_sq_u, to_sq_u);
             if (pin_dir.is_none() || pin_dir == Some(capture_dir))
@@ -555,14 +562,15 @@ pub fn generate_pseudo_legal_piece_moves(
 
 /// Generate pseudo-legal knight moves.
 fn gen_knight_moves(state: &BoardState, side: Side, move_list: &mut MoveBuffer) {
-    let knights = state.get_piece_bb(side, Piece::Knight);
+    let mut knights_bb = *state.get_piece_bb(side, Piece::Knight);
     let ally_pieces = state.get_side_bb(side);
     let enemy_pieces = state.get_side_bb(side.flip());
 
-    let mut knights_bb = *knights;
-    while let Some(from_sq) = knights_bb.pop_lsb() {
+    while knights_bb.any() {
+        let from_sq = knights_bb.pop_lsb();
         let mut attacks = MOVE_TABLES.knight_moves[from_sq as usize] & !ally_pieces;
-        while let Some(to_sq) = attacks.pop_lsb() {
+        while attacks.any() {
+            let to_sq = attacks.pop_lsb();
             let is_capture = enemy_pieces.contains_square(to_sq as usize);
             let flag = if is_capture {
                 Move::CAPTURE
@@ -576,14 +584,15 @@ fn gen_knight_moves(state: &BoardState, side: Side, move_list: &mut MoveBuffer) 
 
 /// Generate pseudo-legal king moves (without castling).
 fn gen_king_moves(state: &BoardState, side: Side, move_list: &mut MoveBuffer) {
-    let king = state.get_piece_bb(side, Piece::King);
+    let mut king_bb = *state.get_piece_bb(side, Piece::King);
     let ally_pieces = state.get_side_bb(side);
     let enemy_pieces = state.get_side_bb(side.flip());
 
-    let mut king_bb = *king;
-    while let Some(from_sq) = king_bb.pop_lsb() {
+    while king_bb.any() {
+        let from_sq = king_bb.pop_lsb();
         let mut moves = MOVE_TABLES.king_moves[from_sq as usize] & !ally_pieces;
-        while let Some(to_sq) = moves.pop_lsb() {
+        while moves.any() {
+            let to_sq = moves.pop_lsb();
             let is_capture = enemy_pieces.contains_square(to_sq as usize);
             let flag = if is_capture {
                 Move::CAPTURE
@@ -597,15 +606,16 @@ fn gen_king_moves(state: &BoardState, side: Side, move_list: &mut MoveBuffer) {
 
 /// Generate pseudo-legal bishop moves.
 fn gen_bishop_moves(state: &BoardState, side: Side, move_list: &mut MoveBuffer) {
-    let bishops = state.get_piece_bb(side, Piece::Bishop);
+    let mut bishops_bb = *state.get_piece_bb(side, Piece::Bishop);
     let ally_pieces = state.get_side_bb(side);
     let enemy_pieces = state.get_side_bb(side.flip());
 
-    let mut bishops_bb = *bishops;
-    while let Some(from_sq) = bishops_bb.pop_lsb() {
+    while bishops_bb.any() {
+        let from_sq = bishops_bb.pop_lsb();
         let attacks = MOVE_TABLES.get_bishop_moves(from_sq as usize, *ally_pieces, *enemy_pieces);
         let mut attack_bb = attacks;
-        while let Some(to_sq) = attack_bb.pop_lsb() {
+        while attack_bb.any() {
+            let to_sq = attack_bb.pop_lsb();
             let is_capture = enemy_pieces.contains_square(to_sq as usize);
             let flag = if is_capture {
                 Move::CAPTURE
@@ -619,15 +629,16 @@ fn gen_bishop_moves(state: &BoardState, side: Side, move_list: &mut MoveBuffer) 
 
 /// Generate pseudo-legal queen moves.
 fn gen_queen_moves(state: &BoardState, side: Side, move_list: &mut MoveBuffer) {
-    let queens = state.get_piece_bb(side, Piece::Queen);
+    let mut queens_bb = *state.get_piece_bb(side, Piece::Queen);
     let ally_pieces = state.get_side_bb(side);
     let enemy_pieces = state.get_side_bb(side.flip());
 
-    let mut queens_bb = *queens;
-    while let Some(from_sq) = queens_bb.pop_lsb() {
+    while queens_bb.any() {
+        let from_sq = queens_bb.pop_lsb();
         let attacks = MOVE_TABLES.get_queen_moves(from_sq as usize, *ally_pieces, *enemy_pieces);
         let mut attack_bb = attacks;
-        while let Some(to_sq) = attack_bb.pop_lsb() {
+        while attack_bb.any() {
+            let to_sq = attack_bb.pop_lsb();
             let is_capture = enemy_pieces.contains_square(to_sq as usize);
             let flag = if is_capture {
                 Move::CAPTURE
@@ -641,15 +652,16 @@ fn gen_queen_moves(state: &BoardState, side: Side, move_list: &mut MoveBuffer) {
 
 /// Generate pseudo-legal rook moves.
 fn gen_rook_moves(state: &BoardState, side: Side, move_list: &mut MoveBuffer) {
-    let rooks = state.get_piece_bb(side, Piece::Rook);
+    let mut rooks_bb = *state.get_piece_bb(side, Piece::Rook);
     let ally_pieces = state.get_side_bb(side);
     let enemy_pieces = state.get_side_bb(side.flip());
 
-    let mut rooks_bb = *rooks;
-    while let Some(from_sq) = rooks_bb.pop_lsb() {
+    while rooks_bb.any() {
+        let from_sq = rooks_bb.pop_lsb();
         let attacks = MOVE_TABLES.get_rook_moves(from_sq as usize, *ally_pieces, *enemy_pieces);
         let mut attack_bb = attacks;
-        while let Some(to_sq) = attack_bb.pop_lsb() {
+        while attack_bb.any() {
+            let to_sq = attack_bb.pop_lsb();
             let is_capture = enemy_pieces.contains_square(to_sq as usize);
             let flag = if is_capture {
                 Move::CAPTURE
@@ -663,18 +675,18 @@ fn gen_rook_moves(state: &BoardState, side: Side, move_list: &mut MoveBuffer) {
 
 /// Generate pseudo-legal pawn moves (without en passant).
 fn gen_pawn_moves(state: &BoardState, side: Side, move_list: &mut MoveBuffer) {
-    let pawns = state.get_piece_bb(side, Piece::Pawn);
+    let mut pawns_bb = *state.get_piece_bb(side, Piece::Pawn);
     let ally_pieces = state.get_side_bb(side);
     let enemy_pieces = state.get_side_bb(side.flip());
 
-    let mut pawns_bb = *pawns;
-    while let Some(from_sq) = pawns_bb.pop_lsb() {
+    while pawns_bb.any() {
+        let from_sq = pawns_bb.pop_lsb();
         let from = from_sq as usize;
 
-        let pushes = MOVE_TABLES.get_pawn_pushes(from, side, *ally_pieces, *enemy_pieces);
+        let mut push_bb = MOVE_TABLES.get_pawn_pushes(from, side, *ally_pieces, *enemy_pieces);
 
-        let mut push_bb = pushes;
-        while let Some(to_sq) = push_bb.pop_lsb() {
+        while push_bb.any() {
+            let to_sq = push_bb.pop_lsb();
             let to_rank = to_sq as usize / 8;
             let from_rank = from / 8;
             let is_promotion = match side {
@@ -696,7 +708,8 @@ fn gen_pawn_moves(state: &BoardState, side: Side, move_list: &mut MoveBuffer) {
 
         let attacks = MOVE_TABLES.get_pawn_attacks(from, side);
         let mut attack_bb = attacks & *enemy_pieces;
-        while let Some(to_sq) = attack_bb.pop_lsb() {
+        while attack_bb.any() {
+            let to_sq = attack_bb.pop_lsb();
             let to_rank = to_sq as usize / 8;
             let is_promotion = match side {
                 Side::White => to_rank == 7,
@@ -721,10 +734,10 @@ fn gen_pawn_moves_with_ep(
     gen_pawn_moves(state, side, move_list);
 
     if let Some(ep_square) = en_passant_square {
-        let pawns = state.get_piece_bb(side, Piece::Pawn);
-        let mut pawns_bb = *pawns;
+        let mut pawns_bb = *state.get_piece_bb(side, Piece::Pawn);
 
-        while let Some(from_sq) = pawns_bb.pop_lsb() {
+        while pawns_bb.any() {
+            let from_sq = pawns_bb.pop_lsb();
             let attacks = MOVE_TABLES.get_pawn_attacks(from_sq as usize, side);
             if attacks.contains_square(ep_square.index()) {
                 move_list.push(Move::new(

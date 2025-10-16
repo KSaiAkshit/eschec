@@ -166,10 +166,10 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
         trace!("inside game_loop");
 
         print!("{} >> ", board.stm);
-        std::io::stdout().flush().unwrap();
+        std::io::stdout().flush().into_diagnostic()?;
 
         let mut input = String::new();
-        if stdin.read_line(&mut input).unwrap() == 0 {
+        if stdin.read_line(&mut input).into_diagnostic()? == 0 {
             println!("EOF detected, exiting...");
             break;
         }

@@ -13,12 +13,14 @@ use crate::prelude::*;
 pub struct BitBoard(pub u64);
 
 impl BitAndAssign for BitBoard {
+    #[inline(always)]
     fn bitand_assign(&mut self, rhs: Self) {
         self.0 &= rhs.0
     }
 }
 
 impl BitOrAssign for BitBoard {
+    #[inline(always)]
     fn bitor_assign(&mut self, rhs: Self) {
         self.0 |= rhs.0
     }
@@ -27,6 +29,7 @@ impl BitOrAssign for BitBoard {
 impl BitOr for BitBoard {
     type Output = Self;
 
+    #[inline(always)]
     fn bitor(self, rhs: Self) -> Self::Output {
         Self(self.0 | rhs.0)
     }
@@ -35,6 +38,7 @@ impl BitOr for BitBoard {
 impl BitAnd for BitBoard {
     type Output = Self;
 
+    #[inline(always)]
     fn bitand(self, rhs: Self) -> Self::Output {
         Self(self.0 & rhs.0)
     }
@@ -43,6 +47,7 @@ impl BitAnd for BitBoard {
 impl Not for BitBoard {
     type Output = Self;
 
+    #[inline(always)]
     fn not(self) -> Self::Output {
         Self(!self.0)
     }
@@ -51,6 +56,7 @@ impl Not for BitBoard {
 impl BitOr for &BitBoard {
     type Output = BitBoard;
 
+    #[inline(always)]
     fn bitor(self, rhs: Self) -> Self::Output {
         BitBoard(self.0 | rhs.0)
     }
@@ -59,6 +65,7 @@ impl BitOr for &BitBoard {
 impl BitAnd for &BitBoard {
     type Output = BitBoard;
 
+    #[inline(always)]
     fn bitand(self, rhs: Self) -> Self::Output {
         BitBoard(self.0 & rhs.0)
     }
@@ -67,6 +74,7 @@ impl BitAnd for &BitBoard {
 impl Not for &BitBoard {
     type Output = BitBoard;
 
+    #[inline(always)]
     fn not(self) -> Self::Output {
         BitBoard(!self.0)
     }
@@ -78,7 +86,7 @@ impl BitBoard {
         self.0 |= 1 << pos;
     }
 
-    // #[inline(always)]
+    #[inline(always)]
     pub const fn capture(&mut self, index: usize) {
         self.0 &= !(1 << index);
     }
@@ -130,29 +138,31 @@ impl BitBoard {
     #[inline(always)]
     pub const fn const_lsb(&self) -> Option<u64> {
         if self.0 == 0 {
-            None
-        } else {
-            Some(self.0.trailing_zeros() as u64)
+            return None;
         }
+        Some(self.0.trailing_zeros() as u64)
     }
 
     #[inline(always)]
-    pub fn pop_lsb(&mut self) -> Option<u64> {
-        if self.0 == 0 {
-            return None;
-        }
+    pub fn pop_lsb(&mut self) -> u64 {
+        let idx = self.0.trailing_zeros() as u64;
         #[cfg(all(target_arch = "x86_64", target_feature = "bmi1"))]
         {
-            let idx = self.0.trailing_zeros() as u64;
             self.0 = unsafe { std::arch::x86_64::_blsr_u64(self.0) }; // Clear the least significant bit
-            Some(idx)
         }
         #[cfg(not(all(target_arch = "x86_64", target_feature = "bmi1")))]
         {
-            let idx = self.0.trailing_zeros();
             self.0 &= self.0 - 1; // Clear the least significant bit
-            Some(idx as u64)
         }
+        idx
+    }
+
+    #[inline(always)]
+    pub fn try_pop_lsb(&mut self) -> Option<u64> {
+        if self.0 == 0 {
+            return None;
+        }
+        Some(self.pop_lsb())
     }
 
     #[inline(always)]
@@ -167,21 +177,19 @@ impl BitBoard {
     #[inline(always)]
     pub const fn const_msb(&self) -> Option<u64> {
         if self.0 == 0 {
-            None
-        } else {
-            Some(63 - self.0.leading_zeros() as u64)
+            return None;
         }
+        Some(63 - self.0.leading_zeros() as u64)
     }
 
     #[inline(always)]
     pub fn pop_msb(&mut self) -> Option<u64> {
         if self.0 == 0 {
-            None
-        } else {
-            let idx = 63 - self.0.leading_zeros();
-            self.0 &= !(1u64 << idx); // Clear the most significant bit
-            Some(idx as u64)
+            return None;
         }
+        let idx = 63 - self.0.leading_zeros();
+        self.0 &= !(1u64 << idx); // Clear the most significant bit
+        Some(idx as u64)
     }
 
     #[inline(always)]
@@ -194,6 +202,7 @@ impl BitBoard {
         self.0 != 0
     }
 
+    #[inline(always)]
     pub const fn iter_bits(&self) -> BitBoardIterator {
         BitBoardIterator { remaining: self.0 }
     }
@@ -240,12 +249,19 @@ impl Iterator for BitBoardIterator {
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.remaining == 0 {
-            None
-        } else {
-            let bit_pos = self.remaining.trailing_zeros() as usize;
-            self.remaining &= self.remaining - 1; // Clear the least significant bit
-            Some(bit_pos)
+            return None;
         }
+
+        let idx = self.remaining.trailing_zeros() as usize;
+        #[cfg(all(target_arch = "x86_64", target_feature = "bmi1"))]
+        {
+            self.remaining = unsafe { std::arch::x86_64::_blsr_u64(self.remaining) }; // Clear the least significant bit
+        }
+        #[cfg(not(all(target_arch = "x86_64", target_feature = "bmi1")))]
+        {
+            self.remaining &= self.remaining - 1; // Clear the least significant bit
+        }
+        Some(idx)
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {

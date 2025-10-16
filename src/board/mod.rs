@@ -198,7 +198,6 @@ impl Board {
         if let Some(promoted_piece) = move_data.promotion {
             self.material[self.stm.index()] -= promoted_piece.score();
             self.material[self.stm.index()] += Piece::Pawn.score();
-            dbg!(&self.material);
             self.positions
                 .remove_piece(self.stm, promoted_piece, to.index())?;
             self.positions.set(self.stm, Piece::Pawn, from.index())?;
@@ -282,11 +281,11 @@ impl Board {
         };
 
         if let Some(ep_sq) = self.enpassant_square {
-            self.hash ^= ZOBRIST.en_passant_file[ep_sq.col()];
+            self.hash ^= &ZOBRIST.en_passant_file[ep_sq.col()];
         }
         self.enpassant_square = None;
         // XOR out prev castling rights.
-        self.hash ^= ZOBRIST.castling[self.castling_rights.get_rights() as usize];
+        self.hash ^= &ZOBRIST.castling[self.castling_rights.get_rights() as usize];
 
         // Update Board State
         // This covers normal captures and promotion-captures.
@@ -297,16 +296,16 @@ impl Board {
             self.positions
                 .remove_piece(opponent, captured_piece, to.index())?;
             // XOR out key for removed piece
-            self.hash ^= ZOBRIST.pieces[opponent.index()][captured_piece.index()][to.index()];
+            self.hash ^= &ZOBRIST.pieces[opponent.index()][captured_piece.index()][to.index()];
             self.material[opponent.index()] -= captured_piece.score();
         }
 
         // Move the piece from 'from' to 'to'
         self.positions.move_piece(from, to)?;
         // XOR out key for moved piece at source sq 'from'
-        self.hash ^= ZOBRIST.pieces[self.stm.index()][piece.index()][from.index()];
+        self.hash ^= &ZOBRIST.pieces[self.stm.index()][piece.index()][from.index()];
         // XOR in key for moved piece at destination sq 'to'
-        self.hash ^= ZOBRIST.pieces[self.stm.index()][piece.index()][to.index()];
+        self.hash ^= &ZOBRIST.pieces[self.stm.index()][piece.index()][to.index()];
 
         match m.flags() {
             Move::DOUBLE_PAWN => {
@@ -320,7 +319,7 @@ impl Board {
                 if (*opponent_pawns & legal_ep_attackers).any() {
                     self.enpassant_square = Square::new(ep_sq_idx);
                     // XOR in new enpassant file.
-                    self.hash ^= ZOBRIST.en_passant_file[ep_sq_idx % 8];
+                    self.hash ^= &ZOBRIST.en_passant_file[ep_sq_idx % 8];
                 }
             }
             Move::EN_PASSANT => {
@@ -332,7 +331,7 @@ impl Board {
                 self.positions
                     .remove_piece(opponent, Piece::Pawn, captured_pawn_idx)?;
                 // XOR out captured opponent pawn
-                self.hash ^= ZOBRIST.pieces[opponent.index()][Piece::pawn()][captured_pawn_idx];
+                self.hash ^= &ZOBRIST.pieces[opponent.index()][Piece::pawn()][captured_pawn_idx];
                 self.material[opponent.index()] -= Piece::Pawn.score();
             }
             Move::KING_CASTLE => {
@@ -342,9 +341,9 @@ impl Board {
                 );
                 self.positions.move_piece(rook_from, rook_to)?;
                 // XOR out rook from source sq
-                self.hash ^= ZOBRIST.pieces[self.stm.index()][Piece::rook()][rook_from.index()];
+                self.hash ^= &ZOBRIST.pieces[self.stm.index()][Piece::rook()][rook_from.index()];
                 // XOR in rook from destination sq
-                self.hash ^= ZOBRIST.pieces[self.stm.index()][Piece::rook()][rook_to.index()];
+                self.hash ^= &ZOBRIST.pieces[self.stm.index()][Piece::rook()][rook_to.index()];
                 self.castling_rights.set_castled(self.stm);
             }
             Move::QUEEN_CASTLE => {
@@ -354,9 +353,9 @@ impl Board {
                 );
                 self.positions.move_piece(rook_from, rook_to)?;
                 // XOR out rook from source sq
-                self.hash ^= ZOBRIST.pieces[self.stm.index()][Piece::rook()][rook_from.index()];
+                self.hash ^= &ZOBRIST.pieces[self.stm.index()][Piece::rook()][rook_from.index()];
                 // XOR in rook from destination sq
-                self.hash ^= ZOBRIST.pieces[self.stm.index()][Piece::rook()][rook_to.index()];
+                self.hash ^= &ZOBRIST.pieces[self.stm.index()][Piece::rook()][rook_to.index()];
             }
             _flags if m.is_promotion() => {
                 let promo_piece = m.promoted_piece().unwrap();
@@ -365,12 +364,12 @@ impl Board {
                     .remove_piece(self.stm, Piece::Pawn, to.index())?;
                 self.material[self.stm.index()] -= Piece::Pawn.score();
                 // XOR out pawn
-                self.hash ^= ZOBRIST.pieces[self.stm.index()][Piece::pawn()][to.index()];
+                self.hash ^= &ZOBRIST.pieces[self.stm.index()][Piece::pawn()][to.index()];
 
                 self.positions.set(self.stm, promo_piece, to.index())?;
                 self.material[self.stm.index()] += promo_piece.score();
                 // XOR in promote piece
-                self.hash ^= ZOBRIST.pieces[self.stm.index()][promo_piece.index()][to.index()];
+                self.hash ^= &ZOBRIST.pieces[self.stm.index()][promo_piece.index()][to.index()];
             }
             _ => { /* Quiet and normal captures fall through to here,
                 but they dont need anything special */
@@ -380,7 +379,7 @@ impl Board {
         // Final state update
         self.update_castling_rights(from, to);
         // XOR in updated castling rights;
-        self.hash ^= ZOBRIST.castling[self.castling_rights.get_rights() as usize];
+        self.hash ^= &ZOBRIST.castling[self.castling_rights.get_rights() as usize];
 
         if piece == Piece::Pawn || m.is_capture() {
             self.halfmove_clock = 0
@@ -394,7 +393,7 @@ impl Board {
         }
         self.stm = opponent;
         // XOR side
-        self.hash ^= ZOBRIST.black_to_move;
+        self.hash ^= &ZOBRIST.black_to_move;
 
         Ok(move_data)
     }

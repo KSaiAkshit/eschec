@@ -100,7 +100,7 @@ impl CutoffStats {
             0.0
         };
 
-        error!(
+        debug!(
             target: "cutoff_stats",
             "CUTOFF_STATS depth={} total_nodes={} cutoff_nodes={} cutoff_rate={:.2} avg_cutoff_at={:.2}",
             depth, self.total_nodes, self.cutoff_nodes, cutoff_rate, avg_cutoff_index
