@@ -8,7 +8,9 @@ use eschec::{
     moves::move_gen,
     prelude::MoveBuffer,
     search::{
-        Search,
+        SearchEngine,
+        alpha_beta::AlphaBetaSearch,
+        common::SearchConfig,
         move_ordering::{MainSearchPolicy, QSearchPolicy, sort_moves},
     },
 };
@@ -245,9 +247,13 @@ fn bench_ordering(c: &mut Criterion) {
 fn bench_search_hot_tt(c: &mut Criterion) {
     let evaluator = CompositeEvaluator::balanced();
     let depth = 7;
-    let mut search = Search::new(evaluator.clone_box(), depth);
-
-    search.set_emit_info(false);
+    let conf = SearchConfig {
+        emit_info: false,
+        ..Default::default()
+    };
+    let mut search = AlphaBetaSearch::new(evaluator.clone_box())
+        .with_config(conf)
+        .expect("Should be able to change conf");
 
     let mut group = c.benchmark_group(format!("search_hot_tt_depth_{depth}"));
     let group = group.sample_size(10);
@@ -256,7 +262,7 @@ fn bench_search_hot_tt(c: &mut Criterion) {
         b.iter_batched(
             || Board::from_fen(KIWIPETE),
             |board| {
-                search.clear_tt();
+                search.clear();
                 black_box(search.find_best_move(&board))
             },
             BatchSize::SmallInput,
@@ -275,9 +281,14 @@ fn bench_search_cold_tt(c: &mut Criterion) {
         b.iter_batched(
             || {
                 let board = Board::from_fen(KIWIPETE);
-                let mut search = Search::new(evaluator.clone_box(), depth);
-                search.set_emit_info(false);
-                search.set_asp(false);
+                let conf = SearchConfig {
+                    emit_info: false,
+                    enable_asp: false,
+                    ..Default::default()
+                };
+                let search = AlphaBetaSearch::new(evaluator.clone_box())
+                    .with_config(conf)
+                    .expect("Should be able to change conf");
                 (board, search)
             },
             |(board, mut search)| {
@@ -291,9 +302,14 @@ fn bench_search_cold_tt(c: &mut Criterion) {
         b.iter_batched(
             || {
                 let board = Board::from_fen(KIWIPETE);
-                let mut search = Search::new(evaluator.clone_box(), depth);
-                search.set_emit_info(false);
-                search.set_asp(true);
+                let conf = SearchConfig {
+                    emit_info: false,
+                    enable_asp: true,
+                    ..Default::default()
+                };
+                let search = AlphaBetaSearch::new(evaluator.clone_box())
+                    .with_config(conf)
+                    .expect("Should be able to change conf");
                 (board, search)
             },
             |(board, mut search)| {
@@ -307,9 +323,14 @@ fn bench_search_cold_tt(c: &mut Criterion) {
         b.iter_batched(
             || {
                 let board = Board::from_fen(KIWIPETE);
-                let mut search = Search::new(evaluator.clone_box(), depth);
-                search.set_emit_info(false);
-                search.set_lmr(false);
+                let conf = SearchConfig {
+                    emit_info: false,
+                    enable_lmr: false,
+                    ..Default::default()
+                };
+                let search = AlphaBetaSearch::new(evaluator.clone_box())
+                    .with_config(conf)
+                    .expect("Should be able to change conf");
                 (board, search)
             },
             |(board, mut search)| {
@@ -323,9 +344,14 @@ fn bench_search_cold_tt(c: &mut Criterion) {
         b.iter_batched(
             || {
                 let board = Board::from_fen(KIWIPETE);
-                let mut search = Search::new(evaluator.clone_box(), depth);
-                search.set_emit_info(false);
-                search.set_lmr(true);
+                let conf = SearchConfig {
+                    emit_info: false,
+                    enable_lmr: true,
+                    ..Default::default()
+                };
+                let search = AlphaBetaSearch::new(evaluator.clone_box())
+                    .with_config(conf)
+                    .expect("Should be able to change conf");
                 (board, search)
             },
             |(board, mut search)| {

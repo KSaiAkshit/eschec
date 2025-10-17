@@ -1,5 +1,8 @@
 use clap::{Parser, ValueEnum};
-use eschec::prelude::*;
+use eschec::{
+    prelude::*,
+    search::common::{SearchConfig, SearchLimits},
+};
 use std::{
     collections::HashMap,
     fs::{File, read_dir},
@@ -326,12 +329,21 @@ fn run_tests_parallel(cli: EvalCli) -> miette::Result<()> {
 /// Helper function to run a single EPD test, callable from both modes.
 fn run_single_test(test: &EPDTest, cli: &EvalCli) -> TestResult {
     let evaluator = CompositeEvaluator::balanced();
-    let mut search = if let Some(d) = cli.depth {
-        Search::new(Box::new(evaluator), d)
+    let mut search = if let Some(depth) = cli.depth {
+        let lim = SearchLimits::depth(depth);
+        AlphaBetaSearch::new(Box::new(evaluator)).with_limits(lim)
     } else {
-        Search::with_time_control(Box::new(evaluator), MAX_PLY as u8, cli.time_control.to_ms())
+        let mut lim = SearchLimits::time(cli.time_control.to_ms());
+        lim.max_depth = Some(MAX_PLY as u8);
+        AlphaBetaSearch::new(Box::new(evaluator)).with_limits(lim)
     };
-    search.set_emit_info(false);
+    let conf = SearchConfig {
+        emit_info: false,
+        ..Default::default()
+    };
+    search = search
+        .with_config(conf)
+        .expect("Should be able to set conf");
 
     let board = Board::from_fen(&test.fen);
     let result = search.find_best_move(&board);

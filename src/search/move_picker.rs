@@ -43,13 +43,13 @@ impl<'a> MovePicker<'a> {
     /// * `moves` - Mutable slice of legal moves to pick from
     /// * `killers` - Killer moves for this ply
     /// * `tt_move` - Transposition table move (gets highest priority)
-    /// * `history` - History heuristic table
+    /// * `repetition_table` - History heuristic table
     pub fn new(
         board: &'a Board,
         moves: &'a mut [Move],
         killers: &[Option<Move>; 2],
         tt_move: Option<Move>,
-        history: &[[i32; 64]; 64],
+        history: &[[i32; NUM_SQUARES]; NUM_SQUARES],
     ) -> Self {
         debug_assert!(moves.len() <= MAX_MOVES, "Too many moves");
 

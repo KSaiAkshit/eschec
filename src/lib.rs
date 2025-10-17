@@ -74,6 +74,7 @@ pub mod consts {
 
     pub const TOTAL_PHASE: i32 = 24;
 
+    pub const STALEMATE_SCORE: i32 = 0;
     pub const MATE_SCORE: i32 = 20_000;
     pub const MATE_THRESHOLD: i32 = MATE_SCORE - MAX_PLY as i32;
 

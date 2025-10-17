@@ -9,7 +9,6 @@ const MVV_LVA_OFFSET: i32 = 2_000_000;
 const KILLER_MOVE_SCORE: i32 = 1_000_000;
 const PROMOTION_SCORE: i32 = 1_000_000;
 const BAD_CAPTURE_SCORE: i32 = 900_000;
-// TODO: Add more scores here
 
 pub trait MoveScoringPolicy {
     fn score(

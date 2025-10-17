@@ -17,7 +17,7 @@ pub struct UciState {
     board: Board,
     search_depth: u8,
     evaluator: Arc<dyn Evaluator>,
-    search: Arc<Mutex<Search>>,
+    search: Arc<Mutex<AlphaBetaSearch>>,
     search_running: Arc<AtomicBool>,
     best_move: Arc<Mutex<Option<(Square, Square)>>>,
     search_thread: Option<thread::JoinHandle<SearchResult>>,
@@ -52,10 +52,10 @@ impl UciState {
     pub fn new(depth: Option<u8>) -> Self {
         let depth = depth.unwrap_or(20);
         let search_running = Arc::new(AtomicBool::new(false));
-        let search = Arc::new(Mutex::new(
-            Search::new(Box::new(CompositeEvaluator::balanced()), depth)
-                .init(Some(search_running.clone())),
-        ));
+        let mut s = AlphaBetaSearch::new(Box::new(CompositeEvaluator::balanced()))
+            .init(search_running.clone());
+        s.set_depth(depth);
+        let search = Arc::new(Mutex::new(s));
         Self {
             board: Board::new(),
             search_depth: depth,
@@ -72,10 +72,10 @@ impl UciState {
         self.board = Board::new();
         *self.best_move.lock().unwrap() = None;
         self.move_history.clear();
-        self.search = Arc::new(Mutex::new(
-            Search::new(Box::new(CompositeEvaluator::balanced()), self.search_depth)
-                .init(Some(self.search_running.clone())),
-        ))
+        let mut s = AlphaBetaSearch::new(Box::new(CompositeEvaluator::balanced()))
+            .init(self.search_running.clone());
+        s.set_depth(self.search_depth);
+        self.search = Arc::new(Mutex::new(s))
     }
 }
 
@@ -188,14 +188,10 @@ fn cmd_go(state: &mut UciState, params: GoParams) {
                 .expect("Should be able to set evaluator");
             if let Some(time) = max_time_ms {
                 info!("changing time {:?}", max_time_ms);
-                if let Err(e) = search.set_time(time) {
-                    error!("{:?}", e);
-                }
+                search.set_time(time);
             } else {
                 info!("changing depth {:?}", params.depth.unwrap_or(default_depth));
-                search
-                    .set_depth(params.depth.unwrap_or(default_depth))
-                    .unwrap();
+                search.set_depth(params.depth.unwrap_or(default_depth));
             }
 
             search_running.store(true, Ordering::Relaxed);

@@ -1,9 +1,9 @@
-use std::io::Write;
+use std::{io::Write, time::Duration};
 
 use clap::{Parser, Subcommand, ValueEnum};
 use tracing::{Level, span};
 
-use crate::prelude::*;
+use crate::{prelude::*, search::common::SearchLimits};
 
 #[derive(Parser)]
 #[command(name = env!("CARGO_PKG_NAME"), version = env!("CARGO_PKG_VERSION"), about = env!("CARGO_PKG_DESCRIPTION") )]
@@ -153,8 +153,14 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
 
     let mut board = Board::from_fen(&fen);
     let evaluator = CompositeEvaluator::balanced();
+    let limits = SearchLimits {
+        max_depth: Some(depth),
+        max_time: Some(Duration::from_millis(10_000)),
+        max_nodes: None,
+        mate_depth: None,
+    };
     let mut search =
-        Search::with_time_control(Box::new(CompositeEvaluator::balanced()), depth, 10_000);
+        AlphaBetaSearch::new(Box::new(CompositeEvaluator::balanced())).with_limits(limits);
 
     let stdin = std::io::stdin();
 
@@ -245,11 +251,10 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
                     if let Some(mov) = result.best_move {
                         info!("Best move: {} ", mov.uci());
                         info!(
-                            "score: {}, time_taken: {} ms, nodes: {}, pruned: {}",
+                            "score: {}, time_taken: {} ms, nodes: {}",
                             result.score,
                             result.time_taken.as_millis(),
                             result.nodes_searched,
-                            result.pruned_nodes
                         );
                     } else {
                         error!("No legal moves available");
@@ -276,7 +281,7 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
                     }
                     SetSubcommand::Depth { depth } => {
                         info!("Changing search depth from {inp_depth} to {depth}");
-                        search.set_depth(depth)?;
+                        search.set_depth(depth);
                     }
                     SetSubcommand::LogLevel { level } => {
                         let new_level: Level = level.into();
@@ -304,8 +309,18 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
                     }
                     SetSubcommand::Hash { size } => {
                         info!("Changing Hash table size to {size}");
-                        if let Err(e) = search.change_hash_size(size as usize) {
-                            error!("Failed to chaing hash table size: \n{e:?}");
+                        let mut conf = search.get_config();
+                        conf.hash_size_mb = size as usize;
+                        search = match search.with_config(conf) {
+                            Ok(updated_search) => {
+                                info!("Successfully changed hash table size");
+                                updated_search
+                            }
+                            Err(e) => {
+                                warn!("Error changing size: {e} \n Resetting search");
+                                AlphaBetaSearch::new(Box::new(CompositeEvaluator::balanced()))
+                                    .with_limits(limits)
+                            }
                         }
                     }
                 },
