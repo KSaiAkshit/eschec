@@ -1,11 +1,23 @@
+//! Chess search implementations
+//!
+//! This module provides various search algorithms
+//! - MiniMax + Alpha-Beta Pruning with Iterative Deepening (default)
+//! - Monte Carlo Tree Search (MCTS) [TODO]
+//! - Parallel search variants (Lazy SMP) [TODO]
+
+use crate::search::common::{adjust_score_for_ply, adjust_score_from_ply, has_non_pawn_material};
 use crate::search::move_ordering::{MainSearchPolicy, MoveScoringPolicy, sort_moves};
 use crate::search::move_picker::MovePicker;
-use crate::search::tt::{ScoreTypes, TranspositionEntry, TranspositionTable};
 use tracing::*;
 
+pub mod alpha_beta;
+pub mod common;
 pub mod move_ordering;
 pub mod move_picker;
 pub mod tt;
+
+pub use common::{SearchConfig, SearchLimits, SearchResult, SearchStats};
+pub use tt::{ScoreTypes, TranspositionEntry, TranspositionTable};
 
 use crate::prelude::*;
 use std::cmp::{max, min};
@@ -16,114 +28,31 @@ use std::time::{Duration, Instant};
 const ASP_START_WINDOW: i32 = 48;
 const ASP_MAX_WINDOW: i32 = 4096;
 
-#[derive(Clone, Copy)]
-struct SearchContext {
-    ply: usize,
-    is_pv_node: bool,
-}
+/// Trait that all search implementations must implement
+pub trait SearchEngine: Send {
+    /// Search for the best move from the current position
+    fn search(&mut self, board: &Board) -> SearchResult;
 
-impl SearchContext {
-    fn new_child(&self, is_pv_child: bool) -> Self {
-        SearchContext {
-            ply: self.ply + 1,
-            is_pv_node: is_pv_child,
-        }
-    }
-}
+    /// Set maximum search depth
+    fn set_depth(&mut self, depth: u8);
 
-#[derive(Debug, Default)]
-pub struct SearchResult {
-    pub best_move: Option<Move>,
-    pub score: i32,
-    pub depth: u8,
-    pub nodes_searched: u64,
-    pub time_taken: Duration,
-    pub pruned_nodes: u64,
-}
+    /// Set maximum search time
+    fn set_time(&mut self, nodes: u64);
 
-#[derive(Debug, Clone)]
-pub struct SearchConfig {
-    enable_nmp: bool,
-    enable_asp: bool,
-    enable_lmr: bool,
-    emit_info: bool,
-    collect_stats: bool,
-}
+    /// Set nodes limit
+    fn set_nodes(&mut self, nodes: u64);
 
-impl Default for SearchConfig {
-    fn default() -> Self {
-        Self {
-            enable_nmp: true,
-            enable_asp: true,
-            enable_lmr: true,
-            emit_info: true,
-            collect_stats: true,
-        }
-    }
-}
+    /// Clear internal state (TT, History, etc.)
+    fn clear(&mut self);
 
-#[derive(Debug, Clone)]
-pub struct CutoffStats {
-    pub total_nodes: u64,
-    pub cutoff_nodes: u64,
-    pub cutoff_at_move: [u64; 64],
-}
+    /// Stop the current search
+    fn stop(&mut self);
 
-impl Default for CutoffStats {
-    fn default() -> Self {
-        Self {
-            total_nodes: Default::default(),
-            cutoff_nodes: Default::default(),
-            cutoff_at_move: [0; 64],
-        }
-    }
-}
+    /// Get search Statistics
+    fn get_stats(&mut self) -> SearchStats;
 
-impl CutoffStats {
-    pub fn log_summary(&self, depth: u8) {
-        if self.total_nodes == 0 {
-            return;
-        }
-
-        let cutoff_rate = 100.0 * self.cutoff_nodes as f64 / self.total_nodes as f64;
-
-        // Calculate average move index at cutoff
-        let total_cutoff_moves: u64 = self
-            .cutoff_at_move
-            .iter()
-            .enumerate()
-            .map(|(i, &count)| i as u64 * count)
-            .sum();
-        let avg_cutoff_index = if self.cutoff_nodes > 0 {
-            total_cutoff_moves as f64 / self.cutoff_nodes as f64
-        } else {
-            0.0
-        };
-
-        debug!(
-            target: "cutoff_stats",
-            "CUTOFF_STATS depth={} total_nodes={} cutoff_nodes={} cutoff_rate={:.2} avg_cutoff_at={:.2}",
-            depth, self.total_nodes, self.cutoff_nodes, cutoff_rate, avg_cutoff_index
-        );
-
-        let histogram: Vec<String> = self
-            .cutoff_at_move
-            .iter()
-            .take(20)
-            .enumerate()
-            .filter(|&(_, &count)| count > 0)
-            .map(|(i, count)| format!("{}:{}", i, count))
-            .collect();
-
-        if !histogram.is_empty() {
-            error!(
-                target: "cutoff_stats",
-                "CUTOFF_HISTOGRAM depth={} data=[{}]",
-                depth,
-                histogram.join(",")
-            );
-        }
-    }
+    /// Clone the engine (for parallel search)
+    fn clone_engine(&self) -> Box<dyn SearchEngine>;
 }
 
 #[derive(Debug)]
@@ -141,7 +70,7 @@ pub struct Search {
     killer_moves: [[Option<Move>; 2]; MAX_PLY],
     history: [[i32; 64]; 64],
     cutoff_stats: CutoffStats,
-    hash_history: Vec<u64>, // TODO: Should this be a stack thing instead // of a Heap allocated Vec
+    hash_history: Vec<u64>,
     in_progress: bool,
 }
 
@@ -999,53 +928,6 @@ impl Search {
                 self.history[from][to] /= 2;
             }
         }
-    }
-}
-
-// Adjusts Score to be relative to root.
-// To be called before entry is stored in TranspositionTable
-// Takes ply-dependent score and converts it to 'absolute' score
-fn has_non_pawn_material(board: &Board) -> bool {
-    let side = board.stm;
-    let side_pieces = board.positions.get_side_bb(side);
-    let pawns = board.positions.get_piece_bb(side, Piece::Pawn);
-    let king = board.positions.get_piece_bb(side, Piece::King);
-    (*side_pieces & !(*pawns | *king)).any()
-}
-
-// Adjusts Score to encode mate distance in the score
-// Takes ply-independent score and converts it to also hold ply info
-fn adjust_score_for_ply(score: i32, ply: usize) -> i32 {
-    if score == i32::MIN {
-        debug_assert!(false, "BUG: adjust_score_for_ply called with i32::MIN");
-        error!("BUG: adjust_score_for_ply called with i32::MIN");
-        return -MATE_SCORE;
-    }
-    if score.abs() > MATE_THRESHOLD {
-        if score > 0 {
-            score.saturating_sub(ply as i32)
-        } else {
-            score.saturating_add(ply as i32)
-        }
-    } else {
-        score
-    }
-}
-
-fn adjust_score_from_ply(score: i32, ply: usize) -> i32 {
-    if score == i32::MIN {
-        debug_assert!(false, "BUG: adjust_score_from_ply called with i32::MIN");
-        error!("BUG: adjust_score_from_ply called with i32::MIN");
-        return -MATE_SCORE;
-    }
-    if score.abs() > MATE_THRESHOLD {
-        if score > 0 {
-            score.saturating_add(ply as i32)
-        } else {
-            score.saturating_sub(ply as i32)
-        }
-    } else {
-        score
     }
 }
 
