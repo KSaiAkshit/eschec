@@ -7,11 +7,12 @@
 use std::cmp::{max, min};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use tracing::trace_span;
 
 use crate::prelude::*;
+use crate::search::move_ordering::{MainSearchPolicy, MoveScoringPolicy, sort_moves};
 use crate::search::move_picker::MovePicker;
 use crate::search::{
     ScoreTypes, SearchEngine, SearchResult, SearchStats, TranspositionEntry, TranspositionTable,
@@ -23,8 +24,6 @@ const ASP_START_WINDOW: i32 = 48;
 const ASP_MAX_WINDOW: i32 = 4096;
 const HISTORY_SIZE: usize = 128;
 const DELTA_MARGIN: i32 = 700;
-
-// Types
 
 /// Holds pv_node and curr ply
 #[derive(Clone, Copy)]
@@ -53,14 +52,14 @@ impl SearchContext {
 #[derive(Debug)]
 pub struct SearchTables {
     killer_moves: [[Option<Move>; 2]; MAX_PLY],
-    history: [[i32; 64]; 64],
+    history: [[i32; NUM_SQUARES]; NUM_SQUARES],
 }
 
 impl SearchTables {
     fn new() -> Self {
         Self {
             killer_moves: [[None; 2]; MAX_PLY],
-            history: [[0; 64]; 64],
+            history: [[0; NUM_SQUARES]; NUM_SQUARES],
         }
     }
 
@@ -100,7 +99,7 @@ impl SearchTables {
 }
 
 #[derive(Debug)]
-struct RepetitionTable {
+pub struct RepetitionTable {
     hashes: [u64; HISTORY_SIZE],
     len: usize,
 }
@@ -195,6 +194,44 @@ impl AlphaBetaSearch {
     pub fn with_limits(mut self, limits: SearchLimits) -> Self {
         self.limits = limits;
         self
+    }
+}
+
+impl SearchEngine for AlphaBetaSearch {
+    fn search(&mut self, board: &Board) -> SearchResult {
+        self.find_best_move(board)
+    }
+
+    fn set_depth(&mut self, depth: u8) {
+        self.limits.max_depth = Some(depth)
+    }
+
+    fn set_time(&mut self, time_ms: u64) {
+        self.limits.max_time = Some(Duration::from_millis(time_ms))
+    }
+
+    fn set_nodes(&mut self, nodes: u64) {
+        self.limits.max_nodes = Some(nodes)
+    }
+
+    fn clear(&mut self) {
+        self.tt.clear();
+        self.repetition_table.clear();
+        self.search_tables.clear();
+    }
+
+    fn stop(&mut self) {
+        if self.in_progress {
+            self.in_progress = true;
+        }
+    }
+
+    fn get_stats(&mut self) -> SearchStats {
+        todo!()
+    }
+
+    fn clone_engine(&self) -> Box<dyn SearchEngine> {
+        todo!()
     }
 }
 
@@ -549,8 +586,6 @@ impl AlphaBetaSearch {
             return 0;
         }
 
-        let current_hash = board.hash;
-
         if self.is_draw(board) {
             return 0;
         }
@@ -648,7 +683,35 @@ impl AlphaBetaSearch {
 impl AlphaBetaSearch {
     #[inline]
     fn should_stop(&self) -> bool {
-        todo!()
+        if let Some(flag) = &self.search_running
+            && !flag.load(Ordering::Acquire)
+        {
+            debug!("Stop signal recieved");
+            return true;
+        }
+
+        if !self.in_progress {
+            debug!("`in_progress` is switched to false");
+            return true;
+        }
+
+        if let Some(max_time) = self.limits.max_time
+            && self.start_time.elapsed() >= max_time
+        {
+            debug!("Max time utilized");
+            return true;
+        }
+
+        if self
+            .limits
+            .max_nodes
+            .is_some_and(|l| self.nodes_searched >= l)
+        {
+            debug!("Node limit exhauseted");
+            return true;
+        }
+
+        false
     }
 
     fn emit_info_string(&self, depth: u8, score: i32, best_move: Option<Move>) {
@@ -704,6 +767,130 @@ impl AlphaBetaSearch {
         beta: i32,
     ) -> i32 {
         -self.alpha_beta(board, context, depth - 1, -beta, -alpha)
+    }
+
+    fn root_search_with_aspiration(
+        &mut self,
+        board: &Board,
+        depth: u8,
+        legal_moves: &mut MoveBuffer,
+        prev_best_move: Option<Move>,
+        prev_score: i32,
+    ) -> (Option<Move>, i32) {
+        self.sort_moves::<MainSearchPolicy>(board, legal_moves, prev_best_move, depth as usize);
+
+        let use_asp = self.config.enable_asp
+            && depth > 1
+            && prev_score.abs() < MATE_THRESHOLD - ASP_MAX_WINDOW;
+
+        let mut window = ASP_START_WINDOW;
+
+        let mut alpha_base = if use_asp {
+            prev_score.saturating_sub(window)
+        } else {
+            i32::MIN + 1
+        };
+
+        let mut beta_base = if use_asp {
+            prev_score.saturating_add(window)
+        } else {
+            i32::MAX
+        };
+        trace!("Using ASP: {use_asp}");
+
+        let mut tries: usize = 0;
+        loop {
+            if self.should_stop() {
+                return (legal_moves.first().copied(), i32::MIN + 1);
+            }
+            trace!("ASP window: ({alpha_base}, {beta_base})");
+
+            let (best_move, best_score) =
+                self.root_search_attempt(board, depth, alpha_base, beta_base, legal_moves);
+
+            if !use_asp {
+                return (best_move, best_score);
+            }
+
+            if tries >= 4 {
+                debug!("Tried ASP 4 times, No-doy");
+                return (best_move, best_score);
+            }
+
+            // - Asymmetric widening: Increase/decrease based on fail high/low
+            if best_score <= alpha_base {
+                // Fail Low
+                tries += 1;
+                window = window.saturating_mul(2).min(ASP_MAX_WINDOW);
+                alpha_base = prev_score.saturating_sub(window);
+            } else if best_score >= beta_base {
+                // Fail High
+                tries += 1;
+                window = window.saturating_mul(2).min(ASP_MAX_WINDOW);
+                beta_base = prev_score.saturating_add(window);
+            } else {
+                return (best_move, best_score);
+            }
+        }
+    }
+
+    fn root_search_attempt(
+        &mut self,
+        board: &Board,
+        depth: u8,
+        alpha_base: i32,
+        beta_base: i32,
+        legal_moves: &MoveBuffer,
+    ) -> (Option<Move>, i32) {
+        let mut alpha = alpha_base;
+        let beta = beta_base;
+
+        let mut local_best_move: Option<Move> = legal_moves.first().copied();
+        let mut local_best_score: i32 = i32::MIN + 1;
+
+        for &mv in legal_moves {
+            if self.should_stop() {
+                break;
+            }
+
+            let mut board_copy = *board;
+            if let Err(e) = board_copy.make_move(mv) {
+                error!(
+                    "Making move on board (fen: {:?}) failed with error: {}",
+                    board_copy.to_fen(),
+                    e
+                );
+                continue;
+            }
+
+            self.repetition_table.push(board_copy.hash);
+
+            let root_child_context = SearchContext {
+                ply: 1,
+                is_pv_node: true,
+            };
+
+            let score = -self.alpha_beta(&board_copy, root_child_context, depth - 1, -beta, -alpha);
+
+            self.repetition_table.pop();
+
+            if self.should_stop() {
+                break;
+            }
+
+            if score > local_best_score {
+                local_best_score = score;
+                local_best_move = Some(mv);
+            }
+
+            alpha = max(alpha, local_best_score);
+
+            if alpha >= beta {
+                break;
+            }
+        }
+
+        (local_best_move, local_best_score)
     }
 
     /// Zero-window search for non-PV moves, with re-search on fail-high
@@ -768,6 +955,24 @@ impl AlphaBetaSearch {
     fn lmr_reduction(&self, depth: u8, move_index: usize) -> u8 {
         let base = 0.20 + ((depth as f32).ln() * (move_index as f32).ln()) / 3.35;
         (base as u8).min(depth - 1)
+    }
+
+    fn sort_moves<P: MoveScoringPolicy>(
+        &self,
+        board: &Board,
+        legal_moves: &mut MoveBuffer,
+        hint: Option<Move>,
+        depth: usize,
+    ) {
+        let seed = board.hash.wrapping_add(depth as u64);
+        sort_moves::<P>(
+            board,
+            legal_moves.as_mut_slice(),
+            &self.search_tables.killer_moves[depth],
+            hint,
+            &self.search_tables.history,
+            seed,
+        );
     }
 
     /// Check if lmr should be applied

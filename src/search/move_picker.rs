@@ -1,6 +1,9 @@
 use crate::{
     prelude::*,
-    search::move_ordering::{MainSearchPolicy, MoveScoringPolicy, QSearchPolicy},
+    search::{
+        alpha_beta::RepetitionTable,
+        move_ordering::{MainSearchPolicy, MoveScoringPolicy, QSearchPolicy},
+    },
 };
 
 /// MovePicker: Efficiently picks moves one at a time without re-scoring.
@@ -43,13 +46,13 @@ impl<'a> MovePicker<'a> {
     /// * `moves` - Mutable slice of legal moves to pick from
     /// * `killers` - Killer moves for this ply
     /// * `tt_move` - Transposition table move (gets highest priority)
-    /// * `history` - History heuristic table
+    /// * `repetition_table` - History heuristic table
     pub fn new(
         board: &'a Board,
         moves: &'a mut [Move],
         killers: &[Option<Move>; 2],
         tt_move: Option<Move>,
-        history: &[[i32; 64]; 64],
+        repetition_table: &RepetitionTable,
     ) -> Self {
         debug_assert!(moves.len() <= MAX_MOVES, "Too many moves");
 

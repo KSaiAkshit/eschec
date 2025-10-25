@@ -37,7 +37,7 @@ pub trait SearchEngine: Send {
     fn set_depth(&mut self, depth: u8);
 
     /// Set maximum search time
-    fn set_time(&mut self, nodes: u64);
+    fn set_time(&mut self, time_ms: u64);
 
     /// Set nodes limit
     fn set_nodes(&mut self, nodes: u64);
@@ -901,6 +901,11 @@ impl Search {
             && !flag.load(Ordering::Acquire)
         {
             debug!("Stop signal recieved");
+            return true;
+        }
+
+        if !self.in_progress {
+            debug!("`in_progress` is switched to false");
             return true;
         }
 
