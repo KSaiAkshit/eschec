@@ -14,10 +14,8 @@ use tracing::trace_span;
 use crate::prelude::*;
 use crate::search::move_ordering::{MainSearchPolicy, MoveScoringPolicy, sort_moves};
 use crate::search::move_picker::MovePicker;
-use crate::search::{
-    ScoreTypes, SearchEngine, SearchResult, SearchStats, TranspositionEntry, TranspositionTable,
-    common::*,
-};
+use crate::search::tt::{ScoreTypes, TranspositionEntry, TranspositionTable};
+use crate::search::{SearchEngine, SearchResult, SearchStats, common::*};
 
 /// Consts
 const ASP_START_WINDOW: i32 = 48;
@@ -53,6 +51,15 @@ impl SearchContext {
 pub struct SearchTables {
     killer_moves: [[Option<Move>; 2]; MAX_PLY],
     history: [[i32; NUM_SQUARES]; NUM_SQUARES],
+}
+
+impl Default for SearchTables {
+    fn default() -> Self {
+        Self {
+            killer_moves: [[None; 2]; MAX_PLY],
+            history: [[0; NUM_SQUARES]; NUM_SQUARES],
+        }
+    }
 }
 
 impl SearchTables {
@@ -102,6 +109,15 @@ impl SearchTables {
 pub struct RepetitionTable {
     hashes: [u64; HISTORY_SIZE],
     len: usize,
+}
+
+impl Default for RepetitionTable {
+    fn default() -> Self {
+        Self {
+            hashes: [0; HISTORY_SIZE],
+            len: Default::default(),
+        }
+    }
 }
 
 impl RepetitionTable {
@@ -165,6 +181,25 @@ pub struct AlphaBetaSearch {
     cutoff_stats: CutoffStats,
 }
 
+impl Default for AlphaBetaSearch {
+    fn default() -> Self {
+        Self {
+            nodes_searched: Default::default(),
+            pruned_nodes: Default::default(),
+            config: Default::default(),
+            limits: Default::default(),
+            evaluator: Box::new(CompositeEvaluator::default()),
+            search_running: Default::default(),
+            search_tables: Default::default(),
+            tt: Default::default(),
+            repetition_table: Default::default(),
+            in_progress: Default::default(),
+            start_time: Instant::now(),
+            cutoff_stats: Default::default(),
+        }
+    }
+}
+
 impl AlphaBetaSearch {
     pub fn new(evaluator: Box<dyn Evaluator>) -> Self {
         Self {
@@ -198,6 +233,15 @@ impl AlphaBetaSearch {
 }
 
 impl SearchEngine for AlphaBetaSearch {
+    type Output = AlphaBetaSearch;
+
+    fn init(self, search_running: Arc<AtomicBool>) -> Self::Output {
+        Self {
+            search_running: Some(search_running),
+            ..self
+        }
+    }
+
     fn search(&mut self, board: &Board) -> SearchResult {
         self.find_best_move(board)
     }
@@ -230,7 +274,7 @@ impl SearchEngine for AlphaBetaSearch {
         todo!()
     }
 
-    fn clone_engine(&self) -> Box<dyn SearchEngine> {
+    fn clone_engine(&self) -> Box<dyn SearchEngine<Output = Self::Output>> {
         todo!()
     }
 }
@@ -383,11 +427,11 @@ impl AlphaBetaSearch {
                 let score = adjust_score_for_ply(entry.score, ply);
 
                 match entry.score_type {
-                    search::ScoreTypes::Exact => {
+                    ScoreTypes::Exact => {
                         // Exact scores returned as is
                         return score;
                     }
-                    search::ScoreTypes::LowerBound => {
+                    ScoreTypes::LowerBound => {
                         // The true score is 'at least' prev score
                         // if this is enough to beat beta, this can be pruned
                         alpha = max(alpha, score);
@@ -395,7 +439,7 @@ impl AlphaBetaSearch {
                             return beta;
                         }
                     }
-                    search::ScoreTypes::UpperBound => {
+                    ScoreTypes::UpperBound => {
                         // The true score is 'at most' prev score
                         // If this is enough to beat beta, this can be pruned
                         beta = min(beta, score);
@@ -443,7 +487,7 @@ impl AlphaBetaSearch {
             legal_moves.as_mut_slice(),
             &self.search_tables.killer_moves[ply],
             Some(tt_move),
-            &self.repetition_table,
+            &self.search_tables.history,
         );
 
         let mut move_index = 0;
@@ -526,7 +570,7 @@ impl AlphaBetaSearch {
                     hash: current_hash,
                     depth,
                     score: adjust_score_from_ply(beta, ply),
-                    score_type: search::ScoreTypes::LowerBound,
+                    score_type: ScoreTypes::LowerBound,
                     best_move: best_move_this_node,
                 };
                 self.tt.store(entry_to_score);
