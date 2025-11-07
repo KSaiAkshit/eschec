@@ -309,8 +309,18 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
                     }
                     SetSubcommand::Hash { size } => {
                         info!("Changing Hash table size to {size}");
-                        if let Err(e) = search.change_hash_size(size as usize) {
-                            error!("Failed to chaing hash table size: \n{e:?}");
+                        let mut conf = search.get_config();
+                        conf.hash_size_mb = size as usize;
+                        search = match search.with_config(conf) {
+                            Ok(updated_search) => {
+                                info!("Successfully changed hash table size");
+                                updated_search
+                            }
+                            Err(e) => {
+                                warn!("Error changing size: {e} \n Resetting search");
+                                AlphaBetaSearch::new(Box::new(CompositeEvaluator::balanced()))
+                                    .with_limits(limits)
+                            }
                         }
                     }
                 },

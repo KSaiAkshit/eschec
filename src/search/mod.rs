@@ -15,7 +15,7 @@ use std::sync::{Arc, atomic::AtomicBool};
 
 pub use common::{SearchResult, SearchStats};
 
-use crate::prelude::*;
+use crate::{prelude::*, search::common::SearchConfig};
 
 /// Trait that all search implementations must implement
 pub trait SearchEngine: Send {
@@ -34,6 +34,9 @@ pub trait SearchEngine: Send {
     /// Set nodes limit
     fn set_nodes(&mut self, nodes: u64);
 
+    /// Get current config
+    fn get_config(&self) -> SearchConfig;
+
     /// Clear internal state (TT, History, etc.)
     fn clear(&mut self);
 
@@ -49,7 +52,7 @@ pub trait SearchEngine: Send {
 
 #[cfg(test)]
 mod tests {
-    use crate::utils::log::init;
+    use crate::{search::common::SearchLimits, utils::log::init};
 
     use super::*;
 
@@ -58,13 +61,21 @@ mod tests {
         init();
         // let _ = utils::log::toggle_file_logging(true);
         let evaluator = CompositeEvaluator::balanced();
-        let mut search_with_null = Search::new(Box::new(evaluator), 10);
+        let lim = SearchLimits::depth(10);
+        let mut search_with_null = AlphaBetaSearch::new(Box::new(evaluator)).with_limits(lim);
         let evaluator = CompositeEvaluator::balanced();
-        let mut search_without_null = Search::new(Box::new(evaluator), 10);
+        let mut search_without_null = AlphaBetaSearch::new(Box::new(evaluator)).with_limits(lim);
 
-        assert!(search_without_null.config.enable_nmp);
-        search_without_null.set_nmp(false);
-        assert!(!search_without_null.config.enable_nmp);
+        assert!(search_without_null.get_config().enable_nmp);
+        let conf = SearchConfig {
+            enable_nmp: false,
+            emit_info: false,
+            ..Default::default()
+        };
+        search_without_null = search_without_null
+            .with_config(conf)
+            .expect("Should be able to set conf");
+        assert!(!search_without_null.get_config().enable_nmp);
 
         let board = Board::from_fen(KIWIPETE);
         println!("{board}");

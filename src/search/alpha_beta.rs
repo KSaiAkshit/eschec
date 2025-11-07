@@ -130,6 +130,12 @@ impl RepetitionTable {
 
     #[inline]
     fn push(&mut self, hash: u64) {
+        debug_assert!(
+            self.len < HISTORY_SIZE,
+            "RepetitionTable overflow! len={}, max={}",
+            self.len,
+            HISTORY_SIZE
+        );
         if self.len < HISTORY_SIZE {
             self.hashes[self.len] = hash;
             self.len += 1;
@@ -139,7 +145,7 @@ impl RepetitionTable {
     #[inline]
     fn pop(&mut self) {
         if self.len > 0 {
-            self.len += 1;
+            self.len -= 1;
         }
     }
 
@@ -220,9 +226,21 @@ impl AlphaBetaSearch {
 
     /// Constructor to control various techniques in search, for ex,
     /// enable ASP, disable NMP, etc.
-    pub fn with_config(mut self, config: SearchConfig) -> Self {
+    pub fn with_config(mut self, config: SearchConfig) -> miette::Result<Self> {
+        if self.config.hash_size_mb != config.hash_size_mb {
+            self.tt.change_size(config.hash_size_mb)?;
+        }
         self.config = config;
-        self
+        Ok(self)
+    }
+
+    pub fn set_evaluator(&mut self, evaluator: Box<dyn Evaluator>) -> miette::Result<()> {
+        miette::ensure!(
+            !self.in_progress,
+            "Cannot change Eval while search in progress"
+        );
+        self.evaluator = evaluator;
+        Ok(())
     }
 
     /// Constructor to set limits for search. Time, node count, depth
@@ -276,6 +294,10 @@ impl SearchEngine for AlphaBetaSearch {
 
     fn clone_engine(&self) -> Box<dyn SearchEngine<Output = Self::Output>> {
         todo!()
+    }
+
+    fn get_config(&self) -> SearchConfig {
+        self.config
     }
 }
 
@@ -795,6 +817,7 @@ impl AlphaBetaSearch {
         self.nodes_searched = 0;
         self.pruned_nodes = 0;
         self.search_tables.clear();
+        self.search_tables.decay_history();
         self.repetition_table.clear();
     }
 }

@@ -86,6 +86,7 @@ pub struct SearchConfig {
     pub enable_lmr: bool,
     pub emit_info: bool,
     pub collect_stats: bool, // TODO: feature-gate this
+    pub hash_size_mb: usize,
 }
 
 impl Default for SearchConfig {
@@ -96,6 +97,7 @@ impl Default for SearchConfig {
             enable_lmr: true,
             emit_info: true,
             collect_stats: false, // Disabled for perf
+            hash_size_mb: 16,
         }
     }
 }
