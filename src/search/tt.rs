@@ -142,4 +142,22 @@ impl TranspositionTable {
             *c = Cluster::default();
         }
     }
+
+    /// Return the hash table fullness in per-mille (0-1000)
+    pub fn hash_full(&self) -> u16 {
+        let sample_size = 1000.min(self.size);
+        let mut filled = 0;
+
+        for i in 0..sample_size {
+            let cluster = &self.clusters[i];
+            for entry in &cluster.entries {
+                if entry.hash != 0 {
+                    filled += 1;
+                    break; // Only count cluster as filled if atleast one entry is used
+                }
+            }
+        }
+
+        ((filled * 1000) / sample_size) as u16
+    }
 }

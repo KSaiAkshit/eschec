@@ -167,7 +167,6 @@ impl RepetitionTable {
 pub struct AlphaBetaSearch {
     /// Core search data
     nodes_searched: u64,
-    pruned_nodes: u64,
     /// Search params
     config: SearchConfig,
     limits: SearchLimits,
@@ -184,14 +183,13 @@ pub struct AlphaBetaSearch {
     in_progress: bool,
     start_time: Instant,
     /// Debug/tuning
-    cutoff_stats: CutoffStats,
+    stats: SearchStats,
 }
 
 impl Default for AlphaBetaSearch {
     fn default() -> Self {
         Self {
             nodes_searched: Default::default(),
-            pruned_nodes: Default::default(),
             config: Default::default(),
             limits: Default::default(),
             evaluator: Box::new(CompositeEvaluator::default()),
@@ -201,7 +199,7 @@ impl Default for AlphaBetaSearch {
             repetition_table: Default::default(),
             in_progress: Default::default(),
             start_time: Instant::now(),
-            cutoff_stats: Default::default(),
+            stats: SearchStats::default(),
         }
     }
 }
@@ -212,7 +210,6 @@ impl AlphaBetaSearch {
             config: SearchConfig::default(),
             limits: SearchLimits::default(),
             nodes_searched: 0,
-            pruned_nodes: 0,
             start_time: Instant::now(),
             in_progress: false,
             evaluator,
@@ -220,7 +217,7 @@ impl AlphaBetaSearch {
             search_tables: Box::new(SearchTables::new()),
             repetition_table: RepetitionTable::new(),
             search_running: None,
-            cutoff_stats: CutoffStats::default(),
+            stats: SearchStats::new(),
         }
     }
 
@@ -280,6 +277,7 @@ impl SearchEngine for AlphaBetaSearch {
         self.tt.clear();
         self.repetition_table.clear();
         self.search_tables.clear();
+        self.stats = SearchStats::new();
     }
 
     fn stop(&mut self) {
@@ -289,7 +287,11 @@ impl SearchEngine for AlphaBetaSearch {
     }
 
     fn get_stats(&mut self) -> SearchStats {
-        todo!()
+        self.stats.nodes_searched = self.nodes_searched;
+        self.stats.time_elapsed = self.start_time.elapsed();
+        self.stats.hash_full = self.tt.hash_full();
+        self.stats.calculate_nps();
+        self.stats.clone()
     }
 
     fn clone_engine(&self) -> Box<dyn SearchEngine<Output = Self::Output>> {
@@ -384,7 +386,8 @@ impl AlphaBetaSearch {
 
         self.repetition_table.pop();
         if std::hint::unlikely(self.config.collect_stats) {
-            self.cutoff_stats.log_summary(completed_depth);
+            self.stats.depth_reached = completed_depth;
+            self.get_stats().log_summary();
         }
         self.finish();
         SearchResult {
@@ -424,6 +427,10 @@ impl AlphaBetaSearch {
             panic!("Invalid alpha-beta window: alpha {alpha}, beta: {beta}");
         }
 
+        // Every entry into this function is exploring a new node
+        // Doesn't matter if this gets pruned away
+        self.nodes_searched += 1;
+
         let ply = context.ply;
         let original_alpha = alpha;
         let is_in_check = board.is_in_check(board.stm);
@@ -436,14 +443,21 @@ impl AlphaBetaSearch {
                 self.repetition_table.count_repetitions(current_hash),
                 current_hash
             );
+            if self.config.collect_stats {
+                self.stats.draw_returns += 1;
+            }
             return 0;
         }
 
         let mut tt_move = Move::default();
 
+        // TT Probe
         if let Some(entry) = self.tt.probe(current_hash)
             && entry.hash == current_hash
         {
+            if self.config.collect_stats {
+                self.stats.tt_hits += 1;
+            }
             tt_move = entry.best_move;
             if entry.depth >= depth {
                 let score = adjust_score_for_ply(entry.score, ply);
@@ -451,6 +465,10 @@ impl AlphaBetaSearch {
                 match entry.score_type {
                     ScoreTypes::Exact => {
                         // Exact scores returned as is
+                        if self.config.collect_stats {
+                            self.stats.tt_cutoffs += 1;
+                            self.stats.tt_exact_returns += 1;
+                        }
                         return score;
                     }
                     ScoreTypes::LowerBound => {
@@ -458,6 +476,9 @@ impl AlphaBetaSearch {
                         // if this is enough to beat beta, this can be pruned
                         alpha = max(alpha, score);
                         if alpha >= beta {
+                            if self.config.collect_stats {
+                                self.stats.tt_cutoffs += 1;
+                            }
                             return beta;
                         }
                     }
@@ -466,6 +487,9 @@ impl AlphaBetaSearch {
                         // If this is enough to beat beta, this can be pruned
                         beta = min(beta, score);
                         if alpha >= beta {
+                            if self.config.collect_stats {
+                                self.stats.tt_cutoffs += 1;
+                            }
                             return alpha;
                         }
                     }
@@ -477,25 +501,29 @@ impl AlphaBetaSearch {
             panic!("Invalid alpha-beta window: alpha: {alpha}, beta: {beta}");
         }
 
+        // Null Move Pruning
         let child_context = context.new_child(false);
         if let Some(nmp_score) = self.try_null_move_pruning(board, child_context, depth, beta) {
             return nmp_score;
+        }
+
+        // Node that made through pruning, will be actually searched
+        if self.config.collect_stats {
+            self.stats.main_search_nodes += 1;
         }
 
         let mut legal_moves = MoveBuffer::new();
         board.generate_legal_moves(&mut legal_moves, false);
 
         if legal_moves.is_empty() {
-            self.nodes_searched += 1;
+            if self.config.collect_stats {
+                self.stats.mate_returns += 1;
+            }
             return if board.is_in_check(board.stm) {
                 -MATE_SCORE + ply as i32
             } else {
                 STALEMATE_SCORE
             };
-        }
-
-        if self.config.collect_stats {
-            self.cutoff_stats.total_nodes += 1;
         }
 
         let mut best_move_this_node = legal_moves
@@ -519,13 +547,13 @@ impl AlphaBetaSearch {
             let mut board_copy = *board;
             board_copy.make_move(mv).expect("Move is already legal");
 
-            self.nodes_searched += 1;
             self.repetition_table.push(board_copy.hash);
 
             let mut score: i32;
 
             let is_pv_node = move_index == 0;
             let child_is_pv = context.is_pv_node && is_pv_node;
+
             // Starts as non-PV unless the parent is PV and this is the first move
             let mut child_context = context.new_child(child_is_pv);
 
@@ -543,6 +571,10 @@ impl AlphaBetaSearch {
 
                 let reduced_depth = (depth - 1).saturating_sub(reduction);
 
+                if self.config.collect_stats {
+                    self.stats.lmr_attempts += 1;
+                }
+
                 score = -self.alpha_beta(
                     &board_copy,
                     child_context,
@@ -553,6 +585,9 @@ impl AlphaBetaSearch {
 
                 if score > alpha {
                     // Since LMR failed high, this node should now be PV node
+                    if self.config.collect_stats {
+                        self.stats.lmr_research += 1;
+                    }
                     child_context.is_pv_node = true;
                     score = self.zw_search(&board_copy, child_context, depth, alpha, beta);
                 }
@@ -575,11 +610,10 @@ impl AlphaBetaSearch {
 
             if alpha >= beta {
                 if self.config.collect_stats {
-                    self.cutoff_stats.cutoff_nodes += 1;
-                    self.cutoff_stats.cutoff_at_move[move_index] += 1;
+                    self.stats.cutoff_at_move[move_index] += 1;
+                    self.stats.beta_cutoffs_main += 1;
+                    self.stats.pruned_nodes += 1;
                 }
-
-                self.pruned_nodes += 1;
 
                 // This is beta-cutoff (Fail high)
                 // If move is quiet, this is a good candidate for killer moves
@@ -596,6 +630,7 @@ impl AlphaBetaSearch {
                     best_move: best_move_this_node,
                 };
                 self.tt.store(entry_to_score);
+
                 return beta;
             }
             move_index += 1;
@@ -610,10 +645,16 @@ impl AlphaBetaSearch {
         let score_type = if best_score <= original_alpha {
             // We failed to raise alpha. This is a fail-low.
             // The score is an upper bound on the node's true value
+            if self.config.collect_stats {
+                self.stats.fail_lows += 1;
+            }
             ScoreTypes::UpperBound
         } else {
             // Successfully raised alpha but did not fail high.
             // This means the exact best score was found in the (alpha, beta) window.
+            if self.config.collect_stats {
+                self.stats.exact_scores += 1;
+            }
             ScoreTypes::Exact
         };
 
@@ -640,6 +681,8 @@ impl AlphaBetaSearch {
             return 0;
         }
 
+        // Every entry into this function is exploring a new node
+        // Doesn't matter if this gets pruned away
         self.nodes_searched += 1;
 
         if context.ply >= self.limits.max_depth.unwrap_or_else(|| 2 * (MAX_PLY as u8)) as usize + 16
@@ -653,7 +696,16 @@ impl AlphaBetaSearch {
         }
 
         if self.is_draw(board) {
+            if self.config.collect_stats {
+                self.stats.draw_returns += 1;
+            }
             return 0;
+        }
+
+        // Passed through early-exits
+        // full-qsearch node
+        if self.config.collect_stats {
+            self.stats.qsearch_nodes += 1;
         }
 
         let is_in_check = board.is_in_check(board.stm);
@@ -664,7 +716,10 @@ impl AlphaBetaSearch {
             stand_pat_score = board.evaluate_position(&*self.evaluator);
 
             if stand_pat_score >= beta {
-                self.pruned_nodes += 1;
+                if self.config.collect_stats {
+                    self.stats.standpat_returns += 1;
+                    self.stats.pruned_nodes += 1;
+                }
                 // Fail high
                 return beta;
             }
@@ -709,13 +764,17 @@ impl AlphaBetaSearch {
                         }
                         < alpha
                     {
-                        self.pruned_nodes += 1;
+                        if self.config.collect_stats {
+                            self.stats.pruned_nodes += 1;
+                        }
                         continue; // Skip this node
                     }
                 }
                 // SEE pruning
                 if board.static_exchange_evaluation(mv) < 0 {
-                    self.pruned_nodes += 1;
+                    if self.config.collect_stats {
+                        self.stats.pruned_nodes += 1;
+                    }
                     continue;
                 }
             }
@@ -736,8 +795,11 @@ impl AlphaBetaSearch {
             self.repetition_table.pop();
 
             if score >= beta {
-                self.pruned_nodes += 1;
                 // Fail-High
+                if self.config.collect_stats {
+                    self.stats.beta_cutoffs_qs += 1;
+                    self.stats.pruned_nodes += 1;
+                }
                 return beta;
             }
             alpha = max(alpha, score);
@@ -815,10 +877,10 @@ impl AlphaBetaSearch {
 
     fn prepare_for_search(&mut self) {
         self.nodes_searched = 0;
-        self.pruned_nodes = 0;
         self.search_tables.clear();
         self.search_tables.decay_history();
         self.repetition_table.clear();
+        self.stats = SearchStats::new();
     }
 }
 
@@ -887,11 +949,19 @@ impl AlphaBetaSearch {
             // - Asymmetric widening: Increase/decrease based on fail high/low
             if best_score <= alpha_base {
                 // Fail Low
+                if self.config.collect_stats {
+                    self.stats.asp_fail_low += 1;
+                    self.stats.asp_research += 1;
+                }
                 tries += 1;
                 window = window.saturating_mul(2).min(ASP_MAX_WINDOW);
                 alpha_base = prev_score.saturating_sub(window);
             } else if best_score >= beta_base {
                 // Fail High
+                if self.config.collect_stats {
+                    self.stats.asp_fail_high += 1;
+                    self.stats.asp_research += 1;
+                }
                 tries += 1;
                 window = window.saturating_mul(2).min(ASP_MAX_WINDOW);
                 beta_base = prev_score.saturating_add(window);
@@ -1010,7 +1080,10 @@ impl AlphaBetaSearch {
         let score = -self.alpha_beta(&null_board, child_context, null_depth, -beta, -beta + 1);
 
         if score >= beta {
-            self.pruned_nodes += 1;
+            if self.config.collect_stats {
+                self.stats.null_move_cutoffs += 1;
+                self.stats.pruned_nodes += 1;
+            }
             Some(beta)
         } else {
             None

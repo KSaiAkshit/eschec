@@ -2,60 +2,279 @@ use crate::prelude::*;
 use std::time::Duration;
 
 /// Common statistics for all search types
-#[derive()]
+#[derive(Debug, Clone)]
 pub struct SearchStats {
-    pub nodes_searched: u64,
-    pub depth_reached: u64,
+    // Basic stats
+    pub nodes_searched: u64, // Total nodes including qsearch
+    pub depth_reached: u8,
     pub time_elapsed: Duration,
     pub nps: u64,
-    pub tb_hits: u64,
     pub hash_full: u16, // per-mille
+
+    // Node type
+    pub main_search_nodes: u64, // Only main search nodes (excludes qsearch)
+    pub qsearch_nodes: u64,     // Quiescence search nodes
+
+    // Early exit tracking
+    pub tt_exact_returns: u64, // Returned exact score from TT
+    pub draw_returns: u64,     // Returned due to draw detection
+    pub mate_returns: u64,     // Returned due to mate/stalemate score
+    pub standpat_returns: u64, // Returned due to Stand-pat cut-off in qsearch
+
+    // Pruning stats
+    pub pruned_nodes: u64, // Total nodes pruned
+
+    // Transposition table stats
+    pub tt_hits: u64,    // TT probes that found an entry
+    pub tt_cutoffs: u64, // Times TT caused a cutoff (LowerBound / UpperBound)
+
+    // Pruning techniques stats
+    pub null_move_attempts: u64, // Times null move pruning was tried
+    pub null_move_cutoffs: u64,  // Times null move pruning succeeded
+    pub lmr_attempts: u64,       // Times LMR was attempted
+    pub lmr_research: u64,       // Times LMR failed high and re-search was needed
+
+    // Aspiration windows
+    pub asp_fail_high: u64, // Times aspiration window failed high
+    pub asp_fail_low: u64,  // Times aspiration window failed low
+    pub asp_research: u64,  // Total re-searches due to ASP
+
+    // Alpha-Beta window
+    pub beta_cutoffs_main: u64, // Times alpha >= beta (fail-high) in main search
+    pub beta_cutoffs_qs: u64,   // Times alpha >= beta (fail-high) in qsearch
+    pub exact_scores: u64,      // Times an exact score was found
+    pub fail_lows: u64,         // Times we failed to raise alpha (fail-low)
+
+    // Move ordering stats (CutOffStats)
+    pub cutoff_at_move: [u64; MAX_PLY],
 }
 
-/// Cut-off stats
-/// Useful to see how good move ordering is
-#[derive(Debug, Clone)]
-pub struct CutoffStats {
-    pub total_nodes: u64,
-    pub cutoff_nodes: u64,
-    pub cutoff_at_move: [u64; 64],
-}
-
-impl Default for CutoffStats {
+impl Default for SearchStats {
     fn default() -> Self {
         Self {
-            total_nodes: Default::default(),
-            cutoff_nodes: Default::default(),
-            cutoff_at_move: [0; 64],
+            nodes_searched: Default::default(),
+            depth_reached: Default::default(),
+            time_elapsed: Default::default(),
+            nps: Default::default(),
+            hash_full: Default::default(),
+            pruned_nodes: Default::default(),
+            qsearch_nodes: Default::default(),
+            tt_hits: Default::default(),
+            tt_cutoffs: Default::default(),
+            null_move_cutoffs: Default::default(),
+            beta_cutoffs_main: Default::default(),
+            beta_cutoffs_qs: Default::default(),
+            fail_lows: Default::default(),
+            main_search_nodes: Default::default(),
+            cutoff_at_move: [Default::default(); MAX_PLY],
+            exact_scores: Default::default(),
+            tt_exact_returns: Default::default(),
+            draw_returns: Default::default(),
+            mate_returns: Default::default(),
+            standpat_returns: Default::default(),
+            null_move_attempts: Default::default(),
+            lmr_attempts: Default::default(),
+            lmr_research: Default::default(),
+            asp_fail_high: Default::default(),
+            asp_fail_low: Default::default(),
+            asp_research: Default::default(),
         }
     }
 }
 
-impl CutoffStats {
-    pub fn log_summary(&self, depth: u8) {
-        if self.total_nodes == 0 {
+impl SearchStats {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn calculate_nps(&mut self) {
+        let time_ms = self.time_elapsed.as_millis().max(1) as u64;
+        self.nps = (self.nodes_searched * 1000) / time_ms;
+    }
+
+    pub fn beta_cutoff_rate_main(&self) -> f64 {
+        if self.main_search_nodes == 0 {
+            0.0
+        } else {
+            100.0 * self.beta_cutoffs_main as f64 / self.main_search_nodes as f64
+        }
+    }
+
+    pub fn beta_cutoff_rate_qs(&self) -> f64 {
+        if self.qsearch_nodes == 0 {
+            0.0
+        } else {
+            100.0 * self.beta_cutoffs_qs as f64 / self.qsearch_nodes as f64
+        }
+    }
+
+    pub fn tt_hit_rate(&self) -> f64 {
+        if self.main_search_nodes == 0 {
+            0.0
+        } else {
+            100.0 * self.tt_hits as f64 / self.main_search_nodes as f64
+        }
+    }
+
+    pub fn tt_cutoff_rate(&self) -> f64 {
+        if self.tt_hits == 0 {
+            0.0
+        } else {
+            100.0 * self.tt_cutoffs as f64 / self.tt_hits as f64
+        }
+    }
+
+    pub fn nmp_success_rate(&self) -> f64 {
+        if self.null_move_attempts == 0 {
+            0.0
+        } else {
+            100.0 * self.null_move_cutoffs as f64 / self.null_move_attempts as f64
+        }
+    }
+
+    pub fn lmr_research_rate(&self) -> f64 {
+        if self.lmr_attempts == 0 {
+            0.0
+        } else {
+            100.0 * self.lmr_research as f64 / self.lmr_attempts as f64
+        }
+    }
+
+    pub fn prune_rate(&self) -> f64 {
+        if self.nodes_searched == 0 {
+            0.0
+        } else {
+            100.0 * self.pruned_nodes as f64 / self.nodes_searched as f64
+        }
+    }
+
+    pub fn avg_cutoff_index(&self) -> f64 {
+        let total_cutoffs: u64 = self.cutoff_at_move.iter().sum();
+        if total_cutoffs == 0 {
+            0.0
+        } else {
+            let weighted_sum: u64 = self
+                .cutoff_at_move
+                .iter()
+                .enumerate()
+                .map(|(i, &count)| i as u64 * count)
+                .sum();
+            weighted_sum as f64 / total_cutoffs as f64
+        }
+    }
+
+    pub fn log_summary(&self) {
+        debug!(
+            target: "search_stats",
+            "=> SEARCH STATISTICS (depth {})",
+            self.depth_reached
+        );
+
+        debug!(
+            target: "search_stats",
+            "NODES total={} time={:?} nps={}",
+            self.nodes_searched, self.time_elapsed, self.nps
+        );
+
+        let main_full =
+            self.beta_cutoffs_main + self.exact_scores + self.fail_lows + self.mate_returns;
+        let main_early = self.tt_exact_returns + self.draw_returns + self.null_move_cutoffs;
+        let qs_full = self.standpat_returns + self.beta_cutoffs_qs;
+        let qs_no_moves = self.qsearch_nodes - qs_full; // Nodes that searched moves but didn't cutoff
+
+        let accounted = main_full + main_early + qs_full + qs_no_moves;
+        let unaccounted = self.nodes_searched.saturating_sub(accounted);
+
+        debug!(
+            target: "search_stats",
+            "NODE_TYPES main_full={} ({:.2}%) main_early={} ({:.2}%) qs={} ({:.2}%) unaccounted={} ({:.2}%)",
+            main_full,
+            100.0 * main_full as f64 / self.nodes_searched as f64,
+            main_early,
+            100.0 * main_early as f64 / self.nodes_searched as f64,
+            self.qsearch_nodes,
+            100.0 * self.qsearch_nodes as f64 / self.nodes_searched as f64,
+            unaccounted,
+            100.0 * unaccounted as f64 / self.nodes_searched as f64
+        );
+
+        debug!(
+            target: "search_stats",
+            "MAIN_SEARCH full_searches={} beta_cutoffs={} ({:.2}%) exact={} fail_lows={} mates={}",
+            main_full, self.beta_cutoffs_main,
+            100.0 * self.beta_cutoffs_main as f64 / main_full.max(1) as f64,
+            self.exact_scores, self.fail_lows, self.mate_returns
+        );
+
+        debug!(
+            target: "search_stats",
+            "MAIN_EARLY tt_exact={} draws={} nmp={}",
+            self.tt_exact_returns, self.draw_returns, self.null_move_cutoffs
+        );
+
+        debug!(
+            target: "search_stats",
+            "QSEARCH total={} standpat={} ({:.2}%) beta_cutoffs={} ({:.2}%) no_cutoff={} ({:.2}%)",
+            self.qsearch_nodes,
+            self.standpat_returns,
+            100.0 * self.standpat_returns as f64 / self.qsearch_nodes.max(1) as f64,
+            self.beta_cutoffs_qs,
+            100.0 * self.beta_cutoffs_qs as f64 / self.qsearch_nodes.max(1) as f64,
+            qs_no_moves,
+            100.0 * qs_no_moves as f64 / self.qsearch_nodes.max(1) as f64
+        );
+
+        debug!(
+            target: "search_stats",
+            "TT hits={} ({:.2}% of total) cutoffs={} ({:.2}% of hits) hash_full={}/1000",
+            self.tt_hits,
+            100.0 * self.tt_hits as f64 / self.nodes_searched as f64,
+            self.tt_cutoffs,
+            self.tt_cutoff_rate(),
+            self.hash_full
+        );
+
+        debug!(
+            target: "search_stats",
+            "NULL_MOVE attempts={} cutoffs={} success_rate={:.2}%",
+            self.null_move_attempts, self.null_move_cutoffs, self.nmp_success_rate()
+        );
+
+        debug!(
+            target: "search_stats",
+            "LMR attempts={} re_searches={} re_search_rate={:.2}%",
+            self.lmr_attempts, self.lmr_research, self.lmr_research_rate()
+        );
+
+        if self.asp_research > 0 {
+            debug!(
+                target: "search_stats",
+                "ASPIRATION fail_highs={} fail_lows={} total_re_searches={}",
+                self.asp_fail_high, self.asp_fail_low, self.asp_research
+            );
+        }
+
+        debug!(
+            target: "search_stats",
+            "PRUNING total_pruned={} prune_rate={:.2}%",
+            self.pruned_nodes, self.prune_rate()
+        );
+
+        self.log_cutoff_stats();
+    }
+
+    pub fn log_cutoff_stats(&self) {
+        let total_cutoffs: u64 = self.cutoff_at_move.iter().sum();
+        if total_cutoffs == 0 {
             return;
         }
 
-        let cutoff_rate = 100.0 * self.cutoff_nodes as f64 / self.total_nodes as f64;
-
-        // Calculate average move index at cutoff
-        let total_cutoff_moves: u64 = self
-            .cutoff_at_move
-            .iter()
-            .enumerate()
-            .map(|(i, &count)| i as u64 * count)
-            .sum();
-        let avg_cutoff_index = if self.cutoff_nodes > 0 {
-            total_cutoff_moves as f64 / self.cutoff_nodes as f64
-        } else {
-            0.0
-        };
+        let avg_cutoff_index = self.avg_cutoff_index();
 
         debug!(
             target: "cutoff_stats",
-            "CUTOFF_STATS depth={} total_nodes={} cutoff_nodes={} cutoff_rate={:.2} avg_cutoff_at={:.2}",
-            depth, self.total_nodes, self.cutoff_nodes, cutoff_rate, avg_cutoff_index
+            "CUTOFF_STATS depth={} beta_cutoffs={} avg_cutoff_at={:.2}",
+            self.depth_reached, total_cutoffs, avg_cutoff_index
         );
 
         let histogram: Vec<String> = self
@@ -71,7 +290,7 @@ impl CutoffStats {
             debug!(
                 target: "cutoff_stats",
                 "CUTOFF_HISTOGRAM depth={} data=[{}]",
-                depth,
+                self.depth_reached,
                 histogram.join(",")
             );
         }
@@ -96,7 +315,7 @@ impl Default for SearchConfig {
             enable_asp: true,
             enable_lmr: true,
             emit_info: true,
-            collect_stats: false, // Disabled for perf
+            collect_stats: true, // Disabled for perf
             hash_size_mb: 16,
         }
     }
