@@ -167,6 +167,7 @@ impl RepetitionTable {
 pub struct AlphaBetaSearch {
     /// Core search data
     nodes_searched: u64,
+    search_cycle: u8,
     /// Search params
     config: SearchConfig,
     limits: SearchLimits,
@@ -178,7 +179,7 @@ pub struct AlphaBetaSearch {
     /// Transposition table
     tt: TranspositionTable,
     /// Repetition detection
-    repetition_table: RepetitionTable,
+    pub repetition_table: RepetitionTable,
     /// Status
     in_progress: bool,
     start_time: Instant,
@@ -190,6 +191,7 @@ impl Default for AlphaBetaSearch {
     fn default() -> Self {
         Self {
             nodes_searched: Default::default(),
+            search_cycle: Default::default(),
             config: Default::default(),
             limits: Default::default(),
             evaluator: Box::new(CompositeEvaluator::default()),
@@ -210,6 +212,7 @@ impl AlphaBetaSearch {
             config: SearchConfig::default(),
             limits: SearchLimits::default(),
             nodes_searched: 0,
+            search_cycle: 0,
             start_time: Instant::now(),
             in_progress: false,
             evaluator,
@@ -275,6 +278,7 @@ impl SearchEngine for AlphaBetaSearch {
 
     fn clear(&mut self) {
         self.tt.clear();
+        self.search_cycle = 0;
         self.repetition_table.clear();
         self.search_tables.clear();
         self.stats = SearchStats::new();
@@ -319,6 +323,7 @@ impl AlphaBetaSearch {
         self.prepare_for_search();
         self.start_time = Instant::now();
         self.repetition_table.push(board.hash);
+        self.search_cycle = self.search_cycle.wrapping_add(1);
 
         let mut legal_moves = MoveBuffer::new();
         board.generate_legal_moves(&mut legal_moves, false);
@@ -452,17 +457,20 @@ impl AlphaBetaSearch {
         let mut tt_move = Move::default();
 
         // TT Probe
+        if self.config.collect_stats {
+            self.stats.tt_probes += 1;
+        }
         if let Some(entry) = self.tt.probe(current_hash)
-            && entry.hash == current_hash
+            && entry.matches(current_hash)
         {
             if self.config.collect_stats {
                 self.stats.tt_hits += 1;
             }
-            tt_move = entry.best_move;
-            if entry.depth >= depth {
-                let score = adjust_score_for_ply(entry.score, ply);
+            tt_move = entry.get_best_move();
+            if entry.get_depth() >= depth {
+                let score = adjust_score_for_ply(entry.get_score(), ply);
 
-                match entry.score_type {
+                match entry.get_score_type() {
                     ScoreTypes::Exact => {
                         // Exact scores returned as is
                         if self.config.collect_stats {
@@ -507,11 +515,6 @@ impl AlphaBetaSearch {
             return nmp_score;
         }
 
-        // Node that made through pruning, will be actually searched
-        if self.config.collect_stats {
-            self.stats.main_search_nodes += 1;
-        }
-
         let mut legal_moves = MoveBuffer::new();
         board.generate_legal_moves(&mut legal_moves, false);
 
@@ -524,6 +527,11 @@ impl AlphaBetaSearch {
             } else {
                 STALEMATE_SCORE
             };
+        }
+
+        // Node that made through pruning, will be actually searched
+        if self.config.collect_stats {
+            self.stats.main_search_nodes += 1;
         }
 
         let mut best_move_this_node = legal_moves
@@ -622,14 +630,16 @@ impl AlphaBetaSearch {
                     self.search_tables.update_history(mv, depth);
                 }
 
-                let entry_to_score = TranspositionEntry {
-                    hash: current_hash,
+                let entry_to_store = TranspositionEntry::new(
+                    current_hash,
+                    best_move_this_node,
+                    adjust_score_from_ply(beta, ply),
                     depth,
-                    score: adjust_score_from_ply(beta, ply),
-                    score_type: ScoreTypes::LowerBound,
-                    best_move: best_move_this_node,
-                };
-                self.tt.store(entry_to_score);
+                    ScoreTypes::LowerBound,
+                    self.search_cycle,
+                );
+
+                self.tt.store(entry_to_store);
 
                 return beta;
             }
@@ -658,14 +668,15 @@ impl AlphaBetaSearch {
             ScoreTypes::Exact
         };
 
-        let entry_to_score = TranspositionEntry {
-            hash: current_hash,
+        let entry_to_store = TranspositionEntry::new(
+            current_hash,
+            best_move_this_node,
+            adjust_score_from_ply(best_score, ply),
             depth,
-            score: adjust_score_from_ply(best_score, ply),
             score_type,
-            best_move: best_move_this_node,
-        };
-        self.tt.store(entry_to_score);
+            self.search_cycle,
+        );
+        self.tt.store(entry_to_store);
 
         alpha
     }
@@ -702,12 +713,6 @@ impl AlphaBetaSearch {
             return 0;
         }
 
-        // Passed through early-exits
-        // full-qsearch node
-        if self.config.collect_stats {
-            self.stats.qsearch_nodes += 1;
-        }
-
         let is_in_check = board.is_in_check(board.stm);
 
         let stand_pat_score;
@@ -737,7 +742,16 @@ impl AlphaBetaSearch {
 
         if is_in_check && legal_moves.is_empty() {
             // return Losing Mate score
+            if self.config.collect_stats {
+                self.stats.mate_returns += 1;
+            }
             return adjust_score_for_ply(-MATE_SCORE, context.ply);
+        }
+
+        // Passed through early-exits
+        // full-qsearch node
+        if self.config.collect_stats {
+            self.stats.qsearch_nodes += 1;
         }
 
         let mut picker = MovePicker::new_qsearch(board, legal_moves.as_mut_slice());
@@ -765,6 +779,7 @@ impl AlphaBetaSearch {
                         < alpha
                     {
                         if self.config.collect_stats {
+                            self.stats.delta_pruning_cutoffs += 1;
                             self.stats.pruned_nodes += 1;
                         }
                         continue; // Skip this node
@@ -773,6 +788,7 @@ impl AlphaBetaSearch {
                 // SEE pruning
                 if board.static_exchange_evaluation(mv) < 0 {
                     if self.config.collect_stats {
+                        self.stats.see_pruning_cutoffs += 1;
                         self.stats.pruned_nodes += 1;
                     }
                     continue;
@@ -879,7 +895,6 @@ impl AlphaBetaSearch {
         self.nodes_searched = 0;
         self.search_tables.clear();
         self.search_tables.decay_history();
-        self.repetition_table.clear();
         self.stats = SearchStats::new();
     }
 }
@@ -1072,6 +1087,10 @@ impl AlphaBetaSearch {
 
         let null_reduction = if depth >= 6 { 4 } else { 2 };
         let null_depth = depth.saturating_sub(null_reduction);
+
+        if self.config.collect_stats {
+            self.stats.null_move_attempts += 1;
+        }
 
         let mut null_board = *board;
         null_board.make_null_move();

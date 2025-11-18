@@ -5,37 +5,93 @@ use crate::{consts::MAX_HASH, moves::move_info::Move};
 
 const NUM_ENTRIES_PER_CLUSTER: usize = 4;
 
+#[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ScoreTypes {
     /// Score is the exact evaluation [alpha <= score <= beta]
-    Exact,
+    Exact = 0,
     /// Score is at least this value, i.e, beta cutoff [score >= beta]
-    LowerBound,
+    LowerBound = 1,
     /// Score is at most this value, i.e, alpha not improved [score <= alpha]
-    UpperBound,
+    UpperBound = 2,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[repr(C, packed)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct TranspositionEntry {
-    pub hash: u64,
-    pub depth: u8,
-    pub score: i32,
-    pub score_type: ScoreTypes,
-    pub best_move: Move,
+    // 4 bytes for the key. Storing only the lower 32 bits of the hash
+    // Collisions are handled by checking the full hash on the board
+    key: u32,
+    // 2 byts for the best move found
+    best_move: Move,
+    // 2 bytes for the eval score
+    score: i16,
+    // 1 byte for the depth
+    depth: u8,
+    // 1 byte for flags
+    flags: u8,
 }
 
 impl TranspositionEntry {
     pub const ENTRY_SIZE: usize = std::mem::size_of::<TranspositionEntry>();
-}
-impl Default for TranspositionEntry {
-    fn default() -> Self {
+
+    const SCORE_TYPE_MASK: u8 = 0b11; // Use lower 2 bits for score type
+    const AGE_SHIFT: u8 = 2; // Shift by 2 to get the age bits
+
+    pub fn new(
+        hash: u64,
+        best_move: Move,
+        score: i32,
+        depth: u8,
+        score_type: ScoreTypes,
+        age: u8,
+    ) -> Self {
+        let packed_score = score as i16;
+
+        let packed_flags = (age << Self::AGE_SHIFT) | (score_type as u8);
+
         Self {
-            hash: Default::default(),
-            depth: Default::default(),
-            score: Default::default(),
-            score_type: ScoreTypes::Exact,
-            best_move: Default::default(),
+            key: hash as u32,
+            best_move,
+            score: packed_score,
+            depth,
+            flags: packed_flags,
         }
+    }
+
+    /// Checks if the key of this entry matches the lower 32 bits of full hash
+    #[inline]
+    pub fn matches(&self, hash: u64) -> bool {
+        self.key == (hash as u32)
+    }
+
+    /// Unpacks and returns the score type
+    #[inline]
+    pub fn get_score_type(&self) -> ScoreTypes {
+        // SAFETY: this is safe because ScoreType is repr(u8) and only valid values are stored
+        unsafe { std::mem::transmute(self.flags & Self::SCORE_TYPE_MASK) }
+    }
+
+    #[inline]
+    /// Return evaluation score
+    pub fn get_score(&self) -> i32 {
+        self.score as i32
+    }
+
+    /// Unpacks and returns the age of the entry
+    #[inline]
+    pub fn get_age(&self) -> u8 {
+        self.flags >> Self::AGE_SHIFT
+    }
+
+    // Simple getters for the remaining fields
+    #[inline]
+    pub fn get_best_move(&self) -> Move {
+        self.best_move
+    }
+    #[inline]
+    pub fn get_depth(&self) -> u8 {
+        self.depth
     }
 }
 
@@ -99,23 +155,24 @@ impl TranspositionTable {
         let cluster = &self.clusters[index];
         for i in 0..NUM_ENTRIES_PER_CLUSTER {
             let entry = &cluster.entries[i];
-            if entry.hash == hash {
+            if entry.matches(hash) {
                 return Some(entry);
             }
         }
         None
     }
 
+    /// Store an entry with a Depth+Age prefered replacement strategy
     pub fn store(&mut self, new_entry: TranspositionEntry) {
-        let index = self.index(new_entry.hash);
+        let index = self.index(new_entry.key as u64);
         let cluster = &mut self.clusters[index];
 
-        // Depth-Preferred Replacement:
+        // Check if an entry for the same position already exists.
         // Only replace an entry if the new one is from a deeper or equal search.
         // This is to prevents shallow searches, like from NMP, from overwriting
         // information from deeper searches.
         for entry in &mut cluster.entries {
-            if entry.hash == new_entry.hash {
+            if entry.key == new_entry.key {
                 if new_entry.depth >= entry.depth {
                     *entry = new_entry;
                 }
@@ -123,18 +180,27 @@ impl TranspositionTable {
             }
         }
 
+        // Depth + Age Preferred Replacement:
+        // if no existing entry was found, replace one of the current 'worst' entries
         let mut replace_idx = 0;
-        let mut min_depth = u8::MAX;
+        let mut worst_score = i32::MAX;
+
         for (i, entry) in cluster.entries.iter().enumerate() {
-            if entry.depth < min_depth {
-                min_depth = entry.depth;
+            // Score an entry based on its age and depth.
+            // A lower score is worse and a better candidate for replacement.
+            // - Prioritize replacing entries from older search cycles.
+            // - Among entries from the same cycle, replace the one with the shallowest depth.
+            let age_difference = new_entry.get_age().wrapping_sub(entry.get_age());
+            let score = (entry.depth as i32) - (age_difference as i32) * 4; // Weight age more heavily
+
+            if score < worst_score {
+                worst_score = score;
                 replace_idx = i;
             }
         }
 
-        if new_entry.depth >= min_depth {
-            cluster.entries[replace_idx] = new_entry;
-        }
+        // Replace the entry tat is the worst
+        cluster.entries[replace_idx] = new_entry;
     }
 
     pub fn clear(&mut self) {
@@ -151,7 +217,7 @@ impl TranspositionTable {
         for i in 0..sample_size {
             let cluster = &self.clusters[i];
             for entry in &cluster.entries {
-                if entry.hash != 0 {
+                if entry.key != 0 {
                     filled += 1;
                     break; // Only count cluster as filled if atleast one entry is used
                 }
