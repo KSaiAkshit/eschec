@@ -102,27 +102,52 @@ impl CompositeEvaluator {
 
 impl Evaluator for CompositeEvaluator {
     fn evaluate(&self, board: &Board) -> Score {
-        let total_weight: i32 = self.weights.iter().sum();
-        let score: Score = self
-            .evaluators
-            .iter()
-            .zip(self.weights.iter())
-            .map(|(evaluator, &weight)| evaluator.evaluate(board) * weight)
-            .fold(Score::default(), |acc, score| acc + score);
+        let mut material_score = Score::default();
+        let mut positional_score = Score::default();
+        let mut positional_total_weight = 0;
 
-        // NOTE: The jiggle might seem unusual as Evaluations are usually deterministic
-        // But the jiggle here is based on the position's Zobrist hash,
-        // so it is deterministic as well
-        let jiggle = (board.hash % 5) as i32 - 2;
-        if total_weight > 0 {
-            Score::new(
-                (score.mg / total_weight) + jiggle,
-                (score.eg / total_weight) + jiggle,
-            )
-        } else {
-            Score::default()
+        for (evaluator, &weight) in self.evaluators.iter().zip(self.weights.iter()) {
+            if evaluator.name() == "Material" {
+                material_score = evaluator.evaluate(board);
+            } else {
+                positional_score += evaluator.evaluate(board) * weight;
+                positional_total_weight += weight;
+            }
         }
+
+        if positional_total_weight > 0 {
+            positional_score.mg /= positional_total_weight;
+            positional_score.eg /= positional_total_weight;
+        }
+
+        let final_score = material_score + positional_score;
+
+        let jiggle = (board.hash % 5) as i32 - 2;
+
+        Score::new(final_score.mg + jiggle, final_score.eg + jiggle)
     }
+    // fn evaluate(&self, board: &Board) -> Score {
+    //     let total_weight: i32 = self.weights.iter().sum();
+    //     let score: Score = self
+    //         .evaluators
+    //         .iter()
+    //         .zip(self.weights.iter())
+    //         .map(|(evaluator, &weight)| evaluator.evaluate(board) * weight)
+    //         .fold(Score::default(), |acc, score| acc + score);
+
+    //     // NOTE: The jiggle might seem unusual as Evaluations are usually deterministic
+    //     // But the jiggle here is based on the position's Zobrist hash,
+    //     // so it is deterministic as well
+    //     let jiggle = (board.hash % 5) as i32 - 2;
+    //     if total_weight > 0 {
+    //         Score::new(
+    //             (score.mg / total_weight) + jiggle,
+    //             (score.eg / total_weight) + jiggle,
+    //         )
+    //     } else {
+    //         Score::default()
+    //     }
+    // }
 
     fn name(&self) -> &str {
         &self.name
