@@ -10,6 +10,7 @@ use std::{
 use crate::{
     comms::uci_parser::{GoParams, UciCommand, parse_line},
     prelude::*,
+    search::{SearchStats, common::SearchConfig},
 };
 
 #[derive(Debug)]
@@ -19,9 +20,9 @@ pub struct UciState {
     evaluator: Arc<dyn Evaluator>,
     search: Arc<Mutex<AlphaBetaSearch>>,
     search_running: Arc<AtomicBool>,
-    best_move: Arc<Mutex<Option<(Square, Square)>>>,
     search_thread: Option<thread::JoinHandle<SearchResult>>,
     move_history: Vec<MoveInfo>,
+    search_stats: Arc<Mutex<SearchStats>>,
 }
 
 impl Default for UciState {
@@ -32,9 +33,9 @@ impl Default for UciState {
             search: Arc::default(),
             evaluator: Arc::new(CompositeEvaluator::default()),
             search_running: Arc::default(),
-            best_move: Arc::default(),
             search_thread: None,
             move_history: Vec::default(),
+            search_stats: Arc::new(Mutex::new(SearchStats::default())),
         }
     }
 }
@@ -49,38 +50,40 @@ impl Drop for UciState {
 }
 
 impl UciState {
-    pub fn new(depth: Option<u8>) -> Self {
+    pub fn new(depth: Option<u8>) -> miette::Result<Self> {
         let depth = depth.unwrap_or(20);
         let search_running = Arc::new(AtomicBool::new(false));
+        let conf = SearchConfig {
+            hash_size_mb: 256,
+            ..Default::default()
+        };
         let mut s = AlphaBetaSearch::new(Box::new(CompositeEvaluator::balanced()))
+            .with_config(conf)?
             .init(search_running.clone());
         s.set_depth(depth);
         let search = Arc::new(Mutex::new(s));
-        Self {
+        Ok(Self {
             board: Board::new(),
             search_depth: depth,
             search,
             evaluator: Arc::new(CompositeEvaluator::balanced()),
-            best_move: Arc::new(Mutex::new(None)),
             search_running,
             search_thread: None,
             move_history: Vec::new(),
-        }
+            search_stats: Arc::new(Mutex::new(SearchStats::default())),
+        })
     }
 
     fn reset(&mut self) {
+        trace!("Resetting UciState");
         self.board = Board::new();
-        *self.best_move.lock().unwrap() = None;
         self.move_history.clear();
-        let mut s = AlphaBetaSearch::new(Box::new(CompositeEvaluator::balanced()))
-            .init(self.search_running.clone());
-        s.set_depth(self.search_depth);
-        self.search = Arc::new(Mutex::new(s))
+        self.search.lock().unwrap().clear();
     }
 }
 
 pub fn play() -> miette::Result<()> {
-    let mut state = UciState::new(None);
+    let mut state = UciState::new(None)?;
 
     let stdin = std::io::stdin();
     let mut lines = stdin.lock().lines();
@@ -134,7 +137,8 @@ fn cmd_position(
     moves: Vec<String>,
 ) -> miette::Result<()> {
     if startpos {
-        state.reset();
+        state.board = Board::new();
+        state.move_history.clear();
     } else if let Some(fen_str) = fen {
         state.board = Board::from_fen(&fen_str);
         state.move_history.clear();
@@ -156,6 +160,7 @@ fn cmd_go(state: &mut UciState, params: GoParams) {
     let search_running = state.search_running.clone();
     let default_depth = state.search_depth;
     let search = state.search.clone();
+    let search_stats = state.search_stats.clone();
 
     // Time Management Logic
     let mut max_time_ms: Option<u64> = None;
@@ -180,6 +185,7 @@ fn cmd_go(state: &mut UciState, params: GoParams) {
     info!("Spawning thread");
     state.search_thread = Some(thread::spawn(move || {
         let result: SearchResult;
+        let stat: SearchStats;
         {
             let mut search = search.lock().unwrap();
             let e = evaluator.clone_box();
@@ -196,7 +202,14 @@ fn cmd_go(state: &mut UciState, params: GoParams) {
 
             search_running.store(true, Ordering::Relaxed);
             result = search.find_best_move(&board);
+            stat = search.get_stats();
             search_running.store(false, Ordering::Relaxed);
+        }
+
+        {
+            let mut current_stats = search_stats.lock().unwrap();
+            *current_stats = *current_stats + stat;
+            current_stats.log_summary();
         }
 
         if let Some(best_move) = result.best_move {

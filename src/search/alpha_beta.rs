@@ -254,6 +254,7 @@ impl SearchEngine for AlphaBetaSearch {
     type Output = AlphaBetaSearch;
 
     fn init(self, search_running: Arc<AtomicBool>) -> Self::Output {
+        trace!("AlphaBeta: Initialized");
         Self {
             search_running: Some(search_running),
             ..self
@@ -295,7 +296,7 @@ impl SearchEngine for AlphaBetaSearch {
         self.stats.time_elapsed = self.start_time.elapsed();
         self.stats.hash_full = self.tt.hash_full();
         self.stats.calculate_nps();
-        self.stats.clone()
+        self.stats
     }
 
     fn clone_engine(&self) -> Box<dyn SearchEngine<Output = Self::Output>> {
@@ -618,7 +619,9 @@ impl AlphaBetaSearch {
 
             if alpha >= beta {
                 if self.config.collect_stats {
-                    self.stats.cutoff_at_move[move_index] += 1;
+                    if move_index < MAX_PLY {
+                        self.stats.cutoff_at_move[move_index] += 1;
+                    }
                     self.stats.beta_cutoffs_main += 1;
                     self.stats.pruned_nodes += 1;
                 }
@@ -692,10 +695,6 @@ impl AlphaBetaSearch {
             return 0;
         }
 
-        // Every entry into this function is exploring a new node
-        // Doesn't matter if this gets pruned away
-        self.nodes_searched += 1;
-
         if context.ply >= self.limits.max_depth.unwrap_or_else(|| 2 * (MAX_PLY as u8)) as usize + 16
             || context.ply > MAX_PLY
         {
@@ -705,6 +704,10 @@ impl AlphaBetaSearch {
         if self.should_stop() {
             return 0;
         }
+
+        // Every entry into this function is exploring a new node
+        // Doesn't matter if this gets pruned away
+        self.nodes_searched += 1;
 
         if self.is_draw(board) {
             if self.config.collect_stats {

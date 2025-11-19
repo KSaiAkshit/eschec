@@ -65,7 +65,7 @@ build-all-tags:
 [doc("Build and symlink binary")]
 update bin="eschec":
     -rm {{engines_dir}}/eschec_old
-    mv {{engines_dir}}/eschec {{engines_dir}}/eschec_old
+    -mv {{engines_dir}}/eschec {{engines_dir}}/eschec_old
     just build {{ bin }}
     cp target/release/eschec {{engines_dir}}
 
@@ -174,7 +174,7 @@ run *args:
 [doc("Find the most recent file in the 'logs' directory and tail it")]
 @tail_log:
     echo "{{ MAGENTA }} Tailing log {{ NORMAL }}"
-    tail -f {{ engine_logs_dir }}$(ls -t {{ engine_logs_dir }} | head -n 1)
+    tail -f {{ engine_logs_dir }}$(ls -t {{ engine_logs_dir }} | head -n 1) | bat --paging=never --language log --plain
 
 [doc("Record perf with given args")]
 record args="": setup

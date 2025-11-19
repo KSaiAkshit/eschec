@@ -4,7 +4,7 @@ use crate::prelude::*;
 use std::{ops::Add, time::Duration};
 
 /// Common statistics for all search types
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct SearchStats {
     // Basic stats
     pub nodes_searched: u64, // Total nodes including qsearch
