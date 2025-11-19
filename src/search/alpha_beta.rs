@@ -566,11 +566,18 @@ impl AlphaBetaSearch {
             // Starts as non-PV unless the parent is PV and this is the first move
             let mut child_context = context.new_child(child_is_pv);
 
-            let move_gives_check = &board_copy.is_in_check(board_copy.stm);
+            let mut extension = 0;
+            let move_gives_check = board_copy.is_in_check(board_copy.stm);
+
+            if move_gives_check {
+                extension = 1;
+            }
+
+            let new_depth = depth + extension;
 
             if is_pv_node {
-                score = self.pv_search(&board_copy, child_context, depth, alpha, beta);
-            } else if self.should_reduce(depth, move_index, mv, is_in_check, *move_gives_check) {
+                score = self.pv_search(&board_copy, child_context, new_depth, alpha, beta);
+            } else if self.should_reduce(depth, move_index, mv, is_in_check, move_gives_check) {
                 let mut reduction = self.lmr_reduction(depth, move_index);
 
                 if context.is_pv_node {
@@ -598,10 +605,10 @@ impl AlphaBetaSearch {
                         self.stats.lmr_research += 1;
                     }
                     child_context.is_pv_node = true;
-                    score = self.zw_search(&board_copy, child_context, depth, alpha, beta);
+                    score = self.zw_search(&board_copy, child_context, new_depth, alpha, beta);
                 }
             } else {
-                score = self.zw_search(&board_copy, child_context, depth, alpha, beta);
+                score = self.zw_search(&board_copy, child_context, new_depth, alpha, beta);
             }
 
             self.repetition_table.pop();
