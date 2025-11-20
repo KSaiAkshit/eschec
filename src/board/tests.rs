@@ -189,6 +189,50 @@ mod see_tests {
         let expected_seq = vec![Pawn, Knight, Knight, Rook, Bishop, Queen, Queen];
         assert_eq!(seq, expected_seq);
     }
+
+    #[test]
+    fn test_see_standard_positions() {
+        let cases = vec![
+            // Position, Move (from-to), Expected Score
+            (
+                "1k1r4/1pp4p/p7/4p3/8/P5P1/1PP4P/2K1R3 w - - 0 1",
+                "e1e5",
+                100,
+            ), // RxP (free pawn)
+            (
+                "1k1r3q/1ppn3p/p4b2/4p3/8/P2N2P1/1PP1R1BP/2K1Q3 w - - 0 1",
+                "d3e5",
+                -225,
+            ), // NxP (bad exchange)
+            ("k7/8/5n2/8/8/5N2/8/K7 w - - 0 1", "f3e5", 0), // Move to empty square
+            (
+                "r1bqkbnr/pppp1ppp/2n5/4p3/3P4/5N2/PPP1PPPP/RNBQKB1R w KQkq - 0 1",
+                "f3e5",
+                100,
+            ), // Scotch opening capture
+            (
+                "r1bqkbnr/pppp1ppp/2n5/4p3/3P4/5N2/PPP1PPPP/RNBQKB1R w KQkq - 0 1",
+                "d4e5",
+                100,
+            ),
+        ];
+
+        for (fen, uci, expected) in cases {
+            let board = Board::from_fen(fen);
+            let mv = Move::from_uci(&board, uci).expect("Invalid move in test case");
+            let score = board.static_exchange_evaluation(mv);
+
+            // Allow small margin for piece value differences (e.g. Pawn=100 vs 100)
+            assert!(
+                (score - expected).abs() < 10,
+                "SEE Failed for {}. Move: {}. Expected {}, Got {}",
+                fen,
+                uci,
+                expected,
+                score
+            );
+        }
+    }
 }
 
 #[cfg(test)]

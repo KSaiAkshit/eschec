@@ -89,6 +89,8 @@ gauntlet opponent='gnuchess' rounds='40' concurrency='4' book='8moves_v3.pgn' tc
     @echo "  - PGN Output: {{ YELLOW }}{{ pgn_output_dir }}eschec_vs_{{ opponent }}{{ NORMAL }}"
     @echo "-------------------------------------"
 
+    # -draw movenumber=40 movecount=8 score=20 \
+    # -resign movecount=3 score=800 \
     @# Run the cutechess-cli command
     cutechess-cli \
         -engine conf=eschec \
@@ -98,8 +100,6 @@ gauntlet opponent='gnuchess' rounds='40' concurrency='4' book='8moves_v3.pgn' tc
         -openings file={{ book_dir }}{{ book }} format={{ extension(book_dir + book) }} order=random policy=round \
         -pgnout {{ pgn_output_dir }}eschec_vs_{{ opponent }}.txt \
         -concurrency {{ concurrency }} \
-        -draw movenumber=40 movecount=8 score=20 \
-        -resign movecount=3 score=800 \
         -recover
 
 [doc("Run an SPRT test between two versions of the engine.")]

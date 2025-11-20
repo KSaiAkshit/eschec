@@ -171,15 +171,29 @@ fn cmd_go(state: &mut UciState, params: GoParams) {
     };
 
     if let Some(time) = time_remaining {
+        // Safety buffer
+        let overhead = 50;
         let allocation;
-        if let Some(moves) = params.moves_to_go {
-            // Time control with move count: use a fraction of the remaining time.
-            allocation = (time / moves).saturating_sub(50); // Subtract 50ms for overhead
+
+        if let Some(moves_to_go) = params.moves_to_go {
+            let divisor = (moves_to_go + 2).clamp(1, 50);
+            allocation = (time / divisor).saturating_sub(overhead);
         } else {
-            // Sudden death: use a smaller fraction of remaining time plus the increment.
-            allocation = (time / 30) + increment;
+            // Sudden death
+            let divisor = 20;
+            let target = (time / divisor) + (increment / 2);
+            let safety_max = (time * 8) / 10;
+
+            allocation = target.min(safety_max).saturating_sub(overhead);
         }
-        max_time_ms = Some(allocation.max(50));
+        max_time_ms = Some(allocation.max(10));
+
+        info!(
+            "Time Management: Remaning={:?}ms, Inc={:?}ms, Allocating={:?}ms",
+            time,
+            increment,
+            max_time_ms.expect("Just assigned above")
+        );
     }
 
     info!("Spawning thread");

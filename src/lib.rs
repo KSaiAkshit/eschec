@@ -65,7 +65,7 @@ pub mod consts {
     pub const NUM_FILES: usize = 8;
     pub const NUM_RANKS: usize = 8;
 
-    pub const MAX_PLY: usize = 64;
+    pub const MAX_PLY: usize = 256;
     pub const MAX_MOVES: usize = 256;
     pub const MAX_HASH: usize = 1024;
 

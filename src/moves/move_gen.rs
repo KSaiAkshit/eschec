@@ -18,17 +18,28 @@ use crate::{
 };
 
 pub trait MoveGenType {
+    /// If true, quiet moves are filtered out
     const FORCING_ONLY: bool;
+    /// If true, Only return captures/promotions
+    const CAPTURES_ONLY: bool;
 }
 
 pub struct AllMoves;
 impl MoveGenType for AllMoves {
     const FORCING_ONLY: bool = false;
+    const CAPTURES_ONLY: bool = false;
 }
 
 pub struct ForcingMoves;
 impl MoveGenType for ForcingMoves {
     const FORCING_ONLY: bool = true;
+    const CAPTURES_ONLY: bool = false;
+}
+
+pub struct CapturesOnly;
+impl MoveGenType for CapturesOnly {
+    const FORCING_ONLY: bool = true;
+    const CAPTURES_ONLY: bool = true;
 }
 
 // ===================================================================
@@ -98,6 +109,12 @@ fn gen_legal_king_moves<T: MoveGenType>(
         let to_sq = legal_targets.pop_lsb();
         if !attack_data.opp_attack_map.contains_square(to_sq as usize) {
             let is_capture = board.positions.is_occupied(to_sq as usize);
+
+            // OPTIM: if only captures are needed, and this isn;t one,
+            // skip immediately to avoid creating Move struct and calling 'is_move_a_check'
+            if T::CAPTURES_ONLY && !is_capture {
+                continue;
+            }
             if !T::FORCING_ONLY || is_capture {
                 let flag = if is_capture {
                     Move::CAPTURE
@@ -110,7 +127,8 @@ fn gen_legal_king_moves<T: MoveGenType>(
     }
 
     // Castling
-    if !T::FORCING_ONLY && !attack_data.in_check {
+    // Castling is never a capture / forcing, so can be skipped
+    if !T::CAPTURES_ONLY && !T::FORCING_ONLY && !attack_data.in_check {
         let all_pieces =
             board.positions.get_side_bb(Side::White) | board.positions.get_side_bb(Side::Black);
         match side {
@@ -213,6 +231,13 @@ fn gen_legal_sliding_moves<T: MoveGenType>(
         while legal_targets.any() {
             let to_sq = legal_targets.pop_lsb();
             let is_capture = enemy_pieces.contains_square(to_sq as usize);
+
+            // OPTIM: if only captures are needed, and this isn;t one,
+            // skip immediately to avoid creating Move struct and calling 'is_move_a_check'
+            if T::CAPTURES_ONLY && !is_capture {
+                continue;
+            }
+
             let flag = if is_capture {
                 Move::CAPTURE
             } else {
@@ -221,7 +246,7 @@ fn gen_legal_sliding_moves<T: MoveGenType>(
             let current_move = Move::new(from_sq as u8, to_sq as u8, flag);
             if !T::FORCING_ONLY
                 || is_capture
-                || is_move_a_check(board, current_move, opponent_king_sq)
+                || (!T::CAPTURES_ONLY && is_move_a_check(board, current_move, opponent_king_sq))
             {
                 moves.push(current_move);
             }
@@ -253,7 +278,14 @@ fn gen_legal_knight_moves<T: MoveGenType>(
         while legal_targets.any() {
             let to_sq = legal_targets.pop_lsb();
             let is_capture = enemy_pieces.contains_square(to_sq as usize);
-            let flag = if enemy_pieces.contains_square(to_sq as usize) {
+
+            // OPTIM: if only captures are needed, and this isn;t one,
+            // skip immediately to avoid creating Move struct and calling 'is_move_a_check'
+            if T::CAPTURES_ONLY && !is_capture {
+                continue;
+            }
+
+            let flag = if is_capture {
                 Move::CAPTURE
             } else {
                 Move::QUIET
@@ -261,7 +293,7 @@ fn gen_legal_knight_moves<T: MoveGenType>(
             let current_move = Move::new(from_sq as u8, to_sq as u8, flag);
             if !T::FORCING_ONLY
                 || is_capture
-                || is_move_a_check(board, current_move, opponent_king_sq)
+                || (!T::CAPTURES_ONLY && is_move_a_check(board, current_move, opponent_king_sq))
             {
                 moves.push(current_move);
             }
@@ -352,6 +384,10 @@ fn gen_legal_pawn_moves<T: MoveGenType>(
                 {
                     // Only consider promotions, as they are the only pushes that can be forcing.
                     if one_step / 8 == promo_rank {
+                        if T::CAPTURES_ONLY {
+                            // in CapturesOnly, we want all promos for material change
+                            add_promo_moves(from_sq as u8, one_step as u8, false, moves);
+                        }
                         // Queen promo is most likey to result in checks
                         let promo_move = Move::new(from_sq as u8, one_step as u8, Move::PROMO_Q);
                         if is_move_a_check(board, promo_move, opponent_king_sq) {

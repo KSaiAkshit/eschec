@@ -97,9 +97,9 @@ impl Add for SearchStats {
 
     fn add(self, rhs: Self) -> Self::Output {
         let mut combined_cutoff_at_move = [0u64; MAX_PLY];
-        for i in 0..MAX_PLY {
+        (0..MAX_PLY).for_each(|i| {
             combined_cutoff_at_move[i] = self.cutoff_at_move[i] + rhs.cutoff_at_move[i];
-        }
+        });
 
         let total_nodes = self.nodes_searched + rhs.nodes_searched;
         let total_time = self.time_elapsed + rhs.time_elapsed;

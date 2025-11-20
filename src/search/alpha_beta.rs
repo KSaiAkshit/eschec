@@ -11,6 +11,7 @@ use std::time::{Duration, Instant};
 
 use tracing::trace_span;
 
+use crate::moves::move_gen::{CapturesOnly, generate_legal_moves};
 use crate::prelude::*;
 use crate::search::move_ordering::{MainSearchPolicy, MoveScoringPolicy, sort_moves};
 use crate::search::move_picker::MovePicker;
@@ -317,8 +318,10 @@ impl AlphaBetaSearch {
         let _guard = span.enter();
 
         debug!(
-            "Finding best move with max_depth: {:?}, max_time: {:?}",
-            self.limits.max_depth, self.limits.max_time
+            "Finding best move for board: '{:?}' with max_depth: {:?}, max_time: {:?}",
+            board.to_fen(),
+            self.limits.max_depth,
+            self.limits.max_time
         );
 
         self.prepare_for_search();
@@ -361,7 +364,7 @@ impl AlphaBetaSearch {
         // Prev score for Aspiration Windows
         let mut prev_score = 0;
 
-        'id_loop: for depth in 1..=self.limits.max_depth.unwrap_or_else(|| 2 * MAX_PLY as u8) {
+        'id_loop: for depth in 1..=self.limits.max_depth.unwrap_or(MAX_PLY as u8) {
             if self.should_stop() {
                 break 'id_loop;
             }
@@ -424,6 +427,12 @@ impl AlphaBetaSearch {
             return 0;
         }
 
+        // Necessary to prevent search extensions from explosion
+        if context.ply >= MAX_PLY {
+            // Treat this as leaf node
+            return board.evaluate_position(&*self.evaluator);
+        }
+
         if depth == 0 {
             return self.quiescence_search(board, context, alpha, beta);
         }
@@ -443,12 +452,12 @@ impl AlphaBetaSearch {
 
         let current_hash = board.hash;
         if self.is_draw(board) {
-            debug!(
-                "Draw! Halfmove clock: {}, Repetition count: {} for {}",
-                board.halfmove_clock,
-                self.repetition_table.count_repetitions(current_hash),
-                current_hash
-            );
+            // debug!(
+            //     "Draw! Halfmove clock: {}, Repetition count: {} for {}",
+            //     board.halfmove_clock,
+            //     self.repetition_table.count_repetitions(current_hash),
+            //     current_hash
+            // );
             if self.config.collect_stats {
                 self.stats.draw_returns += 1;
             }
@@ -569,8 +578,24 @@ impl AlphaBetaSearch {
             let mut extension = 0;
             let move_gives_check = board_copy.is_in_check(board_copy.stm);
 
-            if move_gives_check {
+            if is_in_check {
                 extension = 1;
+            } else {
+                // Passed pawn extension
+                if let Some(piece) = board.get_piece_at(mv.from_sq())
+                    && piece == Piece::Pawn
+                {
+                    let rank = mv.to_sq().row();
+                    let is_threatening_promo = if board.stm == Side::White {
+                        rank == 6
+                    } else {
+                        rank == 1
+                    };
+
+                    if is_threatening_promo {
+                        extension = 1
+                    }
+                }
             }
 
             let new_depth = depth + extension;
@@ -702,9 +727,7 @@ impl AlphaBetaSearch {
             return 0;
         }
 
-        if context.ply >= self.limits.max_depth.unwrap_or_else(|| 2 * (MAX_PLY as u8)) as usize + 16
-            || context.ply > MAX_PLY
-        {
+        if context.ply > MAX_PLY {
             return board.evaluate_position(&*self.evaluator);
         }
 
@@ -745,10 +768,10 @@ impl AlphaBetaSearch {
 
         // Generate all moves in check, otherwise use forcing moves only
         let mut legal_moves = MoveBuffer::new();
-        board.generate_legal_moves(&mut legal_moves, !is_in_check);
-        if !is_in_check {
-            legal_moves.retain(|m| m.is_capture() || m.is_promotion());
-        }
+        generate_legal_moves::<CapturesOnly>(board, &mut legal_moves);
+        // if !is_in_check {
+        //     legal_moves.retain(|m| m.is_capture() || m.is_promotion());
+        // }
 
         if is_in_check && legal_moves.is_empty() {
             // return Losing Mate score
