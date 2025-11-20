@@ -21,11 +21,11 @@ impl PawnStructureEvaluator {
         let scores = [
             Score { mg: 0, eg: 0 },     // Rank 1 (Impossible)
             Score { mg: 5, eg: 10 },    // Rank 2
-            Score { mg: 10, eg: 20 },   // Rank 3
-            Score { mg: 20, eg: 40 },   // Rank 4
-            Score { mg: 40, eg: 80 },   // Rank 5 (Getting scary)
-            Score { mg: 80, eg: 180 },  // Rank 6 (Very scary)
-            Score { mg: 150, eg: 350 }, // Rank 7 (Game winning)
+            Score { mg: 10, eg: 30 },   // Rank 3
+            Score { mg: 25, eg: 60 },   // Rank 4
+            Score { mg: 60, eg: 150 },  // Rank 5 (Must be defended)
+            Score { mg: 150, eg: 400 }, // Rank 6 (Worth more than a minor piece)
+            Score { mg: 300, eg: 700 }, // Rank 7 (Almost a Queen)
             Score { mg: 0, eg: 0 },     // Rank 8 (Impossible/Promoted)
         ];
         Self {

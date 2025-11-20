@@ -171,28 +171,39 @@ fn cmd_go(state: &mut UciState, params: GoParams) {
     };
 
     if let Some(time) = time_remaining {
-        // Safety buffer
-        let overhead = 50;
+        let overhead = 50; // Safety buffer
         let allocation;
 
         if let Some(moves_to_go) = params.moves_to_go {
+            // Tournament mode with move counters
             let divisor = (moves_to_go + 2).clamp(1, 50);
             allocation = (time / divisor).saturating_sub(overhead);
         } else {
-            // Sudden death
+            // Sudden Death (30+0.3)
+
             let divisor = 20;
-            let target = (time / divisor) + (increment / 2);
-            let safety_max = (time * 8) / 10;
+            let base_target = (time / divisor) + (increment / 2);
+
+            let min_think_time = 1500;
+            let panic_threshold = 5000;
+
+            let target = if time > panic_threshold {
+                base_target.max(min_think_time)
+            } else {
+                base_target
+            };
+
+            let safety_max = (time * 7) / 10;
 
             allocation = target.min(safety_max).saturating_sub(overhead);
         }
-        max_time_ms = Some(allocation.max(10));
+
+        max_time_ms = Some(allocation.max(50));
 
         info!(
-            "Time Management: Remaning={:?}ms, Inc={:?}ms, Allocating={:?}ms",
+            "Time Management: Remaining={:?}ms, Allocating={:?}ms",
             time,
-            increment,
-            max_time_ms.expect("Just assigned above")
+            max_time_ms.unwrap()
         );
     }
 

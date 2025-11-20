@@ -769,9 +769,6 @@ impl AlphaBetaSearch {
         // Generate all moves in check, otherwise use forcing moves only
         let mut legal_moves = MoveBuffer::new();
         generate_legal_moves::<CapturesOnly>(board, &mut legal_moves);
-        // if !is_in_check {
-        //     legal_moves.retain(|m| m.is_capture() || m.is_promotion());
-        // }
 
         if is_in_check && legal_moves.is_empty() {
             // return Losing Mate score
@@ -790,43 +787,43 @@ impl AlphaBetaSearch {
         let mut picker = MovePicker::new_qsearch(board, legal_moves.as_mut_slice());
 
         while let Some(mv) = picker.next_best() {
-            if !is_in_check {
-                // Delta pruning
-                if mv.is_capture() {
-                    let captured_piece_value = if mv.is_enpassant() {
-                        Piece::Pawn.victim_score()
-                    } else if let Some(p) = board.get_piece_at(mv.to_sq()) {
-                        p.victim_score()
-                    } else {
-                        unreachable!(
-                            "If move is a capture, then it should either be enpassant or 'to' square should hold a piece"
-                        )
-                    };
-                    if stand_pat_score
-                        + captured_piece_value
-                        + if mv.is_promotion() {
-                            DELTA_MARGIN + 200
-                        } else {
-                            DELTA_MARGIN
-                        }
-                        < alpha
-                    {
-                        if self.config.collect_stats {
-                            self.stats.delta_pruning_cutoffs += 1;
-                            self.stats.pruned_nodes += 1;
-                        }
-                        continue; // Skip this node
-                    }
-                }
-                // SEE pruning
-                if board.static_exchange_evaluation(mv) < 0 {
-                    if self.config.collect_stats {
-                        self.stats.see_pruning_cutoffs += 1;
-                        self.stats.pruned_nodes += 1;
-                    }
-                    continue;
-                }
-            }
+            // if !is_in_check {
+            //     // Delta pruning
+            //     if mv.is_capture() {
+            //         let captured_piece_value = if mv.is_enpassant() {
+            //             Piece::Pawn.victim_score()
+            //         } else if let Some(p) = board.get_piece_at(mv.to_sq()) {
+            //             p.victim_score()
+            //         } else {
+            //             unreachable!(
+            //                 "If move is a capture, then it should either be enpassant or 'to' square should hold a piece"
+            //             )
+            //         };
+            //         if stand_pat_score
+            //             + captured_piece_value
+            //             + if mv.is_promotion() {
+            //                 DELTA_MARGIN + 200
+            //             } else {
+            //                 DELTA_MARGIN
+            //             }
+            //             < alpha
+            //         {
+            //             if self.config.collect_stats {
+            //                 self.stats.delta_pruning_cutoffs += 1;
+            //                 self.stats.pruned_nodes += 1;
+            //             }
+            //             continue; // Skip this node
+            //         }
+            //     }
+            //     // SEE pruning
+            //     if board.static_exchange_evaluation(mv) < 0 {
+            //         if self.config.collect_stats {
+            //             self.stats.see_pruning_cutoffs += 1;
+            //             self.stats.pruned_nodes += 1;
+            //         }
+            //         continue;
+            //     }
+            // }
             let mut board_copy = *board;
             if let Err(e) = board_copy.make_move(mv) {
                 error!(
