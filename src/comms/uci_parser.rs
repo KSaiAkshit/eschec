@@ -33,7 +33,7 @@ pub struct GoParams {
     pub winc: Option<u64>,
     pub binc: Option<u64>,
     pub moves_to_go: Option<u64>,
-    pub depth: Option<u8>,
+    pub depth: Option<u16>,
     pub infinite: bool,
 }
 

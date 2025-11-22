@@ -34,7 +34,7 @@ struct EvalCli {
 
     /// Optional fixed search depth (overrides time control if set).
     #[arg(short, long)]
-    depth: Option<u8>,
+    depth: Option<u16>,
 
     // This argument will only be available when the "parallel" feature is active
     #[cfg(feature = "parallel")]
@@ -334,7 +334,7 @@ fn run_single_test(test: &EPDTest, cli: &EvalCli) -> TestResult {
         AlphaBetaSearch::new(Box::new(evaluator)).with_limits(lim)
     } else {
         let mut lim = SearchLimits::time(cli.time_control.to_ms());
-        lim.max_depth = Some(MAX_PLY as u8);
+        lim.max_depth = None;
         AlphaBetaSearch::new(Box::new(evaluator)).with_limits(lim)
     };
     let conf = SearchConfig {

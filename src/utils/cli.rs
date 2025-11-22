@@ -5,6 +5,8 @@ use tracing::{Level, span};
 
 use crate::{prelude::*, search::common::SearchLimits};
 
+const INITIAL_TIME: u64 = 10_000;
+
 #[derive(Parser)]
 #[command(name = env!("CARGO_PKG_NAME"), version = env!("CARGO_PKG_VERSION"), about = env!("CARGO_PKG_DESCRIPTION") )]
 pub struct Cli {
@@ -21,7 +23,7 @@ pub enum Commands {
         fen: Option<String>,
         /// set search depth
         #[arg(short, long, default_value = "32")]
-        depth: Option<u8>,
+        depth: Option<u16>,
     },
 
     /// Run perft on game with given FEN and depth, or use default fen
@@ -73,7 +75,9 @@ pub enum SetSubcommand {
         parts: Vec<String>,
     },
     /// Change the AI search depth
-    Depth { depth: u8 },
+    Depth { depth: u16 },
+    /// Change the AI search time in ms
+    Time { time_ms: u64 },
     /// Change the logging level
     #[clap(visible_alias = "log")]
     LogLevel { level: LogLevel },
@@ -147,7 +151,7 @@ pub enum GameSubcommand {
     Quit,
 }
 
-pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
+pub fn game_loop(fen: String, depth: u16) -> miette::Result<()> {
     let inp_depth = depth;
     let inp_fen = fen.clone();
 
@@ -155,7 +159,7 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
     let evaluator = CompositeEvaluator::balanced();
     let limits = SearchLimits {
         max_depth: Some(depth),
-        max_time: Some(Duration::from_millis(10_000)),
+        max_time: Some(Duration::from_millis(INITIAL_TIME)),
         max_nodes: None,
         mate_depth: None,
     };
@@ -280,8 +284,21 @@ pub fn game_loop(fen: String, depth: u8) -> miette::Result<()> {
                         println!("{board}");
                     }
                     SetSubcommand::Depth { depth } => {
-                        info!("Changing search depth from {inp_depth} to {depth}");
+                        let curr_depth = search.get_limits().max_depth.unwrap_or(inp_depth);
+                        info!("Changing search depth from {curr_depth} to {depth}");
                         search.set_depth(depth);
+                    }
+                    SetSubcommand::Time { time_ms } => {
+                        let curr_time = search
+                            .get_limits()
+                            .max_time
+                            .unwrap_or(Duration::from_millis(INITIAL_TIME));
+                        let new_time = Duration::from_millis(time_ms);
+                        info!(
+                            "Changing search max_time from {curr_time:?} to {:?}",
+                            new_time
+                        );
+                        search.set_time(time_ms);
                     }
                     SetSubcommand::LogLevel { level } => {
                         let new_level: Level = level.into();

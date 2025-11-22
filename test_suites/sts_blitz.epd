@@ -1,0 +1,197 @@
+2r2rk1/1b1qb1pp/p2p4/1p1PpP2/4Q3/1P2BN1P/P4PP1/R3R1K1 w - - bm g4; id "Adv. f/g/h pawns.015"; c0 "g4=10, a4=2";
+q5k1/p2p2bp/1p1p2r1/2p1np2/6p1/1PP2PP1/P2PQ1KP/4R1NR b - - bm Qd5; c0 "Qd5=10, Re6=4, a5=1, c4=2"; id "Square Vacancy.026";
+5r1k/1b3pp1/p3pb2/4N2q/3R1B2/4P3/1PB2PPP/1K4R1 b - - bm Qe2; c0 "Qe2=10, Bxe5=7, Kg8=4"; id "Square Vacancy.009";
+r2r2k1/pp3ppp/2p1qn2/5N1b/1n2PP2/4Q2P/PPP3B1/R1B2RK1 w - - bm Qc5; c0 "Qc5=10, Qg3=3"; id "Square Vacancy.002";
+1n5k/3r2p1/2p1qp1p/3p1N1P/1P1P1rP1/p1R5/P7/1KRQ4 w - - bm Ka1; id "King Activity.004"; c0 "Ka1=10, Re3=2, Rg3=3";
+1r1q1nk1/p3bpp1/b1p1p2p/4P3/1P2NB2/P4N2/5PPP/2Q1R1K1 w - - bm Be3; c0 "Be3=10, Nd6=5, Rd1=7, h3=6"; id "Open Files and Diagonals.008";
+1k2r2r/1bq2p2/pn4p1/3pP3/pbpN1P1p/4QN1B/1P4PP/2RR3K b - - bm Nd7; c0 "Nd7=10, Bc5=8, Bc6=2, Be7=7"; id "Knight Outposts/Repositioning/Centralization.001";
+3qr3/2p1kp2/1p4pQ/1P1P3p/7P/6P1/5P2/3R2K1 w - - bm Qg7; id "7th Rank.037"; c0 "Qg7=10, d6+=7, Kg2=3, Qd2=2, Rd4=2";
+r3rbk1/p1qn1p1p/2p1n1p1/Pp2p1B1/1P2P3/2N1Q3/2PN1PPP/1R2R1K1 b - - bm Nxg5; id "Simplification.093"; c0 "Nxg5=10, a6=3, Nb8=3, Rac8=4";
+3r1rk1/1pp2ppp/2np2q1/p4Q2/2B1PP2/7R/PPP2RPP/6K1 w - - bm Qb5; id "Avoid Pointless Exchange.069"; c0 "Qb5=10, Qxg6=5, Qd5=8";
+1Q6/1b4pk/2q2b1p/1p1ppP2/1Pp5/2P2P1P/2BB2P1/6K1 b - - bm Qa6; c0 "Qa6=10, Bc8=5, Qd7=7"; id "Open Files and Diagonals.004";
+1r4k1/p1rqbp1p/b1p1p1p1/NpP1P3/3PB3/3Q2P1/P4P1P/3RR1K1 w - - bm a4; id "Undermine.016"; c0 "a4=10, Kg2=4, Qf3=4, h4=5";
+b4q2/1r5k/3p4/1p1Pn2B/1PpQP3/2N4P/6P1/B5K1 w - - bm Nd1; c0 "Nd1=10, Ne2=6, Qe3=4"; id "Knight Outposts/Repositioning/Centralization.065";
+3r1rk1/1p4bp/2qPp1p1/p3n3/P2BN3/1PN4P/2PR2P1/4Q1K1 w - - bm Nb5; c0 "Nb5=10, Qe3=5, Qh4=8"; id "Knight Outposts/Repositioning/Centralization.030";
+2r2rk1/p4qb1/1p1ppp2/2n1n1pp/2PN4/1PN2PPP/P1QBP1K1/2RR4 w - - bm f4; id "Adv. f/g/h pawns.018"; c0 "f4=10, Be3=9, Kg1=5, Ndb5=6";
+5rk1/rbqnbppp/1p2pn2/2p5/4P3/P1P2NPP/1B1N1P2/R2QRBK1 w - - bm e5; id "Pawn Play in the Center.060"; c0 "e5=10, Bb5=2, c4=1, Qc2=2";
+7r/4k1p1/p2pP1p1/n2P4/1p2N2r/1P3P2/P2R2K1/4R3 b - - bm Rh2+; id "7th Rank.069"; c0 "Rh2+=10, Nb7=7, Nxb3=7, Rc8=7";
+1rbqnrk1/6bp/pp3np1/2pPp3/P1P1N3/2N1B3/1P2Q1BP/R4R1K w - - bm a5; id "Undermine.021"; c0 "a5=10, Bg5=6, Kg1=6, Nxf6+=6";
+1q2rnk1/5rb1/bp1p1np1/pNpP2Bp/P1P1Pp1P/3B2P1/3QNRR1/7K w - - bm gxf4; id "Recapturing.005"; c0 "gxf4=10, Bxf4=8, Bxf6=7, Rxf4=7";
+2r2rk1/4q1pp/p7/1pb1Pp2/5P2/1P1QB3/b3N1PP/2R1K2R b K - bm Rfd8; c0 "Rfd8=10, Bxe3=5, Kh8=3"; id "Open Files and Diagonals.025";
+r1b1k2r/2q1pp2/1p5p/p1pPp1p1/2P5/3B3P/PP2QPP1/4RRK1 w kq - bm Qh5; c0 "Qh5=10, Bc2=4, Qxe5=4, a3=4"; id "Square Vacancy.082";
+1qr2k1r/pb3pp1/1b2p2p/3nP3/1p6/3B2QN/PP3PPP/R1BR2K1 b - - bm g5; id "Adv. f/g/h pawns.001"; c0 "g5=10, Bd4=4, Kg8=4, Rd8=3";
+r1r4k/pb1nq1pp/1p1bp3/1N1p1p2/3Pn3/1P1NB1P1/PQ2PPBP/R4RK1 w - - bm Nxd6; c0 "Nxd6=10, Rac1=7, Rfc1=7, a4=7"; id "Bishop vs Knight.075";
+1r1r2k1/5pp1/p2b2bp/1q1Pp3/1p6/1P2P1P1/R2NQPB1/2R3K1 w - - bm Qg4; id "Avoid Pointless Exchange.094"; c0 "Qg4=10, Qd1=8, Nc4=9";
+8/p3p1k1/1p1p1pp1/4n3/3R3P/1Pr5/P5P1/3R2K1 b - - bm Kh6; id "King Activity.089"; c0 "Kh6=10, a5=8, f5=8, Rc2=6";
+3qr2k/3Q3p/p2p2pB/3P1p2/4p3/PPb3P1/2P1PP1P/5BK1 w - - bm Qc6; id "Avoid Pointless Exchange.071"; c0 "Qc6=10, Qxd8=1, Qb7=5, Qa7=5, Qa4=9";
+4r3/5pkp/2b1n1p1/3p3n/p1pP4/P1N1BP1B/1P3KPP/2R5 w - - bm Bxe6; c0 "Bxe6=10, Ne2=7, g3=8, g4=5"; id "Bishop vs Knight.054";
+4k3/p1p3p1/1pbp2qp/n3p3/2P3PB/2PPQ2P/P3P1B1/6K1 w - - bm Bd5; c0 "Bd5=10, Bf1=5, Bf2=5, Bxc6+=7"; id "Center Control.046";
+8/1p3q1k/p1p2b1P/2B1nP2/8/1Pn2PN1/2Q3P1/6K1 b - - bm Qd5; c0 "Qd5=10, Bh4=3, Nd5=3, Nd7=5"; id "Square Vacancy.072";
+6k1/1pr2rp1/p4q1p/2p1p3/2Q1P3/P6P/2P2PP1/3R1RK1 w - - bm a4; id "Adv. a/b/c pawns.062"; c0 "a4=10, Qc3=5, Rd3=5, Rd5=5";
+r3r1k1/1pb1qpp1/2p1b2p/p3P3/4Q3/2B1PN1P/PP3PP1/3RR1K1 w - - bm a3; id "Adv. a/b/c pawns.078"; c0 "a3=10, Qb1=5, a4=8, b3=4";
+3r2k1/3r1pp1/2QP4/pP5p/1qN5/4R1P1/4PK1P/8 w - - bm Re4; c0 "Re4=10, Rd3=1"; id "Center Control.041";
+r2r2k1/1b1nqpp1/pp5p/2pNP3/P3Q3/5N2/1P3PPP/2RR2K1 b - - bm Bxd5; id "Simplification.087"; c0 "Bxd5=10, Kh8=6, Qe6=6, Qe8=6";
+4r2k/6p1/2b2p2/pq5p/r2P2P1/2P1N1PP/B2Q1K2/4R3 b - - bm h4; id "Adv. f/g/h pawns.047"; c0 "h4=10, Be4=3, Qb8=4, Rb8=2";
+5rk1/6p1/2pp4/4q1p1/1PP1PnP1/4Q2P/R7/5BK1 b - - bm d5; id "Pawn Play in the Center.059"; c0 "d5=10, Kh8=5";
+3b4/3k1p2/4p1p1/p1rpP1Pp/R4P2/1P3K2/P2B1P2/8 b - - bm Kc6; id "King Activity.026"; c0 "Kc6=10, Bb6=4, Kc8=5";
+r1r3k1/1pp2ppp/2np1n2/1N6/p1PP4/Q3RNPq/PP3P1P/2R3K1 w - - bm d5; id "Pawn Play in the Center.072"; c0 "d5=10, Rce1=4, Re2=3, Ree1=2";
+1r2r3/1p1b3k/2p2n2/p1Pp4/P2N1PpP/1R2p3/1P2P1BP/3R2K1 b - - bm Kg6; id "King Activity.005"; c0 "Kg6=10, Kh6=8, Ne4=8, Nh5=8";
+1r3bk1/1q2r1p1/pp1p3p/2nP2p1/3BP3/PP3QP1/4N1KP/2RR4 w - - bm Bxc5; c0 "Bxc5=10, Bg1=5, Rc2=5, Re1=5"; id "Bishop vs Knight.009";
+3r2k1/R7/1p3np1/1P1b4/1p6/5PqP/2Q3P1/3R2K1 b - - bm Re8; c0 "Re8=10, Rf8=4"; id "Open Files and Diagonals.039";
+1rq1n3/2pr3k/2n1bppp/p1PNp3/Pp2P3/1P2Q1PP/3R1PBK/3RN3 w - - bm f4; id "Adv. f/g/h pawns.009"; c0 "f4=10, Bf1=6, Nc2=5, Nd3=6";
+3rbk2/5p1p/1p2p3/pP1nr1p1/P2RN1P1/3BP3/3K3P/3R4 b - - bm Ke7; id "King Activity.044"; c0 "Ke7=10, Bd7=4, h6=6, Rd7=8";
+4r3/p4rk1/1p4p1/3Rp1q1/4P2p/2Q2P2/P5PP/3R1K2 w - - bm h3; id "Adv. f/g/h pawns.049"; c0 "h3=10, Qd2=3, R1d3=5, Rd7=8";
+1r1rq1k1/1p4p1/pNb1pp1p/1pP5/3P4/1PQ5/5PPP/R3R1K1 w - - bm f3; id "Adv. f/g/h pawns.003"; c0 "f3=10, Qd3=4, Rad1=4, Red1=4";
+r4rk1/pp5p/2pp2pb/2n1nq2/2P2P2/2N1B3/PP2B1PP/2RQR1K1 w - - bm Bxc5; id "Simplification.097"; c0 "Bxc5=10, g4=6, Kh1=6, Rf1=6";
+2r5/4bkp1/p3q3/1b2p2n/N3PBp1/1p2Q3/1P3PPP/RB1R2K1 b - - bm Nxf4; id "Recapturing.032"; c0 "Nxf4=10, Bxa4=7, Rc4=7";
+1n5k/3q3p/pp1p2pB/5r2/1PP1Qp2/P6P/6P1/2R3K1 w - - bm c5; id "Undermine.002"; c0 "c5=10, Qd4+=4, b5=4, g4=3";
+2rq1rk1/1p2b1p1/pn2p3/2p1Pn2/2pP3p/5N1P/PPQ2BP1/1BRR2K1 b - - bm Nd5; c0 "Nd5=10, Bg5=6, Qc7=6, Qe8=6"; id "Knight Outposts/Repositioning/Centralization.022";
+r6r/1q1bbkp1/p1p1pn2/5p1p/N2Bp3/2Q3P1/PPP2PBP/R2R2K1 b - - bm Nd5; c0 "Nd5=10, Rad8=5, h4=5"; id "Knight Outposts/Repositioning/Centralization.099";
+8/pp2r1kp/2prP3/5R2/2P5/3n2P1/P5BP/1R5K w - - bm Be4; c0 "Be4=10, Bd5=6, Bf1=7, Rb3=7, Rf3=7"; id "Center Control.070";
+1rr3k1/p2qbpnp/Ppp3p1/3pP3/3P4/1Q1B1P2/1P1B1P1P/2R3RK b - - bm c5; id "Adv. a/b/c pawns.019"; c0 "c5=10, Ne6=6, Nf5=4, Qe6=5";
+1k1r4/1br2p2/3p1p2/pp2pPb1/4P2p/P1PRNB1P/1P4P1/1K2R3 b - - bm Bxe3; id "Simplification.005"; c0 "Bxe3=10, b4=7, Ka7=6, Rc5=6";
+1r1r1bk1/1bq2p1p/pn2p1p1/2p1P3/5P2/P1NBB3/1P3QPP/R2R2K1 b - - bm Nd5; c0 "Nd5=10, Ba8=8, Kg7=8, a5=9"; id "Knight Outposts/Repositioning/Centralization.004";
+r1qr2k1/p3bp1p/P1p1p1p1/2pb4/1P1P1P2/3NQ3/5BPP/R2R2K1 w - - bm dxc5; id "Recapturing.072"; c0 "dxc5=10, Nxc5=8, Qe1=7, bxc5=8";
+3q4/p2r1k2/1p1b2nP/1Pp5/2P1Q3/1P2B3/3R1K2/8 w - - bm Kg1; id "King Activity.030"; c0 "Kg1=10, Kf1=8";
+2r3k1/5pbp/2pB2p1/p3P3/2R2P2/2Q3P1/5K1P/1q6 b - - bm Qh1; c0 "Qh1=10, Qa2+=2, Qb6+=3, c5=2"; id "Square Vacancy.063";
+r2q3r/1p3pk1/2b1p1p1/2R1P2p/p2P1P1R/P1Q1N1P1/1P3K2/8 b - - bm Be4; c0 "Be4=10, Rc8=4"; id "Center Control.079";
+1n4k1/2pb2q1/1p1p3p/3P1p2/1PP1pP2/3rN3/4N1PP/1RQ3K1 w - - bm b5; id "Adv. a/b/c pawns.003"; c0 "b5=10";
+r2q1rk1/1p1n1ppp/6b1/n2B4/Ppp2NP1/4PP2/1P4KP/R1BQ1R2 w - - bm e4; id "Pawn Play in the Center.074"; c0 "e4=10, Bd2=4, h4=4, Nxg6=3, Qe2=2";
+4r1k1/2pbqp1p/1r3p2/pP1p4/8/P1QBPN2/3P1PPP/4K2R w K - bm Nd4; c0 "Nd4=10, Qxc7=6, a4=4"; id "Knight Outposts/Repositioning/Centralization.045";
+1R6/2r2bkp/p2q1rp1/4Np2/2pPp2P/Q5P1/PP1R1P1K/8 w - - bm Qe3; id "Avoid Pointless Exchange.100"; c0 "Qe3=10";
+r3r1k1/pn1qnppp/1p2p3/3pP3/b1pP4/B1P2N2/R1PQBPPP/R5K1 b - - bm b5; id "Adv. a/b/c pawns.079"; c0 "b5=10, Bc6=6, Nc6=2, Nc8=2";
+r2r2k1/p2n1p2/4q2p/3p2p1/1PpB4/P1NnPP2/2Q3PP/R2R2K1 b - - bm N7e5; c0 "N7e5=10, a5=6, a6=6, Nb8=5"; id "Center Control.081";
+1r2rbk1/1bqn1pp1/pp1p2np/3N1p2/2P1P3/PP2B1PB/4NQKP/2RR4 b - - bm Bxd5; c0 "Bxd5=10, Qc6=6, Qc8=6, Qd8=3"; id "Bishop vs Knight.008";
+2r1q1k1/2p2rbp/p2p2p1/Q2P4/b3P3/3p2P1/3B1PBP/2R1R1K1 w - - bm Bh3; c0 "Bh3=10, Bf1=7, e5=8"; id "Open Files and Diagonals.020";
+1k1r4/1p3p2/p1bq1p1p/4p3/3r1P1Q/P5P1/1PP1B2P/K2RR3 b - - bm e4; id "Pawn Play in the Center.001"; c0 "e4=10, Qc5=7, Qe6=7, Qe7=7, Re8=7";
+1k1r4/4bp2/p1q1pnr1/6B1/NppP3P/6P1/1P3P2/2RQR1K1 w - - bm Re5; c0 "Re5=10"; id "Center Control.001";
+qr4k1/3b1pp1/4p2p/n2pP3/n1pP4/Q1P2NP1/3N1P1P/1R3BK1 b - - bm Rxb1; id "Simplification.081"; c0 "Rxb1=10, Bc6=2, Be8=3, Rb7=2";
+8/6k1/1b1p1pp1/1b1Pp3/2q1P3/6P1/2B2PKN/3Q4 b - - bm Qd4; c0 "Qd4=10, Bc5=4, Bd4=4, Qa2=4"; id "Center Control.069";
+b2qr2k/2p3pp/8/1p3p2/2p2B2/2Pp1PPP/5QB1/R6K b - - bm b4; id "Adv. a/b/c pawns.068"; c0 "b4=10, Bc6=2, Bd5=2, h6=2";
+rn1q1rk1/pb1nbppp/1p2p3/3pN3/3P4/6P1/PPQBPPBP/RNR3K1 w - - bm Qc7; id "7th Rank.097"; c0 "Qc7=10, Nd3=2, Nf3=2, Nxd7=2";
+1b1r4/3rkp2/p3p2p/4q3/P5P1/2RBP3/P1Q4P/1R3K2 b - - bm Ba7; c0 "Ba7=10, Qf6+=3, a5=3, h5=5"; id "Open Files and Diagonals.001";
+6k1/2rqbrpp/2n2n2/pBpppN2/Pp4P1/2PP3P/1P2QP2/R1B1R1K1 w - - bm c4; id "Adv. a/b/c pawns.063"; c0 "c4=10, Bg5=5, Bxc6=4, cxb4=4";
+r4rk1/ppqb1ppp/4p3/2Qnb3/4N3/P1P3PP/1P3PB1/R1B2R1K b - - bm Bc6; id "Avoid Pointless Exchange.007"; c0 "Bc6=10, Qd8=4";
+1nr2qk1/pb1r1p1p/1b4pP/1p1Bp1B1/4P1Q1/2NR4/P1R2PP1/6K1 w - - bm Bxb7; id "Simplification.009"; c0 "Bxb7=10, Rdd2=1";
+1R3bk1/7p/6p1/8/1pN3P1/8/r4P1P/6K1 b - - bm Kf7; id "King Activity.007"; c0 "Kf7=10, Kg7=1";
+r2r2k1/2pq1pp1/p1p2b1p/5p2/P2P4/2N3P1/1PQ1PP1P/R2R2K1 b - - bm f4; id "Adv. f/g/h pawns.084"; c0 "f4=10, g5=9, Qe6=8, Rab8=7";
+4q1k1/p2n1pp1/4p2p/3n4/1P1P4/P4P2/1B1QN1PP/2r2K2 w - - bm Bxc1; id "Recapturing.048"; c0 "Bxc1=10, Kf2=7, Qxc1=4";
+1r1r2k1/4pp2/1PR3p1/p2P1n1p/1p1q1Q2/5P1P/2B1RPPK/8 w - - bm Qc7; id "7th Rank.006"; c0 "Qc7=10, Qc1=1, Re4=1";
+1k1r2r1/1p2bp2/4q2p/p1ppP3/6b1/2PQ2B1/PP2NPP1/R1R3K1 b - - bm Bxe2; c0 "Bxe2=10, Bf5=3, Bg5=3, c4=4"; id "Bishop vs Knight.002";
+r1r2bk1/pp1n1p1p/2pqb1p1/3p4/1P1P4/1QN1PN2/P3BPPP/2RR2K1 w - - bm b5; id "Undermine.079"; c0 "b5=10, Qc2=5, Rb1=4, a3=4";
+r1b3k1/pp2qrpp/1n6/1Bb1Pp2/3p1P2/7Q/PP1BN1PP/R3K2R b KQ - bm Be6; c0 "Be6=10, a6=2"; id "Open Files and Diagonals.084";
+4rnk1/3r1qb1/bp1p1np1/pNpP2Bp/P1P1Pp1P/3B4/1P1QNR2/6RK w - - bm Nxf4; id "Recapturing.050"; c0 "Nxf4=10, Qxf4=2, Rxf4=3";
+1r1qr1k1/1b1nbpp1/ppnp3p/8/2P1PBB1/2N5/PPNQ2PP/2R2RK1 w - - bm Bxd7; c0 "Bxd7=10, Be2=2, Ne3=3, Rcd1=3"; id "Bishop vs Knight.004";
+1rb1k2r/2qpbppp/p3pn2/1p2n3/3QP3/PNN1BP2/1PP3PP/2KR1B1R w k - bm Qa7; id "7th Rank.017"; c0 "Qa7=10, Be2=3, h4=3, Kb1=3, Na5=3";
+1r1qr1k1/1p3pp1/p1n1bn1p/2NN4/4P3/6P1/PP3PB1/2RQR1K1 w - - bm b3; id "Adv. a/b/c pawns.007"; c0 "b3=10, Qd2=5, Rf1=7, a4=5";
+1kr5/1b3ppp/p4n2/3p4/2qN1P2/2r2B2/PQ4PP/R2R3K b - - bm Ne4; c0 "Ne4=10"; id "Center Control.004";
+1r3k2/8/R7/4pPP1/P1p5/1nP5/R5P1/3rB1K1 w - - bm Rh6; c0 "Rh6=10, Kf1=6, Rf6+=6"; id "Open Files and Diagonals.011";
+2r1r1k1/1b3pp1/p3pn1p/P1b3q1/1pN5/4P1Q1/1P1BBPPP/1R3RK1 b - - bm Qf5; id "Avoid Pointless Exchange.085"; c0 "Qf5=10, Qxg3=3, Ne4=2";
+2rq1rk1/pb3ppp/1p1p1b2/2n1p3/P1B1P3/1P3N2/2P1RPPP/R1BQ2K1 w - - bm Bd5; c0 "Bd5=10, Bb2=6, Nd2=3, Rb1=5"; id "Center Control.034";
+1kr5/3n2p1/q2rpn1p/p7/Ppp2P2/5BP1/1PQ2B1P/2RR2K1 w - - bm Rxd6; id "Simplification.008"; c0 "Rxd6=10, Kh1=4, Qe2=7, Rd4=4";
+b2r1r2/6bk/p1n2ppp/q2p4/1p2PN2/1B2B1P1/P3QP2/1R1R2K1 w - - bm Rxd5; id "Recapturing.056"; c0 "Rxd5=10, Bxd5=3, Ne6=4, exd5=4";
+8/6k1/4ppp1/r2Pn2p/bpq1PB1P/6P1/R4PK1/1QN5 w - - bm Bxe5; c0 "Bxe5=10, Nb3=1, Rb2=1, dxe6=5"; id "Bishop vs Knight.064";
+1r2r2k/5pp1/1n2qn1p/3p4/p1pR4/Q3PBNP/PP3PP1/3R2K1 w - - bm e4; id "Pawn Play in the Center.013"; c0 "e4=10, Ne2=5, Nh5=4, Qc3=6";
+2brr1k1/2q1bpp1/pNnpp2p/P1p5/1P2PP2/2P1B1P1/4Q1BP/R2R2K1 w - - bm Nxc8; id "Simplification.029"; c0 "Nxc8=10, b5=3, bxc5=4, Rab1=3";
+1q2rrk1/p5bp/2p1p1p1/3p4/5P2/4QBP1/PPP2R1P/1R4K1 b - - bm e5; id "Pawn Play in the Center.005"; c0 "e5=10, a6=1, Qc7=2, Rf7=1";
+r1r3k1/p4ppp/4p3/3p4/3B3P/6P1/P1q2PB1/R2Q2K1 w - - bm Qg4; id "Avoid Pointless Exchange.021"; c0 "Qg4=10, Qh5=5, Qf3=5, Qe1=8";
+rnb2k2/1p3ppp/4p3/1p6/4Q3/1Bq5/P3KPPP/R6R b - - bm Qb2+; id "7th Rank.099"; c0 "Qb2+=10, f5=8, Na6=8, Nc6=8, Nd7=8";
+1r2qrk1/3bn3/pp1p3p/n1p1p1p1/P1P5/B1PP1NPP/2Q2PB1/1R2R1K1 w - - bm Nd2; c0 "Nd2=10, Bc1=6, Qe2=9, Rb2=2"; id "Knight Outposts/Repositioning/Centralization.008";
+5rk1/2nq2pp/3p1p2/3P4/3B1Q2/PrN3P1/4PP1P/R5K1 w - - bm a4; id "Adv. a/b/c pawns.058"; c0 "a4=10, Qe4=4, e3=2, h4=4";
+3r1bkr/2q3pp/1p1Npp2/pPn1P3/5B2/1P6/2P2PPP/R2QR1K1 w - - bm b4; id "Undermine.051"; c0 "b4=10, Bd2=5, Qf3=4, exf6=3";
+5rk1/1Q3pp1/p2p3p/4p1b1/N3PqP1/1N1K4/PP6/3R4 b - - bm d5; id "Undermine.065"; c0 "d5=10, Qf3+=1, Qxg4=1, h5=1";
+1kr5/3n4/q3p2p/p2n2p1/PppB1P2/5BP1/1P2Q2P/3R2K1 w - - bm f5; id "Undermine.001"; c0 "f5=10, Be5+=2, Bf2=3, Bg4=2";
+1r3r1k/8/3p2p1/p1pQq1pp/N1P1P3/Pp3PP1/1Pn2K1P/1R3R2 b - - bm Qf6; id "Avoid Pointless Exchange.092"; c0 "Qf6=10, g4=2, Qxd5=3";
+r1r3k1/pb3p1p/1pqBp1p1/4P3/3b4/2P2P2/PR1N2PP/2RQ3K w - - bm Ne4; c0 "Ne4=10"; id "Knight Outposts/Repositioning/Centralization.073";
+1r4k1/2p2p1p/4n1p1/2qpP3/2nN4/1BPQ4/Pr3PPP/3RR1K1 w - - bm h4; id "Adv. f/g/h pawns.005"; c0 "h4=10, g3=7, h3=8, Qh3=9";
+7k/4p1q1/3pnbr1/8/1N5p/1NPP1P2/PP6/K1R3BR b - - bm Rg2; id "7th Rank.067"; c0 "Rg2=10, Kg8=5, Nf4=7, Qh6=6, Qh7=6";
+1r6/4q3/2p2p1k/4p1pP/P2nP2P/5BR1/5PK1/2Q5 w - - bm Bg4; c0 "Bg4=10, Bd1=6, a5=8"; id "Open Files and Diagonals.014";
+3Rbrk1/4Q2p/6q1/pp3p2/4p2P/1P4P1/8/5R1K w - - bm g4; id "Undermine.047"; c0 "g4=10, Kh2=5, Rc8=2, Rf2=3";
+1kr3r1/1p1nqp2/p2p4/3PpBp1/1PP5/5R1P/P3QP2/R5K1 b - - bm e4; id "Pawn Play in the Center.003"; c0 "e4=10";
+3q1r1k/5ppp/1pR1pn2/p7/B1PP4/P3QP1P/5PK1/8 w - - bm Qe5; id "Square Vacancy.021"; c0 "Qe5=10, f4=1, Kf1=1, Kh2=1";
+1k2r3/1p1bP3/2p2p1Q/Ppb5/4Rp1P/2q2N1P/5PB1/6K1 b - - bm Kc7; id "King Activity.001"; c0 "Kc7=10, Kc8=4, Qa1+=4";
+8/2b1rk2/2b1p1p1/5n2/p1pP2Q1/2p3P1/P4P2/2B1RK2 w - - bm Bg5; c0 "Bg5=10, Ba3=5, Bf4=4"; id "Open Files and Diagonals.070";
+1q2rb2/3b1r1k/p1p4p/B3p1p1/1PPpN3/3P1P1P/3QR1P1/4R1K1 w - - bm c5; id "Adv. a/b/c pawns.006"; c0 "c5=10, Kh1=7, Qb2=6, Ra1=7";
+r4rk1/1p1bqpp1/2p4p/3pb2Q/Pn1P1P2/1P2PN2/6PP/R1B2RK1 w - - bm Nxe5; id "Recapturing.088"; c0 "Nxe5=10, Qxe5=7, fxe5=5";
+6r1/1b1k4/2p2p2/ppB1p3/2p1P2P/P2n4/1P1R2P1/5K1R b - - bm Ke6; id "King Activity.072"; c0 "Ke6=10, Kc7=4, Ke8=2";
+1r2r2k/2b2q1p/p4p2/3Pn2P/3N1N2/1P2R3/4Q3/1K1R4 w - - bm Nfe6; c0 "Nfe6=10, Ka1=4, Nf5=6, Qxa6=2, Rc3=3, h6=3"; id "Knight Outposts/Repositioning/Centralization.009";
+r7/4bpkp/4p1p1/pq1nP3/Q2P3P/5PP1/3BNK2/R7 b - - bm Qd3; id "Avoid Pointless Exchange.006"; c0 "Qd3=10, Qb8=9, Qb7=9, Qb6=9, Qb2=8";
+1n6/4bk1r/1p2rp2/pP2pN1p/K1P1N2P/8/P5R1/3R4 w - - bm c5; id "Undermine.003"; c0 "c5=10, Rd3=7, Rdd2=7, Rg3=7, Rd5=9";
+8/p3q1kp/1p1p1rp1/3Bn3/P1PQ1p2/1P6/6PP/4R2K b - - bm Rf5; c0 "Rf5=10, Kh6=6, Rf8=3"; id "Square Vacancy.012";
+2r2k2/5p2/R1b2p2/1pP1p2p/1Pp1P2P/2K2P2/5BP1/8 w - - bm Ra7; id "7th Rank.024"; c0 "Ra7=10, Be3=5, Bg1=3, Kd2=3";
+3r4/p3k3/1p2bpp1/2p5/2P2q2/2Q2N2/PP4PP/4R2K w - - bm Kg1; id "King Activity.042"; c0 "Kg1=10, b3=9, h3=9, Qc2=9";
+1rb1r1k1/2n1ppbp/pq1p2p1/1ppP4/2P1PP2/NP3B1P/P2B1QP1/2R1R1K1 w - - bm e5; id "Pawn Play in the Center.019"; c0 "e5=10, Kh1=1";
+rn2k2r/p1pq1ppp/bp2pn2/8/Q2P4/P4N2/1P2PPPP/R1B1KB1R w KQkq - bm Qc2; id "Avoid Pointless Exchange.003"; c0 "Qc2=10, Qd1=2";
+3r4/p4pk1/P1pr3p/3nb3/1p6/5B1P/1P3PP1/R1BR2K1 w - - bm Ra5; c0 "Ra5=10, Kf1=2, g3=5"; id "Square Vacancy.003";
+1r2r1k1/2q3p1/3bp2p/p2nNp2/1ppP1P2/2P3Q1/PP1RN1PP/R5K1 b - - bm Bxe5; c0 "Bxe5=10, Rb5=7, Rb7=6, a4=6"; id "Bishop vs Knight.007";
+2kr2r1/1bpnqp2/1p1ppn2/p5pp/P1PP4/4PP2/1P1NBBPP/R2Q1RK1 w - - bm b4; id "Undermine.023"; c0 "b4=10, Qb1=3, Qc2=4, Re1=4";
+1k1r1r2/p1p5/Bpnbb3/3p2pp/3P4/P1N1NPP1/1PP4P/2KR1R2 w - - bm Ncxd5; id "Recapturing.001"; c0 "Ncxd5=10, Nb5=4, Ne2=3, Nexd5=6";
+1k5r/1pq1b2r/p2p1p2/4n1p1/R3P1p1/1BP3B1/PP1Q3P/1K1R4 w - - bm Bd5; c0 "Bd5=10"; id "Center Control.002";
+1r4k1/2qnbpp1/r3p2p/3pP2b/1p1N4/3P1NP1/nBPQ1PBP/R3R1K1 b - - bm Bxf3; c0 "Bxf3=10, Raa8=5, Rba8=6, Rbb6=5"; id "Bishop vs Knight.010";
+1r1n4/5pk1/Qp1r1qp1/3B3p/1R2P2P/6P1/5P2/1R4K1 w - - bm Qa7; id "7th Rank.004"; c0 "Qa7=10";
+r2q1rk1/1p2n1bp/p1npp1p1/2p1p3/4P3/N1PPB1PP/1P3PB1/R2QR1K1 w - - bm h4; id "Adv. f/g/h pawns.081"; c0 "h4=10, Nc2=2, Qb3=4, Qg4=5, Rf1=4";
+1r3r2/1b4bk/p1n2ppp/qp1p4/4PN2/1B2B1P1/P3QP2/1R1R2K1 w - - bm exd5; id "Recapturing.015"; c0 "exd5=10, Bc5=3, Ne6=6, Nxg6=3";
+1r1r3k/1qpn1pbp/p1n3pB/P2bp3/BpN3Q1/3P3P/1PPN1PP1/R3R1K1 w - - bm Bxg7+; id "Simplification.014"; c0 "Bxg7+=10, Qg5=1, Qh4=4";
+2r1n1k1/5ppp/1prp4/p3p1q1/2b1P3/P1B1QB1P/1PPR1PPK/R7 b - - bm Qxe3; id "Simplification.030"; c0 "Qxe3=10, h6=2, Qe7=2, Qh4=2";
+1r2rbk1/1b1q1p2/3pn1p1/1p5p/1p2P2P/P1P1BPP1/4QNBK/2R1R3 w - - bm axb4; id "Recapturing.013"; c0 "axb4=10, Qa2=1, Qb2=2, cxb4=6";
+4r1k1/1p1r1ppb/1qpp1n1p/p7/P1PRPN2/2Q2P2/1P4PP/1B1R2K1 b - - bm d5; id "Pawn Play in the Center.051"; c0 "d5=10, Qa7=6, Rdd8=6, Red8=6";
+3r2k1/R5p1/2b2npp/1pP5/4pP1P/6Pq/1Q2BP2/4B1K1 w - - bm Qe5; c0 "Qe5=10, Bf1=2, Ra6=3, Rc7=6"; id "Square Vacancy.098";
+2r5/2q2pk1/3n1b1p/3Pp1p1/b1B1P1N1/P4N2/5PPP/2Q2RK1 w - - bm Nxf6; c0 "Nxf6=10"; id "Bishop vs Knight.028";
+1r1q2k1/3b1pb1/p2p2p1/3Np3/4P1P1/1P1Q1P2/KP1B4/2R5 w - - bm Rc7; id "7th Rank.005"; c0 "Rc7=10, g5=5, Rc2=7, Rc3=5";
+#
+#--- Summary of Selections per Theme ---
+#Theme: STS8
+#  - Passes/Fails: 3/7
+#  - Average Score: 5.60/10
+#
+#Theme: STS4
+#  - Passes/Fails: 3/7
+#  - Average Score: 4.70/10
+#
+#Theme: STS_11
+#  - Passes/Fails: 3/7
+#  - Average Score: 5.90/10
+#
+#Theme: STS2
+#  - Passes/Fails: 3/7
+#  - Average Score: 5.20/10
+#
+#Theme: STS3
+#  - Passes/Fails: 3/7
+#  - Average Score: 5.50/10
+#
+#Theme: STS_14
+#  - Passes/Fails: 3/7
+#  - Average Score: 5.50/10
+#
+#Theme: STS_10
+#  - Passes/Fails: 3/7
+#  - Average Score: 4.90/10
+#
+#Theme: STS_15
+#  - Passes/Fails: 3/7
+#  - Average Score: 5.20/10
+#
+#Theme: STS1
+#  - Passes/Fails: 3/7
+#  - Average Score: 5.00/10
+#
+#Theme: STS_13
+#  - Passes/Fails: 3/7
+#  - Average Score: 4.90/10
+#
+#Theme: STS6
+#  - Passes/Fails: 3/7
+#  - Average Score: 5.10/10
+#
+#Theme: STS5
+#  - Passes/Fails: 3/7
+#  - Average Score: 5.20/10
+#
+#Theme: STS_12
+#  - Passes/Fails: 3/7
+#  - Average Score: 5.00/10
+#
+#Theme: STS9
+#  - Passes/Fails: 3/7
+#  - Average Score: 5.00/10

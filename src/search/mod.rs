@@ -15,7 +15,10 @@ use std::sync::{Arc, atomic::AtomicBool};
 
 pub use common::{SearchResult, SearchStats};
 
-use crate::{prelude::*, search::common::SearchConfig};
+use crate::{
+    prelude::*,
+    search::common::{SearchConfig, SearchLimits},
+};
 
 /// Trait that all search implementations must implement
 pub trait SearchEngine: Send {
@@ -26,7 +29,7 @@ pub trait SearchEngine: Send {
     fn init(self, search_running: Arc<AtomicBool>) -> Self::Output;
 
     /// Set maximum search depth
-    fn set_depth(&mut self, depth: u8);
+    fn set_depth(&mut self, depth: u16);
 
     /// Set maximum search time
     fn set_time(&mut self, time_ms: u64);
@@ -36,6 +39,9 @@ pub trait SearchEngine: Send {
 
     /// Get current config
     fn get_config(&self) -> SearchConfig;
+
+    /// Get current config
+    fn get_limits(&self) -> SearchLimits;
 
     /// Clear internal state (TT, History, etc.)
     fn clear(&mut self);

@@ -73,14 +73,14 @@ def select_tests(test_suites, total_selections=60):
 
         # Sort failures by score in ascending order (hardest fails first)
         failures = sorted(theme_tests['failures'], key=lambda x: x['score'])
-        
+
         # Select failures (prioritize hard failures)
         selected_failures = []
         if failures:
             # Take a few hard fails
             hard_fails = [f for f in failures if f['score'] <= 2]
             selected_failures.extend(hard_fails[:num_failures_to_select // 2])
-            
+
             # Add some near misses
             remaining_failures = [f for f in failures if f['score'] > 2]
             random.shuffle(remaining_failures)
@@ -99,7 +99,7 @@ def select_tests(test_suites, total_selections=60):
     # If the total number of selections is not exactly 60, adjust the list
     if len(selected_tests) > total_selections:
         selected_tests = selected_tests[:total_selections]
-    
+
     return selected_tests
 
 def read_epd_files(epd_directory):
@@ -120,17 +120,33 @@ def read_epd_files(epd_directory):
 def find_test_lines(selected_tests, all_epd_lines):
     """
     Finds and prints the full lines for the selected test IDs from the in-memory EPD data.
+    Uses regex to handle truncated IDs by matching the known start and the sequence number.
     """
     found_lines = {}
-    
+
     for test in selected_tests:
-        test_id = test['id']
+        # Get the truncated ID from the log, e.g., 'Open Files and Di....007'
+        truncated_id = test['id'].strip()
+
+        # Create a flexible search pattern:
+        # Replace ellipsis ('...') or four dots ('....') with a flexible regex wildcard ('.*')
+        # to account for the omitted characters ('agonals', etc.).
+        search_pattern = re.escape(truncated_id)
+        search_pattern = search_pattern.replace(r'\.\.\.\.', '.*').replace(r'\.\.\.', '.*')
+
+        # Ensure the pattern matches the full ID structure within the EPD line
+        # Example: r'id\s+"Open\ Files\ and\ Di.*007"'
+        full_pattern = r'id\s+"[^"]*' + search_pattern + r'"'
+
+        # Iterate through all source EPD lines to find a match
         for line in all_epd_lines:
-            if test_id in line:
-                found_lines[test_id] = line.strip()
+            # Search the EPD line using the combined, flexible pattern
+            if re.search(full_pattern, line, re.IGNORECASE):
+                # The line from the EPD file should be captured in full.
+                found_lines[truncated_id] = line.strip()
                 break
-    
-    # Print the found lines to stdout
+
+    # Print the found lines to stdout (which generates the eval_blitz.epd output)
     print("Found test lines for selected IDs:")
     for test_id in found_lines:
         print(found_lines[test_id])
@@ -141,18 +157,18 @@ def print_summary(selected_tests, all_parsed_data):
     Analyzes and prints a summary of the selected test cases per theme.
     """
     print("\n--- Summary of Selections per Theme ---")
-    
+
     theme_summary = {}
     for test in selected_tests:
         theme = test['theme']
         if theme not in theme_summary:
             theme_summary[theme] = {'passes': 0, 'fails': 0, 'total_score': 0, 'count': 0}
-        
+
         if test['score'] == 10:
             theme_summary[theme]['passes'] += 1
         else:
             theme_summary[theme]['fails'] += 1
-        
+
         theme_summary[theme]['total_score'] += test['score']
         theme_summary[theme]['count'] += 1
 
@@ -164,14 +180,14 @@ def print_summary(selected_tests, all_parsed_data):
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print("Usage: python select_and_find_tests.py <directory_with_epd_files>")
+        print("Usage: python3 selector.py <directory_with_epd_files>")
         sys.exit(1)
-    
+
     epd_dir = sys.argv[1]
 
     # Assume the log file is in the same directory as the script
-    log_file_path = 'eval_test_stc_6threads.txt'
-    
+    log_file_path = 'eval_test_stc_0threads.txt'
+
     if not os.path.exists(log_file_path):
         print(f"Error: Log file '{log_file_path}' not found.", file=sys.stderr)
         sys.exit(1)
@@ -180,13 +196,13 @@ if __name__ == '__main__':
         # Read the log file to get test selections
         with open(log_file_path, 'r') as f:
             log_content = f.read()
-        
+
         parsed_data = parse_log(log_content)
-        selected_data = select_tests(parsed_data, total_selections=60)
-        
+        selected_data = select_tests(parsed_data, total_selections=140)
+
         # Read all EPD files into memory
         all_epd_lines = read_epd_files(epd_dir)
-        
+
         # Find the full lines for the selected tests
         find_test_lines(selected_data, all_epd_lines)
 

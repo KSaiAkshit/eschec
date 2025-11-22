@@ -23,6 +23,7 @@ const ASP_START_WINDOW: i32 = 48;
 const ASP_MAX_WINDOW: i32 = 4096;
 const HISTORY_SIZE: usize = 128;
 const DELTA_MARGIN: i32 = 700;
+const SEE_THRESHOLD: i32 = -100;
 
 /// Holds pv_node and curr ply
 #[derive(Clone, Copy)]
@@ -90,7 +91,7 @@ impl SearchTables {
     /// Update `history` table.
     /// Indexes as `history[mv.from][mv.to]`
     /// Scores are stored as `depth ^ 2`
-    fn update_history(&mut self, mv: Move, depth: u8) {
+    fn update_history(&mut self, mv: Move, depth: u16) {
         let from = mv.from_idx() as usize;
         let to = mv.to_idx() as usize;
         self.history[from][to] += depth as i32 * depth as i32;
@@ -266,7 +267,7 @@ impl SearchEngine for AlphaBetaSearch {
         self.find_best_move(board)
     }
 
-    fn set_depth(&mut self, depth: u8) {
+    fn set_depth(&mut self, depth: u16) {
         self.limits.max_depth = Some(depth)
     }
 
@@ -306,6 +307,10 @@ impl SearchEngine for AlphaBetaSearch {
 
     fn get_config(&self) -> SearchConfig {
         self.config
+    }
+
+    fn get_limits(&self) -> SearchLimits {
+        self.limits
     }
 }
 
@@ -359,12 +364,12 @@ impl AlphaBetaSearch {
         // Initialized to first move as fallback
         let mut best_move = legal_moves.first().copied();
         let mut best_score = i32::MIN + 1;
-        let mut completed_depth = u8::default();
+        let mut completed_depth = u16::default();
 
         // Prev score for Aspiration Windows
         let mut prev_score = 0;
 
-        'id_loop: for depth in 1..=self.limits.max_depth.unwrap_or(MAX_PLY as u8) {
+        'id_loop: for depth in 1..=self.limits.max_depth.unwrap_or(MAX_PLY as u16) {
             if self.should_stop() {
                 break 'id_loop;
             }
@@ -418,7 +423,7 @@ impl AlphaBetaSearch {
         &mut self,
         board: &Board,
         context: SearchContext,
-        depth: u8,
+        depth: u16,
         mut alpha: i32,
         mut beta: i32,
     ) -> i32 {
@@ -669,7 +674,7 @@ impl AlphaBetaSearch {
                     current_hash,
                     best_move_this_node,
                     adjust_score_from_ply(beta, ply),
-                    depth,
+                    depth as u8,
                     ScoreTypes::LowerBound,
                     self.search_cycle,
                 );
@@ -707,7 +712,7 @@ impl AlphaBetaSearch {
             current_hash,
             best_move_this_node,
             adjust_score_from_ply(best_score, ply),
-            depth,
+            depth as u8,
             score_type,
             self.search_cycle,
         );
@@ -787,43 +792,43 @@ impl AlphaBetaSearch {
         let mut picker = MovePicker::new_qsearch(board, legal_moves.as_mut_slice());
 
         while let Some(mv) = picker.next_best() {
-            // if !is_in_check {
-            //     // Delta pruning
-            //     if mv.is_capture() {
-            //         let captured_piece_value = if mv.is_enpassant() {
-            //             Piece::Pawn.victim_score()
-            //         } else if let Some(p) = board.get_piece_at(mv.to_sq()) {
-            //             p.victim_score()
-            //         } else {
-            //             unreachable!(
-            //                 "If move is a capture, then it should either be enpassant or 'to' square should hold a piece"
-            //             )
-            //         };
-            //         if stand_pat_score
-            //             + captured_piece_value
-            //             + if mv.is_promotion() {
-            //                 DELTA_MARGIN + 200
-            //             } else {
-            //                 DELTA_MARGIN
-            //             }
-            //             < alpha
-            //         {
-            //             if self.config.collect_stats {
-            //                 self.stats.delta_pruning_cutoffs += 1;
-            //                 self.stats.pruned_nodes += 1;
-            //             }
-            //             continue; // Skip this node
-            //         }
-            //     }
-            //     // SEE pruning
-            //     if board.static_exchange_evaluation(mv) < 0 {
-            //         if self.config.collect_stats {
-            //             self.stats.see_pruning_cutoffs += 1;
-            //             self.stats.pruned_nodes += 1;
-            //         }
-            //         continue;
-            //     }
-            // }
+            if !is_in_check {
+                // Delta pruning
+                if mv.is_capture() {
+                    let captured_piece_value = if mv.is_enpassant() {
+                        Piece::Pawn.victim_score()
+                    } else if let Some(p) = board.get_piece_at(mv.to_sq()) {
+                        p.victim_score()
+                    } else {
+                        unreachable!(
+                            "If move is a capture, then it should either be enpassant or 'to' square should hold a piece"
+                        )
+                    };
+                    if stand_pat_score
+                        + captured_piece_value
+                        + if mv.is_promotion() {
+                            DELTA_MARGIN + 200
+                        } else {
+                            DELTA_MARGIN
+                        }
+                        < alpha
+                    {
+                        if self.config.collect_stats {
+                            self.stats.delta_pruning_cutoffs += 1;
+                            self.stats.pruned_nodes += 1;
+                        }
+                        continue; // Skip this node
+                    }
+                }
+                // SEE pruning
+                if board.static_exchange_evaluation(mv) < SEE_THRESHOLD {
+                    if self.config.collect_stats {
+                        self.stats.see_pruning_cutoffs += 1;
+                        self.stats.pruned_nodes += 1;
+                    }
+                    continue;
+                }
+            }
             let mut board_copy = *board;
             if let Err(e) = board_copy.make_move(mv) {
                 error!(
@@ -888,7 +893,7 @@ impl AlphaBetaSearch {
         false
     }
 
-    fn emit_info_string(&self, depth: u8, score: i32, best_move: Option<Move>) {
+    fn emit_info_string(&self, depth: u16, score: i32, best_move: Option<Move>) {
         let nps =
             (self.nodes_searched * 1000) / self.start_time.elapsed().as_millis().max(1) as u64;
         let best_move_uci = best_move.map(|m| m.uci()).unwrap_or_default();
@@ -936,7 +941,7 @@ impl AlphaBetaSearch {
         &mut self,
         board: &Board,
         context: SearchContext,
-        depth: u8,
+        depth: u16,
         alpha: i32,
         beta: i32,
     ) -> i32 {
@@ -946,7 +951,7 @@ impl AlphaBetaSearch {
     fn root_search_with_aspiration(
         &mut self,
         board: &Board,
-        depth: u8,
+        depth: u16,
         legal_moves: &mut MoveBuffer,
         prev_best_move: Option<Move>,
         prev_score: i32,
@@ -1019,7 +1024,7 @@ impl AlphaBetaSearch {
     fn root_search_attempt(
         &mut self,
         board: &Board,
-        depth: u8,
+        depth: u16,
         alpha_base: i32,
         beta_base: i32,
         legal_moves: &MoveBuffer,
@@ -1081,7 +1086,7 @@ impl AlphaBetaSearch {
         &mut self,
         board: &Board,
         context: SearchContext,
-        depth: u8,
+        depth: u16,
         alpha: i32,
         beta: i32,
     ) -> i32 {
@@ -1100,7 +1105,7 @@ impl AlphaBetaSearch {
         &mut self,
         board: &Board,
         context: SearchContext,
-        depth: u8,
+        depth: u16,
         beta: i32,
     ) -> Option<i32> {
         if !self.config.enable_nmp {
@@ -1141,9 +1146,9 @@ impl AlphaBetaSearch {
 
     /// Late Move Reduction
     #[inline]
-    fn lmr_reduction(&self, depth: u8, move_index: usize) -> u8 {
+    fn lmr_reduction(&self, depth: u16, move_index: usize) -> u16 {
         let base = 0.20 + ((depth as f32).ln() * (move_index as f32).ln()) / 3.35;
-        (base as u8).min(depth - 1)
+        (base as u16).min(depth - 1)
     }
 
     fn sort_moves<P: MoveScoringPolicy>(
@@ -1168,7 +1173,7 @@ impl AlphaBetaSearch {
     #[inline]
     fn should_reduce(
         &self,
-        depth: u8,
+        depth: u16,
         move_index: usize,
         mv: Move,
         in_check: bool,

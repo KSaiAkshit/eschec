@@ -90,8 +90,8 @@ impl TranspositionEntry {
         self.best_move
     }
     #[inline]
-    pub fn get_depth(&self) -> u8 {
-        self.depth
+    pub fn get_depth(&self) -> u16 {
+        self.depth as u16
     }
 }
 

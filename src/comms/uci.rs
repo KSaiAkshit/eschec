@@ -16,7 +16,7 @@ use crate::{
 #[derive(Debug)]
 pub struct UciState {
     board: Board,
-    search_depth: u8,
+    search_depth: u16,
     evaluator: Arc<dyn Evaluator>,
     search: Arc<Mutex<AlphaBetaSearch>>,
     search_running: Arc<AtomicBool>,
@@ -29,7 +29,7 @@ impl Default for UciState {
     fn default() -> Self {
         Self {
             board: Board::default(),
-            search_depth: u8::default(),
+            search_depth: u16::default(),
             search: Arc::default(),
             evaluator: Arc::new(CompositeEvaluator::default()),
             search_running: Arc::default(),
@@ -50,7 +50,7 @@ impl Drop for UciState {
 }
 
 impl UciState {
-    pub fn new(depth: Option<u8>) -> miette::Result<Self> {
+    pub fn new(depth: Option<u16>) -> miette::Result<Self> {
         let depth = depth.unwrap_or(20);
         let search_running = Arc::new(AtomicBool::new(false));
         let conf = SearchConfig {

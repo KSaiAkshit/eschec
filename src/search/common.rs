@@ -8,7 +8,7 @@ use std::{ops::Add, time::Duration};
 pub struct SearchStats {
     // Basic stats
     pub nodes_searched: u64, // Total nodes including qsearch
-    pub depth_reached: u8,
+    pub depth_reached: u16,
     pub time_elapsed: Duration,
     pub nps: u64,
     pub hash_full: u16, // per-mille
@@ -333,14 +333,14 @@ impl Default for SearchConfig {
 /// Search limits (time, depth, nodes)
 #[derive(Default, Debug, Clone, Copy)]
 pub struct SearchLimits {
-    pub max_depth: Option<u8>,
+    pub max_depth: Option<u16>,
     pub max_time: Option<Duration>,
     pub max_nodes: Option<u64>,
     pub mate_depth: Option<u8>,
 }
 
 impl SearchLimits {
-    pub fn depth(depth: u8) -> Self {
+    pub fn depth(depth: u16) -> Self {
         Self {
             max_depth: Some(depth),
             ..Default::default()
@@ -371,7 +371,7 @@ impl SearchLimits {
 pub struct SearchResult {
     pub best_move: Option<Move>,
     pub score: i32,
-    pub depth: u8,
+    pub depth: u16,
     pub nodes_searched: u64,
     pub time_taken: Duration,
     pub pv: Option<Vec<Move>>,
