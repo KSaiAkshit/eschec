@@ -77,6 +77,11 @@ stat bin: setup
     perf stat -r {{ perf_reps }} -e {{ perf_stat_events }} {{ bin }}
     notify-send "Done stating"
 
+spsa:
+    @echo "{{ MAGENTA }} Starting SPSA Tuning {{ NORMAL }}"
+    cargo run --bin tuner --features parallel --release -- ./test_suites/sts/ \
+        | tee {{ pgn_output_dir }}spsa_tuning_log.txt
+
 [doc("Run a gauntlet match against another engine using cutechess-cli")]
 [positional-arguments]
 gauntlet opponent='gnuchess' rounds='40' concurrency='4' book='8moves_v3.pgn' tc='30+0.3': update

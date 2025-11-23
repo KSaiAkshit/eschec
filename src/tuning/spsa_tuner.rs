@@ -61,6 +61,14 @@ pub fn run_spsa_tuning_session(
         for i in 0..num_params {
             params_vec[i] += alpha * grad_estimate[i];
         }
+
+        let current_fitness = fitness_function(&params_vec);
+        println!(
+            "  -> Iteration {} complete. Current Fitness: {:.4}%",
+            k + 1,
+            current_fitness
+        );
+        println!("----------------------------"); // Separator for clarity
     }
 
     params_vec
