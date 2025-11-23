@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{prelude::*, tuning::params::TunableParams};
 
 #[derive(Debug, Clone)]
 pub struct MaterialEvaluator {
@@ -9,7 +9,7 @@ pub struct MaterialEvaluator {
 impl Default for MaterialEvaluator {
     fn default() -> Self {
         Self {
-            name: "Material".to_string(),
+            name: "Material".to_owned(),
             bishop_pair_bonus: Score::default(),
         }
     }
@@ -18,8 +18,14 @@ impl Default for MaterialEvaluator {
 impl MaterialEvaluator {
     pub fn new() -> Self {
         Self {
-            name: "Material".to_string(),
+            name: "Material".to_owned(),
             bishop_pair_bonus: Score::new(26, 40),
+        }
+    }
+    pub fn with_params(params: &TunableParams) -> Self {
+        Self {
+            name: "Material".to_owned(),
+            bishop_pair_bonus: params.bishop_pair_bonus,
         }
     }
     fn evaluate_bishop_pair(&self, board: &Board) -> Score {

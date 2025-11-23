@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{prelude::*, tuning::params::TunableParams};
 
 #[derive(Debug, Clone)]
 pub struct PawnStructureEvaluator {
@@ -12,7 +12,14 @@ pub struct PawnStructureEvaluator {
 
 impl Default for PawnStructureEvaluator {
     fn default() -> Self {
-        Self::new()
+        Self {
+            name: "PawnStructure".to_owned(),
+            isolated_penalty: Score::default(),
+            doubled_penalty: Score::default(),
+            backward_penalty: Score::default(),
+            passed_pawn_scores: [Score::default(); 8],
+            connected_bonus: Score::default(),
+        }
     }
 }
 
@@ -29,12 +36,23 @@ impl PawnStructureEvaluator {
             Score { mg: 0, eg: 0 },     // Rank 8 (Impossible/Promoted)
         ];
         Self {
-            name: "PawnStructure".to_string(),
+            name: "PawnStructure".to_owned(),
             isolated_penalty: Score::splat(-15),
             doubled_penalty: Score::splat(-10),
             backward_penalty: Score::splat(-8),
             passed_pawn_scores: scores,
             connected_bonus: Score::splat(2),
+        }
+    }
+
+    pub fn with_params(params: &TunableParams) -> Self {
+        Self {
+            name: "PawnStructure".to_owned(),
+            isolated_penalty: params.isolated_penalty,
+            doubled_penalty: params.doubled_penalty,
+            backward_penalty: params.backward_penalty,
+            passed_pawn_scores: params.passed_pawn_scores,
+            connected_bonus: params.connected_bonus,
         }
     }
     fn evaluate_side(&self, board: &Board, side: Side) -> Score {

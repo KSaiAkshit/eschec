@@ -1,4 +1,4 @@
-use crate::evaluation::score::const_zip;
+use crate::{evaluation::score::const_zip, tuning::params::TunableParams};
 
 use super::*;
 
@@ -14,7 +14,7 @@ pub struct PositionEvaluator {
 impl Default for PositionEvaluator {
     fn default() -> Self {
         Self {
-            name: "Position".to_string(),
+            name: "Position".to_owned(),
             piece_square_tables: [[Score::default(); NUM_SQUARES]; 6],
             rook_open_file_bonus: Score::default(),
             rook_semi_file_bonus: Score::default(),
@@ -53,7 +53,6 @@ impl PositionEvaluator {
         [white_outpost_mask, black_outpost_mask]
     };
     pub fn new() -> Self {
-        // Just advance
         #[rustfmt::skip]
         let mg_pawn_table = [
             0,   0,   0,   0,   0,   0,  0,   0,
@@ -198,7 +197,7 @@ impl PositionEvaluator {
         ];
 
         Self {
-            name: "Position".to_string(),
+            name: "Position".to_owned(),
             piece_square_tables: [
                 const_zip(mg_pawn_table, eg_pawn_table),
                 const_zip(mg_knight_table, eg_knight_table),
@@ -211,6 +210,14 @@ impl PositionEvaluator {
             rook_semi_file_bonus: Score::new(20, 10),
             knight_outpost_bonus: Score::new(30, 15),
         }
+    }
+
+    pub fn with_params(params: &TunableParams) -> Self {
+        let mut eval = Self::new();
+        eval.rook_open_file_bonus = params.rook_open_file_bonus;
+        eval.rook_semi_file_bonus = params.rook_semi_file_bonus;
+        eval.knight_outpost_bonus = params.knight_outpost_bonus;
+        eval
     }
 
     fn evaluate_side(&self, board: &Board, side: Side) -> Score {

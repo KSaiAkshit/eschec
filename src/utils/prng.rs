@@ -21,6 +21,10 @@ impl Prng {
         1u64 << random_shift
     }
 
+    pub const fn pm_one(&mut self) -> f64 {
+        if self.rand() & 1 == 0 { 1.0 } else { -1.0 }
+    }
+
     const fn next_u64(&mut self) -> u64 {
         self.state ^= self.state >> 12;
         self.state ^= self.state << 25;

@@ -1,0 +1,1063 @@
+Running test suite: ./test_suites/sts_v7/sts_v7_issued.epd
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+[[32mPASS[0m] ID: 7th Rank.007             | S: 100/100 | Ex: b8a8 d8d2 d8d4 d8d6 d... | Got: d8d2  
+[[32mPASS[0m] ID: 7th Rank.011             | S: 100/100 | Ex: b4c6 b4d3 c1d1 c1e1 c... | Got: c2c7  
+[[32mPASS[0m] ID: 7th Rank.012             | S: 100/100 | Ex: a2a3 d3b1 d3c2 f1e1 f... | Got: f2f7  
+[[32mPASS[0m] ID: 7th Rank.015             | S: 100/100 | Ex: a7a5 a7b6 b7b2 b7b6 b... | Got: b7b2  
+[[32mPASS[0m] ID: 7th Rank.017             | S: 100/100 | Ex: b3a5 c1b1 c3a2 d4a7 e... | Got: d4a7  
+[[32mPASS[0m] ID: 7th Rank.018             | S: 100/100 | Ex: c1f4 c1g5 d5e7 d5f6 d... | Got: d6c7  
+[[32mPASS[0m] ID: 7th Rank.019             | S: 100/100 | Ex: a2a3 b1a1 b2b3 d1d3 d... | Got: f2a7  
+[[32mPASS[0m] ID: 7th Rank.025             | S: 100/100 | Ex: c8c2 c8c3 c8c5 c8c6 c... | Got: c8c2  
+[[32mPASS[0m] ID: 7th Rank.026             | S: 100/100 | Ex: c8b8 c8c2 e7e6 f8d8 f... | Got: c8c2  
+[[32mPASS[0m] ID: 7th Rank.027             | S: 100/100 | Ex: a3a5 a3b2 a6b7 c8c1 c... | Got: a3b2  
+[[32mPASS[0m] ID: 7th Rank.030             | S: 100/100 | Ex: b2b4 d1e1 d1f1 d1g1 d... | Got: d3d7  
+[[32mPASS[0m] ID: 7th Rank.032             | S: 100/100 | Ex: a2a4 b4a3 b4a4 b4a5 b... | Got: b4b7  
+[[32mPASS[0m] ID: 7th Rank.034             | S: 100/100 | Ex: a5a4 d8a8 d8d2 d8d4 d... | Got: d8d2  
+[[32mPASS[0m] ID: 7th Rank.043             | S: 100/100 | Ex: d8a8 d8b8 d8d2 d8d7 e... | Got: d8d2  
+[[32mPASS[0m] ID: 7th Rank.050             | S: 100/100 | Ex: e6c4 e6c6 e6d5 e6e2 e... | Got: e6e2  
+[[32mPASS[0m] ID: 7th Rank.052             | S: 100/100 | Ex: a3a1 a3a2 a3c3 a3f3 b... | Got: c4e2  
+[[32mPASS[0m] ID: 7th Rank.053             | S: 100/100 | Ex: a2b2 b5a5 b5b2 b5b3 b... | Got: b5b2  
+[[32mPASS[0m] ID: 7th Rank.064             | S: 100/100 | Ex: d6b6 d6c5 d6c6 d6d2 d... | Got: d6d2  
+[[32mPASS[0m] ID: 7th Rank.074             | S: 100/100 | Ex: b6a5 b6f2 c6e5 e7e5 e... | Got: b6f2  
+[[32mPASS[0m] ID: 7th Rank.076             | S: 100/100 | Ex: a1d1 c2c3 e1c1 g1e2 g... | Got: g3g7  
+[[32mPASS[0m] ID: 7th Rank.079             | S: 100/100 | Ex: b7b6 c8d7 c8g4 d5a2 d... | Got: d5a2  
+[[32mPASS[0m] ID: 7th Rank.080             | S: 100/100 | Ex: c1c3 c5a5 c5b5 c5c2 c... | Got: c5c7  
+[[32mPASS[0m] ID: 7th Rank.091             | S: 100/100 | Ex: a7a5 a7a6 c6b4 c6e5 d... | Got: d3c2  
+[[32mPASS[0m] ID: 7th Rank.093             | S: 100/100 | Ex: a2a4 b6a5 b6c5 b6d4 c... | Got: c1c7  
+[[32mPASS[0m] ID: 7th Rank.097             | S: 100/100 | Ex: b1c3 c2c7 d2c3 d2e3 d... | Got: c2c7  
+[[32mPASS[0m] ID: 7th Rank.099             | S: 100/100 | Ex: b8a6 b8c6 b8d7 c3a5 c... | Got: c3b2  
+[[32mPASS[0m] ID: AKPC.006                 | S: 100/100 | Ex: b8b1 b8c8 b8d8 c6b4 c... | Got: f5f4  
+[[32mPASS[0m] ID: AKPC.010                 | S: 100/100 | Ex: a2a3 a2a4 b1e4 f4f5 g... | Got: g4g5  
+[[32mPASS[0m] ID: AKPC.015                 | S: 100/100 | Ex: a1c1 a1d1 a2a4 e1c1 e... | Got: g2g4  
+[[32mPASS[0m] ID: AKPC.016                 | S: 100/100 | Ex: b1b2 b1b3 b1c1 b1d1 e... | Got: h4h5  
+[[32mPASS[0m] ID: AKPC.023                 | S: 100/100 | Ex: d1b1 d1d3 e3d4 e3f2 e... | Got: f3f4  
+[[32mPASS[0m] ID: AKPC.037                 | S: 100/100 | Ex: a5c3 a5c7 c6c8 d7b8 d... | Got: h7h6  
+[[32mPASS[0m] ID: AKPC.047                 | S: 100/100 | Ex: a4a2 b5b7 b5b8 c6a8 c... | Got: h5h4  
+[[32mPASS[0m] ID: AKPC.066                 | S: 100/100 | Ex: a8c6 d7c8 d7d8 f7f5 f... | Got: f7f5  
+[[32mPASS[0m] ID: AKPC.067                 | S: 100/100 | Ex: d7a4 d7c8 d7e6 d7e8 f... | Got: f7f5  
+[[32mPASS[0m] ID: AKPC.068                 | S: 100/100 | Ex: a8b7 c3c7 d5e3 d5e7 d... | Got: h7h6  
+[[32mPASS[0m] ID: AKPC.076                 | S: 100/100 | Ex: d4b2 d4f6 e6e5 f7f5 f... | Got: h6h5  
+[[32mPASS[0m] ID: AKPC.078                 | S: 100/100 | Ex: a1b1 a2a4 b2b3 c1d2 e... | Got: f4f5  
+[[32mPASS[0m] ID: AKPC.079                 | S: 100/100 | Ex: a1c1 a1d1 b2b4 c3e4 e... | Got: g3g4  
+[[32mPASS[0m] ID: AKPC.080                 | S: 100/100 | Ex: c1c2 c1d1 e1d1 e1f2 e... | Got: h4h5  
+[[32mPASS[0m] ID: AKPC.082                 | S: 100/100 | Ex: d8d7 d8e8 f5c8 f5d7 f... | Got: g6g5  
+[[32mPASS[0m] ID: AKPC.087                 | S: 100/100 | Ex: d1c2 d1e2 d1f3 d2e3 d... | Got: h3h4  
+[[32mPASS[0m] ID: AKPC.089                 | S: 100/100 | Ex: c7d7 c7f7 c7g7 d6c5 e... | Got: g6g5  
+[[32mPASS[0m] ID: AKPC.097                 | S: 100/100 | Ex: c7d7 f5c8 f5d7 f8e8 f... | Got: g6g5  
+[[32mPASS[0m] ID: AKPC.099                 | S: 100/100 | Ex: a2a3 b2b3 c1b1 c3a4 c... | Got: h4h5  
+[[32mPASS[0m] ID: AKPC.100                 | S: 100/100 | Ex: a8b8 a8d8 a8e8 a8f8 f... | Got: h5h4  
+[[32mPASS[0m] ID: AT.001                   | S: 100/100 | Ex: a1b1 a1c1 a2a3 d4b4 d... | Got: d4d2  
+[[32mPASS[0m] ID: AT.002                   | S: 100/100 | Ex: a2a3 c1d2 d3a6 d3d1 d... | Got: d3d1  
+[[32mPASS[0m] ID: AT.014                   | S: 100/100 | Ex: a2a3 b1a3 b1c3 b1d2 c... | Got: c1e3  
+[[32mPASS[0m] ID: AT.017                   | S: 100/100 | Ex: a3e7 d8c7 d8c8 d8d4 d... | Got: d8c8  
+[[32mPASS[0m] ID: AT.019                   | S: 100/100 | Ex: a1c1 a2a3 c3e2 d1a4 d... | Got: d1a4  
+[[32mPASS[0m] ID: AT.022                   | S: 100/100 | Ex: f6a6 f6b6 f6d6 f6d8 f... | Got: f6a6  
+[[32mPASS[0m] ID: AT.024                   | S: 100/100 | Ex: a2a3 c1d2 c1e3 c1f4 c... | Got: d1a4  
+[[32mPASS[0m] ID: AT.025                   | S: 100/100 | Ex: a2a4 b2b3 c1d2 c1e3 c... | Got: d1g4  
+[[32mPASS[0m] ID: AT.043                   | S: 100/100 | Ex: d3b1 d3c2 d3c3 d3d2 d... | Got: d3d4  
+[[32mPASS[0m] ID: AT.051                   | S: 100/100 | Ex: a2a4 b1c1 c2c4 e1e2 f... | Got: f5e4  
+[[32mPASS[0m] ID: Advancement of a/....002 | S: 100/100 | Ex: a2a4 c4c5 d1e1 d1f1 f... | Got: c4c5  
+[[32mPASS[0m] ID: Advancement of a/....004 | S: 100/100 | Ex: a3a4 b4b5 d1b1 d1d2 d... | Got: b4b5  
+[[32mPASS[0m] ID: Advancement of a/....011 | S: 100/100 | Ex: a7a6 b8b3 b8b6 c5c4 d... | Got: c5c4  
+[[32mPASS[0m] ID: Advancement of a/....014 | S: 100/100 | Ex: b4b5 c1c2 c1c3 c1c5 c... | Got: b4b5  
+[[32mPASS[0m] ID: Advancement of a/....027 | S: 100/100 | Ex: a6a5 b7b5 c2g6 c3b1 c... | Got: b7b5  
+[[32mPASS[0m] ID: Advancement of a/....028 | S: 100/100 | Ex: b3d2 c4c5 e2e3 f1c1 f... | Got: c4c5  
+[[32mPASS[0m] ID: Advancement of a/....029 | S: 100/100 | Ex: a1a2 b1a2 b1b3 b4b5 c... | Got: b4b5  
+[[32mPASS[0m] ID: Advancement of a/....031 | S: 100/100 | Ex: a1d1 a1e1 a1f1 a3a4 d... | Got: a3a4  
+[[32mPASS[0m] ID: Advancement of a/....036 | S: 100/100 | Ex: b5b4 c6c4 c6c5 c6d7 d... | Got: b5b4  
+[[32mPASS[0m] ID: Advancement of a/....058 | S: 100/100 | Ex: a1a2 a3a4 c3e4 e2e3 f... | Got: a3a4  
+[[32mPASS[0m] ID: Advancement of a/....064 | S: 100/100 | Ex: a5a4 c5a7 c5b5 c5c8 e... | Got: a5a4  
+[[32mPASS[0m] ID: Advancement of a/....066 | S: 100/100 | Ex: b3b4 d2c1 d2f4 d2g5 d... | Got: b3b4  
+[[32mPASS[0m] ID: Advancement of a/....067 | S: 100/100 | Ex: c2c4 d2d1 d2d3 e1d1 e... | Got: c2c4  
+[[32mPASS[0m] ID: Advancement of a/....068 | S: 100/100 | Ex: a8b7 a8c6 a8d5 b5b4 c... | Got: b5b4  
+[[32mPASS[0m] ID: Advancement of a/....074 | S: 100/100 | Ex: b4b5 c1b1 c2b1 c2b2 c... | Got: b4b5  
+[[32mPASS[0m] ID: Advancement of a/....079 | S: 100/100 | Ex: a4b5 a4c6 a7a5 b6b5 b... | Got: b6b5  
+[[32mPASS[0m] ID: Advancement of a/....081 | S: 100/100 | Ex: a8b8 a8c8 a8d8 b5b4 b... | Got: b5b4  
+[[32mPASS[0m] ID: Advancement of a/....088 | S: 100/100 | Ex: c1b1 c1b2 c4c5 d2c3 e... | Got: c4c5  
+[[32mPASS[0m] ID: Bishop vs Knight.001     | S: 100/100 | Ex: a1d1 b3a2 b3d5 d2e4 d... | Got: b3d5  
+[[32mPASS[0m] ID: Bishop vs Knight.006     | S: 100/100 | Ex: a2a3 b2b4 c3e2 d4d5 e... | Got: e5g6  
+[[32mPASS[0m] ID: Bishop vs Knight.009     | S: 100/100 | Ex: b3b4 c1b1 c1c2 d1e1 d... | Got: d4c5  
+[[32mPASS[0m] ID: Bishop vs Knight.011     | S: 100/100 | Ex: a5b3 a5c6 c1b2 c1e3 c... | Got: a5c6  
+[[32mPASS[0m] ID: Bishop vs Knight.016     | S: 100/100 | Ex: b2b3 b2c1 b2c2 b2c3 d... | Got: h4g6  
+[[32mPASS[0m] ID: Bishop vs Knight.017     | S: 100/100 | Ex: a3a4 b1a2 b2b4 c2c3 d... | Got: f3g5  
+[[32mPASS[0m] ID: Bishop vs Knight.019     | S: 100/100 | Ex: b4b5 c5a4 e2d2 f3f4 g... | Got: h3f5  
+[[32mPASS[0m] ID: Bishop vs Knight.020     | S: 100/100 | Ex: a7a6 c4c3 c8b8 e6d5 e... | Got: e7h4  
+[[32mPASS[0m] ID: Bishop vs Knight.026     | S: 100/100 | Ex: c8c1 c8c2 c8d8 d4c2 d... | Got: d4e2  
+[[32mPASS[0m] ID: Bishop vs Knight.027     | S: 100/100 | Ex: a1c1 a1d1 a1e1 b3d2 c... | Got: f5e7  
+[[32mPASS[0m] ID: Bishop vs Knight.028     | S: 100/100 | Ex: c1a1 c1b2 c1e1 f1e1 f... | Got: g4f6  
+[[32mPASS[0m] ID: Bishop vs Knight.030     | S: 100/100 | Ex: a5b3 b7a8 b7c6 b7d5 b... | Got: a5b3  
+[[32mPASS[0m] ID: Bishop vs Knight.032     | S: 100/100 | Ex: b7b5 b7b6 c8c5 c8c6 d... | Got: e6g5  
+[[32mPASS[0m] ID: Bishop vs Knight.033     | S: 100/100 | Ex: a5b3 a5b7 a5c4 c8c6 d... | Got: a5b3  
+[[32mPASS[0m] ID: Bishop vs Knight.034     | S: 100/100 | Ex: a6a5 b5b4 c6c5 c8c7 d... | Got: d5f3  
+[[32mPASS[0m] ID: Bishop vs Knight.035     | S: 100/100 | Ex: b3c4 c3b1 c3d1 c3d5 d... | Got: b3c4  
+[[32mPASS[0m] ID: Bishop vs Knight.037     | S: 100/100 | Ex: b7a8 c8b8 c8c3 c8c7 d... | Got: g6f4  
+[[32mPASS[0m] ID: Bishop vs Knight.038     | S: 100/100 | Ex: a1b1 b3a3 b3a4 b3b2 d... | Got: d4e6  
+[[32mPASS[0m] ID: Bishop vs Knight.045     | S: 100/100 | Ex: b7b1 b7b2 d5b6 d5c7 d... | Got: d5e3  
+[[32mPASS[0m] ID: Bishop vs Knight.046     | S: 100/100 | Ex: a6a5 c6a5 c6d4 d8c8 d... | Got: c6d4  
+[[32mPASS[0m] ID: Bishop vs Knight.047     | S: 100/100 | Ex: a7a5 a7a6 c6c5 d5f3 f... | Got: d5f3  
+[[32mPASS[0m] ID: Bishop vs Knight.050     | S: 100/100 | Ex: e3a3 e3c1 e3c5 e3d4 e... | Got: f7d5  
+[[32mPASS[0m] ID: Bishop vs Knight.051     | S: 100/100 | Ex: a4a5 b2a2 b2d2 e4f5 g... | Got: e4f5  
+[[32mPASS[0m] ID: Bishop vs Knight.053     | S: 100/100 | Ex: a6a5 b7b6 d5b4 g5f4 g... | Got: d5b4  
+[[32mPASS[0m] ID: Bishop vs Knight.055     | S: 100/100 | Ex: c5b7 c7b7 c7c6 c7c8 c... | Got: g6f4  
+[[32mPASS[0m] ID: Bishop vs Knight.056     | S: 100/100 | Ex: b5a6 d6b8 d6f4 d7e8 d... | Got: d6f4  
+[[32mPASS[0m] ID: Bishop vs Knight.058     | S: 100/100 | Ex: c3e4 e1e2 e3e2 e3e5 f... | Got: g5f6  
+[[32mPASS[0m] ID: Bishop vs Knight.060     | S: 100/100 | Ex: c6a6 c6c7 c6c8 f3d1 f... | Got: f3e4  
+[[32mPASS[0m] ID: Bishop vs Knight.061     | S: 100/100 | Ex: c4e6 c4f7 c6e6 d1d3 d... | Got: c4f7  
+[[32mPASS[0m] ID: Bishop vs Knight.062     | S: 100/100 | Ex: b3a4 b7b4 b7b8 e5f6 f... | Got: e5f6  
+[[32mPASS[0m] ID: Bishop vs Knight.063     | S: 100/100 | Ex: b2b3 c3a3 c3a5 c3b3 c... | Got: d2f4  
+[[32mPASS[0m] ID: Bishop vs Knight.067     | S: 100/100 | Ex: a8a7 a8b8 a8c8 c7b6 c... | Got: d7e6  
+[[32mPASS[0m] ID: Bishop vs Knight.070     | S: 100/100 | Ex: b2b4 d1b1 d1c2 d1d3 e... | Got: e4c5  
+[[32mPASS[0m] ID: Bishop vs Knight.071     | S: 100/100 | Ex: a1c1 a2a4 b5c6 b5d3 d... | Got: b5c6  
+[[32mPASS[0m] ID: Bishop vs Knight.072     | S: 100/100 | Ex: c5d3 c8e6 c8f5 c8g4 c... | Got: c5d3  
+[[32mPASS[0m] ID: Bishop vs Knight.073     | S: 100/100 | Ex: a2a1 a2d2 a2e2 d3e2 d... | Got: f3e5  
+[[32mPASS[0m] ID: Bishop vs Knight.079     | S: 100/100 | Ex: a3d3 d2b3 d2e4 d2f3 d... | Got: g5e6  
+[[32mPASS[0m] ID: Bishop vs Knight.083     | S: 100/100 | Ex: a2a3 c3a4 c3e4 e1f1 e... | Got: e2h5  
+[[32mPASS[0m] ID: Bishop vs Knight.084     | S: 100/100 | Ex: b4b5 c1a1 c1b1 c2a2 c... | Got: f3g5  
+[[32mPASS[0m] ID: Bishop vs Knight.085     | S: 100/100 | Ex: c5a4 c5a6 c5b7 c5d3 c... | Got: c5d3  
+[[32mPASS[0m] ID: Bishop vs Knight.086     | S: 100/100 | Ex: b4a6 e8b8 e8c8 f7f5 f... | Got: g4e3  
+[[32mPASS[0m] ID: Bishop vs Knight.087     | S: 100/100 | Ex: a1a3 a1b1 a1c1 a5a6 b... | Got: d4e6  
+[[32mPASS[0m] ID: Bishop vs Knight.088     | S: 100/100 | Ex: a6a2 a8a7 b5c4 e5c4 e... | Got: e5g4  
+[[32mPASS[0m] ID: Bishop vs Knight.090     | S: 100/100 | Ex: b3a3 b3d3 c4a5 c4d6 d... | Got: d5e7  
+[[32mPASS[0m] ID: Bishop vs Knight.091     | S: 100/100 | Ex: c1b2 c4b5 d1e1 d1f1 d... | Got: e3f5  
+[[32mPASS[0m] ID: Bishop vs Knight.094     | S: 100/100 | Ex: a8e8 f6d7 f6e4 f8b8 f... | Got: g6f4  
+[[32mPASS[0m] ID: Bishop vs Knight.096     | S: 100/100 | Ex: a7a5 a8d8 a8e8 b4d3 c... | Got: b4d3  
+[[32mPASS[0m] ID: Bishop vs Knight.099     | S: 100/100 | Ex: a5a4 a8a7 a8d8 e6f4 h... | Got: e6f4  
+[[32mPASS[0m] ID: Bishop vs Knight.100     | S: 100/100 | Ex: a2a4 b1d1 c2a4 d2f3 d... | Got: g5e6  
+[[32mPASS[0m] ID: Center Control.001       | S: 100/100 | Ex: a4c5 b2b3 c1a1 d1b3 d... | Got: e1e5  
+[[32mPASS[0m] ID: Center Control.003       | S: 100/100 | Ex: a5a6 a5b6 a5c5 a5c7 a... | Got: d6e5  
+[[32mPASS[0m] ID: Center Control.006       | S: 100/100 | Ex: a1b1 a1c1 c2b3 d1d2 d... | Got: g5e4  
+[[32mPASS[0m] ID: Center Control.010       | S: 100/100 | Ex: a2c2 a3c1 b1b2 b1d1 d... | Got: d2e4  
+[[32mPASS[0m] ID: Center Control.025       | S: 100/100 | Ex: b1b3 d1d4 d1e1 e2a2 e... | Got: d1d4  
+[[32mPASS[0m] ID: Center Control.028       | S: 100/100 | Ex: b1a1 b1a2 d1d5 d1e1 d... | Got: d1d5  
+[[32mPASS[0m] ID: Center Control.030       | S: 100/100 | Ex: b7c6 b7d5 b7e4 b7g2 c... | Got: b7e4  
+[[32mPASS[0m] ID: Center Control.032       | S: 100/100 | Ex: a7a5 c6c5 c8b8 d3f1 d... | Got: d8d5  
+[[32mPASS[0m] ID: Center Control.033       | S: 100/100 | Ex: a7a6 b7a8 c8c7 d8d5 e... | Got: d8d5  
+[[32mPASS[0m] ID: Center Control.034       | S: 100/100 | Ex: a1a2 a1b1 a4a5 c1a3 c... | Got: c4d5  
+[[32mPASS[0m] ID: Center Control.035       | S: 100/100 | Ex: c2c3 c7d5 d1c1 d1e1 d... | Got: d4d5  
+[[32mPASS[0m] ID: Center Control.036       | S: 100/100 | Ex: a2a3 a2a4 c2b2 c2c1 c... | Got: e1e5  
+[[32mPASS[0m] ID: Center Control.039       | S: 100/100 | Ex: d8d3 d8e8 e4c6 e4e6 e... | Got: f6d4  
+[[32mPASS[0m] ID: Center Control.047       | S: 100/100 | Ex: b3d2 b3d4 c3d5 f1e1 f... | Got: b3d4  
+[[32mPASS[0m] ID: Center Control.050       | S: 100/100 | Ex: a2a4 b1a1 b1c1 e3c1 e... | Got: e3d4  
+[[32mPASS[0m] ID: Center Control.052       | S: 100/100 | Ex: d4e6 d4f5 f1e1 f4d2 f... | Got: f4e5  
+[[32mPASS[0m] ID: Center Control.055       | S: 100/100 | Ex: d6d5 e4b7 e4e5 e4e6 e... | Got: e4e5  
+[[32mPASS[0m] ID: Center Control.071       | S: 100/100 | Ex: a1b1 a1c1 a4a5 d3c2 d... | Got: d3e4  
+[[32mPASS[0m] ID: Center Control.082       | S: 100/100 | Ex: a8c8 c6a5 c6d4 d8b8 d... | Got: d8d4  
+[[32mPASS[0m] ID: Center Control.083       | S: 100/100 | Ex: b1b6 c5c6 d1d2 d1d4 e... | Got: d1d4  
+[[32mPASS[0m] ID: Center Control.086       | S: 100/100 | Ex: a8a6 a8b8 a8c8 b6b5 c... | Got: f6e4  
+[[32mPASS[0m] ID: Center Control.090       | S: 100/100 | Ex: a8e8 c6c5 e6a2 e6c8 e... | Got: e6d5  
+[[32mPASS[0m] ID: Center Control.094       | S: 100/100 | Ex: a2a3 c1c2 d1b3 d1c2 d... | Got: d1d5  
+[[32mPASS[0m] ID: Center Control.095       | S: 100/100 | Ex: a1b1 a1c1 a1d1 c3c4 e... | Got: e1e4  
+[[32mPASS[0m] ID: Center Control.098       | S: 100/100 | Ex: c1b1 c1c3 c5b4 c5c2 c... | Got: d3e5  
+[[32mPASS[0m] ID: Center Control.101       | S: 100/100 | Ex: a7a5 a7a6 d7d5 d7d6 d... | Got: d7d6  
+[[32mPASS[0m] ID: King Activity.002        | S: 100/100 | Ex: e2a2 e2b2 e2d2 e2e1 e... | Got: h2g3  
+[[32mPASS[0m] ID: King Activity.003        | S: 100/100 | Ex: b8a7 b8b7 b8c7 b8c8 c... | Got: b8a7  
+[[32mPASS[0m] ID: King Activity.004        | S: 100/100 | Ex: b1a1 b4b5 c3a3 c3b3 c... | Got: b1a1  
+[[32mPASS[0m] ID: King Activity.015        | S: 100/100 | Ex: e2e1 f2d1 f2d3 f2h1 f... | Got: g3h2  
+[[32mPASS[0m] ID: King Activity.017        | S: 100/100 | Ex: a6a5 b7a7 b7b6 b7c7 d... | Got: e8f8  
+[[32mPASS[0m] ID: King Activity.019        | S: 100/100 | Ex: b3b4 b7c8 b7f7 d2c3 d... | Got: g1f1  
+[[32mPASS[0m] ID: King Activity.025        | S: 100/100 | Ex: a2a3 a2a4 c2c3 c2c4 c... | Got: g1g2  
+[[32mPASS[0m] ID: King Activity.029        | S: 100/100 | Ex: d8b8 d8e7 d8f6 d8g5 d... | Got: g8g7  
+[[32mPASS[0m] ID: King Activity.034        | S: 100/100 | Ex: e7c5 f7f5 f7f6 f8e8 f... | Got: h7g6  
+[[32mPASS[0m] ID: King Activity.039        | S: 100/100 | Ex: a7a5 a7a6 c7b8 c7c8 d... | Got: c7b8  
+[[32mPASS[0m] ID: King Activity.041        | S: 100/100 | Ex: d8a8 d8c8 d8d6 d8d7 d... | Got: g1h2  
+[[32mPASS[0m] ID: King Activity.049        | S: 100/100 | Ex: a2a3 a2a4 d2b2 d2c1 d... | Got: d3c2  
+[[32mPASS[0m] ID: King Activity.051        | S: 100/100 | Ex: c7d6 c7f4 d5f7 e8d8 e... | Got: g8g7  
+[[32mPASS[0m] ID: King Activity.053        | S: 100/100 | Ex: a1a5 a1c1 a1d1 d4b6 d... | Got: g1h2  
+[[32mPASS[0m] ID: King Activity.054        | S: 100/100 | Ex: a2a3 a2a4 b3b4 d3c3 d... | Got: g2f3  
+[[32mPASS[0m] ID: King Activity.058        | S: 100/100 | Ex: c1c2 c1c6 c1c7 c1d1 e... | Got: e2f3  
+[[32mPASS[0m] ID: King Activity.061        | S: 100/100 | Ex: a3a4 b3c3 b3d3 d7b7 d... | Got: f1e2  
+[[32mPASS[0m] ID: King Activity.069        | S: 100/100 | Ex: a2a4 c6c1 c6c5 d2b4 d... | Got: f1e2  
+[[32mPASS[0m] ID: King Activity.079        | S: 100/100 | Ex: b1b3 b1c1 b1d1 b1f1 e... | Got: h1h2  
+[[32mPASS[0m] ID: King Activity.080        | S: 100/100 | Ex: a7a3 a7a5 a7a6 a7a8 b... | Got: f7g6  
+[[32mPASS[0m] ID: King Activity.083        | S: 100/100 | Ex: a5a4 b5b4 c5c4 c7c6 c... | Got: c7c6  
+[[32mPASS[0m] ID: King Activity.084        | S: 100/100 | Ex: b3b2 b3b5 b3c3 d7c7 d... | Got: d7e6  
+[[32mPASS[0m] ID: King Activity.087        | S: 100/100 | Ex: c6b6 c6b7 c6c7 e5e4 e... | Got: c6b6  
+[[32mPASS[0m] ID: King Activity.094        | S: 100/100 | Ex: b6d7 c6e5 c7a7 c7d8 e... | Got: g8h7  
+[[32mPASS[0m] ID: King Activity.095        | S: 100/100 | Ex: a6a5 a8b8 d7c7 d7d8 d... | Got: d7e8  
+[[32mPASS[0m] ID: Knight Outposts/R....005 | S: 100/100 | Ex: a6a5 b5c4 b8c8 d8d7 d... | Got: f5d4  
+[[32mPASS[0m] ID: Knight Outposts/R....007 | S: 100/100 | Ex: a7a5 a7a6 b8c8 b8d8 e... | Got: f6d7  
+[[32mPASS[0m] ID: Knight Outposts/R....008 | S: 100/100 | Ex: a3c1 b1b2 c2a2 c2b2 c... | Got: c2e2  
+[[32mPASS[0m] ID: Knight Outposts/R....010 | S: 100/100 | Ex: a4a1 a4a3 c3a2 c3b1 c... | Got: c3d1  
+[[32mPASS[0m] ID: Knight Outposts/R....012 | S: 100/100 | Ex: a5a4 b5b4 b8h8 d6d5 d... | Got: d7e5  
+[[32mPASS[0m] ID: Knight Outposts/R....015 | S: 100/100 | Ex: b2b3 d1a4 d1e2 d6c5 e... | Got: e3d5  
+[[32mPASS[0m] ID: Knight Outposts/R....019 | S: 100/100 | Ex: a1a3 a1b1 a1c1 c2b1 c... | Got: h4f5  
+[[32mPASS[0m] ID: Knight Outposts/R....024 | S: 100/100 | Ex: a1a2 a1c1 b3b4 c2b1 d... | Got: f3h4  
+[[32mPASS[0m] ID: Knight Outposts/R....025 | S: 100/100 | Ex: a6a5 b7b6 c8b8 d8a5 d... | Got: f6d7  
+[[32mPASS[0m] ID: Knight Outposts/R....028 | S: 100/100 | Ex: c7c6 d4c6 d8a8 d8d6 d... | Got: h5f4  
+[[32mPASS[0m] ID: Knight Outposts/R....029 | S: 100/100 | Ex: a1a3 a1b1 c2a3 c2e3 c... | Got: c3b5  
+[[32mPASS[0m] ID: Knight Outposts/R....030 | S: 100/100 | Ex: c3b5 c3d1 d2d1 d4f2 e... | Got: c3b5  
+[[32mPASS[0m] ID: Knight Outposts/R....031 | S: 100/100 | Ex: c2b1 c2e2 c3b1 c3d1 c... | Got: c3d5  
+[[32mPASS[0m] ID: Knight Outposts/R....032 | S: 100/100 | Ex: b4b3 d8d7 e7c7 e7e6 e... | Got: g7e6  
+[[32mPASS[0m] ID: Knight Outposts/R....033 | S: 100/100 | Ex: c6b6 c6d6 c6d7 c6e8 d... | Got: e6d4  
+[[32mPASS[0m] ID: Knight Outposts/R....037 | S: 100/100 | Ex: c2b4 c2e3 e1b1 e1c1 e... | Got: c2b4  
+[[32mPASS[0m] ID: Knight Outposts/R....039 | S: 100/100 | Ex: a7a5 b5a6 b5b6 b5b7 d... | Got: d5f4  
+[[32mPASS[0m] ID: Knight Outposts/R....040 | S: 100/100 | Ex: a1a3 a1b1 a1d1 a6d3 a... | Got: f3d4  
+[[32mPASS[0m] ID: Knight Outposts/R....042 | S: 100/100 | Ex: a5a6 c6b8 c6e5 c6e7 f... | Got: c6e5  
+[[32mPASS[0m] ID: Knight Outposts/R....043 | S: 100/100 | Ex: a5b5 d7b5 e5c6 e5d3 e... | Got: e5f3  
+[[32mPASS[0m] ID: Knight Outposts/R....044 | S: 100/100 | Ex: c3d1 c3e4 c6c4 c6c8 d... | Got: c3e4  
+[[32mPASS[0m] ID: Knight Outposts/R....046 | S: 100/100 | Ex: c3e2 c3e4 d4e5 e1b1 e... | Got: c3e4  
+[[32mPASS[0m] ID: Knight Outposts/R....047 | S: 100/100 | Ex: b3a5 b3c5 b3d2 b3d4 e... | Got: b3d4  
+[[32mPASS[0m] ID: Knight Outposts/R....052 | S: 100/100 | Ex: c7c4 d6c4 f7e7 f8a8 f... | Got: d6c4  
+[[32mPASS[0m] ID: Knight Outposts/R....053 | S: 100/100 | Ex: f1b1 f1d1 f3e2 f3f2 f... | Got: h5f6  
+[[32mPASS[0m] ID: Knight Outposts/R....056 | S: 100/100 | Ex: a5a3 a5a4 a5b5 a5d5 c... | Got: h6f5  
+[[32mPASS[0m] ID: Knight Outposts/R....061 | S: 100/100 | Ex: b3b6 b7b6 b7b8 e6d8 e... | Got: e6f4  
+[[32mPASS[0m] ID: Knight Outposts/R....066 | S: 100/100 | Ex: c1c3 c1c4 e1d1 e1e2 e... | Got: e3d5  
+[[32mPASS[0m] ID: Knight Outposts/R....068 | S: 100/100 | Ex: c8e6 c8f5 d6b5 d6c4 d... | Got: d6f5  
+[[32mPASS[0m] ID: Knight Outposts/R....069 | S: 100/100 | Ex: a1c1 c2c3 c4b6 d1b1 d... | Got: c4b6  
+[[32mPASS[0m] ID: Knight Outposts/R....070 | S: 100/100 | Ex: b6c4 b6d5 c6c5 c8b7 d... | Got: b6d5  
+[[32mPASS[0m] ID: Knight Outposts/R....073 | S: 100/100 | Ex: a2a3 a2a4 b2b1 b2b3 b... | Got: d2e4  
+[[32mPASS[0m] ID: Knight Outposts/R....075 | S: 100/100 | Ex: c2d2 d5c7 e3d2 e3d4 e... | Got: d5c7  
+[[32mPASS[0m] ID: Knight Outposts/R....077 | S: 100/100 | Ex: c3c4 d3b1 d3c2 d3d1 d... | Got: f3d4  
+[[32mPASS[0m] ID: Knight Outposts/R....081 | S: 100/100 | Ex: c3a2 c3b1 c3e2 c3e4 d... | Got: c3e4  
+[[32mPASS[0m] ID: Knight Outposts/R....082 | S: 100/100 | Ex: a8b8 c6a5 c6b8 c6e5 c... | Got: c6e5  
+[[32mPASS[0m] ID: Knight Outposts/R....083 | S: 100/100 | Ex: a3a4 c3d5 d2b1 d2b3 e... | Got: c3d5  
+[[32mPASS[0m] ID: Knight Outposts/R....084 | S: 100/100 | Ex: c6c5 d7c5 d7e5 d8e8 g... | Got: d7e5  
+[[32mPASS[0m] ID: Knight Outposts/R....085 | S: 100/100 | Ex: a3b2 c3d5 d1d3 e3d2 e... | Got: c3d5  
+[[32mPASS[0m] ID: Knight Outposts/R....086 | S: 100/100 | Ex: a8a7 a8b8 a8c8 b5b4 d... | Got: d7e5  
+[[32mPASS[0m] ID: Knight Outposts/R....090 | S: 100/100 | Ex: a1a2 a3a4 c3e2 d3e2 f... | Got: c3e2  
+[[32mPASS[0m] ID: Knight Outposts/R....091 | S: 100/100 | Ex: c2d2 c2e2 c5b6 c5c6 c... | Got: f2e4  
+[[32mPASS[0m] ID: Knight Outposts/R....092 | S: 100/100 | Ex: a1a2 a1a3 a4a5 b3c2 d... | Got: e3f5  
+[[32mPASS[0m] ID: Knight Outposts/R....094 | S: 100/100 | Ex: a2a3 b1e1 b1f1 c3b5 d... | Got: c3b5  
+[[32mPASS[0m] ID: Knight Outposts/R....096 | S: 100/100 | Ex: a4a5 c3b5 c3d1 c3e4 c... | Got: c3e4  
+[[32mPASS[0m] ID: Knight Outposts/R....100 | S: 100/100 | Ex: b7b6 c8c3 c8c6 d6d5 e... | Got: h5f4  
+[[32mPASS[0m] ID: Offer of Simplifi....001 | S: 100/100 | Ex: b1a1 b1b2 b1b3 b1b5 b... | Got: b1b6  
+[[32mPASS[0m] ID: Offer of Simplifi....003 | S: 100/100 | Ex: a5b3 a7a6 b8a8 d7c6 d... | Got: e7f5  
+[[32mPASS[0m] ID: Offer of Simplifi....004 | S: 100/100 | Ex: a5c5 a5f5 b4b5 c4a2 d... | Got: a5f5  
+[[32mPASS[0m] ID: Offer of Simplifi....011 | S: 100/100 | Ex: c1f1 c4b5 d2c3 d2f4 d... | Got: d2c3  
+[[32mPASS[0m] ID: Offer of Simplifi....014 | S: 100/100 | Ex: b1a1 d1d2 e3c1 e3c5 f... | Got: e3c5  
+[[32mPASS[0m] ID: Offer of Simplifi....015 | S: 100/100 | Ex: a1a2 a1c1 a4a5 b3b5 b... | Got: b3b5  
+[[32mPASS[0m] ID: Offer of Simplifi....017 | S: 100/100 | Ex: a2a3 a2a4 c7b8 d2d1 d... | Got: d2d8  
+[[32mPASS[0m] ID: Offer of Simplifi....018 | S: 100/100 | Ex: c3b2 c3c1 c3c2 c3d3 d... | Got: d2f3  
+[[32mPASS[0m] ID: Offer of Simplifi....019 | S: 100/100 | Ex: b4b3 c6d4 d8e8 d8f8 d... | Got: c6d4  
+[[32mPASS[0m] ID: Offer of Simplifi....022 | S: 100/100 | Ex: a1a3 a4a5 b2b3 d1c1 d... | Got: f3e5  
+[[32mPASS[0m] ID: Offer of Simplifi....023 | S: 100/100 | Ex: a7a5 a7a6 c6c5 d5b6 e... | Got: e7f6  
+[[32mPASS[0m] ID: Offer of Simplifi....030 | S: 100/100 | Ex: a7a5 c6c5 c7a5 c7b6 c... | Got: c8d8  
+[[32mPASS[0m] ID: Offer of Simplifi....041 | S: 100/100 | Ex: c6d5 d8d1 d8d3 d8d5 d... | Got: d8d3  
+[[32mPASS[0m] ID: Offer of Simplifi....046 | S: 100/100 | Ex: b1a2 b1c2 b1d3 b1e4 b... | Got: b1a2  
+[[32mPASS[0m] ID: Offer of Simplifi....053 | S: 100/100 | Ex: a7a5 a7a6 b6b5 b6b7 b... | Got: b6b5  
+[[32mPASS[0m] ID: Offer of Simplifi....057 | S: 100/100 | Ex: d5b4 d5c7 d5e7 d5f4 d... | Got: e8e6  
+[[32mPASS[0m] ID: Offer of Simplifi....063 | S: 100/100 | Ex: b2b6 b2b8 f6b6 f6d6 f... | Got: g6f4  
+[[32mPASS[0m] ID: Offer of Simplifi....066 | S: 100/100 | Ex: d1d2 d1d3 d1d6 g3d3 g... | Got: g3d6  
+[[32mPASS[0m] ID: Offer of Simplifi....067 | S: 100/100 | Ex: d3d2 d3e4 d3g3 d4b5 d... | Got: d4f3  
+[[32mPASS[0m] ID: Offer of Simplifi....081 | S: 100/100 | Ex: a1d1 c2c1 c2d1 c2d2 c... | Got: c2d2  
+[[32mPASS[0m] ID: Offer of Simplifi....083 | S: 100/100 | Ex: a2a4 c2c1 c2d2 c3b5 e... | Got: c3b5  
+[[32mPASS[0m] ID: Offer of Simplifi....084 | S: 100/100 | Ex: a7a5 a7a6 a8b8 b7b5 b... | Got: d7f8  
+[[32mPASS[0m] ID: Offer of Simplifi....085 | S: 100/100 | Ex: a5a4 a8a6 b7a6 b7c6 d... | Got: b7c6  
+[[32mPASS[0m] ID: Offer of Simplifi....088 | S: 100/100 | Ex: a1c1 d1e1 d1e2 d1h5 e... | Got: e5c6  
+[[32mPASS[0m] ID: Offer of Simplifi....091 | S: 100/100 | Ex: e4c3 e4d2 e4f2 e4f6 e... | Got: e4g3  
+[[32mPASS[0m] ID: Offer of Simplifi....094 | S: 100/100 | Ex: a4a1 a4d4 b2b3 d2d3 d... | Got: h1e1  
+[[32mPASS[0m] ID: Offer of Simplifi....099 | S: 100/100 | Ex: a2a4 c1e3 c1f4 d1b3 d... | Got: e4e5  
+[[32mPASS[0m] ID: Open Files and Di....001 | S: 100/100 | Ex: a6a5 b8a7 b8d6 d8g8 e... | Got: b8a7  
+[[32mPASS[0m] ID: Open Files and Di....003 | S: 100/100 | Ex: a1b1 a1c1 a1d1 a2a4 c... | Got: f1d1  
+[[32mPASS[0m] ID: Open Files and Di....007 | S: 100/100 | Ex: a2b2 a2c2 a2d2 b3a4 b... | Got: a2c2  
+[[32mPASS[0m] ID: Open Files and Di....009 | S: 100/100 | Ex: d2a2 d2b2 d2b4 d2c1 d... | Got: d2c1  
+[[32mPASS[0m] ID: Open Files and Di....010 | S: 100/100 | Ex: e7b4 e7c5 e8a4 e8b5 e... | Got: f8g8  
+[[32mPASS[0m] ID: Open Files and Di....017 | S: 100/100 | Ex: a1b1 a2a3 a2a4 c1c5 d... | Got: g2e4  
+[[32mPASS[0m] ID: Open Files and Di....018 | S: 100/100 | Ex: a4a5 b4a2 b4c2 c1c2 c... | Got: f1d1  
+[[32mPASS[0m] ID: Open Files and Di....020 | S: 100/100 | Ex: a5a6 c1b1 d2c3 d2f4 e... | Got: e4e5  
+[[32mPASS[0m] ID: Open Files and Di....025 | S: 100/100 | Ex: a2b3 c5a3 c5a7 c5b4 c... | Got: f8d8  
+[[32mPASS[0m] ID: Open Files and Di....026 | S: 100/100 | Ex: b2a3 b4b5 d1a1 d1c1 d... | Got: d1c1  
+[[32mPASS[0m] ID: Open Files and Di....028 | S: 100/100 | Ex: d8c7 d8d6 d8d7 d8e7 d... | Got: g7f8  
+[[32mPASS[0m] ID: Open Files and Di....029 | S: 100/100 | Ex: c8a8 c8c6 d8d7 d8e8 e... | Got: e7b7  
+[[32mPASS[0m] ID: Open Files and Di....030 | S: 100/100 | Ex: c8c5 d7e8 d8e8 e4f3 f... | Got: f8d6  
+[[32mPASS[0m] ID: Open Files and Di....031 | S: 100/100 | Ex: c2c1 c2d2 c2e2 c2f2 g... | Got: h6e3  
+[[32mPASS[0m] ID: Open Files and Di....034 | S: 100/100 | Ex: c2c3 d2d1 d2e1 d2e2 d... | Got: f1g1  
+[[32mPASS[0m] ID: Open Files and Di....035 | S: 100/100 | Ex: a7a1 a7b7 c5d7 f4f5 g... | Got: g2e4  
+[[32mPASS[0m] ID: Open Files and Di....036 | S: 100/100 | Ex: c2a4 c2b3 d1d2 d1d3 d... | Got: c2a4  
+[[32mPASS[0m] ID: Open Files and Di....039 | S: 100/100 | Ex: b4b3 d8a8 d8b8 d8e8 d... | Got: d8e8  
+[[32mPASS[0m] ID: Open Files and Di....042 | S: 100/100 | Ex: d6b6 d6c6 d7c7 d8b8 d... | Got: d6c6  
+[[32mPASS[0m] ID: Open Files and Di....043 | S: 100/100 | Ex: a7a5 a7a6 d4a1 d4b6 d... | Got: e5h5  
+[[32mPASS[0m] ID: Open Files and Di....045 | S: 100/100 | Ex: a1a2 a1b1 a4a5 c1a3 c... | Got: c1a3  
+[[32mPASS[0m] ID: Open Files and Di....046 | S: 100/100 | Ex: a6a5 b6g6 b7a8 c4c3 e... | Got: e8d7  
+[[32mPASS[0m] ID: Open Files and Di....048 | S: 100/100 | Ex: c3e1 e4e2 e4f3 g2a2 g... | Got: g2d2  
+[[32mPASS[0m] ID: Open Files and Di....050 | S: 100/100 | Ex: a2a3 a2b2 a4a5 b1d1 b... | Got: c2g6  
+[[32mPASS[0m] ID: Open Files and Di....052 | S: 100/100 | Ex: b2a2 b2c2 b2e2 c3c4 f... | Got: b2e2  
+[[32mPASS[0m] ID: Open Files and Di....053 | S: 100/100 | Ex: a5a4 b6d6 b6d8 b7a6 b... | Got: b7a6  
+[[32mPASS[0m] ID: Open Files and Di....057 | S: 100/100 | Ex: a7a5 a7a6 e7a3 e7b4 e... | Got: f8d8  
+[[32mPASS[0m] ID: Open Files and Di....059 | S: 100/100 | Ex: a1a2 a1b1 a3a4 c1d2 c... | Got: e2f3  
+[[32mPASS[0m] ID: Open Files and Di....060 | S: 100/100 | Ex: a1a3 a5a6 b7b3 b7b4 b... | Got: a1a3  
+[[32mPASS[0m] ID: Open Files and Di....061 | S: 100/100 | Ex: b7c8 c3c8 f4c1 f4h6 f... | Got: b7c8  
+[[32mPASS[0m] ID: Open Files and Di....062 | S: 100/100 | Ex: d2b4 d2c1 d2c3 d2e1 d... | Got: d2c3  
+[[32mPASS[0m] ID: Open Files and Di....063 | S: 100/100 | Ex: b3a2 b3a3 b3c2 b3c3 b... | Got: b3a3  
+[[32mPASS[0m] ID: Open Files and Di....066 | S: 100/100 | Ex: a7a6 a7a8 a7b6 a7b7 a... | Got: a7d4  
+[[32mPASS[0m] ID: Open Files and Di....067 | S: 100/100 | Ex: b3b4 c3d5 c3e4 f1e1 f... | Got: g2h3  
+[[32mPASS[0m] ID: Open Files and Di....074 | S: 100/100 | Ex: a5a4 b6b5 c6c5 e5c4 e... | Got: f7g7  
+[[32mPASS[0m] ID: Open Files and Di....075 | S: 100/100 | Ex: a6d6 c7d7 e5c6 e5d7 e... | Got: a6d6  
+[[32mPASS[0m] ID: Open Files and Di....079 | S: 100/100 | Ex: a5a6 c5a4 c5e4 f1b1 f... | Got: f1b1  
+[[32mPASS[0m] ID: Open Files and Di....081 | S: 100/100 | Ex: a8a1 a8a2 a8a5 a8b8 c... | Got: c8g4  
+[[32mPASS[0m] ID: Open Files and Di....084 | S: 100/100 | Ex: a7a5 a7a6 b6d5 c8d7 c... | Got: c8e6  
+[[32mPASS[0m] ID: Open Files and Di....092 | S: 100/100 | Ex: c2c3 c2e2 c4c5 f5g6 g... | Got: c2e2  
+[[32mPASS[0m] ID: Open Files and Di....095 | S: 100/100 | Ex: c6c5 f8b8 f8e8 f8f3 f... | Got: f8b8  
+[[32mPASS[0m] ID: Open Files and Di....096 | S: 100/100 | Ex: a7a5 a8d8 a8e8 b6d5 c... | Got: a8d8  
+[[32mPASS[0m] ID: Open Files and Di....099 | S: 100/100 | Ex: a3a2 a8a4 a8a5 a8a6 a... | Got: d7f5  
+[[32mPASS[0m] ID: Pawn Play in the ....003 | S: 100/100 | Ex: c8c7 c8d8 c8e8 c8f8 e... | Got: e5e4  
+[[32mPASS[0m] ID: Pawn Play in the ....004 | S: 100/100 | Ex: b3b4 b5c3 b5d4 b5d6 d... | Got: e4e5  
+[[32mPASS[0m] ID: Pawn Play in the ....009 | S: 100/100 | Ex: a3a7 a3c3 c7a7 d4c5 d... | Got: d4d5  
+[[32mPASS[0m] ID: Pawn Play in the ....012 | S: 100/100 | Ex: b1a1 b1c1 b1d1 b2a1 d... | Got: d4d5  
+[[32mPASS[0m] ID: Pawn Play in the ....015 | S: 100/100 | Ex: b1a1 c2e1 c3a1 c3f6 d... | Got: d3d4  
+[[32mPASS[0m] ID: Pawn Play in the ....019 | S: 100/100 | Ex: a3b1 a3c2 c1d1 e1d1 e... | Got: e4e5  
+[[32mPASS[0m] ID: Pawn Play in the ....022 | S: 100/100 | Ex: c8b6 d7b5 d7e8 e5e4 g... | Got: e5e4  
+[[32mPASS[0m] ID: Pawn Play in the ....024 | S: 100/100 | Ex: c1d1 c2c3 c2c4 d4c5 e... | Got: e4e5  
+[[32mPASS[0m] ID: Pawn Play in the ....026 | S: 100/100 | Ex: a3a4 b4b5 c3d1 e1c1 e... | Got: e3e4  
+[[32mPASS[0m] ID: Pawn Play in the ....027 | S: 100/100 | Ex: a6a5 b6b7 b6b8 b6c6 b... | Got: e6e5  
+[[32mPASS[0m] ID: Pawn Play in the ....028 | S: 100/100 | Ex: c6a4 c6b5 c6e4 c6f3 c... | Got: e6e5  
+[[32mPASS[0m] ID: Pawn Play in the ....038 | S: 100/100 | Ex: b1a1 b5b6 d3d1 d3d2 e... | Got: e3e4  
+[[32mPASS[0m] ID: Pawn Play in the ....039 | S: 100/100 | Ex: b5b4 c6d4 c8a8 c8b8 d... | Got: e5e4  
+[[32mPASS[0m] ID: Pawn Play in the ....040 | S: 100/100 | Ex: a2a4 b1b2 c1a3 c1b2 c... | Got: e4e5  
+[[32mPASS[0m] ID: Pawn Play in the ....043 | S: 100/100 | Ex: d5d4 d8c8 d8d7 d8e8 e... | Got: d5d4  
+[[32mPASS[0m] ID: Pawn Play in the ....044 | S: 100/100 | Ex: b2b3 d1e1 e3d2 e3e2 e... | Got: e4e5  
+[[32mPASS[0m] ID: Pawn Play in the ....045 | S: 100/100 | Ex: a6b8 c7b8 c7c8 d7b8 d... | Got: e7e5  
+[[32mPASS[0m] ID: Pawn Play in the ....046 | S: 100/100 | Ex: b1a2 b1c2 b2b4 c1e3 d... | Got: d3d4  
+[[32mPASS[0m] ID: Pawn Play in the ....049 | S: 100/100 | Ex: a1b1 a1d1 a3c5 a5a6 e... | Got: e4e5  
+[[32mPASS[0m] ID: Pawn Play in the ....050 | S: 100/100 | Ex: d6b8 d6c5 d6e5 d6f4 d... | Got: e4e5  
+[[32mPASS[0m] ID: Pawn Play in the ....060 | S: 100/100 | Ex: a3a4 c3c4 d1b3 d1c2 d... | Got: e4e5  
+[[32mPASS[0m] ID: Pawn Play in the ....063 | S: 100/100 | Ex: a7a5 a8b8 c7e7 e6e5 e... | Got: e6e5  
+[[32mPASS[0m] ID: Pawn Play in the ....070 | S: 100/100 | Ex: a3c4 a4b3 a4b5 a4c2 b... | Got: e4e5  
+[[32mPASS[0m] ID: Pawn Play in the ....077 | S: 100/100 | Ex: a8a6 a8c8 c6d5 c6f3 d... | Got: e5e4  
+[[32mPASS[0m] ID: Pawn Play in the ....080 | S: 100/100 | Ex: a8b8 a8c8 d8b8 d8d7 e... | Got: e5e4  
+[[32mPASS[0m] ID: Pawn Play in the ....082 | S: 100/100 | Ex: a1c1 a1d1 b3a4 d3f5 d... | Got: d4d5  
+[[32mPASS[0m] ID: Pawn Play in the ....086 | S: 100/100 | Ex: b2a1 b2c3 b5a4 d4d5 e... | Got: d4d5  
+[[32mPASS[0m] ID: Pawn Play in the ....089 | S: 100/100 | Ex: a5a4 b4a3 c6b5 d7b6 d... | Got: e6e5  
+[[32mPASS[0m] ID: Pawn Play in the ....100 | S: 100/100 | Ex: a8a2 a8a4 b8a7 b8c7 b... | Got: e6e5  
+[[32mPASS[0m] ID: Recapturing.002          | S: 100/100 | Ex: b2c3 b3a1 c1c3 c1e1 c... | Got: c1c3  
+[[32mPASS[0m] ID: Recapturing.003          | S: 100/100 | Ex: a3a4 c4b4 c4e4 d3d8 e... | Got: c4e4  
+[[32mPASS[0m] ID: Recapturing.004          | S: 100/100 | Ex: e3g3 f2e2 f2f1 f2f3 f... | Got: h2g3  
+[[32mPASS[0m] ID: Recapturing.006          | S: 100/100 | Ex: a3b3 a4b3 b7b3 b7b6 b... | Got: a4b3  
+[[32mPASS[0m] ID: Recapturing.007          | S: 100/100 | Ex: a5a4 b5c4 b8b7 c8c4 c... | Got: b5c4  
+[[32mPASS[0m] ID: Recapturing.008          | S: 100/100 | Ex: b5d4 c2c3 d1d4 e2d4 e... | Got: e2d4  
+[[32mPASS[0m] ID: Recapturing.009          | S: 100/100 | Ex: b8a8 b8b7 b8c8 c5d4 c... | Got: c5d4  
+[[32mPASS[0m] ID: Recapturing.011          | S: 100/100 | Ex: b6c5 b7c6 d6c5 d7c5 e... | Got: d7c5  
+[[32mPASS[0m] ID: Recapturing.013          | S: 100/100 | Ex: a3a4 a3b4 c1b1 c3b4 e... | Got: a3b4  
+[[32mPASS[0m] ID: Recapturing.019          | S: 100/100 | Ex: b8b7 c5d4 c6a7 c6b4 c... | Got: e5d4  
+[[32mPASS[0m] ID: Recapturing.023          | S: 100/100 | Ex: a7a5 b6d5 b6d7 c6d5 c... | Got: b6d5  
+[[32mPASS[0m] ID: Recapturing.025          | S: 100/100 | Ex: b6a6 b6a7 b6b2 b6b5 b... | Got: f8c5  
+[[32mPASS[0m] ID: Recapturing.028          | S: 100/100 | Ex: c1a3 c1b2 c1d2 d4e5 e... | Got: f4e5  
+[[32mPASS[0m] ID: Recapturing.030          | S: 100/100 | Ex: b6c5 b7d5 b7f3 c7c5 c... | Got: d7c5  
+[[32mPASS[0m] ID: Recapturing.032          | S: 100/100 | Ex: b5a4 b5e2 c8c4 c8c6 c... | Got: h5f4  
+[[32mPASS[0m] ID: Recapturing.033          | S: 100/100 | Ex: c8c6 d7f6 e7f6 f8e8 f... | Got: e7f6  
+[[32mPASS[0m] ID: Recapturing.034          | S: 100/100 | Ex: b5c4 c8c4 c8c7 d5c4 d... | Got: c8c4  
+[[32mPASS[0m] ID: Recapturing.035          | S: 100/100 | Ex: a6a5 b5c4 c8c4 d5a8 d... | Got: c8c4  
+[[32mPASS[0m] ID: Recapturing.036          | S: 100/100 | Ex: a6a5 b5c4 c8c4 d5c4 d... | Got: c8c4  
+[[32mPASS[0m] ID: Recapturing.039          | S: 100/100 | Ex: c2c3 c6a4 c6b5 c6d5 d... | Got: f4g5  
+[[32mPASS[0m] ID: Recapturing.040          | S: 100/100 | Ex: a5b6 a5c3 a5d2 a7b6 d... | Got: a5b6  
+[[32mPASS[0m] ID: Recapturing.043          | S: 100/100 | Ex: b4a3 b6d5 b7a6 b7b8 b... | Got: c6d5  
+[[32mPASS[0m] ID: Recapturing.044          | S: 100/100 | Ex: a7a5 b4a3 b4e7 b6d5 b... | Got: d8d5  
+[[32mPASS[0m] ID: Recapturing.050          | S: 100/100 | Ex: b2b3 b5c3 d2c2 d2f4 e... | Got: e2f4  
+[[32mPASS[0m] ID: Recapturing.051          | S: 100/100 | Ex: c6b6 c6c4 e5f4 f8f4 h... | Got: h6f4  
+[[32mPASS[0m] ID: Recapturing.053          | S: 100/100 | Ex: a5a4 b6b5 d7a4 d7f5 e... | Got: e7f5  
+[[32mPASS[0m] ID: Recapturing.054          | S: 100/100 | Ex: c3b2 c3c2 c3d2 c3d3 c... | Got: c4d5  
+[[32mPASS[0m] ID: Recapturing.055          | S: 100/100 | Ex: g4g1 g4g6 g4g7 g4g8 g... | Got: h5h4  
+[[32mPASS[0m] ID: Recapturing.058          | S: 100/100 | Ex: a5b3 b2a3 b2c3 e1f1 e... | Got: f5e6  
+[[32mPASS[0m] ID: Recapturing.061          | S: 100/100 | Ex: a3c5 a3d6 b2b3 c2c3 d... | Got: d2b3  
+[[32mPASS[0m] ID: Recapturing.062          | S: 100/100 | Ex: a8b8 b6b5 b7d5 c5e6 c... | Got: f6d5  
+[[32mPASS[0m] ID: Recapturing.068          | S: 100/100 | Ex: a5d5 c4d3 c4d5 d1c1 d... | Got: a5d5  
+[[32mPASS[0m] ID: Recapturing.070          | S: 100/100 | Ex: a4a5 b4c5 d1b1 d3c5 d... | Got: d3c5  
+[[32mPASS[0m] ID: Recapturing.080          | S: 100/100 | Ex: a2b3 c2b3 c4b3 d2d3 d... | Got: c2b3  
+[[32mPASS[0m] ID: Recapturing.082          | S: 100/100 | Ex: b3c4 c1b1 c2b2 d2c4 e... | Got: d2c4  
+[[32mPASS[0m] ID: Recapturing.087          | S: 100/100 | Ex: a8a6 b7c6 b7e4 c5a4 c... | Got: b7e4  
+[[32mPASS[0m] ID: Recapturing.089          | S: 100/100 | Ex: c1f1 c3b3 c3e3 c3f3 e... | Got: g4f3  
+[[32mPASS[0m] ID: Recapturing.094          | S: 100/100 | Ex: c3d1 d2d1 d2e2 e1d1 e... | Got: c3d1  
+[[32mPASS[0m] ID: Recapturing.096          | S: 100/100 | Ex: a2a3 a2a4 b2c3 d2c1 d... | Got: e4c3  
+[[32mPASS[0m] ID: Recapturing.097          | S: 100/100 | Ex: a1b1 b5d4 c1d2 c3d4 d... | Got: c3d4  
+[[32mPASS[0m] ID: Recapturing.099          | S: 100/100 | Ex: b8b4 b8b7 c6b4 c8c7 d... | Got: e7b4  
+[[32mPASS[0m] ID: Recapturing.100          | S: 100/100 | Ex: a1b1 a1c1 a1e1 b2b4 d... | Got: f4e5  
+[[32mPASS[0m] ID: Simplification.007       | S: 100/100 | Ex: a4c3 a6b5 c1b1 d3b3 d... | Got: d3f5  
+[[32mPASS[0m] ID: Simplification.010       | S: 100/100 | Ex: a4c3 b5c4 c1a1 c1b1 c... | Got: c1c8  
+[[32mPASS[0m] ID: Simplification.011       | S: 100/100 | Ex: b8a8 b8b2 b8b4 b8b6 b... | Got: b8b2  
+[[32mPASS[0m] ID: Simplification.013       | S: 100/100 | Ex: c1d1 c2b3 c2e2 c4b3 c... | Got: c4d5  
+[[32mPASS[0m] ID: Simplification.017       | S: 100/100 | Ex: a3a4 b2b3 d2g5 d3f3 d... | Got: d2g5  
+[[32mPASS[0m] ID: Simplification.019       | S: 100/100 | Ex: a4c3 b3a2 b3c2 b4b5 d... | Got: d1d4  
+[[32mPASS[0m] ID: Simplification.022       | S: 100/100 | Ex: b8d8 b8e8 c7b7 c7c6 d... | Got: d4f3  
+[[32mPASS[0m] ID: Simplification.027       | S: 100/100 | Ex: a2a3 a2a4 b2b3 b2b4 c... | Got: e4c5  
+[[32mPASS[0m] ID: Simplification.030       | S: 100/100 | Ex: f7f6 g5d8 g5e3 g5e7 g... | Got: g5e3  
+[[32mPASS[0m] ID: Simplification.032       | S: 100/100 | Ex: a1a2 a1b1 a1c1 b2c3 b... | Got: b2g7  
+[[32mPASS[0m] ID: Simplification.035       | S: 100/100 | Ex: c8a8 c8b8 c8c1 c8d8 c... | Got: c8c1  
+[[32mPASS[0m] ID: Simplification.036       | S: 100/100 | Ex: b4a5 b4c3 b4c5 c1c3 c... | Got: c1c8  
+[[32mPASS[0m] ID: Simplification.039       | S: 100/100 | Ex: c2c4 c2c8 c2d2 d5b3 d... | Got: c2c8  
+[[32mPASS[0m] ID: Simplification.040       | S: 100/100 | Ex: b2a1 c1c2 c1c3 c1d1 c... | Got: c4d5  
+[[32mPASS[0m] ID: Simplification.042       | S: 100/100 | Ex: a6a5 c8b8 d5c4 d7e6 d... | Got: d7g4  
+[[32mPASS[0m] ID: Simplification.043       | S: 100/100 | Ex: a7a5 b4b5 b4d2 b4e7 b... | Got: b4d2  
+[[32mPASS[0m] ID: Simplification.045       | S: 100/100 | Ex: c3b3 c3c1 c3c2 c3c7 c... | Got: c3c7  
+[[32mPASS[0m] ID: Simplification.046       | S: 100/100 | Ex: b2a2 b2b1 b2c1 b2c2 b... | Got: c4c6  
+[[32mPASS[0m] ID: Simplification.048       | S: 100/100 | Ex: a7a4 d7d8 e1a1 e1c1 e... | Got: d7d8  
+[[32mPASS[0m] ID: Simplification.049       | S: 100/100 | Ex: a2a3 a2a4 b2c1 c4a4 c... | Got: d1d8  
+[[32mPASS[0m] ID: Simplification.050       | S: 100/100 | Ex: e2c2 e2d3 e3c1 e3d2 e... | Got: e4b7  
+[[32mPASS[0m] ID: Simplification.052       | S: 100/100 | Ex: b7b5 d8d3 d8d4 e8e7 f... | Got: d8d3  
+[[32mPASS[0m] ID: Simplification.054       | S: 100/100 | Ex: b5e8 c3b2 c3b4 c3d2 d... | Got: b5e8  
+[[32mPASS[0m] ID: Simplification.057       | S: 100/100 | Ex: a4c3 a4c5 c7a7 c7b7 c... | Got: c7c1  
+[[32mPASS[0m] ID: Simplification.058       | S: 100/100 | Ex: a4a2 a4a6 a4b3 a4h4 b... | Got: e3c5  
+[[32mPASS[0m] ID: Simplification.060       | S: 100/100 | Ex: b5a5 b5b7 d5c5 d5d4 d... | Got: d5d4  
+[[32mPASS[0m] ID: Simplification.061       | S: 100/100 | Ex: b3b4 e1a1 e1h1 f3d5 g... | Got: h4h5  
+[[32mPASS[0m] ID: Simplification.063       | S: 100/100 | Ex: a1a2 b3a2 b3a4 b3b5 b... | Got: b3e6  
+[[32mPASS[0m] ID: Simplification.064       | S: 100/100 | Ex: a5a4 a5c5 c3c2 c3c4 c... | Got: c3d3  
+[[32mPASS[0m] ID: Simplification.067       | S: 100/100 | Ex: b4d4 b7b5 b7b6 b7b8 b... | Got: b4d4  
+[[32mPASS[0m] ID: Simplification.068       | S: 100/100 | Ex: d6d3 d7c7 d7e7 e6d4 f... | Got: d6d3  
+[[32mPASS[0m] ID: Simplification.069       | S: 100/100 | Ex: b5a6 b5b3 b5b6 b5b8 b... | Got: b5d7  
+[[32mPASS[0m] ID: Simplification.071       | S: 100/100 | Ex: a4a3 a4c4 c5a5 c5a7 c... | Got: g5h4  
+[[32mPASS[0m] ID: Simplification.076       | S: 100/100 | Ex: a7a8 a7c7 a7e7 b4b3 d... | Got: g4f3  
+[[32mPASS[0m] ID: Simplification.080       | S: 100/100 | Ex: a3b2 b3b6 b3b8 d2f3 e... | Got: b3b8  
+[[32mPASS[0m] ID: Simplification.081       | S: 100/100 | Ex: a8a7 b8b1 b8b6 b8b7 b... | Got: b8b1  
+[[32mPASS[0m] ID: Simplification.084       | S: 100/100 | Ex: c2d1 c2d2 c2d3 c4c5 d... | Got: d6e6  
+[[32mPASS[0m] ID: Simplification.085       | S: 100/100 | Ex: a6a5 a8b8 c5a5 c5a7 c... | Got: c5d4  
+[[32mPASS[0m] ID: Simplification.086       | S: 100/100 | Ex: a2a3 a2a4 b3c2 b4c3 b... | Got: e1e8  
+[[32mPASS[0m] ID: Simplification.088       | S: 100/100 | Ex: a8b8 c5c4 d8b8 d8c8 d... | Got: d8d3  
+[[32mPASS[0m] ID: Simplification.090       | S: 100/100 | Ex: a8b8 b5b4 e5b8 e5c5 e... | Got: e5g3  
+[[32mPASS[0m] ID: Simplification.094       | S: 100/100 | Ex: a8a7 a8c8 b7c8 b7d5 c... | Got: b7d5  
+[[32mPASS[0m] ID: Simplification.095       | S: 100/100 | Ex: a1d1 a4a5 b3e6 e1c1 e... | Got: b3e6  
+[[32mPASS[0m] ID: Simplification.096       | S: 100/100 | Ex: a7a6 a8c8 a8e8 b7b6 d... | Got: d5e4  
+[[32mPASS[0m] ID: Simplification.098       | S: 100/100 | Ex: a2a3 b3c2 e1e2 f1f2 f... | Got: h3g4  
+[[32mPASS[0m] ID: Simplification.100       | S: 100/100 | Ex: a6a5 a6b5 a6b6 a6b7 a... | Got: f6e4  
+[[32mPASS[0m] ID: Square Vacancy.001       | S: 100/100 | Ex: d2d1 d2h6 e4e5 g2g4 h... | Got: h5d5  
+[[32mPASS[0m] ID: Square Vacancy.005       | S: 100/100 | Ex: a3a1 a3a2 a3a5 a3a7 a... | Got: a3a7  
+[[32mPASS[0m] ID: Square Vacancy.006       | S: 100/100 | Ex: a4a5 c1b1 c1c3 c1c4 c... | Got: c1c4  
+[[32mPASS[0m] ID: Square Vacancy.007       | S: 100/100 | Ex: b3a2 b3b5 b7b5 b7b6 c... | Got: b3a2  
+[[32mPASS[0m] ID: Square Vacancy.008       | S: 100/100 | Ex: a1a2 a1b1 a5b3 a5c4 b... | Got: a1b1  
+[[32mPASS[0m] ID: Square Vacancy.009       | S: 100/100 | Ex: a6a5 b7a8 b7d5 f6e5 f... | Got: h5e2  
+[[32mPASS[0m] ID: Square Vacancy.010       | S: 100/100 | Ex: b3a3 c1a1 c1c3 c1d1 d... | Got: d3b5  
+[[32mPASS[0m] ID: Square Vacancy.014       | S: 100/100 | Ex: a1a2 a1b1 a1c1 a4a5 c... | Got: d1g4  
+[[32mPASS[0m] ID: Square Vacancy.015       | S: 100/100 | Ex: a6a1 a6a2 a6a4 a6a7 a... | Got: c4d5  
+[[32mPASS[0m] ID: Square Vacancy.017       | S: 100/100 | Ex: a7a5 b7a6 b7c6 e6a2 e... | Got: e6b3  
+[[32mPASS[0m] ID: Square Vacancy.021       | S: 100/100 | Ex: a4b3 a4c2 a4d1 d4d5 e... | Got: e3e5  
+[[32mPASS[0m] ID: Square Vacancy.022       | S: 100/100 | Ex: b7b6 c4e4 c7e8 e6e5 e... | Got: h7d3  
+[[32mPASS[0m] ID: Square Vacancy.024       | S: 100/100 | Ex: a4b4 c5b6 c5e3 d2b2 d... | Got: d2g5  
+[[32mPASS[0m] ID: Square Vacancy.027       | S: 100/100 | Ex: a3a4 d2b4 d2d3 d2e2 d... | Got: d2h6  
+[[32mPASS[0m] ID: Square Vacancy.034       | S: 100/100 | Ex: a6a3 a6a4 a6a5 b7a8 b... | Got: a6a4  
+[[32mPASS[0m] ID: Square Vacancy.037       | S: 100/100 | Ex: d8d7 f5g6 f7b7 f7d7 f... | Got: h6d2  
+[[32mPASS[0m] ID: Square Vacancy.039       | S: 100/100 | Ex: a2a3 a2a4 b2b3 b2b4 c... | Got: c2e4  
+[[32mPASS[0m] ID: Square Vacancy.040       | S: 100/100 | Ex: a2a3 c1c3 e1d1 f3b3 f... | Got: f3d5  
+[[32mPASS[0m] ID: Square Vacancy.044       | S: 100/100 | Ex: a6a5 c8b7 c8b8 c8c2 c... | Got: c8c3  
+[[32mPASS[0m] ID: Square Vacancy.046       | S: 100/100 | Ex: a2a3 a2a4 b4b5 c4a6 c... | Got: c4a6  
+[[32mPASS[0m] ID: Square Vacancy.048       | S: 100/100 | Ex: a6a7 a6b6 a6c6 b5a5 b... | Got: b5b3  
+[[32mPASS[0m] ID: Square Vacancy.054       | S: 100/100 | Ex: a4a3 c5a5 c5c7 c5c8 c... | Got: c5d4  
+[[32mPASS[0m] ID: Square Vacancy.055       | S: 100/100 | Ex: d2c4 d2e4 d3a6 d3b1 d... | Got: d3f5  
+[[32mPASS[0m] ID: Square Vacancy.056       | S: 100/100 | Ex: c3c4 c3d4 c3e1 c3e3 c... | Got: c3e5  
+[[32mPASS[0m] ID: Square Vacancy.059       | S: 100/100 | Ex: d4b5 d7c8 d7g4 e7c5 e... | Got: d7g4  
+[[32mPASS[0m] ID: Square Vacancy.063       | S: 100/100 | Ex: b1a2 b1b5 b1b6 b1f5 b... | Got: b1h1  
+[[32mPASS[0m] ID: Square Vacancy.065       | S: 100/100 | Ex: a5a4 d7g4 f7f3 f7f4 f... | Got: f7f3  
+[[32mPASS[0m] ID: Square Vacancy.078       | S: 100/100 | Ex: a3b4 d5b4 e2c4 e2d1 e... | Got: e2c4  
+[[32mPASS[0m] ID: Square Vacancy.084       | S: 100/100 | Ex: a8c8 b6a5 b6a7 b6b4 b... | Got: b6f2  
+[[32mPASS[0m] ID: Square Vacancy.087       | S: 100/100 | Ex: a7a5 a7a6 b6b5 c5a3 c... | Got: c5c3  
+[[32mPASS[0m] ID: Square Vacancy.088       | S: 100/100 | Ex: c2c1 c2c5 c2c6 c2d2 c... | Got: c2c6  
+[[32mPASS[0m] ID: Square Vacancy.089       | S: 100/100 | Ex: a1c1 a2a4 c2c3 c2c4 d... | Got: d1h5  
+[[32mPASS[0m] ID: Square Vacancy.090       | S: 100/100 | Ex: d4c4 d4d2 d4d3 d4d5 d... | Got: e4c2  
+[[32mPASS[0m] ID: Square Vacancy.093       | S: 100/100 | Ex: c1a1 c1b2 c1c6 c1e3 e... | Got: c1c6  
+[[32mPASS[0m] ID: Square Vacancy.094       | S: 100/100 | Ex: a6a5 d6d5 f6e5 f6f4 f... | Got: f6f4  
+[[32mPASS[0m] ID: Square Vacancy.099       | S: 100/100 | Ex: a3b4 a3e3 a3e7 a3f8 a... | Got: a3e3  
+[[32mPASS[0m] ID: Square Vacancy.100       | S: 100/100 | Ex: a4a5 a8e8 f1e2 g1g2 g... | Got: h2h5  
+[[32mPASS[0m] ID: Undermine.004            | S: 100/100 | Ex: a1b1 a1d1 a1e1 a1f1 a... | Got: b4b5  
+[[32mPASS[0m] ID: Undermine.006            | S: 100/100 | Ex: a2a3 a4c3 d1a1 d1d3 d... | Got: e4e5  
+[[32mPASS[0m] ID: Undermine.007            | S: 100/100 | Ex: c8d8 e7d8 e7f8 e8d7 e... | Got: h5h4  
+[[32mPASS[0m] ID: Undermine.008            | S: 100/100 | Ex: b1a1 b1c1 d5d3 f5d4 f... | Got: g5g6  
+[[32mPASS[0m] ID: Undermine.009            | S: 100/100 | Ex: a1a6 a1a7 d1e1 e2c1 e... | Got: e4e5  
+[[32mPASS[0m] ID: Undermine.010            | S: 100/100 | Ex: a2a4 c1e3 c3b4 d3d4 e... | Got: d3d4  
+[[32mPASS[0m] ID: Undermine.011            | S: 100/100 | Ex: c4c5 d1e1 d1g1 d2e2 f... | Got: c4c5  
+[[32mPASS[0m] ID: Undermine.014            | S: 100/100 | Ex: a5d2 a5d8 b8e8 c5c4 e... | Got: f5f4  
+[[32mPASS[0m] ID: Undermine.018            | S: 100/100 | Ex: b8d8 b8f8 c7b7 c7d7 d... | Got: e6e5  
+[[32mPASS[0m] ID: Undermine.020            | S: 100/100 | Ex: a1a2 a1a5 a1c1 c2c1 c... | Got: c4c5  
+[[32mPASS[0m] ID: Undermine.022            | S: 100/100 | Ex: a1b1 a1d1 a1e1 a1f1 a... | Got: f4f5  
+[[32mPASS[0m] ID: Undermine.025            | S: 100/100 | Ex: b6b2 b6b4 b6e3 c4c5 e... | Got: c4c5  
+[[32mPASS[0m] ID: Undermine.026            | S: 100/100 | Ex: c2b3 c2c1 c2d2 c2e2 e... | Got: e5e6  
+[[32mPASS[0m] ID: Undermine.027            | S: 100/100 | Ex: a5a6 b1b5 b6a7 b6b2 b... | Got: a5a6  
+[[32mPASS[0m] ID: Undermine.029            | S: 100/100 | Ex: a1d1 a1e1 c3e2 d4d5 f... | Got: d4d5  
+[[32mPASS[0m] ID: Undermine.031            | S: 100/100 | Ex: c6b5 c6d7 c7a5 c7d8 c... | Got: h5h4  
+[[32mPASS[0m] ID: Undermine.032            | S: 100/100 | Ex: a1b1 a1c1 a1d1 a1e1 a... | Got: g5g6  
+[[32mPASS[0m] ID: Undermine.033            | S: 100/100 | Ex: a5a4 b4a3 c8a8 c8b8 c... | Got: d6d5  
+[[32mPASS[0m] ID: Undermine.038            | S: 100/100 | Ex: b5a7 e2e1 f1d1 f1e1 f... | Got: g4g5  
+[[32mPASS[0m] ID: Undermine.040            | S: 100/100 | Ex: b2e5 d1b1 d1e1 d3d4 e... | Got: d3d4  
+[[32mPASS[0m] ID: Undermine.047            | S: 100/100 | Ex: d8a8 d8b8 d8c8 d8d5 f... | Got: g3g4  
+[[32mPASS[0m] ID: Undermine.048            | S: 100/100 | Ex: a4b2 d1c2 d3d2 d3d4 e... | Got: h4h5  
+[[32mPASS[0m] ID: Undermine.052            | S: 100/100 | Ex: a4a5 b1a1 b1b2 e3e2 e... | Got: a4a5  
+[[32mPASS[0m] ID: Undermine.054            | S: 100/100 | Ex: b5a3 b5c3 b5d4 b5d6 d... | Got: f4f5  
+[[32mPASS[0m] ID: Undermine.055            | S: 100/100 | Ex: a3a4 b2a2 c3c4 d4a7 d... | Got: g4g5  
+[[32mPASS[0m] ID: Undermine.057            | S: 100/100 | Ex: a4a5 a6c5 b2a1 b4b5 c... | Got: b4b5  
+[[32mPASS[0m] ID: Undermine.058            | S: 100/100 | Ex: e6e7 e8e7 f4f3 g7d7 g... | Got: f4f3  
+[[32mPASS[0m] ID: Undermine.060            | S: 100/100 | Ex: a7a6 b7b6 e5e4 e8a8 e... | Got: f5f4  
+[[32mPASS[0m] ID: Undermine.061            | S: 100/100 | Ex: a2a3 f3d2 f3e1 f3h2 f... | Got: h4h5  
+[[32mPASS[0m] ID: Undermine.062            | S: 100/100 | Ex: a3b1 a3c2 c4c5 d2e3 d... | Got: c4c5  
+[[32mPASS[0m] ID: Undermine.065            | S: 100/100 | Ex: a6a5 d6d5 f4e3 f4f2 f... | Got: d6d5  
+[[32mPASS[0m] ID: Undermine.067            | S: 100/100 | Ex: b7a7 b7b4 b7b5 c6c5 d... | Got: f5f4  
+[[32mPASS[0m] ID: Undermine.069            | S: 100/100 | Ex: b1c1 b1d1 b1e1 b1f1 b... | Got: f5f6  
+[[32mPASS[0m] ID: Undermine.072            | S: 100/100 | Ex: a2a3 c1e1 c2c3 c2e2 e... | Got: e3e4  
+[[32mPASS[0m] ID: Undermine.074            | S: 100/100 | Ex: c4b3 c4d3 c4f1 d2d3 d... | Got: f4f5  
+[[32mPASS[0m] ID: Undermine.075            | S: 100/100 | Ex: a7a6 a8b8 b7b5 b7b6 c... | Got: e6e5  
+[[32mPASS[0m] ID: Undermine.076            | S: 100/100 | Ex: a1b1 a1c1 a1d1 a2a3 c... | Got: c5c6  
+[[32mPASS[0m] ID: Undermine.079            | S: 100/100 | Ex: a2a3 a2a4 b3b1 b3c2 b... | Got: b4b5  
+[[32mPASS[0m] ID: Undermine.082            | S: 100/100 | Ex: a2b2 a2c2 d2b2 d2b4 d... | Got: e3e4  
+[[32mPASS[0m] ID: Undermine.083            | S: 100/100 | Ex: a7a5 a8c8 b7b5 c5c4 d... | Got: c5c4  
+[[32mPASS[0m] ID: Undermine.085            | S: 100/100 | Ex: b2b3 d2f2 d4e3 d4g1 f... | Got: f4f5  
+[[32mPASS[0m] ID: Undermine.087            | S: 100/100 | Ex: a1a2 a1d1 c4c5 d4d5 d... | Got: c4c5  
+[[32mPASS[0m] ID: Undermine.088            | S: 100/100 | Ex: a1b1 a1c1 a1d1 c4c5 d... | Got: c4c5  
+[[32mPASS[0m] ID: Undermine.092            | S: 100/100 | Ex: c1d2 c2d1 f4f5 h1d1 h... | Got: f4f5  
+[[32mPASS[0m] ID: Undermine.093            | S: 100/100 | Ex: c4c5 d1a1 d1b1 d1c1 d... | Got: c4c5  
+[[32mPASS[0m] ID: Undermine.094            | S: 100/100 | Ex: a5a4 b5b4 c7b7 c7c6 d... | Got: a5a4  
+[[32mPASS[0m] ID: Undermine.097            | S: 100/100 | Ex: a6c7 a8b8 b7b5 b7b6 f... | Got: h5h4  
+[[32mPASS[0m] ID: Undermine.098            | S: 100/100 | Ex: a1a2 a4a5 d1e2 d3b1 d... | Got: h2h4  
+[[32mPASS[0m] ID: Undermine.28             | S: 100/100 | Ex: a8a6 b5a4 b5b4 b8b6 b... | Got: c5c4  
+
+Failures:
+[[31mFAIL[0m] ID: 7th Rank.001             | S: 69/100 | Ex: c2c3 e2d2 e2e1 e2e3 e... | Got: g4g3   | FEN: 1k5r/1p1b4/4pp1r/3p4/q4PQ1/3B1R1P/2P1R1PK/8 w - - 0 1
+[[31mFAIL[0m] ID: 7th Rank.004             | S: 15/100 | Ex: a6a1 a6a2 a6a3 a6a4 a... | Got: b4b3   | FEN: 1r1n4/5pk1/Qp1r1qp1/3B3p/1R2P2P/6P1/5P2/1R4K1 w - - 0 1
+[[31mFAIL[0m] ID: 7th Rank.006             | S: 69/100 | Ex: c2e4 c6c4 e2e4 f4c1 f... | Got: c2e4   | FEN: 1r1r2k1/4pp2/1PR3p1/p2P1n1p/1p1q1Q2/5P1P/2B1RPPK/8 w - - 0 1
+[[31mFAIL[0m] ID: 7th Rank.008             | S:  5/100 | Ex: c1c2 c1c4 c6a6 c6c2 c... | Got: c6a6   | FEN: 1r1r4/6bk/p1Rp2p1/P6p/1q1pPB1P/5PP1/Q4K2/2R5 w - - 0 1
+[[31mFAIL[0m] ID: 7th Rank.009             | S: 74/100 | Ex: a1c1 a1d1 b2b3 b5d4 b... | Got: b5d6   | FEN: 1r2r1k1/1b1n1ppp/1p2p3/1N1pP3/Pb3P2/4BB2/1PR3PP/R6K w - - 0 1
+[[31mFAIL[0m] ID: 7th Rank.013             | S: 84/100 | Ex: a2a3 a2a4 a2a5 a2a7 d... | Got: f3e4   | FEN: 1r4k1/6b1/2r1n2p/2pRp1p1/2P3P1/4BK2/R2N1P1P/8 w - - 0 1
+[[31mFAIL[0m] ID: 7th Rank.020             | S: 19/100 | Ex: a7a5 a7a6 b6b5 c8d8 d... | Got: d7c6   | FEN: 2k5/p1pb1p2/1p4p1/2p1P3/2P2KPb/1P2N2r/PB1R1P2/8 b - - 0 1
+[[31mFAIL[0m] ID: 7th Rank.021             | S: 23/100 | Ex: a3a7 a3b3 b1b4 b5d3 b... | Got: e2e1   | FEN: 2qb1rk1/1brn1pp1/3p3p/1B1Pp3/4P1P1/R3BN1P/4QP1K/1R6 w - - 0 1
+[[31mFAIL[0m] ID: 7th Rank.022             | S: 86/100 | Ex: c1b1 d2d3 d2e2 d4a7 d... | Got: e4e5   | FEN: 2r1kb1r/1b1p1ppp/p3pn2/qp6/3QPP2/2N1BB2/PPPR2PP/2K4R w k - 0 1
+[[31mFAIL[0m] ID: 7th Rank.029             | S: 97/100 | Ex: a2a3 a2a5 a2a6 a2a7 a... | Got: a2a6   | FEN: 2r3k1/3q2p1/3b1p1p/1p1PpP2/1Pp1B3/2P4P/Q5P1/R5K1 w - - 0 1
+[[31mFAIL[0m] ID: 7th Rank.031             | S: 51/100 | Ex: a6a5 b4a3 b5b6 c8b8 c... | Got: b4a3   | FEN: 2r3k1/4np2/p3p1p1/1q1r1n1p/1p1P4/PN5R/1P2NPPP/3RQ1K1 b - - 0 1
+[[31mFAIL[0m] ID: 7th Rank.033             | S: 30/100 | Ex: a5a6 c1b1 c1c5 d3a3 d... | Got: c1b1   | FEN: 2r3k1/p1q1np2/2P1pp1p/P7/8/3Q1BPP/5PK1/2R5 w - - 0 1
+[[31mFAIL[0m] ID: 7th Rank.035             | S: 65/100 | Ex: a1b1 b2b3 d1d3 e2e3 e... | Got: e4d3   | FEN: 3q1rk1/5ppp/pp1p4/6b1/2rNQ3/6P1/PP2PP1P/R2R2K1 w - - 0 1
+[[31mFAIL[0m] ID: 7th Rank.039             | S: 15/100 | Ex: a6a5 b7b5 b7b6 c3c4 c... | Got: c3c4   | FEN: 3r1k2/1p3p1Q/p1br1p2/2p1pB2/2P1PP2/2q5/P5PP/1R2R1K1 b - - 0 1
+[[31mFAIL[0m] ID: 7th Rank.048             | S: 30/100 | Ex: b2a1 b2a2 b2b3 b2c1 b... | Got: b2a2   | FEN: 3r4/3rq1k1/1R1p2pp/1Rp1p3/P3N3/2P1nP2/1Q4PP/6K1 w - - 0 1
+[[31mFAIL[0m] ID: 7th Rank.058             | S: 90/100 | Ex: a5a4 a5b5 a5c7 a5d8 c... | Got: c5c7   | FEN: 5k2/1p1r1pp1/6b1/q1r1pNPp/1Nn1P2P/p1P2Q2/P4P2/K1RR4 b - - 0 1
+[[31mFAIL[0m] ID: 7th Rank.062             | S: 79/100 | Ex: b3d1 c1b1 c1f1 c1g1 c... | Got: c3c8   | FEN: 5rk1/5bpp/8/r2p1P2/3Bp1P1/1BR1P1K1/1n5P/2R5 w - - 0 1
+[[31mFAIL[0m] ID: 7th Rank.067             | S: 95/100 | Ex: e6f4 f6g5 g6g2 g6h6 g... | Got: g7h7   | FEN: 7k/4p1q1/3pnbr1/8/1N5p/1NPP1P2/PP6/K1R3BR b - - 0 1
+[[31mFAIL[0m] ID: 7th Rank.069             | S: 55/100 | Ex: a5b3 a5b7 a5c6 e7d8 g... | Got: a5b3   | FEN: 7r/4k1p1/p2pP1p1/n2P4/1p2N2r/1P3P2/P2R2K1/4R3 b - - 0 1
+[[31mFAIL[0m] ID: 7th Rank.071             | S: 11/100 | Ex: a1a3 a1a4 a1a5 a1a7 a... | Got: c3a4   | FEN: 8/5nkq/1rNp1pp1/2pPp1p1/1n2P1P1/1PN2P2/6P1/R2Q2K1 w - - 0 1
+[[31mFAIL[0m] ID: 7th Rank.072             | S: 75/100 | Ex: a5a4 c5d4 c5f2 c5f5 c... | Got: g4f3   | FEN: 8/5pk1/3p2p1/p1q3Pn/5rb1/1BN5/PPPQ4/1K2R3 b - - 0 1
+[[31mFAIL[0m] ID: 7th Rank.075             | S: 83/100 | Ex: a2a4 b5c6 b5d3 b5e2 b... | Got: c2c4   | FEN: r1b1k2r/ppp2p1p/2n2p2/1B1q4/8/6Q1/PPP2PPP/R3K1NR w KQkq - 0 1
+[[31mFAIL[0m] ID: 7th Rank.077             | S: 98/100 | Ex: c3e4 d1d4 e5c7 e5d4 e... | Got: e5g3   | FEN: r1b1qrk1/pp2bppp/4pn2/4Q1B1/8/2N5/PPP2PPP/2KR1B1R w - - 0 1
+[[31mFAIL[0m] ID: 7th Rank.078             | S: 20/100 | Ex: a2a3 c1c3 c1c5 c1c7 d... | Got: g3c7   | FEN: r1b2rk1/1p2q1b1/1n4p1/pP1p4/3Pp3/6BN/P2QBPP1/2R1K2R w K - 0 1
+[[31mFAIL[0m] ID: 7th Rank.082             | S: 72/100 | Ex: a8a2 a8a5 a8a7 d8b6 d... | Got: e6d7   | FEN: r2q1rk1/4bppp/3pb3/2n1pP2/1p2P1PP/1P3Q2/1BP1N1B1/2KR3R b - - 0 1
+[[31mFAIL[0m] ID: 7th Rank.084             | S: 50/100 | Ex: a2a3 a2a4 e1e7 e1e8 f... | Got: f4h3   | FEN: r3r1k1/3b2pp/2pP1q2/ppP2pp1/5N2/8/PP1Q1PPP/3RR1K1 w - - 0 1
+[[31mFAIL[0m] ID: 7th Rank.095             | S: 62/100 | Ex: a8b8 a8d8 a8e8 a8f8 b... | Got: a8b8   | FEN: r5k1/5pp1/p2p1n1p/1q1Pp3/2R1P3/3Q1N1P/P4PPK/8 b - - 0 1
+[[31mFAIL[0m] ID: 7th Rank.100             | S: 75/100 | Ex: a8a1 a8a2 a8a3 a8a5 a... | Got: a8a6   | FEN: Rr6/5kp1/1qQb1p1p/1p1PpP2/1Pp1B3/2P4P/6P1/5K2 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.001                 | S: 78/100 | Ex: a7a5 b6c5 b6c7 b6d4 b... | Got: b6d4   | FEN: 1qr2k1r/pb3pp1/1b2p2p/3nP3/1p6/3B2QN/PP3PPP/R1BR2K1 b - - 0 1
+[[31mFAIL[0m] ID: AKPC.002                 | S: 66/100 | Ex: b8b7 b8c8 d5d4 d8c7 d... | Got: d5d4   | FEN: 1r1qr1k1/p5b1/2p2ppp/3p4/1Pp5/P1Nn1Q2/3BN1PP/R4RK1 b - - 0 1
+[[31mFAIL[0m] ID: AKPC.004                 | S:  5/100 | Ex: b8a8 b8c8 b8d8 b8e8 f... | Got: g5g4   | FEN: 1r3r2/1p3q1k/1Q1p4/2pNbpp1/2P5/7P/PP2R1P1/3R3K b - - 0 1
+[[31mFAIL[0m] ID: AKPC.007                 | S: 59/100 | Ex: a6e6 c7c6 c7c8 c7d7 c... | Got: f6h5   | FEN: 1r4k1/ppq2ppp/r4nn1/P2p4/2pP4/B1P1P1PP/1Q1N1PK1/RR6 b - - 0 1
+[[31mFAIL[0m] ID: AKPC.009                 | S:  0/100 | Ex: d2a2 d2b2 d2c2 d2e2 e... | Got: e1f3   | FEN: 1rq1n3/2pr3k/2n1bppp/p1PNp3/Pp2P3/1P2Q1PP/3R1PBK/3RN3 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.011                 | S:  9/100 | Ex: d6a3 d6b4 d6e7 d6g3 e... | Got: e1d3   | FEN: 2qn4/p5k1/1p1Qbpp1/1B1p3p/3P3P/2P5/P4PP1/4N1K1 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.012                 | S:  0/100 | Ex: b2b4 c1c3 c4a2 c4a6 c... | Got: d4d5   | FEN: 2r1r1k1/p2b2bp/1pn1p1pq/4Pp2/2BP4/P4N2/1P2NQPP/2R2RK1 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.013                 | S:  0/100 | Ex: e4d3 e4d4 e4g4 f3d2 f... | Got: g5d2   | FEN: 2r2bk1/p1q2p2/4p1p1/3nP1B1/1p2Q2P/1P3N2/Pr3PP1/R4RK1 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.014                 | S:  0/100 | Ex: b7a7 b7a8 b7b6 b7b8 b... | Got: c8c7   | FEN: 2r2k1r/1q1nbpp1/p2p4/1p1Pp3/8/P1B2BP1/1PP1QP2/3RR1K1 b - - 0 1
+[[31mFAIL[0m] ID: AKPC.017                 | S: 15/100 | Ex: a1a2 a1b1 a1c1 b3b4 c... | Got: e2f3   | FEN: 2r2rk1/p3ppbp/1pnp1np1/4q3/2P1P3/PPN1B2P/2Q1BPP1/R2R2K1 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.018                 | S: 91/100 | Ex: a2a3 a2a4 c3b5 c3e4 d... | Got: d2e3   | FEN: 2r2rk1/p4qb1/1p1ppp2/2n1n1pp/2PN4/1PN2PPP/P1QBP1K1/2RR4 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.019                 | S:  5/100 | Ex: a2a3 b2b3 c2c1 c2d2 f... | Got: f1e1   | FEN: 2r2rk1/pq2ppbp/1pnp1np1/8/2P1P3/2N1BP2/PPQ1BPKP/3R1R2 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.020                 | S: 53/100 | Ex: c2c1 c4c5 d1c1 d1e1 e... | Got: c4c5   | FEN: 2r3k1/p3np1p/1p1pp1p1/4b3/1PP5/P3B2P/2R2PP1/3R3K w - - 0 1
+[[31mFAIL[0m] ID: AKPC.021                 | S: 44/100 | Ex: a4a5 c1b1 c2c3 d1e2 d... | Got: g2d5   | FEN: 2r3k1/pp2p1b1/q2pP1p1/3pnrPp/P7/1P5P/2PB1PB1/2RQR1K1 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.022                 | S:  0/100 | Ex: a1a2 a1a3 a1b1 a1c1 f... | Got: a1a7   | FEN: 2r5/1bq3kp/4pNp1/3pP1Q1/2pP4/7P/5PP1/R5K1 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.024                 | S:  0/100 | Ex: a3a4 c4c3 d1e1 d1f1 d... | Got: c4a4   | FEN: 2rr1bk1/p4pp1/1p2q2p/1PpN4/2Q1P3/P4PP1/3R3P/3R2K1 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.026                 | S: 18/100 | Ex: b7c8 c7b8 c7c8 e7g6 e... | Got: e8f6   | FEN: 3bn1k1/1bq1npp1/3p3p/1p1Pp3/1Pp1P3/2P1B1NP/2BN1PPK/Q7 b - - 0 1
+[[31mFAIL[0m] ID: AKPC.027                 | S: 38/100 | Ex: a4a5 d5c4 f1c1 f2c2 f... | Got: a4a5   | FEN: 3q1r2/2r2ppk/5b1p/2pBpR2/P3P2P/1P4PK/5Q2/5R2 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.028                 | S:  0/100 | Ex: a2a3 a2a4 b5a4 b5d3 b... | Got: d4e6   | FEN: 3q2k1/rb1r3p/6p1/pQRp1p2/3N3P/1P2PBP1/P4P2/6K1 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.029                 | S:  0/100 | Ex: d7d3 d7d6 d8a8 d8c8 d... | Got: d8c7   | FEN: 3q3k/3r1p1p/4p3/p4p2/PbP2Q1P/1p3N2/1P2KPP1/1R6 b - - 0 1
+[[31mFAIL[0m] ID: AKPC.032                 | S:  0/100 | Ex: a7a5 a7a6 c6a5 d7b6 d... | Got: c5d4   | FEN: 3qrr1k/pp1n1ppp/2n3b1/2p5/3Pp1P1/P1P1P2P/BB2QPN1/2RR2K1 b - - 0 1
+[[31mFAIL[0m] ID: AKPC.033                 | S:  6/100 | Ex: a6a5 d8d7 d8e8 e7d7 f... | Got: h8g8   | FEN: 3r1r1k/1p2q2b/p1p1p2p/2P1P3/PPQP1pPP/5B2/7K/4BR2 b - - 0 1
+[[31mFAIL[0m] ID: AKPC.034                 | S: 13/100 | Ex: a7a5 a7a6 b7a6 b7a8 b... | Got: e7c5   | FEN: 3r1rk1/pb1pb2p/1p2p1q1/1N2npp1/B1P5/4PPN1/PP2Q1PP/3R1RK1 b - - 0 1
+[[31mFAIL[0m] ID: AKPC.039                 | S:  0/100 | Ex: c5b7 c7b7 c7c8 d7c6 d... | Got: g8e8   | FEN: 3r2r1/2qb2pk/1p2p2p/p1n1Pp2/P1PNpP2/1P2Q3/3RB1PP/3R2K1 b - - 0 1
+[[31mFAIL[0m] ID: AKPC.040                 | S: 33/100 | Ex: c2c1 c2c3 e2c3 e2f4 e... | Got: c2c3   | FEN: 3r4/1pq3kp/2pp1pp1/p1n1r3/P1PNP3/1P2BPPB/2Q1N1K1/8 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.041                 | S:  0/100 | Ex: a6a5 b6b5 c7e5 e7f6 e... | Got: e8f7   | FEN: 3rb1k1/2q1b1p1/pp2p3/5p1p/1PP1p3/P3Q1PP/4P1RK/3N1R2 b - - 0 1
+[[31mFAIL[0m] ID: AKPC.043                 | S: 81/100 | Ex: a3a4 c2f5 c3e2 c3e4 e... | Got: e5g3   | FEN: 3rrk2/p2n1p1B/1pq4p/2ppB1p1/2bP4/PnN1PP2/1PQ3PP/3RR1K1 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.046                 | S:  0/100 | Ex: e3e5 e3e6 e3e7 e8e5 e... | Got: g3e5   | FEN: 4r1k1/p4bpp/1p6/1P6/2PQ4/4rPq1/PR2PRB1/6K1 b - - 0 1
+[[31mFAIL[0m] ID: AKPC.048                 | S: 31/100 | Ex: c3b4 d3c2 d3f3 d3g3 e... | Got: d3g3   | FEN: 4r3/2pq1pk1/1r4p1/p2pP1Np/1pnP4/2PQ3P/P3RPP1/4R1K1 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.049                 | S: 32/100 | Ex: c3c1 c3d2 d1d2 d1d3 d... | Got: d5d7   | FEN: 4r3/p4rk1/1p4p1/3Rp1q1/4P2p/2Q2P2/P5PP/3R1K2 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.051                 | S:  0/100 | Ex: c6a7 c6b8 c7h7 e4d3 e... | Got: h8h7   | FEN: 4rr1k/2q5/1pnn1b1p/p1p2b2/N1PppPp1/PP1P4/2QBPPBP/3R1RNK b - - 0 1
+[[31mFAIL[0m] ID: AKPC.052                 | S:  0/100 | Ex: a2a3 b6b7 b6d6 c3e2 d... | Got: c3b5   | FEN: 5k1r/1b2rp2/pR4pp/1p3n2/2p5/2N5/PP3PPP/3Q2K1 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.053                 | S: 46/100 | Ex: a7a2 a7a8 a7d4 a7d7 a... | Got: h5g3   | FEN: 5k2/q7/2p2pp1/4p1pn/1pP1PnN1/1P2RPPP/3r1B1K/5Q2 b - - 0 1
+[[31mFAIL[0m] ID: AKPC.054                 | S: 50/100 | Ex: a2a3 d4a1 d4b2 d4e5 e... | Got: f3e5   | FEN: 5r1k/2qb1ppp/6nb/3B4/pp1BQ3/5NP1/P1P2P1P/4R1K1 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.056                 | S: 34/100 | Ex: d7c8 d7f5 e7e8 f8e8 f... | Got: d7f5   | FEN: 5r2/3br1kp/3q2p1/1pNp4/1P1Pnp2/5B2/2P1R1PP/2Q2RK1 b - - 0 1
+[[31mFAIL[0m] ID: AKPC.057                 | S: 87/100 | Ex: a1b1 a1c1 a2a4 b2c1 d... | Got: d1f3   | FEN: 5rk1/2r1bpp1/p2p1n1p/1p2pP2/1P3q2/1BP4P/PB3PP1/R2QR1K1 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.058                 | S: 62/100 | Ex: b3b1 b3b4 b3c3 c6b7 c... | Got: d3c5   | FEN: 5rk1/5p2/pnB1p1pp/q3P3/2nP1P2/1R1N3P/6PK/2Q5 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.059                 | S: 24/100 | Ex: c7c8 c7d7 c7e7 c7f7 e... | Got: f8f4   | FEN: 5rk1/p1r3pp/1p2q3/1P1p4/1QnB2P1/2R1PP1P/4R1K1/8 b - - 0 1
+[[31mFAIL[0m] ID: AKPC.060                 | S: 35/100 | Ex: a3a4 c1b1 c1c2 c1c3 c... | Got: h6e3   | FEN: 6k1/2qn3p/pp1pprpB/5r2/1PP5/P4PbP/3QB1P1/2R2RK1 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.061                 | S: 56/100 | Ex: b5a3 c4c7 c4c8 d6c8 d... | Got: b5a3   | FEN: 6k1/5p1p/1p1n2pP/1n6/q1rP4/2pQP3/r1N2PP1/BRR3K1 b - - 0 1
+[[31mFAIL[0m] ID: AKPC.063                 | S:  5/100 | Ex: a3a4 e2b2 e2d2 e2d3 e... | Got: f3g2   | FEN: 8/3qpk2/1p3r1p/p1pPRp2/2P2P2/P4KPP/4Q3/8 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.065                 | S: 24/100 | Ex: a6a5 c4b5 c4d3 c4e2 f... | Got: f5g5   | FEN: 8/6pk/p5rp/2NpPq2/2bPp2b/P3P1P1/6Q1/1R2B1K1 b - - 0 1
+[[31mFAIL[0m] ID: AKPC.070                 | S:  0/100 | Ex: b4b5 c2c3 c2c5 d2c3 d... | Got: g2g1   | FEN: nr4k1/1p1qrpb1/p6p/P2p2p1/1P1N4/4B1P1/2RQ1PKP/2R5 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.071                 | S: 71/100 | Ex: a6a1 a6a3 a6a5 a6a7 a... | Got: e7f6   | FEN: q5k1/4bpp1/r3p2p/2p5/1pP5/1P3NPP/1RQ1PP2/6K1 b - - 0 1
+[[31mFAIL[0m] ID: AKPC.072                 | S: 32/100 | Ex: b1a1 b1c1 b5c6 c3a4 d... | Got: b5c6   | FEN: r1b1r1k1/1p1nqpbp/2ppn1p1/1P6/2P1P3/2N1BPP1/2Q1N1BP/1R1R2K1 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.073                 | S: 17/100 | Ex: a2a3 a2a4 c1d2 c1e3 d... | Got: d4d5   | FEN: r1b2rk1/1pp1q1b1/2nppn1p/pN3pp1/2PP4/1Q4PN/PP2PPBP/R1BR2K1 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.074                 | S: 80/100 | Ex: b5b4 c8b7 d4f6 e6e5 f... | Got: g8h8   | FEN: r1b2rk1/p4pp1/1q2p2p/1p1n4/3b2N1/3B2Q1/PPP2PPP/R1B2RK1 b - - 0 1
+[[31mFAIL[0m] ID: AKPC.075                 | S:  0/100 | Ex: a4a5 b2b3 c1c3 c1d2 c... | Got: f1e1   | FEN: r1b2rk1/pp2qppp/n2p4/2pPp3/P1N1P3/3P4/1P2BPPP/R1Q2RK1 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.077                 | S: 97/100 | Ex: c8e6 c8g4 f3f5 f7e7 f... | Got: c8e6   | FEN: r1b4r/pp3k1p/3R1p2/B1p5/2P4Q/5q2/PP2NP1P/2K5 b - - 0 1
+[[31mFAIL[0m] ID: AKPC.085                 | S:  8/100 | Ex: a7a5 a7a6 a8c8 d7c8 d... | Got: f6d5   | FEN: r2r2k1/pp1qppbp/2p1bnp1/4B3/3P2P1/4QN1P/PP2PPB1/R1R3K1 b - - 0 1
+[[31mFAIL[0m] ID: AKPC.086                 | S: 33/100 | Ex: c2e4 f2f3 f2f4 h4f4 h... | Got: c2e4   | FEN: r3k3/1p1n1p2/2p1r1p1/3bP3/3P3Q/8/p1B2PPP/R5K1 w q - 0 1
+[[31mFAIL[0m] ID: AKPC.088                 | S: 24/100 | Ex: c2c3 c2d3 d1d2 d1d3 e... | Got: g1g2   | FEN: r3qrk1/2p3pp/np6/3pN3/p2P4/P5P1/1PQ1PP2/3R1RK1 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.090                 | S:  0/100 | Ex: a2a4 c3d2 c3e3 d1b1 d... | Got: g4h5   | FEN: r3r1k1/4qpp1/2p5/p1ppP2p/6P1/1PQ2P1P/P1P5/3RR1K1 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.091                 | S: 93/100 | Ex: a1b1 a1e1 a3e7 f1b1 f... | Got: f4f5   | FEN: r3r1k1/pn1bnpp1/1p2p2p/1q1pP3/2pP1P1N/B1P2BP1/2P3QP/R4RK1 w - - 0 1
+[[31mFAIL[0m] ID: AKPC.092                 | S: 46/100 | Ex: a6a5 e8e4 f5c8 f5e4 f... | Got: f7g7   | FEN: r3rb2/1p3k2/p1p2p2/2q2bpp/2PR4/1PQ4P/P4PPB/3R1BK1 b - - 0 1
+[[31mFAIL[0m] ID: AKPC.098                 | S: 60/100 | Ex: a4a3 d7f6 e5e4 e6e8 f... | Got: d7f6   | FEN: r4rk1/3n1pbp/3Pq1p1/4p3/p7/2Q1B1N1/P2R1PPP/2R3K1 b - - 0 1
+[[31mFAIL[0m] ID: AKPC.101                 | S: 66/100 | Ex: a2a3 d3a3 d3b3 d3e2 d... | Got: d3f3   | FEN: 1r4k1/p1rqbp1p/b1p1p1p1/NpP1P3/3PB3/3Q2P1/P4P1P/3RR1K1 w - - 0 1
+[[31mFAIL[0m] ID: AT.007                   | S: 46/100 | Ex: a8c8 a8d8 b7b5 b7b6 c... | Got: c7b8   | FEN: r4rk1/ppqb1ppp/4p3/2Qnb3/4N3/P1P3PP/1P3PB1/R1B2R1K b - - 0 1
+[[31mFAIL[0m] ID: AT.008                   | S: 91/100 | Ex: a2a3 b4a3 b4a4 b4a5 b... | Got: b4b6   | FEN: r4rk1/pp2ppbp/1qp2np1/n2P4/1Q2P3/2N2B2/PP3PPP/R1B2RK1 w - - 0 1
+[[31mFAIL[0m] ID: AT.009                   | S: 49/100 | Ex: c1c3 c1d1 d3b3 d3c2 d... | Got: d3f1   | FEN: r4rk1/p4ppp/1pn1pn2/2p5/2PPq3/P2QPN1P/1B3PP1/2R1R1K1 w - - 0 1
+[[31mFAIL[0m] ID: AT.011                   | S: 95/100 | Ex: c6d4 e2a6 e2b5 e2c2 e... | Got: e2h5   | FEN: r3r1k1/p1pp1p2/1pn2n1p/2P3p1/3P4/2P1B1P1/P1Q1qPNP/2RR2K1 b - - 0 1
+[[31mFAIL[0m] ID: AT.012                   | S: 48/100 | Ex: a2a4 b2b3 c3c4 f1e2 f... | Got: f3h3   | FEN: r3r1k1/bb3pp1/pp2pn1p/2pqN3/3P4/2P1BQ2/PP3PPP/R2R1BK1 w - - 0 1
+[[31mFAIL[0m] ID: AT.015                   | S: 36/100 | Ex: a6a5 a8b8 a8c8 b4a4 b... | Got: a8c8   | FEN: r3k2r/5p2/p3p2p/3pPb1P/1q6/8/1PPQNP2/2KR3R b kq - 0 1
+[[31mFAIL[0m] ID: AT.026                   | S:  0/100 | Ex: b2b3 c1d2 c3e2 c4d3 d... | Got: d1d8   | FEN: r1bq1rk1/1p2bppp/p1n1pn2/2P5/P1B5/2N1PN2/1P3PPP/R1BQ1RK1 w - - 0 1
+[[31mFAIL[0m] ID: AT.028                   | S:  5/100 | Ex: b3a3 b3a4 b3b6 b3c2 f... | Got: b3b6   | FEN: r1b2rk1/pp2p1b1/nqpp1npp/5p2/2PP1B2/1QN2NP1/PP2PPBP/R2R2K1 w - - 0 1
+[[31mFAIL[0m] ID: AT.032                   | S: 91/100 | Ex: f3e5 f3h4 g6b1 g6c2 g... | Got: g6f7   | FEN: r1b1k2r/p2n1q2/3B1nQp/3p4/2pP4/2P1PN2/P4PPP/4RRK1 w kq - 0 1
+[[31mFAIL[0m] ID: AT.035                   | S: 17/100 | Ex: a3a4 d1a1 d1c1 d1d2 d... | Got: d1d2   | FEN: b1r4r/4bpk1/1p1p1np1/p1q1p3/4P2p/PPN1QB1P/1BP2PP1/3RR1K1 w - - 0 1
+[[31mFAIL[0m] ID: AT.036                   | S: 99/100 | Ex: b6a7 b6b5 b6b8 b6c6 b... | Got: b6f2   | FEN: 8/r1q2p1k/1Q1p1p1p/p3pP2/4P1R1/1P5P/2P3PK/8 w - - 0 1
+[[31mFAIL[0m] ID: AT.040                   | S: 29/100 | Ex: d4g1 f6d8 f6g5 f6g6 f... | Got: f6h4   | FEN: 6rk/5r2/1p1npq1p/1Pp1p2p/P1PbP2Q/3R1PP1/B6K/3RB3 b - - 0 1
+[[31mFAIL[0m] ID: AT.041                   | S: 74/100 | Ex: b7b6 c7c6 e5g5 e5h5 g... | Got: b7b6   | FEN: 6k1/ppp1rppp/7q/2Npr3/P4Q2/3B2P1/1PP4P/5RK1 b - - 0 1
+[[31mFAIL[0m] ID: AT.044                   | S: 33/100 | Ex: b1a2 d1d2 d4c5 d4d2 f... | Got: d4c5   | FEN: 6k1/3r3p/1pb2pp1/p1qpn3/P2Q1N2/1P2P2P/5PP1/1B1R2K1 w - - 0 1
+[[31mFAIL[0m] ID: AT.049                   | S: 87/100 | Ex: c1c2 c1d1 d2b2 d2b4 d... | Got: d2d3   | FEN: 5rb1/p1r1p1kp/5pp1/p2n4/1qBPR2P/1P4P1/P2Q1PK1/2R1N3 w - - 0 1
+[[31mFAIL[0m] ID: AT.053                   | S: 91/100 | Ex: b1e1 e4a4 e4d5 e4e1 e... | Got: e4d5   | FEN: 5b1k/1p1r3p/p1p5/3qpP2/4Q3/P5P1/2N2P1P/1R4K1 w - - 0 1
+[[31mFAIL[0m] ID: AT.055                   | S:  0/100 | Ex: b1d1 b1f1 d2b2 d2c1 d... | Got: d2b4   | FEN: 4rrk1/1p1n3p/3p1np1/p1pP2N1/1q3P2/1P3B1P/P2Q1RP1/1R4K1 w - - 0 1
+[[31mFAIL[0m] ID: AT.057                   | S: 21/100 | Ex: d3b5 d3d2 d3d4 e1e2 e... | Got: e4e5   | FEN: 4rbk1/1r3p2/ppp3P1/nq4Bp/3pP3/Pb1Q1N2/1P4P1/1BR1R1K1 w - - 0 1
+[[31mFAIL[0m] ID: AT.059                   | S: 99/100 | Ex: a5a2 a5a4 a5a6 a5b4 a... | Got: a5a4   | FEN: 4r1k1/p4pp1/4r1b1/q1pp2P1/5B1P/8/PPPQ1P2/1K1R2R1 b - - 0 1
+[[31mFAIL[0m] ID: AT.061                   | S: 89/100 | Ex: b4a4 b4b5 b4c3 b4c5 b... | Got: b4c3   | FEN: 4r1k1/3b1pp1/pB6/P2r3p/1q1P1P2/2Q5/1P2p1PP/2R1R2K b - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....001 | S: 35/100 | Ex: b7a8 b7c8 b8a7 c6c5 d... | Got: d7f8   | FEN: 1b2r1k1/1bqn1pp1/p1p4p/Pp2p3/1P2B3/2B1PN1P/5PP1/1Q1R2K1 b - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....006 | S:  0/100 | Ex: c4c5 d2a2 d2b2 d2c1 d... | Got: e4c5   | FEN: 1q2rb2/3b1r1k/p1p4p/B3p1p1/1PPpN3/3P1P1P/3QR1P1/4R1K1 w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....007 | S:  0/100 | Ex: a2a3 a2a4 b2b3 b2b4 c... | Got: c5e6   | FEN: 1r1qr1k1/1p3pp1/p1n1bn1p/2NN4/4P3/6P1/PP3PB1/2RQR1K1 w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....008 | S:  5/100 | Ex: b6d5 b8a8 b8c8 c6c5 d... | Got: f8e7   | FEN: 1r1r1bk1/1bq2ppp/pnp1p3/4P3/5P2/P1NBB3/1P4PP/R1QR2K1 b - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....009 | S: 13/100 | Ex: a7a5 b8b4 b8b7 c7c5 d... | Got: a7a5   | FEN: 1r1r2k1/p1p1p3/4n1p1/5p2/8/R3B3/Pn2BPPP/4K2R b K - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....012 | S: 79/100 | Ex: a1b1 a2a4 b2b3 b2b4 e... | Got: e3d2   | FEN: 1r2r1k1/2qp1ppp/2p1pn2/8/8/2PBQ1P1/PP3P1P/R4RK1 w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....013 | S: 22/100 | Ex: a2a3 a2a4 d3e2 d3e4 e... | Got: f1d1   | FEN: 1r2r1k1/2qp1ppp/2p2n2/4p3/1P6/2PBQ1P1/P4P1P/R4RK1 w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....016 | S:  0/100 | Ex: a7a5 a7a6 b6b4 b6b7 b... | Got: b8d8   | FEN: 1r4k1/p3pr1p/1qbp1pp1/2p5/2P5/1PN1Q2P/P2R1PP1/3R3K b - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....018 | S: 83/100 | Ex: a1a2 a1c1 a3a4 a7a5 a... | Got: c4c5   | FEN: 1rq2r2/Q3pp1k/1B1p2pb/4n2p/2PN4/PP5P/3nBPP1/R2R2K1 w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....019 | S: 42/100 | Ex: b8a8 c6c5 c8d8 c8f8 d... | Got: g7e6   | FEN: 1rr3k1/p2qbpnp/Ppp3p1/3pP3/3P4/1Q1B1P2/1P1B1P1P/2R3RK b - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....020 | S:  8/100 | Ex: b2b4 c1d1 c1e1 c5c8 d... | Got: d2b4   | FEN: 1rrqb3/1p3kp1/p3p2p/P1Rp1p1P/3P1P2/6P1/1P1QBPK1/2R5 w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....024 | S: 78/100 | Ex: b3b4 d2b2 d2e3 d3b2 d... | Got: d3f4   | FEN: 2r1r1k1/1p1npp1p/p2pb1p1/q7/2PnP3/1PNN2PP/P2Q1PB1/2RR2K1 w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....026 | S:  0/100 | Ex: a1b1 a1c1 a1d1 a1e1 a... | Got: f1d1   | FEN: 2r2r1k/1bqnbppp/p3p3/1p1pP3/3B1P2/P1NB4/1PP2QPP/R4R1K w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....032 | S:  5/100 | Ex: a1f1 c2c4 d4c6 e2e4 g... | Got: d4c6   | FEN: 2r5/3npk1p/1p1p1r2/pP1P2p1/3N1pP1/1P3P2/2P1R2P/R5K1 w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....033 | S: 96/100 | Ex: a3a4 b2a4 b2d3 c1c2 c... | Got: b2d3   | FEN: 2rqr1k1/5ppp/n4b2/pbP5/3p4/P4NP1/1N2PPBP/2RQR1K1 w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....034 | S:  5/100 | Ex: a2a3 b2b3 b2b4 c1c2 c... | Got: h1e1   | FEN: 2rr2k1/1b3ppp/pp2pn2/2n5/2BNP3/4KPNP/PP4P1/2R4R w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....035 | S: 35/100 | Ex: b6b5 b7b8 b7c7 c8b8 c... | Got: e5d7   | FEN: 2rr2k1/1q3pp1/pp1pp2p/4n3/2PNP3/1P4P1/P1R1QPKP/3R4 b - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....037 | S: 80/100 | Ex: c1c2 c1d1 c4c5 e1d1 e... | Got: c1d1   | FEN: 3q2k1/1p1bprbp/3pn1p1/3N4/1PP5/r3B3/3QBPPP/2R1R1K1 w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....038 | S: 32/100 | Ex: a7a5 b7b5 b7b6 d8a8 d... | Got: f8e6   | FEN: 3r1nk1/pp2q2p/2p3p1/2NnPp2/5P2/1Q6/PP1rNRPP/2R3K1 b - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....039 | S: 25/100 | Ex: a6a5 b5b4 c7c5 c7c6 d... | Got: f8e8   | FEN: 3r1rk1/2pq2pp/p4pb1/1p6/4P1P1/2PnQN1P/PP1N1P2/RR4K1 b - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....040 | S: 80/100 | Ex: a1a2 a1b1 a3a4 b2c1 b... | Got: c3e4   | FEN: 3r1rk1/3n1pbp/1p1p2p1/pN1Ppn1q/2P3b1/PPN3P1/1B1Q1P1P/R3R1KB w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....041 | S:  0/100 | Ex: a3a4 b4b5 d1d3 e1e3 f... | Got: e1e2   | FEN: 3r2k1/1p2bpp1/pNrppnqp/8/1PPBP3/P4Q1P/5PP1/3RR1K1 w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....043 | S: 42/100 | Ex: a1a3 a4a5 b1b2 b1c1 b... | Got: a1a3   | FEN: 3rn1k1/1pqn1pp1/p3br1p/2P1p3/P3P3/3BBN1P/2P3PQ/RR5K w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....044 | S: 24/100 | Ex: b7a8 c6c5 d7b6 d8a8 e... | Got: d7b6   | FEN: 3rr1k1/1bqn1ppp/p1p5/1p2b3/4P3/P3BB1P/1PQ1NPP1/1R1R3K b - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....046 | S: 22/100 | Ex: a2c1 c2c3 c2c4 e1e2 e... | Got: f5g6   | FEN: 3rr1k1/1q2bp1p/2b3pB/3npP2/1p6/5B2/NPP3PP/3RQR1K w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....050 | S: 56/100 | Ex: a7a5 b6a5 b6b8 b6c5 d... | Got: f7g7   | FEN: 4r1k1/p2bpr1p/1qpp2pQ/5p2/2P4P/1P4N1/P2R1PP1/3R3K b - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....052 | S:  0/100 | Ex: a1a4 a1a5 b2b3 c2c3 d... | Got: a1a2   | FEN: 4rrk1/1q4pp/4p3/2bp4/5P2/3Q4/1PP3PP/R1B2R1K w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....055 | S:  0/100 | Ex: b7b5 c6c5 e7d7 e7f7 f... | Got: f5d5   | FEN: 5r1k/1p2q1pp/p1p2n2/5r2/3Pp3/4P2R/PPB2PQP/6RK b - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....059 | S:  0/100 | Ex: b2a2 b2c2 b2d2 b2d4 b... | Got: f5g6   | FEN: 5rk1/p2qp2p/1p1p1pp1/2nN1P1r/P1P1P3/1P2R1P1/1Q4KP/4R3 w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....060 | S: 89/100 | Ex: b5b4 b7a8 b7c6 b7c8 b... | Got: b7c6   | FEN: 6k1/1b2bp1p/p3p3/1p2P1p1/2r5/2N1BP2/PP4PP/3R2K1 b - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....061 | S: 42/100 | Ex: a1d1 b2b3 b2b4 e2c3 e... | Got: e3f2   | FEN: 6k1/1p1n1rbp/r2n1pp1/4p3/4P3/4B1P1/PP2N1BP/R4RK1 w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....062 | S: 41/100 | Ex: a3a4 c2c3 c4a2 c4b3 c... | Got: d1d5   | FEN: 6k1/1pr2rp1/p4q1p/2p1p3/2Q1P3/P6P/2P2PP1/3R1RK1 w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....063 | S:  0/100 | Ex: a1b1 c1d2 c1e3 c1g5 c... | Got: b5c6   | FEN: 6k1/2rqbrpp/2n2n2/pBpppN2/Pp4P1/2PP3P/1P2QP2/R1B1R1K1 w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....065 | S: 91/100 | Ex: a5c3 a5d2 a5d8 a5e1 b... | Got: a5e1   | FEN: 6k1/5r2/p4pp1/Br1pp3/2b5/6NP/1P3RP1/2R4K w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....069 | S:  0/100 | Ex: a1b1 a1c1 a2a3 a2a4 c... | Got: d3c5   | FEN: r1b2k2/ppq2p1p/1np3p1/4p3/2n5/3N2P1/P1Q1PPBP/R2R2K1 w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....072 | S: 17/100 | Ex: a5a3 b2b4 d1f1 d2b1 d... | Got: f4f5   | FEN: r1r3k1/p3pp1p/3p2pb/R1nP4/4PP2/2Pp4/1P1N2PP/2BR2K1 w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....075 | S:  5/100 | Ex: b2a1 b4b5 c4c5 c4d5 d... | Got: c4d5   | FEN: r2rn1k1/3nqppp/1pp1p3/3p4/pPPP4/P2QN1P1/1B2PP1P/2RR2K1 w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....076 | S: 30/100 | Ex: a7a5 a7a6 a8b8 a8c8 b... | Got: e5g5   | FEN: r3kr2/pp1b1pp1/2p1p2p/4q3/7Q/2PBPR2/PP4PP/2KR4 b q - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....078 | S: 62/100 | Ex: a2a3 a2a4 b2b3 d1a1 e... | Got: e4b1   | FEN: r3r1k1/1pb1qpp1/2p1b2p/p3P3/4Q3/2B1PN1P/PP3PP1/3RR1K1 w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....080 | S:  6/100 | Ex: a8c8 b7d8 c7c6 d6d5 d... | Got: f8e7   | FEN: r3rbk1/1npq1pp1/p2p3p/1p6/1P1P4/P1R1BN1P/5PP1/3QR1K1 b - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....083 | S:  0/100 | Ex: a1b1 a1c1 a3a4 b2b3 b... | Got: e3d5   | FEN: r4rk1/1p4bp/2qp1np1/p1n1p3/2P5/P1B1N3/1PB2PPP/R2Q1RK1 w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....086 | S:  0/100 | Ex: a1b1 a1c1 a2a3 a2a4 d... | Got: d3h7   | FEN: r4rk1/4bppp/b3pn2/1p1q2B1/3p4/3B1N2/PP2QPPP/R2R2K1 w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....087 | S: 59/100 | Ex: a2a3 a2a4 c1b1 c2b1 c... | Got: g3e4   | FEN: r4rkb/p2bp2p/2nq2pP/1p6/2pP4/2P1B1N1/P1B2PP1/2RQR1K1 w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....089 | S: 13/100 | Ex: c1c2 c3b1 c3e2 c4b5 c... | Got: c4b5   | FEN: r5k1/1rpn1pbp/p2pp3/1p4Np/2PP4/1PN1P1P1/P4PK1/2RR4 w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....091 | S:  5/100 | Ex: b1c1 b1d1 b1e1 b2b3 b... | Got: b1e1   | FEN: r5k1/5q1p/2ppNr1b/2pPp1pP/p1P3P1/P7/1PQ1RPK1/1R6 w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....093 | S:  5/100 | Ex: a3a2 a3a4 a7a6 b7b6 d... | Got: a3a2   | FEN: 1r1rb1k1/pp3pbp/4p1p1/1P2P3/2PBQ3/q7/P3B1PP/2R2R1K b - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....094 | S: 20/100 | Ex: a2a3 a2a4 b3b4 c1b1 c... | Got: c1b1   | FEN: 2r1k2r/1n2ppb1/p2p2p1/1p1P3p/8/1P2BP1P/P1P1BP2/2KR2R1 w k - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....095 | S: 66/100 | Ex: a3b4 a3c3 a5b3 b2b4 c... | Got: a3b4   | FEN: 2r2rk1/1pqn3p/p2p1npb/N2Pp3/2P2p2/Q4PP1/PP2BBKP/3RR3 w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....096 | S:  0/100 | Ex: a3a4 b4b5 c3a1 c3b2 c... | Got: c5a6   | FEN: 2r3k1/p1q1bpp1/2p2n2/2Np3r/1P1B3p/P1Q4P/5PP1/2R1R1K1 w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....097 | S: 87/100 | Ex: a2a4 a5b7 a5c4 a5c6 b... | Got: e3c3   | FEN: 3r2k1/4rppp/2ppbn2/Nq2p3/4P3/1P2Q1PP/P1PR1PBK/4R3 w - - 0 1
+[[31mFAIL[0m] ID: Advancement of a/....099 | S: 31/100 | Ex: a5a4 a8b8 a8c8 a8d8 a... | Got: a5a4   | FEN: r6r/4p1k1/3q1p2/p1pPn1p1/1p2P2p/4Q3/PP2BPPP/1R2R1K1 b - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.002     | S: 45/100 | Ex: b8a7 b8a8 b8c8 c5c4 e... | Got: b8a7   | FEN: 1k1r2r1/1p2bp2/4q2p/p1ppP3/6b1/2PQ2B1/PP2NPP1/R1R3K1 b - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.003     | S:  0/100 | Ex: a4a3 a7b7 a7e7 b8b7 b... | Got: e8d6   | FEN: 1q2n1k1/r4pb1/6p1/1bpPN1Pp/p1N1PP2/3B2KP/R3Q3/8 b - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.004     | S: 16/100 | Ex: b2b3 b2b4 c1d1 c1e1 c... | Got: c3d5   | FEN: 1r1qr1k1/1b1nbpp1/ppnp3p/8/2P1PBB1/2N5/PPNQ2PP/2R2RK1 w - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.008     | S: 98/100 | Ex: b7d5 b8c8 c7c5 c7c6 c... | Got: c7d8   | FEN: 1r2rbk1/1bqn1pp1/pp1p2np/3N1p2/2P1P3/PP2B1PB/4NQKP/2RR4 b - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.010     | S: 26/100 | Ex: a6a4 b8a8 b8b6 b8b7 b... | Got: b8b6   | FEN: 1r4k1/2qnbpp1/r3p2p/3pP2b/1p1N4/3P1NP1/nBPQ1PBP/R3R1K1 b - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.013     | S: 30/100 | Ex: c8d7 e5g4 e7b7 e7d7 f... | Got: f6g5   | FEN: 2b1rr2/4q1pk/p2ppb1p/1p2n3/4PNB1/P1N4Q/1PP3PP/R4R1K b - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.014     | S: 39/100 | Ex: e7a7 e7b7 e7c7 e7d7 e... | Got: f6d4   | FEN: 2b1rr2/4q1pk/p2ppb1p/1p5P/4PNQ1/P1N5/1PP3P1/R4R1K b - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.021     | S:  0/100 | Ex: b1b2 b3a2 b3a3 b3b2 b... | Got: d2g5   | FEN: 2n2rk1/p2b2bp/3p2p1/q1pPp2n/P1P1P3/1QN5/3BBNPP/1R4K1 w - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.022     | S: 61/100 | Ex: a1c1 a1f1 a5b4 a5b6 a... | Got: e3f4   | FEN: 2q3k1/1b4r1/p2np2p/QnBpN3/3P1pPp/1P1BP3/8/R5K1 w - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.023     | S: 47/100 | Ex: b5b4 b7a6 b7a8 c5e4 c... | Got: g7f6   | FEN: 2r1r1k1/1q1bp1bp/3p2p1/1pnP4/3NB3/1P2BP2/3Q2PP/1RR3K1 b - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.025     | S: 87/100 | Ex: c1a1 c1b1 c1c5 c1c8 c... | Got: c1c8   | FEN: 2r2nk1/1b3ppp/p2q1n2/1p1p4/3B1P1Q/1P1NP1P1/P5BP/2R3K1 w - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.029     | S:  5/100 | Ex: a5a6 d1c1 d1e1 d1f1 f... | Got: d1c1   | FEN: 2r5/3n2k1/5p2/Pp2nB1r/1B1pP2P/P1pP2P1/6K1/3R2R1 w - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.031     | S: 56/100 | Ex: a6a5 b7b5 b7b6 c8b8 c... | Got: d7c5   | FEN: 2rq1rk1/1p1npp1p/p2pb1p1/3N4/3QP3/1BP2P2/PP4PP/R4R1K b - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.039     | S: 23/100 | Ex: a6b5 a6c4 b6c4 c5d4 c... | Got: c8c7   | FEN: 2rr4/p3q1pk/bn2p2p/2b1Pp2/1pN4P/1P4Q1/P2BBPP1/2RR2K1 b - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.040     | S:  5/100 | Ex: b3a4 b3b4 f3e4 f3g2 f... | Got: b3b4   | FEN: 3b1k2/1b3p1p/pP4p1/3p4/1p1PnBP1/1K3B2/PP2N2P/8 w - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.041     | S: 91/100 | Ex: b2a2 b2b1 b2b3 b2d2 b... | Got: b2e2   | FEN: 3qr2k/p5r1/1pRp1n1b/1P1Pp2p/1P3p1P/2N1nP1Q/1R3BP1/5BK1 w - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.042     | S: 15/100 | Ex: a4b3 c3e2 d1d2 d3b4 d... | Got: g2h3   | FEN: 3r1rk1/1b2p1bp/pp6/4Pp1n/B2n4/2NNBP1p/PP3KPP/3RR3 w - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.043     | S: 92/100 | Ex: a5a4 b6b5 b7e4 b7f3 c... | Got: a5a4   | FEN: 3r2k1/1b3ppp/1p2pq2/p7/2P5/1Pn1QNP1/4PPBP/4R1K1 b - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.049     | S: 29/100 | Ex: c7b8 c7d8 d5f4 d7b6 d... | Got: d7b8   | FEN: 4qr1k/2bn1p1p/2N1p3/p2nP3/NpRQ1B2/1P4PP/P6K/8 b - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.052     | S: 95/100 | Ex: a7a6 b7a8 b7c8 d6c5 d... | Got: b7c8   | FEN: 4r1k1/pb6/2pbpp1B/2N2p2/3P4/1P6/P4KPP/R7 b - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.054     | S: 89/100 | Ex: c1d1 c1e1 c3a2 c3d1 c... | Got: c3e2   | FEN: 4r3/5pkp/2b1n1p1/3p3n/p1pP4/P1N1BP1B/1P3KPP/2R5 w - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.059     | S: 87/100 | Ex: a5b4 a7a8 d6c5 d6e7 d... | Got: e4e7   | FEN: 6k1/r6p/2pb1ppn/p1Np4/1P1PrPP1/P6P/2R5/3K1RB1 b - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.065     | S: 76/100 | Ex: a6c5 c2e2 e5c6 e5d7 e... | Got: e5f7   | FEN: 8/r2b1nk1/Np1qp2p/pP1pNrpP/Pp1P4/3Q1PP1/2R3K1/7R w - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.068     | S: 20/100 | Ex: a2a3 b2b3 c1d2 c1e3 c... | Got: f1d1   | FEN: r1b1r1k1/p1qn1ppp/2pb1n2/4pN2/Np2P3/7P/PPQ1BPP1/R1B2RK1 w - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.069     | S: 94/100 | Ex: a1c1 a3b2 c2e4 d1b1 d... | Got: d1e1   | FEN: r1b1r1k1/ppq2ppp/2n5/3p4/P1pPn3/B1P1PN2/2B2PPP/R2Q1RK1 w - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.074     | S: 71/100 | Ex: b6a5 b6d8 c8b8 c8d8 c... | Got: g5g4   | FEN: r1r3k1/1p1b1p2/1q1p3p/1NpPb1pB/PpP1Pp2/1P6/R4PPP/1Q1R3K b - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.075     | S: 92/100 | Ex: a1c1 a2a3 a2a4 b5d6 f... | Got: f1c1   | FEN: r1r4k/pb1nq1pp/1p1bp3/1N1p1p2/3Pn3/1P1NB1P1/PQ2PPBP/R4RK1 w - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.076     | S:  5/100 | Ex: a1c1 a1d1 a2a4 c2d2 c... | Got: e1d3   | FEN: r2q1rk1/2pb2b1/1p1p2pp/p1nP1p1n/2P5/2N1B1P1/PPQ1B2P/R3NRK1 w - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.089     | S:  0/100 | Ex: a8a7 d5c7 d5f6 e6c8 e... | Got: d5e3   | FEN: r3rbk1/1p3pp1/1qp1b2p/p1Nn4/2Rp4/P2P1BP1/1P1BPP1P/2Q1R1K1 b - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.093     | S: 33/100 | Ex: a8c8 c7b8 c7d8 c7e7 d... | Got: f6d7   | FEN: r4rk1/1bq2pp1/1p1bpn1p/p2nN3/P1BP4/5NP1/1P1BQPKP/R3R3 b - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.095     | S: 80/100 | Ex: a2a3 c3a4 c5a4 c5b7 c... | Got: c5b7   | FEN: r4rk1/1ppbq1bp/1n4p1/p1NPpp2/1n6/1PN1P1PP/PB3PB1/R2Q1RK1 w - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.097     | S: 97/100 | Ex: d6c5 d6c7 d6f4 d6f8 d... | Got: d7c5   | FEN: r5k1/pp1n1rpp/2pb1q2/2N5/1P3B2/P2P2P1/3Q1PKP/1R2R3 b - - 0 1
+[[31mFAIL[0m] ID: Bishop vs Knight.098     | S: 11/100 | Ex: b1d1 b3c3 b3d1 d2c1 d... | Got: e4g3   | FEN: r5k1/pp2q1bp/n2p2p1/2pPpr2/2P1Nn2/PQ3N1P/1P1B1PP1/1R2R1K1 w - - 0 1
+[[31mFAIL[0m] ID: Center Control.002       | S: 48/100 | Ex: a2a3 a4b4 b1a1 b3d5 b... | Got: d2e2   | FEN: 1k5r/1pq1b2r/p2p1p2/4n1p1/R3P1p1/1BP3B1/PP1Q3P/1K1R4 w - - 0 1
+[[31mFAIL[0m] ID: Center Control.008       | S: 64/100 | Ex: b6d5 b7a8 b8a8 c7c8 c... | Got: f8e7   | FEN: 1r1r1bk1/1bq2p1p/pn2p1p1/2p1P3/5P2/P1NBB3/1P3QPP/R2R2K1 b - - 0 1
+[[31mFAIL[0m] ID: Center Control.009       | S: 96/100 | Ex: c6a4 c6a6 c6c5 c6c7 c... | Got: c6e8   | FEN: 1r2qrk1/2p3pp/2Qb1p2/2p1pP2/8/BP6/3P1PPP/R4RK1 w - - 0 1
+[[31mFAIL[0m] ID: Center Control.012       | S: 24/100 | Ex: e3e1 f1e2 f1g1 f2f3 g... | Got: h4h5   | FEN: 1r3r1k/6pp/p2p4/q3pb2/2P4P/1P2Q1P1/P4PB1/R4K1R w - - 0 1
+[[31mFAIL[0m] ID: Center Control.014       | S: 24/100 | Ex: a6a5 b8b7 b8c8 b8f8 c... | Got: d7e5   | FEN: 1r4k1/p1rnpp2/p2p1bp1/2qP4/4PQ2/1PN4P/P2B2P1/1R3R1K b - - 0 1
+[[31mFAIL[0m] ID: Center Control.015       | S: 34/100 | Ex: b8a8 b8b7 c5b4 c7a7 c... | Got: g8f6   | FEN: 1rb2rnk/2qn4/pp1p3p/2pP1p2/PPPbp2B/1QN5/R2NBPPP/1R4K1 b - - 0 1
+[[31mFAIL[0m] ID: Center Control.018       | S:  0/100 | Ex: c1c2 e2c2 e2d3 e2e1 e... | Got: f4f5   | FEN: 2br4/2q2k1p/p2bp1p1/1r6/4BP2/2p1B3/P3Q1PP/2R2R1K w - - 0 1
+[[31mFAIL[0m] ID: Center Control.020       | S: 86/100 | Ex: c7b7 c7b8 c7c4 c7c6 c... | Got: c7b7   | FEN: 2r1r1k1/p1qn1pp1/1p3n1p/3p4/3P3B/P1NQ4/1P3PPP/2RR2K1 b - - 0 1
+[[31mFAIL[0m] ID: Center Control.021       | S:  6/100 | Ex: a2a3 b4d3 b4d5 c1a1 c... | Got: b4d3   | FEN: 2r1rbk1/pp2p2p/6p1/n4p2/1NbP4/4PBBP/P4PP1/2RR2K1 w - - 0 1
+[[31mFAIL[0m] ID: Center Control.027       | S:  0/100 | Ex: a4a5 c1b1 c2b1 c2d3 c... | Got: d1d2   | FEN: 2r3k1/ppr2p2/4b2p/4b1p1/P7/2N1P3/1PB2PPP/2RRK3 w - - 0 1
+[[31mFAIL[0m] ID: Center Control.037       | S: 20/100 | Ex: b2c3 b2d4 b2e5 d1d4 f... | Got: b2e5   | FEN: 3r1qk1/6pp/1p1np3/2n4Q/p7/P3N1P1/1B2PP1P/3R2K1 w - - 0 1
+[[31mFAIL[0m] ID: Center Control.038       | S:  0/100 | Ex: b2b3 c3e2 c3e4 d1d2 d... | Got: c3d5   | FEN: 3r1r2/2n3kp/1pp1p1p1/p2nP3/P7/2NR2PB/1P3P1P/3R2K1 w - - 0 1
+[[31mFAIL[0m] ID: Center Control.040       | S: 96/100 | Ex: c4d2 c4e5 c6a4 c6b5 c... | Got: c6c8   | FEN: 3r2k1/1p1b1pp1/p1q4p/8/2nNRB2/2P3P1/P4P1P/4Q1K1 b - - 0 1
+[[31mFAIL[0m] ID: Center Control.044       | S: 32/100 | Ex: a6a5 b7b6 d8d4 d8d6 d... | Got: d8d7   | FEN: 3r4/1p4kp/p1b3p1/2q1p3/P1P5/1B3P1P/4Q1P1/1R5K b - - 0 1
+[[31mFAIL[0m] ID: Center Control.048       | S:  0/100 | Ex: d1c1 d1e1 d1f1 d2e1 d... | Got: g3g4   | FEN: 4r1k1/1pb1qp2/p1b3p1/3p1rN1/P4P1p/1PPRB1P1/3Q3P/3R2K1 w - - 0 1
+[[31mFAIL[0m] ID: Center Control.049       | S: 46/100 | Ex: d7b7 d7c7 d7e7 e8f8 f... | Got: f2e3   | FEN: 4r1k1/3r1p1p/3p2p1/3P2Q1/4PR2/2n2B1P/5qPK/R7 b - - 0 1
+[[31mFAIL[0m] ID: Center Control.054       | S:  0/100 | Ex: b7a8 b7d7 b7e4 b7f7 e... | Got: b7d5   | FEN: 4r2k/1q4p1/p2Bp2p/P3P3/1PpN2P1/2Pb2b1/Q7/K2R4 b - - 0 1
+[[31mFAIL[0m] ID: Center Control.056       | S:  0/100 | Ex: a7a6 a7a8 b5b4 b7c6 c... | Got: f6g4   | FEN: 5n2/kbr3p1/5n1p/Pp2pP2/4P1PP/2p5/P1Br4/2RNRNK1 b - - 0 1
+[[31mFAIL[0m] ID: Center Control.057       | S:  0/100 | Ex: a2a3 a2a4 b1a1 c2d3 c... | Got: c4e4   | FEN: 5r1k/p1r3np/1p3q2/2p4P/2Q2P2/8/PPB5/1K1R1R2 w - - 0 1
+[[31mFAIL[0m] ID: Center Control.061       | S: 64/100 | Ex: b6b5 c6a5 c6a7 c6b8 c... | Got: c6e7   | FEN: 5rqk/3b2pp/1pnNp3/3r4/6P1/PQ2B1RP/5PK1/3R4 b - - 0 1
+[[31mFAIL[0m] ID: Center Control.073       | S: 98/100 | Ex: a8a7 a8b8 c7c8 c7e7 c... | Got: d6d3   | FEN: k2r4/2q3p1/p1Pr1p2/P1R1p2P/5pP1/8/1PQp1P2/1K1R4 b - - 0 1
+[[31mFAIL[0m] ID: Center Control.075       | S: 47/100 | Ex: c1c2 c3c2 c3d2 c3d3 c... | Got: c1c2   | FEN: r1q1r1k1/1p2b1pp/2p1P1b1/3p1p2/p2N1B2/P1Q1PP1P/1P4P1/2RR2K1 w - - 0 1
+[[31mFAIL[0m] ID: Center Control.078       | S: 87/100 | Ex: a1c1 d1a4 d1d2 d1d5 e... | Got: f1e1   | FEN: r2q1rk1/pp3pbp/3P2p1/4nb2/2p2N2/4B1P1/PP3PBP/R2Q1RK1 w - - 0 1
+[[31mFAIL[0m] ID: Center Control.080       | S: 49/100 | Ex: d2d3 d2d4 d2e3 d6e7 f... | Got: h1g1   | FEN: r2qk2r/3nbpp1/2bBp2p/p3P3/1p6/8/PPPQBPPP/1NKR3R w kq - 0 1
+[[31mFAIL[0m] ID: Center Control.087       | S: 22/100 | Ex: a4b5 d4b2 d4c3 d4d1 d... | Got: e1g1   | FEN: r3r1k1/1b2qpp1/p3pn1p/1pPp4/PP1Q3P/1B2PPB1/6P1/R3K2R w KQ - 0 1
+[[31mFAIL[0m] ID: Center Control.088       | S: 97/100 | Ex: a1b1 a1c1 a2a4 d1b1 f... | Got: f4d6   | FEN: r3r1k1/pp2qpb1/1n2b1pp/8/5B2/1P3NP1/P4PBP/R2QR1K1 w - - 0 1
+[[31mFAIL[0m] ID: Center Control.096       | S: 88/100 | Ex: b4c2 c4a3 c4a5 c4b2 c... | Got: c4a3   | FEN: r5k1/p2b1pbp/6p1/2p5/1nn5/2N3P1/PP1N1P1P/R1B2RK1 b - - 0 1
+[[31mFAIL[0m] ID: King Activity.001        | S: 55/100 | Ex: b5b4 b8a7 b8a8 b8c7 b... | Got: b8c8   | FEN: 1k2r3/1p1bP3/2p2p1Q/Ppb5/4Rp1P/2q2N1P/5PB1/6K1 b - - 0 1
+[[31mFAIL[0m] ID: King Activity.005        | S:  0/100 | Ex: b7b6 e8f8 f6e4 f6g8 f... | Got: g4g3   | FEN: 1r2r3/1p1b3k/2p2n2/p1Pp4/P2N1PpP/1R2p3/1P2P1BP/3R2K1 b - - 0 1
+[[31mFAIL[0m] ID: King Activity.006        | S: 46/100 | Ex: b6a8 b6c8 b6d7 b8b7 e... | Got: f8f6   | FEN: 1r2rqk1/8/bn1p3p/B1p2p2/p1PnpP2/P3R2Q/1P3NPP/2R2BK1 b - - 0 1
+[[31mFAIL[0m] ID: King Activity.008        | S:  8/100 | Ex: a2a3 a2a4 c7a6 c7b5 d... | Got: d3e3   | FEN: 1r3k2/2N2pp1/1pR2n1p/4p3/8/1P1K1P2/P5PP/8 w - - 0 1
+[[31mFAIL[0m] ID: King Activity.009        | S: 51/100 | Ex: b3b2 b8b6 b8e8 d4e3 d... | Got: b3b2   | FEN: 1r3k2/3n1p2/6pN/2p1PP2/p2q4/Pr1p2P1/1P1R1R1P/3Q2K1 b - - 0 1
+[[31mFAIL[0m] ID: King Activity.012        | S: 17/100 | Ex: a5a4 b5b4 b7a6 c6c5 c... | Got: b5b4   | FEN: 2k3r1/1b2bp2/2p2n2/pp2p1Bp/2p1P2P/P2n1B2/1P1RN1P1/5K1R b - - 0 1
+[[31mFAIL[0m] ID: King Activity.013        | S:  0/100 | Ex: a6a5 b7a8 b7d5 c8b8 d... | Got: c4c3   | FEN: 2kr1b1r/1bq2pp1/p3pn2/7p/1ppPN2P/4PQ2/PPBB1PP1/R1R3K1 b - - 0 1
+[[31mFAIL[0m] ID: King Activity.020        | S: 86/100 | Ex: c1a1 c1b1 c1c3 c1e1 f... | Got: c1c3   | FEN: 2r2k2/4pp2/pp6/2pPn3/4PN1p/1P5P/P4P2/2R2K2 w - - 0 1
+[[31mFAIL[0m] ID: King Activity.021        | S:  0/100 | Ex: b2b3 c2b1 d1d2 d1d5 d... | Got: d1d7   | FEN: 2r2k2/p4pp1/b3n2p/8/1pp1P2P/4NPP1/PPB3K1/3R4 w - - 0 1
+[[31mFAIL[0m] ID: King Activity.024        | S: 63/100 | Ex: a1a3 a1a5 a1a7 b2b4 b... | Got: b5a7   | FEN: 2rb2k1/1p1q3p/1P2b1p1/1N3p2/3B4/4PP1P/1Q4P1/R5K1 w - - 0 1
+[[31mFAIL[0m] ID: King Activity.028        | S: 71/100 | Ex: b7b6 d8c7 d8c8 d8d7 e... | Got: f8h6   | FEN: 3k1b1r/pp3p1p/5P2/3Bn3/8/2N5/PP5P/2K4R b - - 0 1
+[[31mFAIL[0m] ID: King Activity.031        | S:  0/100 | Ex: d8c8 d8d6 d8d7 d8e8 e... | Got: d4b3   | FEN: 3r1k2/4qp1p/6p1/p3p1P1/P2nQ2P/1B1R4/5PK1/8 b - - 0 1
+[[31mFAIL[0m] ID: King Activity.032        | S:  0/100 | Ex: a7a6 d5d2 d5d3 d5h5 d... | Got: f8g8   | FEN: 3r1k2/p4pp1/2n1p2p/1NPr4/P7/6P1/5P1P/2R1RK2 b - - 0 1
+[[31mFAIL[0m] ID: King Activity.033        | S: 43/100 | Ex: d8d1 e7c5 f7f5 f7f6 f... | Got: g6h7   | FEN: 3r1r2/p3bpp1/1p2p1k1/4P2p/2P2P2/5K1P/PP3B2/3R1R2 b - - 0 1
+[[31mFAIL[0m] ID: King Activity.036        | S:  0/100 | Ex: b7b4 c6b5 d8a8 d8b8 d... | Got: a5a4   | FEN: 3r2k1/1rq2p2/2bp2pP/p3p2n/4P3/1BN2P2/1PP5/R2RQK2 b - - 0 1
+[[31mFAIL[0m] ID: King Activity.037        | S:  0/100 | Ex: c3b1 c3b5 c3d1 c3d5 c... | Got: d8b8   | FEN: 3r2k1/2p2ppp/8/P1b1N3/8/1Bn1nP2/5B1P/4K2R b - - 0 1
+[[31mFAIL[0m] ID: King Activity.038        | S:  0/100 | Ex: b1b2 e2e1 e2e3 e2e4 e... | Got: e2b2   | FEN: 3r2k1/4pp1p/2q3p1/8/1P6/r1P2P2/P3Q1PP/RKR5 w - - 0 1
+[[31mFAIL[0m] ID: King Activity.044        | S: 25/100 | Ex: d8a8 d8b8 d8d7 e8d7 f... | Got: d8d7   | FEN: 3rbk2/5p1p/1p2p3/pP1nr1p1/P2RN1P1/3BP3/3K3P/3R4 b - - 0 1
+[[31mFAIL[0m] ID: King Activity.045        | S: 41/100 | Ex: a6a5 a7b7 a7c7 a7d7 a... | Got: e6g4   | FEN: 3rr1k1/q4pp1/p1ppbR1p/2P4R/3PP3/2N1Q2P/6P1/6K1 b - - 0 1
+[[31mFAIL[0m] ID: King Activity.046        | S: 98/100 | Ex: a7a5 c7b7 c7b8 c7c6 c... | Got: c7c8   | FEN: 3rr3/p1k4p/1p3p1b/2p2p1n/5P2/2P1BR2/PP1N3P/1K2R3 b - - 0 1
+[[31mFAIL[0m] ID: King Activity.047        | S: 29/100 | Ex: c3d1 c6d5 e8d7 e8d8 e... | Got: e8f8   | FEN: 4k3/1p4pp/p1b2p2/P4P2/1PNp2qN/2nP2P1/3Q1K1P/8 b - - 0 1
+[[31mFAIL[0m] ID: King Activity.048        | S: 79/100 | Ex: c3c8 c3d3 c3e3 c3f3 f... | Got: f2g1   | FEN: 4k3/3p3p/p2Pn1p1/Pr2Pp2/5P1P/1NR3P1/5K2/8 w - - 0 1
+[[31mFAIL[0m] ID: King Activity.062        | S: 71/100 | Ex: a4b6 b3b4 e3e4 f4f2 f... | Got: f4f3   | FEN: 4rnk1/1p2rp1p/2p3p1/3p1B1P/N4R2/pP2P1R1/P5P1/6K1 w - - 0 1
+[[31mFAIL[0m] ID: King Activity.063        | S: 37/100 | Ex: a2a3 a5c6 b2c3 b2d4 b... | Got: b2f6   | FEN: 4rrk1/7p/pn1p1npb/N2P4/1P6/5BP1/PB6/3R1RK1 w - - 0 1
+[[31mFAIL[0m] ID: King Activity.070        | S:  0/100 | Ex: a5a6 a5b5 d4d3 f7c4 f... | Got: a5a7   | FEN: 6k1/5b1p/6p1/r1P5/3pNK2/5P1P/p5P1/R7 b - - 0 1
+[[31mFAIL[0m] ID: King Activity.074        | S: 50/100 | Ex: b1b3 b1d3 b1e4 b5b6 c... | Got: g1f1   | FEN: 6rk/q2p3p/4pp2/1P1n3P/2R5/p4NP1/P4P2/1Q4K1 w - - 0 1
+[[31mFAIL[0m] ID: King Activity.075        | S: 12/100 | Ex: b7a8 b7c8 b7e4 d7b6 d... | Got: d7e5   | FEN: 7k/1b1n1pp1/p2Ppq1p/1p5Q/1P1N3P/P3P3/B5P1/6K1 b - - 0 1
+[[31mFAIL[0m] ID: King Activity.078        | S: 64/100 | Ex: a2a1 a2b1 a2b2 a2b3 c... | Got: f4f5   | FEN: 7k/3r1p2/p1r1p2p/1q1n3P/1PNRQP2/P7/K7/2R5 w - - 0 1
+[[31mFAIL[0m] ID: King Activity.081        | S: 85/100 | Ex: b6b5 b7c6 b7c7 b7c8 c... | Got: e4e7   | FEN: 8/1k1r3p/pp3p1R/2pn4/4r3/N1P5/PP5P/2KR4 b - - 0 1
+[[31mFAIL[0m] ID: King Activity.092        | S: 55/100 | Ex: a7a6 a7a8 e2a6 f4e5 g... | Got: f4e5   | FEN: 8/R2n4/pr1k2p1/4pp1p/5P2/1N2P1PP/Pn2B1K1/8 w - - 0 1
+[[31mFAIL[0m] ID: King Activity.093        | S: 74/100 | Ex: d8a5 d8b8 d8c7 d8e7 d... | Got: f6e7   | FEN: b2q2r1/5p2/2prpkp1/1pN5/p2P1PP1/P3PQ1p/1PB4P/2R3K1 b - - 0 1
+[[31mFAIL[0m] ID: King Activity.097        | S: 47/100 | Ex: f7a2 f7a7 f7d5 f7d7 f... | Got: g7f6   | FEN: r2r4/5qbk/2p3pp/pp2p3/Pn1P1p1Q/4P2N/1P1N1PPP/2RR2K1 b - - 0 1
+[[31mFAIL[0m] ID: King Activity.099        | S: 96/100 | Ex: b2b1 b2c1 b4b5 c2d2 e... | Got: b2b1   | FEN: r5k1/4pp1p/6p1/3q4/1P6/r1P2P2/PKR1Q1PP/R7 w - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....002 | S: 80/100 | Ex: b4b5 c5a5 c5e7 e1a1 e... | Got: f3d4   | FEN: 1q2bn2/6pk/2p1pr1p/2Q2p1P/1PP5/5N2/5PP1/4RBK1 w - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....006 | S: 54/100 | Ex: b2d3 b8b4 c5c4 d8c8 d... | Got: c5c4   | FEN: 1r1r4/R3pk2/4n1p1/2p2p2/8/4B3/Pn2BPPP/5RK1 b - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....009 | S: 22/100 | Ex: b1a1 b1a2 d1c1 d4e6 d... | Got: d4e6   | FEN: 1r2r2k/2b2q1p/p4p2/3Pn2P/3N1N2/1P2R3/4Q3/1K1R4 w - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....014 | S:  0/100 | Ex: a1b1 a1c1 c3e4 d1d2 d... | Got: a2b1   | FEN: 2b2rk1/1r1nbppp/4p3/1p2P3/p4P2/P1N1B3/BPP4P/R2R2K1 w - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....017 | S: 14/100 | Ex: a5a4 b5b4 b7a6 c5b3 c... | Got: c5e4   | FEN: 2k3r1/1b2bp2/2p2n2/ppn1p1Bp/2p1P2P/P4B2/1P1RN1P1/4K2R b K - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....020 | S: 43/100 | Ex: c4a5 c6c7 c8c7 c8d8 d... | Got: c8c7   | FEN: 2r3k1/3q1pp1/ppr1p1np/4P3/P1nPQ3/5N1P/5PPK/RRB5 b - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....021 | S:  0/100 | Ex: a1d1 a1e1 d2e4 d2f3 e... | Got: e2e1   | FEN: 2r3k1/p1r1qpb1/1p2p1p1/nR2P3/P2B4/2P5/3NQPP1/R5K1 w - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....022 | S: 61/100 | Ex: b6d5 c4c3 c8b8 c8c7 d... | Got: d8c7   | FEN: 2rq1rk1/1p2b1p1/pn2p3/2p1Pn2/2pP3p/5N1P/PPQ2BP1/1BRR2K1 b - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....023 | S:  0/100 | Ex: a7a6 a8c8 a8e8 a8f8 a... | Got: f7d8   | FEN: r7/p1r2nk1/1pNq1np1/1P1p1p2/P2Qp3/4P1P1/2R1P1BP/2R3K1 b - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....026 | S: 53/100 | Ex: a1a2 a1b1 b2b3 b2b4 c... | Got: c3a4   | FEN: 2rr4/Bp3k1p/5pp1/8/2n3b1/P1N5/1PP2PPP/R1R3K1 w - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....034 | S:  0/100 | Ex: a7b8 d7f7 d8a8 d8b8 d... | Got: e6g5   | FEN: 3r4/bp1r2pk/p3npqp/P2Np3/1PR1P2B/5Q1P/2P3P1/5R1K b - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....035 | S:  0/100 | Ex: a7a5 c5c4 c7c6 d7b5 d... | Got: d7e6   | FEN: 3r4/r1pb3p/1p4kB/2p3P1/4pP2/1P2NnKP/PR3R2/8 b - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....036 | S:  0/100 | Ex: d8b8 d8c8 e7h4 f5d4 f... | Got: e7c7   | FEN: 3rb1k1/4qpbp/1p2p1p1/1P3n2/Q1P2p2/2N2B1P/6PK/1NR2R2 b - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....038 | S: 78/100 | Ex: a7a5 a7a6 b7a8 c6c7 c... | Got: f6h4   | FEN: 3rr1k1/pb1n1pp1/2q2b1p/2p5/2P1p2N/1P2B1P1/P1QR1PBP/3R2K1 b - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....041 | S: 93/100 | Ex: e2d2 e2g2 f1b1 f1c1 f... | Got: f1h1   | FEN: 4k2r/1r2np2/2q1p1p1/p2pP3/n1pP1PP1/1pP1NNK1/1P2Q3/R4R2 w k - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....045 | S: 30/100 | Ex: a3a4 c3a5 c3b2 c3b3 c... | Got: c3c7   | FEN: 4r1k1/2pbqp1p/1r3p2/pP1p4/8/P1QBPN2/3P1PPP/4K2R w K - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....048 | S: 20/100 | Ex: b7b5 c5d3 c5e4 e5d4 e... | Got: e8a8   | FEN: 4r3/1p3pk1/2p2n1p/2n1qP2/5bPQ/P3pB2/2R5/1R3N1K b - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....049 | S: 61/100 | Ex: a2a3 b2b3 c1c2 c1c3 d... | Got: h1g1   | FEN: 4rrk1/p4pp1/1b1p3p/2pP4/6q1/5N2/PP3PPP/2RQ1R1K w - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....054 | S: 97/100 | Ex: b6a4 b6d5 b6d7 d6d7 f... | Got: b6d5   | FEN: 5rk1/6pp/pn1qp1r1/1p2R3/2pP1P2/P1P2Q1P/5P2/2B1R2K b - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....055 | S: 18/100 | Ex: c1b2 c1d2 c1f4 c1g5 e... | Got: e2e1   | FEN: 5rk1/pb1qbppp/1p6/n1rpP3/7P/2P2NP1/P3QPB1/R1BR2K1 w - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....057 | S: 88/100 | Ex: a7a5 a7a6 d7a4 d7c8 d... | Got: h6g6   | FEN: 6k1/p2b3n/1p2pn1q/3r1p2/5P1B/P5NR/1Q2B1P1/4K3 b - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....059 | S:  0/100 | Ex: b3a3 d1a1 d1b1 d1d2 d... | Got: h4h5   | FEN: 8/1b5p/1p1rrkp1/p2p1p2/P2P3P/1R1B1N2/nP3PPK/3R4 w - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....060 | S: 58/100 | Ex: b7b5 b7b6 c3b3 c3d3 e... | Got: e7d6   | FEN: 8/1p2kp2/p3pn2/4n1p1/1P2P3/P1r1NB1P/5PPK/R7 b - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....063 | S: 88/100 | Ex: d7a4 d7b5 d7e8 f6d5 f... | Got: h2f1   | FEN: 8/pB1b2k1/1p2pn2/5p2/5P1B/P7/3K1NPn/8 b - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....065 | S: 10/100 | Ex: a1b2 c3a2 c3d1 c3e2 d... | Got: d4e3   | FEN: b4q2/1r5k/3p4/1p1Pn2B/1PpQP3/2N4P/6P1/B5K1 w - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....067 | S: 94/100 | Ex: a2a4 c3a4 c3e4 d1a4 d... | Got: d3e4   | FEN: r1b1k1nr/pp2p1bp/1q1p2p1/2pP4/2Pnp3/2NB1N1P/PP1B1PP1/R2QK2R w KQkq - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....071 | S:  5/100 | Ex: a1b1 a1c1 a2a3 a2a4 c... | Got: a1c1   | FEN: r1b2rk1/pp3pp1/2np2qp/b1p1p3/2P1P3/2NPB1P1/PP3PBP/R2Q1RK1 w - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....076 | S: 14/100 | Ex: a2b1 b3a3 b3b1 b3b2 b... | Got: d2e3   | FEN: r2q1bk1/1p1brpp1/p1np1n1p/4p3/PN2P3/1QPP1N1P/B2B1PP1/R3R1K1 w - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....078 | S: 99/100 | Ex: a6a5 b4b3 d6d5 d7e5 d... | Got: e7g5   | FEN: r2q1rk1/3nbpp1/p2p3p/8/1p1BP3/3B2Q1/PPP4P/2KR3R b - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....079 | S:  0/100 | Ex: a2a4 b2b3 d1c2 d1d2 d... | Got: d5d6   | FEN: r2q1rk1/pp1bp1bp/5np1/2pP1p2/8/2N2NP1/PP2PPBP/2RQ1RK1 w - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....080 | S: 76/100 | Ex: b1a1 b1b4 b1f1 b1g1 c... | Got: f4g5   | FEN: r2q2kr/p3n3/1p1Bp1bp/3pP1pN/5PPn/3B3Q/2P2K2/1R5R w - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....088 | S:  5/100 | Ex: d1c1 d2e4 d2f1 e3c3 e... | Got: e3e4   | FEN: r3r1k1/3nbppp/p1q5/1pp1P2b/5B2/1P2QN2/1P1N1PPP/3RR1K1 w - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....098 | S:  5/100 | Ex: c1e1 c5b4 c5b5 c5c7 c... | Got: c5c7   | FEN: r6k/pp3pp1/1n6/1pQp1q2/3PrN1p/P3P2P/5PP1/2R2RK1 w - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....099 | S:  0/100 | Ex: a8b8 a8d8 a8e8 b7c7 c... | Got: d7e8   | FEN: r6r/1q1bbkp1/p1p1pn2/5p1p/N2Bp3/2Q3P1/PPP2PBP/R2R2K1 b - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....102 | S:  0/100 | Ex: c1c3 e1d1 e4c5 e4d6 f... | Got: c1c6   | FEN: 1r1q1nk1/p3bpp1/b1p1p2p/4P3/1P2NB2/P4N2/5PPP/2Q1R1K1 w - - 0 1
+[[31mFAIL[0m] ID: Knight Outposts/R....103 | S: 15/100 | Ex: a1a3 a1d1 b4b5 d2b2 d... | Got: b4b5   | FEN: 1nr3k1/1pr2pp1/p3bn2/P3p2p/1PP4P/3BNPP1/3RN1K1/R7 w - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....006 | S:  0/100 | Ex: b8c7 b8e5 c5c6 c5c7 c... | Got: f6e4   | FEN: 1q1rb1k1/5p1p/p3pnpb/P1r5/2B1P3/1P3P2/2R1N1PP/R2NQ2K b - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....009 | S: 26/100 | Ex: c3a5 c3b2 c3b4 c3d2 c... | Got: c3b4   | FEN: 1r2r1k1/5pp1/R2p3n/3P1P1p/2p2PP1/1qb2B1P/Q7/2BR1K2 b - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....013 | S: 69/100 | Ex: a6b6 b8a8 b8b6 b8d8 b... | Got: b8e8   | FEN: 1r4k1/4qpp1/r1b4p/pp1pPB2/n1pP3P/2P2N2/R1P3P1/R3Q1K1 b - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....016 | S: 22/100 | Ex: b1b2 b1c1 c3c1 d2c1 d... | Got: f1g3   | FEN: 1rb1r1k1/2q1bp1p/3p1np1/p1nPp3/4P3/1PRB1N1P/3BQPP1/1R3NK1 w - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....024 | S: 99/100 | Ex: c2b3 c2d3 c4a5 c4d2 c... | Got: e5f5   | FEN: 2r1r1k1/pb2bp1p/8/2p1Rp1q/P1N5/6P1/2Q2P1P/3R1BK1 w - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....025 | S: 77/100 | Ex: c8c7 c8d8 e7a3 e7c5 e... | Got: e7c5   | FEN: 2r1rk2/1p2bpp1/p4nbp/4R3/P2R1P1B/2N5/1P2B1PP/5K2 b - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....026 | S: 36/100 | Ex: a3a4 c6a7 c6e5 d6b4 d... | Got: d6e5   | FEN: 2r2n2/6k1/1pNBbb2/3p1p2/3P1P2/P4KP1/2R5/4N3 w - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....028 | S:  5/100 | Ex: c6a7 c6e5 c6e7 d7f5 e... | Got: g4e3   | FEN: 2r3k1/1p1b1pb1/1qn3p1/pN1p2Pp/P3r1nP/1NP3B1/1P2BPR1/R2Q2K1 b - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....029 | S: 87/100 | Ex: a1a6 a1f1 c3a4 c3d1 c... | Got: a1a6   | FEN: 2r3k1/2q1bpp1/p1P2n1p/4pb2/8/2N1BB2/1rPR1QPP/R5K1 w - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....031 | S: 25/100 | Ex: a7a5 b5b4 b5c4 d5c4 f... | Got: b5c4   | FEN: 2r3k1/p2q1pp1/2p4p/1p1p1b1n/2PP4/P1QP1PP1/3B3P/4RBK1 b - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....032 | S: 89/100 | Ex: c5a4 c5b3 c5e4 c8c7 d... | Got: d5e4   | FEN: 2r5/4k1p1/4p2p/1pnbPp2/3B4/2P5/1PB3PP/5R1K b - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....034 | S: 44/100 | Ex: a4d7 c4e3 d1e1 d2d7 d... | Got: a4d7   | FEN: 2rn4/2p1rpk1/p3n1p1/P3N1P1/BpN1b2P/1P4K1/2PR4/3R4 w - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....035 | S: 44/100 | Ex: c3b5 d1e1 d1f1 d2d3 d... | Got: e2d3   | FEN: 2rq1rk1/pb3p1p/1p1p2p1/4p3/1PPnP3/2N2P2/P2QB1PP/2RR2K1 w - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....036 | S:  5/100 | Ex: a3c5 a3e7 a3f8 b7b5 c... | Got: c8c3   | FEN: 2rr2k1/1p3pp1/p3b2p/3pP2Q/3B4/bqP5/1P1RB1PP/1K3R2 b - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....037 | S:  5/100 | Ex: a2a3 a2a4 b3b4 e3c2 e... | Got: e3f5   | FEN: 3Q4/2p2k1p/p3b1p1/2p3P1/4Pq2/1P2NP2/P5K1/8 w - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....040 | S: 70/100 | Ex: d8a8 d8b8 d8c8 d8e8 f... | Got: d8c8   | FEN: 3r1r2/1p2k1pp/p2ppn2/4n3/P3P3/1BN4P/1PP2RP1/5R1K b - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....043 | S:  0/100 | Ex: c3d1 c3e4 d3d1 d4b3 d... | Got: c3a4   | FEN: 3r2k1/1b3qp1/pp2p1p1/4P1P1/2PN1P1P/b1NR2K1/P3Q3/8 w - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....044 | S:  7/100 | Ex: a2a4 c4e3 f2c2 f2d2 f... | Got: g2g1   | FEN: 3r2k1/1p3ppp/p3nn2/Qbp4r/2N5/1B3PP1/PP3RKP/8 w - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....048 | S: 13/100 | Ex: d2d4 e2d1 g2g3 g2g4 h... | Got: h1c1   | FEN: 3rr3/1k3p1p/p2P1np1/8/pn6/1bN1NP2/1P1RBKPP/7R w - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....049 | S:  0/100 | Ex: b5b6 c1a1 c3a5 c3b3 c... | Got: g2h1   | FEN: 4qnk1/1p1rbppb/4p2p/1P2P2P/3N1P2/2Q2BP1/5BK1/2R5 w - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....054 | S:  5/100 | Ex: a7a5 a7a6 e8e6 g5d2 g... | Got: g5d8   | FEN: 4r1k1/p6p/2pB2pb/3pP1q1/8/1P5b/P1P2Q1P/3BR2K b - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....056 | S: 29/100 | Ex: a7c5 a7c7 b4a3 b4c5 b... | Got: f6g4   | FEN: 4r3/q4pkp/2p1bnp1/p3p3/PbP1P2P/4NNP1/1RQ2P2/5BK1 b - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....058 | S: 44/100 | Ex: d4d1 d5d6 g1f1 g1f2 g... | Got: d5d6   | FEN: 4rk2/1b2rqb1/p4p2/1p1P1Pp1/2pRp1N1/P1N1R1PQ/1P4P1/6K1 w - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....059 | S: 84/100 | Ex: b4b5 c3c4 d4b3 e2a2 e... | Got: e2e1   | FEN: 5k2/1p1n1pp1/p5bp/P2p4/1P1N4/2P2PP1/4QK1P/2q2B2 w - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....061 | S: 75/100 | Ex: a6a5 e5c3 e5c7 e7d7 e... | Got: e5c7   | FEN: 5k2/4rpp1/pp6/4b2p/4N1q1/2NRB1P1/BP3P1P/6K1 b - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....062 | S:  0/100 | Ex: a1a2 a1b1 a1c1 a1d1 a... | Got: f3f2   | FEN: 5r1k/2q2rpp/2BbRn2/p1pP1P2/1p1p2PB/1P1P1Q1P/6K1/R7 w - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....065 | S:  5/100 | Ex: a1a4 a1b1 a1c1 c3a4 e... | Got: c3a4   | FEN: 5rk1/p3qp1p/2r1p2Q/2b2p2/1n5N/2N3P1/1P2PP1P/R2R2K1 w - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....068 | S: 10/100 | Ex: a2a3 a2a4 c1a3 c1b2 c... | Got: e3e4   | FEN: 6k1/p4ppp/4p3/3n4/8/1Pn1PP1P/P3b1P1/R1B3K1 w - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....069 | S: 77/100 | Ex: b2b3 b2b4 c2c3 c2c4 d... | Got: f1h3   | FEN: 6k1/pp3p1p/1q2r1p1/3p4/6n1/6P1/PPPQ1P1P/3R1BK1 w - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....072 | S:  0/100 | Ex: a1a2 a1a3 a1a6 c2b1 c... | Got: h6g4   | FEN: 7r/2q2pkp/2b1n1pN/3pP3/2pP4/4Q2P/2B2PP1/R5K1 w - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....076 | S:  5/100 | Ex: d3b1 d3b3 d3e2 f3f1 f... | Got: d3e2   | FEN: b7/3r2bk/p2Np1p1/2B1p1Pp/qP2P2P/P2Q1RK1/8/8 w - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....078 | S: 23/100 | Ex: a4b5 a4d7 b2b4 c3d2 d... | Got: f3e1   | FEN: r1b2kr1/pp1nbp2/4pn1p/2q3p1/B1P5/P1B2N1P/1P2QPP1/3R1KNR w - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....079 | S: 54/100 | Ex: a4b3 b4a6 b4c2 b4d5 b... | Got: a4b3   | FEN: r1b2rk1/1p2Bpbp/1np3p1/4P3/pn6/1N3N1P/1P1RBPP1/R5K1 b - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....080 | S: 67/100 | Ex: a2a3 c1d2 c1e3 c2c6 d... | Got: f2f4   | FEN: r1b2rk1/p1qn1ppp/2pb1n2/8/Np1NP3/7P/PPQ1BPP1/R1B2RK1 w - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....082 | S: 93/100 | Ex: b3c5 b6d7 c6c5 c8d7 c... | Got: c8f5   | FEN: r1bR4/1p3pkp/1np3p1/4P3/pB6/1n3N1P/1P2BPP1/6K1 b - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....086 | S:  6/100 | Ex: c3b5 c3d5 c3e4 d1c1 d... | Got: c3e4   | FEN: r2q1r1k/ppp3bp/3pb3/6p1/2Pn4/1PN3BP/P2QBPP1/3RR1K1 w - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....089 | S: 96/100 | Ex: c4a2 c4a4 c4a6 c4b5 c... | Got: c4a6   | FEN: r2r2k1/p2bppbp/1p4p1/2pP4/2q1P3/2P1B3/P1QN1PPP/2R2RK1 b - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....090 | S:  9/100 | Ex: a2a4 c3e4 d1d3 f1e1 g... | Got: d1d3   | FEN: r2r4/5kpp/p2q1n2/1p4B1/3b4/2Np1Q2/PP3PPP/3R1RK1 w - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....097 | S: 94/100 | Ex: a2a3 a2a4 c1c6 d2c2 d... | Got: g2f3   | FEN: r4rk1/2pqbppp/p1n5/1p1pP3/3P4/1B2Bb1P/PP1Q1PP1/R1R3K1 w - - 0 1
+[[31mFAIL[0m] ID: Offer of Simplifi....098 | S: 20/100 | Ex: b1d1 b2b3 b2b5 b2b6 b... | Got: c2d3   | FEN: r7/4pp1k/6pb/p1rPp2p/2P1P2q/7P/1RQ1BPP1/1R4K1 w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....002 | S: 55/100 | Ex: a7a1 a7a2 a7a4 a7a8 a... | Got: a7a2   | FEN: 1bq3rk/R6p/5n1P/1N1p4/1PnP2p1/6P1/5B2/2Q2BK1 w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....005 | S:  5/100 | Ex: d1a1 d1b1 d1c1 d1e1 d... | Got: e2e3   | FEN: 1qrr3k/1p2bp1p/1n2p1pP/p2pP3/P4B2/1PPB2P1/2R1QP2/3R2K1 w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....006 | S: 96/100 | Ex: a1a3 c1a3 c1b1 c1b2 c... | Got: c1c3   | FEN: 1r1n1rk1/3qp2p/P2p2p1/1p6/5pP1/1p3P1P/5PB1/R1QR2K1 w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....011 | S: 94/100 | Ex: a2b2 a2e2 a4a5 a6a7 a... | Got: a2e2   | FEN: 1r3k2/8/R7/4pPP1/P1p5/1nP5/R5P1/3rB1K1 w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....013 | S: 12/100 | Ex: a7a6 b8b7 b8f8 h1b7 h... | Got: h1g2   | FEN: 1r5k/p7/3pQ1p1/1Np5/2P3P1/7P/1PK5/7q b - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....014 | S: 75/100 | Ex: a4a5 c1c3 c1c4 c1d2 f... | Got: f3d1   | FEN: 1r6/4q3/2p2p1k/4p1pP/P2nP2P/5BR1/5PK1/2Q5 w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....015 | S: 45/100 | Ex: c1a1 c1d1 c1g1 c3a3 c... | Got: c4c5   | FEN: 1r6/7k/1p4r1/1P2p3/2P1p2P/2RbB3/6P1/2R4K w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....016 | S: 47/100 | Ex: a5a4 b6c6 b6f6 b6g6 b... | Got: g2f4   | FEN: 1r6/8/1r5p/p2pk3/4p3/2P4P/RP2B1n1/1RK5 b - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....019 | S: 81/100 | Ex: a2a3 a2b2 a2c2 a2e2 a... | Got: g4g7   | FEN: 2r1k3/p5pp/1p2p3/7P/P2B2Q1/1bP5/R4PPK/4q3 w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....021 | S: 13/100 | Ex: a6a5 c6d8 c6e5 e8e5 e... | Got: c6e5   | FEN: 2r1q2k/7p/p1np1P1P/8/1pP2R2/8/PP1Q4/R1KN2r1 b - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....022 | S: 30/100 | Ex: c5c1 c5c2 c5c3 d4d1 d... | Got: c5c1   | FEN: 2r1q3/p1p1nk1p/4p2p/2R1Pp2/1P1Q4/P3N1P1/5P2/6K1 w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....023 | S:  5/100 | Ex: a7b7 c5d7 e3e4 f1e2 f... | Got: f1e2   | FEN: 2r2k2/R4bpp/2p2p2/1pN5/1n3PP1/1P2P2P/8/5BK1 w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....024 | S: 29/100 | Ex: a2a3 a2a4 a5b4 a5d2 c... | Got: h5h6   | FEN: 2r2rk1/1p1nbppp/p2p4/B2Pp1PP/5P2/1P6/P1P5/1K1R1B1R w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....027 | S: 97/100 | Ex: a3a4 b2d2 b2e2 b4b5 c... | Got: b2d2   | FEN: 2r3n1/p1p3kp/1q2p2p/4Pp2/1P4N1/P5P1/1Q3P2/2R3K1 w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....032 | S:  0/100 | Ex: a1b1 a1c1 a1d1 a1e1 d... | Got: d2f2   | FEN: 3q2k1/5rpp/r1pPp3/1bQn4/p2B4/4P1P1/1P1R2BP/R5K1 w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....033 | S: 80/100 | Ex: b3a3 b3d3 b3f3 e4d3 e... | Got: b3f3   | FEN: 3Q4/5pk1/4p1p1/3pb2p/P3q2P/1r4P1/2R2P1K/2R5 b - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....037 | S: 85/100 | Ex: a2b1 a2b3 d8e8 e7a3 e... | Got: e7b4   | FEN: 3r2k1/4q1pp/p7/1p2Pp2/5P2/1P2Q3/b5PP/2N1K2R b K - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....040 | S:  6/100 | Ex: e1e2 e1e6 e7b7 e7c7 e... | Got: e7b7   | FEN: 3r3k/1p2R2p/pP4p1/8/2rp1p2/5P2/2P3PP/4R1K1 w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....041 | S:  5/100 | Ex: d8a8 d8b8 d8c8 d8h8 f... | Got: g4f4   | FEN: 3r4/3pkpp1/4p3/2p3q1/6r1/1P6/P5B1/2R1RQK1 b - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....047 | S: 70/100 | Ex: f1d1 f1e1 f3d3 f3e3 f... | Got: f3e3   | FEN: 4k2r/p2n3p/4q1pQ/1p2b2P/8/P1P2R2/1P4P1/K4R2 w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....049 | S:  5/100 | Ex: e1b1 e1e2 f2c2 f2f1 f... | Got: f5f6   | FEN: 4r1k1/3q1ppb/2p5/2Pp1P1p/p2P3P/P3P1PB/5Q1K/4R3 w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....054 | S:  8/100 | Ex: b6a7 b6d4 e3c3 e3e1 e... | Got: e3c3   | FEN: 5b2/1p1q3n/pB1p2k1/P4N1p/6pP/4R3/6P1/5RK1 w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....055 | S:  0/100 | Ex: a1a2 a1b1 a1b2 a1d4 d... | Got: h7h5   | FEN: 5k2/ppQbbp1p/8/5p2/P7/1P6/4KPPP/q4B1R b - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....056 | S: 81/100 | Ex: a4a5 c1b1 c1d1 c1e1 e... | Got: e3d3   | FEN: 5r1k/6p1/p1n1pr1p/2P1p2q/P5RN/4Q2P/5PP1/2R4K w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....058 | S: 49/100 | Ex: a2a3 a2a4 d2e3 f1a1 f... | Got: f3d4   | FEN: 5rk1/p7/1n1q1p2/1Prp1pNp/8/5NPP/P2Q1PB1/5RK1 w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....065 | S:  0/100 | Ex: b7a8 b7c8 c3c4 c3c7 c... | Got: d6a3   | FEN: 6k1/pb4p1/1p1b2q1/1P1p3p/3Pn3/P1r2N1P/4QPB1/2B1R1K1 b - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....068 | S: 29/100 | Ex: e7a3 e7h4 f7e8 g6g5 g... | Got: g8h8   | FEN: 6r1/4bbk1/p3p1p1/Pp1pPp2/3P1P2/2P2B2/3B2K1/1R6 b - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....070 | S: 42/100 | Ex: a2a3 c1a3 c1f4 c1g5 d... | Got: c1f4   | FEN: 8/2b1rk2/2b1p1p1/5n2/p1pP2Q1/2p3P1/P4P2/2B1RK2 w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....073 | S: 35/100 | Ex: a4a5 c3a1 c3a5 c3b2 d... | Got: d2b2   | FEN: 8/5r1k/p3b1pp/4p1q1/P3Pn2/2B1N2P/3R1PPK/3Q4 w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....076 | S:  0/100 | Ex: a7a5 c7c8 d5e6 d7a4 d... | Got: d5b7   | FEN: 8/p1rb3k/1p1b1p1p/3q1p2/1P1P4/P1n1PPP1/3N3P/R1R2Q1K b - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....078 | S: 20/100 | Ex: e2d1 e2f3 e2g4 e2h5 f... | Got: f2b6   | FEN: b2r4/3qk3/1p1pp3/pN4b1/P3Pp1p/2P5/4BQPP/5R1K w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....080 | S:  0/100 | Ex: b3a2 c2b1 c2c1 c2d2 c... | Got: d4d5   | FEN: r1b2r1k/1p2qpb1/1np3pp/p7/3P4/PBN2N2/1PQ2PPP/3R1RK1 w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....083 | S: 93/100 | Ex: a2a3 c1b1 d4b6 d4c3 d... | Got: f1d3   | FEN: r1b3k1/4brp1/p6p/1p1p4/3B4/8/PPP3PP/2KR1B1R w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....085 | S:  5/100 | Ex: b1b3 c1a3 c1b2 c1d2 c... | Got: h2g4   | FEN: r1b3kr/p3qpp1/1pn1p2p/3pP2P/7n/3B3Q/2P2PPN/1RB1R1K1 w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....086 | S:  0/100 | Ex: a7a5 a7a6 b5b4 c6c5 c... | Got: d8d3   | FEN: r1br2k1/p4p2/1qp4p/1p2P1p1/6n1/5NP1/PP2QN1P/R1B2BK1 b - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....087 | S:  0/100 | Ex: c2c1 f2f3 f2f4 g1h1 g... | Got: g4f3   | FEN: r3r1k1/1b3ppp/2p2n2/1p2b1B1/4P1B1/P6P/1PQ1NPP1/6K1 w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....088 | S:  5/100 | Ex: c1d1 d2c2 d2d1 e3e2 e... | Got: c1d1   | FEN: r3r1k1/2q2pp1/1pp2np1/4p3/nP2P1P1/P3Q2P/3R1PB1/B1R3K1 w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....089 | S: 69/100 | Ex: a1b1 a4a5 c1d2 c1f4 c... | Got: f5f6   | FEN: r3r1k1/ppn2ppp/2p5/5P2/P7/2N4P/1PP5/R1B2RK1 w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....090 | S: 39/100 | Ex: c2c3 c2c4 d6c5 d6f4 e... | Got: e1e2   | FEN: r3r2k/2R4p/3B2b1/p7/1p2p3/6PP/PPP4K/4R3 w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....091 | S:  5/100 | Ex: c3a4 c3e4 d2a2 d2c1 d... | Got: c3a4   | FEN: r4qk1/1p3rbp/3p1np1/2pPp3/b1P5/P1NBBPP1/3Q1R1P/4R1K1 w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....093 | S:  0/100 | Ex: b1c1 b1d1 b1e1 b1f1 b... | Got: f5g6   | FEN: r4rk1/1p2ppbp/1q1p2p1/p1nP1P2/2P3B1/5R2/PPRB2PP/1Q5K w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....094 | S: 96/100 | Ex: c1a1 c1b1 c1d1 c3d1 c... | Got: g1d1   | FEN: r4rk1/5pb1/2p3pp/pp2n3/1n3B2/1PN1PP1P/1P2BPK1/2R3R1 w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....098 | S: 64/100 | Ex: a2a3 a2a4 d1b1 d2b2 d... | Got: d6f7   | FEN: r5k1/p4nbp/2qN2p1/2P2p2/3p1B2/6P1/P2Q1P1P/3R2K1 w - - 0 1
+[[31mFAIL[0m] ID: Open Files and Di....100 | S: 73/100 | Ex: a1d1 a1e1 d4d5 f1e1 f... | Got: f1e1   | FEN: rbbrqnk1/pp3pp1/2p2n1p/5N2/3P1P2/1BN4P/PPQB2P1/R4RK1 w - - 0 1
+[[31mFAIL[0m] ID: Pawn Play in the ....006 | S: 45/100 | Ex: b1b2 b1c1 b5a6 b5b3 d... | Got: d2e4   | FEN: 1qr1r1k1/5pp1/1p2p2p/1Qbn3b/2R5/3P1NPP/3NPPB1/1R4K1 w - - 0 1
+[[31mFAIL[0m] ID: Pawn Play in the ....010 | S: 96/100 | Ex: a4a3 b4c6 b8b7 c7b7 d... | Got: b4c6   | FEN: 1r1rb1k1/2q1bp1p/3ppnp1/8/pn1NPP2/2N2R1P/1PP1B1P1/2QR2BK b - - 0 1
+[[31mFAIL[0m] ID: Pawn Play in the ....013 | S: 33/100 | Ex: a3b4 a3c3 d1d2 d4d2 e... | Got: g3e2   | FEN: 1r2r2k/5pp1/1n2qn1p/3p4/p1pR4/Q3PBNP/PP3PP1/3R2K1 w - - 0 1
+[[31mFAIL[0m] ID: Pawn Play in the ....014 | S: 86/100 | Ex: a1a2 c1d1 c2d1 c2e2 d... | Got: e1g3   | FEN: 1r3k1r/1q2bpp1/4pn2/1p4p1/p1pPP1P1/P3P2P/1PQ4R/K1R1BB2 w - - 0 1
+[[31mFAIL[0m] ID: Pawn Play in the ....017 | S:  5/100 | Ex: b2a2 b2c2 b2d2 b2e2 c... | Got: c4c5   | FEN: 1r4k1/1br3p1/1ppbp3/p2p1q1p/P1PP1Pp1/1P2P1P1/1Q3NBP/2RR2K1 w - - 0 1
+[[31mFAIL[0m] ID: Pawn Play in the ....020 | S: 32/100 | Ex: c6c5 c8b7 d6d5 f6d7 f... | Got: f6d7   | FEN: 1rb2r1k/2q1bppp/p1pppn2/P7/4P3/1PNQ4/2P1BPPP/R1B3RK b - - 0 1
+[[31mFAIL[0m] ID: Pawn Play in the ....023 | S:  0/100 | Ex: a1a2 a1a5 a1a6 e3e4 f... | Got: d2a5   | FEN: 1rnrbk2/2R3bp/3p2p1/1ppPpp2/7P/3PP1P1/1P1B1PK1/R2N1B2 w - - 0 1
+[[31mFAIL[0m] ID: Pawn Play in the ....032 | S: 89/100 | Ex: c1d2 c2e3 d1d2 d1e1 d... | Got: h2g1   | FEN: 2r1r1k1/qp2ppb1/p1np1npp/5b2/2P5/PPN3PP/1BN1PPBK/1RQR4 w - - 0 1
+[[31mFAIL[0m] ID: Pawn Play in the ....033 | S: 51/100 | Ex: c3e3 c4b5 d1a1 d1e1 d... | Got: d2f2   | FEN: 2r2nk1/2q1pp1p/3p2p1/pr6/2P1PP2/1PR3PP/3Q2B1/3R2K1 w - - 0 1
+[[31mFAIL[0m] ID: Pawn Play in the ....037 | S: 31/100 | Ex: c8a8 c8b8 c8d8 d6d5 d... | Got: h8h7   | FEN: 2r4r/2qb1nk1/3ppp2/p1p5/P3P3/1PR3P1/3NRPK1/3Q1B2 b - - 0 1
+[[31mFAIL[0m] ID: Pawn Play in the ....052 | S: 16/100 | Ex: b5b4 b7b8 b7c7 b7d7 e... | Got: g7e6   | FEN: 4r1k1/1r2ppnp/1q4p1/ppp5/3nP3/1P2QP2/P2R1BPP/2R2B1K b - - 0 1
+[[31mFAIL[0m] ID: Pawn Play in the ....053 | S: 36/100 | Ex: a6a5 a6a7 a6a8 c7a7 c... | Got: a6a8   | FEN: 4r1k1/2qn1pb1/rn1p2pp/2p5/p1b1PPP1/R1N1B2P/1PP1NQB1/R6K b - - 0 1
+[[31mFAIL[0m] ID: Pawn Play in the ....061 | S:  8/100 | Ex: a2a3 a2a4 b2b3 b2b4 c... | Got: d5e3   | FEN: r1b1kb1r/1p1ppppp/p2q2n1/2pN3Q/8/8/PPPP1PPP/R1B1RBK1 w kq - 0 1
+[[31mFAIL[0m] ID: Pawn Play in the ....064 | S: 90/100 | Ex: b3b1 b3b2 b3c3 b4b5 d... | Got: f1e1   | FEN: r1b1r3/pp1nq1kp/2pp2p1/5p2/1PP2P2/1Q2P1PP/P2N2B1/3R1RK1 w - - 0 1
+[[31mFAIL[0m] ID: Pawn Play in the ....065 | S:  9/100 | Ex: a2a3 c1b1 c1e1 c2e2 e... | Got: a2a3   | FEN: r1b2rk1/1p1n1p1p/p5p1/q2p2B1/1bpP4/2N1PN1P/PPQ2PP1/2R2RK1 w - - 0 1
+[[31mFAIL[0m] ID: Pawn Play in the ....067 | S: 50/100 | Ex: a1c1 a2a3 c2b3 c2d1 c... | Got: c7e5   | FEN: r1b2rk1/p1B1bpp1/q3pn1p/3p4/8/2N3PP/PPQ1PPB1/R3R1K1 w - - 0 1
+[[31mFAIL[0m] ID: Pawn Play in the ....068 | S: 29/100 | Ex: b3b4 c2b2 c3d3 c3e3 c... | Got: c3g3   | FEN: r1b3k1/1p1n1qpp/2p1p3/3p1r2/2PP4/1PR5/2QNPPBP/5RK1 w - - 0 1
+[[31mFAIL[0m] ID: Pawn Play in the ....069 | S:  0/100 | Ex: a1a4 b2c1 b2c3 c2e2 c... | Got: c4f7   | FEN: r1br2k1/1p3ppp/p1p5/P5q1/1bBP4/1P2P3/1BQ2PP1/R2R2K1 w - - 0 1
+[[31mFAIL[0m] ID: Pawn Play in the ....071 | S: 41/100 | Ex: a3b2 a3b4 a3c1 d4f3 e... | Got: d4f3   | FEN: r1r1q1k1/1n1b2bp/p4pp1/1p6/2pNP2B/Q1P5/P1B2PPP/3RR1K1 w - - 0 1
+[[31mFAIL[0m] ID: Pawn Play in the ....073 | S: 31/100 | Ex: a6a5 a8b8 a8c8 d6d5 e... | Got: e7g6   | FEN: r2q1kr1/1b2np2/p2p1p1p/4p3/2N1P3/3B4/PP3PPP/1R1Q1RK1 b - - 0 1
+[[31mFAIL[0m] ID: Pawn Play in the ....074 | S: 82/100 | Ex: a1a2 c1d2 d1e2 e3e4 f... | Got: c1d2   | FEN: r2q1rk1/1p1n1ppp/6b1/n2B4/Ppp2NP1/4PP2/1P4KP/R1BQ1R2 w - - 0 1
+[[31mFAIL[0m] ID: Pawn Play in the ....076 | S: 62/100 | Ex: b7d5 d6d5 d8c7 d8d7 d... | Got: e8e7   | FEN: r2qr1k1/1b3pb1/p2p2p1/8/2BNn1P1/2p1B3/P1P5/1NKRQR2 b - - 0 1
+[[31mFAIL[0m] ID: Pawn Play in the ....087 | S: 49/100 | Ex: a3b2 a3c1 d2d3 d2d4 e... | Got: f3e5   | FEN: r2r3k/p2qppbp/1pn2np1/2p5/2P2P2/B1N1PN2/P2PQ1PP/3R1R1K w - - 0 1
+[[31mFAIL[0m] ID: Pawn Play in the ....091 | S: 10/100 | Ex: a8b8 a8d8 b6a7 b6c7 e... | Got: f6d5   | FEN: r3r1k1/1p2qpp1/1bp2n1p/2n1pP2/p5P1/B6P/PPPNQPB1/R2R2K1 b - - 0 1
+[[31mFAIL[0m] ID: Pawn Play in the ....092 | S: 88/100 | Ex: a6b7 a8a7 a8c8 b4b3 b... | Got: b4b3   | FEN: r3r1k1/4npbp/bqnpp1p1/2p3P1/1p2PP2/3PN3/1PPQNBBP/1R3RK1 b - - 0 1
+[[31mFAIL[0m] ID: Pawn Play in the ....095 | S:  0/100 | Ex: a6a5 a8b8 a8c8 a8d8 a... | Got: f8f7   | FEN: r4r1k/1bq3p1/pp1bpn1p/2pp4/3P3Q/1NP1B3/PP2BPPP/R4RK1 b - - 0 1
+[[31mFAIL[0m] ID: Pawn Play in the ....097 | S: 78/100 | Ex: a2a3 b3c2 b3d1 c3d5 c... | Got: b3d1   | FEN: r4rk1/2p1bppp/p2p1n2/1p6/3PP3/1QN1BP1q/PP3P1P/2R1R1K1 w - - 0 1
+[[31mFAIL[0m] ID: Pawn Play in the ....098 | S:  0/100 | Ex: a1a2 b1c1 b3c2 d4d5 e... | Got: d4c5   | FEN: r4rk1/3qbppp/p1np1n2/1pp4b/3PP3/PB2BN1P/1P1N1PP1/RQ2R1K1 w - - 0 1
+[[31mFAIL[0m] ID: Recapturing.001          | S: 41/100 | Ex: a6e2 b2b4 c1b1 c3b5 c... | Got: e3d5   | FEN: 1k1r1r2/p1p5/Bpnbb3/3p2pp/3P4/P1N1NPP1/1PP4P/2KR1R2 w - - 0 1
+[[31mFAIL[0m] ID: Recapturing.005          | S: 21/100 | Ex: b5c3 d2c2 d2f4 e2c3 e... | Got: d2f4   | FEN: 1q2rnk1/5rb1/bp1p1np1/pNpP2Bp/P1P1Pp1P/3B2P1/3QNRR1/7K w - - 0 1
+[[31mFAIL[0m] ID: Recapturing.012          | S: 81/100 | Ex: c3a2 c3b1 c3b5 c3d5 c... | Got: e4d5   | FEN: 1r2r2k/1p3pbp/b5p1/p2np3/P1P1B1PP/1PN2P2/6K1/3R1R2 w - - 0 1
+[[31mFAIL[0m] ID: Recapturing.014          | S: 70/100 | Ex: b5c3 b5d6 d2c1 d2c2 d... | Got: d2f4   | FEN: 1r3nk1/3r1qb1/bp1p1np1/pNpP2Bp/P1P1Pp1P/7N/1P1QBR2/6RK w - - 0 1
+[[31mFAIL[0m] ID: Recapturing.016          | S: 39/100 | Ex: a6a5 b8b6 b8b7 b8c8 b... | Got: d7e5   | FEN: 1r3rk1/p1qnppbp/p5p1/2pPP3/2P5/4R2P/PP2Q1P1/1RBN3K b - - 0 1
+[[31mFAIL[0m] ID: Recapturing.020          | S: 88/100 | Ex: b8b6 b8b7 c5d4 c6a7 c... | Got: e5d4   | FEN: 1rq2rk1/4bp2/2np2p1/p1p1p3/P1PNP1P1/1PB2P2/1Q4P1/R2R1NK1 b - - 0 1
+[[31mFAIL[0m] ID: Recapturing.021          | S: 92/100 | Ex: b8b7 c5d4 c6a7 c6b4 c... | Got: e5d4   | FEN: 1rq2rk1/4bp2/2np2p1/p1p1p3/P1PNP1P1/1PB2P2/1Q4PK/R2R1N2 b - - 0 1
+[[31mFAIL[0m] ID: Recapturing.027          | S: 57/100 | Ex: a2a3 a2a4 c3a4 c3d5 d... | Got: d2f4   | FEN: 2r2rk1/1p1q1pb1/p2p1np1/7p/2P1Pp1Q/1PN5/P2B2PP/4RR1K w - - 0 1
+[[31mFAIL[0m] ID: Recapturing.029          | S: 93/100 | Ex: c1a3 c1b2 c1d2 d4e5 e... | Got: f3e5   | FEN: 2r2rk1/3bqppp/2p5/p2pb2Q/Pn1P1P2/1P2PN2/6PP/R1B2RK1 w - - 0 1
+[[31mFAIL[0m] ID: Recapturing.038          | S: 98/100 | Ex: b7c6 c7b6 c7c6 d7c6 d... | Got: c7c6   | FEN: 2rr4/1pqb1ppk/p1Nppn1p/4n3/2P1P3/2N3P1/PP1QB1PP/R3BRK1 b - - 0 1
+[[31mFAIL[0m] ID: Recapturing.041          | S: 98/100 | Ex: a7a5 b6d5 c6d5 d8d5 e... | Got: e6d5   | FEN: 3r1r2/pkp4p/1np1p3/3P4/1b2N3/1P3P2/1B4PP/2R2RK1 b - - 0 1
+[[31mFAIL[0m] ID: Recapturing.042          | S: 99/100 | Ex: a7a5 b6d5 b6d7 c6d4 c... | Got: d8d6   | FEN: 3r1rk1/ppp2ppp/1nnN4/7q/8/1B5P/PP1BRPP1/R3Q1K1 b - - 0 1
+[[31mFAIL[0m] ID: Recapturing.047          | S: 99/100 | Ex: d2b3 d2c4 d2e4 d2f1 d... | Got: f2e3   | FEN: 3rr1k1/pR1n1p1p/5b2/3N4/6p1/P2bp1P1/3N1PBP/2R3K1 w - - 0 1
+[[31mFAIL[0m] ID: Recapturing.048          | S: 99/100 | Ex: b2c1 d2c1 d2d1 d2e1 e... | Got: d2c1   | FEN: 4q1k1/p2n1pp1/4p2p/3n4/1P1P4/P4P2/1B1QN1PP/2r2K2 w - - 0 1
+[[31mFAIL[0m] ID: Recapturing.049          | S: 93/100 | Ex: d3c3 d3d1 d3d2 d5f4 e... | Got: f1f4   | FEN: 4r1k1/2p2rp1/1pnp4/p2N3p/2P2p2/PP1RP1P1/6KP/5R2 w - - 0 1
+[[31mFAIL[0m] ID: Recapturing.059          | S: 81/100 | Ex: a6c5 a8b7 a8c6 b6c5 d... | Got: d7c5   | FEN: br1r2k1/p2n1pp1/np1p4/2P1p1qp/2P1P3/P1P2PP1/2QNBB1P/2R2R1K b - - 0 1
+[[31mFAIL[0m] ID: Recapturing.060          | S: 42/100 | Ex: a4b3 b1b2 b1b3 b1c1 c... | Got: d2b3   | FEN: q1rb2rk/1b3ppp/2n1p2n/p1BpP3/B2P1PP1/1p2RN1P/2PN1Q2/1R4K1 w - - 0 1
+[[31mFAIL[0m] ID: Recapturing.063          | S: 81/100 | Ex: a4a5 c1d2 d4e5 e3e4 f... | Got: f4e5   | FEN: r1b2rk1/4qppp/pp6/3pb2Q/Pn1P1P2/1P2PN2/6PP/R1B2RK1 w - - 0 1
+[[31mFAIL[0m] ID: Recapturing.064          | S: 59/100 | Ex: b2a3 b2c1 b2c3 d4e5 f... | Got: f3e5   | FEN: r1b2rk1/p3qppp/Pp6/3pb2Q/1n1P1P2/1P2PN2/1B4PP/R4RK1 w - - 0 1
+[[31mFAIL[0m] ID: Recapturing.065          | S: 78/100 | Ex: c4d3 c8e6 c8g4 d5c6 d... | Got: c4d3   | FEN: r1b3k1/5r2/p4n1p/3q2pP/2p1p3/P1PBB3/3N1PP1/R2QK2R b KQ - 0 1
+[[31mFAIL[0m] ID: Recapturing.066          | S: 92/100 | Ex: a1c1 a2b3 c3a4 c3e4 d... | Got: c3e4   | FEN: r1bq1rk1/1p1nbppp/p3pn2/P1p5/4p3/2NP2N1/BPPB1PPP/R2Q1RK1 w - - 0 1
+[[31mFAIL[0m] ID: Recapturing.067          | S: 81/100 | Ex: c1b2 c1c2 c3d5 d1d5 e... | Got: e4d5   | FEN: r1q1k2r/1p1nbppp/p7/3bpP2/2P1P1P1/1PN1BQ2/7P/2KR3R w kq - 0 1
+[[31mFAIL[0m] ID: Recapturing.069          | S: 89/100 | Ex: c8c5 d7b6 d7c5 d7f6 d... | Got: e7c5   | FEN: r1qr2k1/1b1nbpp1/1P6/p1B1p2p/4P3/3B3Q/2P1N1PP/RR1N3K b - - 0 1
+[[31mFAIL[0m] ID: Recapturing.072          | S: 95/100 | Ex: a1b1 b4c5 d1e1 d3c5 d... | Got: b4c5   | FEN: r1qr2k1/p3bp1p/P1p1p1p1/2pb4/1P1P1P2/3NQ3/5BPP/R2R2K1 w - - 0 1
+[[31mFAIL[0m] ID: Recapturing.074          | S: 95/100 | Ex: a3a4 b1a1 b5d4 c3a4 c... | Got: b5d4   | FEN: r1r3k1/1p2q1pp/n2pp3/pN6/2nbP1P1/P1N2Q2/1PP4P/1K1R1R2 w - - 0 1
+[[31mFAIL[0m] ID: Recapturing.075          | S: 49/100 | Ex: a1a2 a1b1 c3d4 d2b1 e... | Got: c3d4   | FEN: r2q1rk1/1b1pbppp/1pn1pn2/p7/P2pP3/2PB1N2/1P1NQPPP/R1B2RK1 w - - 0 1
+[[31mFAIL[0m] ID: Recapturing.076          | S: 96/100 | Ex: a2a3 a2a4 b1c3 d2a5 d... | Got: d2e3   | FEN: r2q1rk1/2pnbppp/p3p3/3b4/3P2P1/3QnN1P/PP1BPP2/RNR3K1 w - - 0 1
+[[31mFAIL[0m] ID: Recapturing.077          | S: 98/100 | Ex: a1d1 d2a2 d2b2 d2c1 d... | Got: d2e3   | FEN: r2q1rk1/p1p1n1pp/1p1p4/P2Ppb2/1PP5/4b1P1/3QNPBP/R4RK1 w - - 0 1
+[[31mFAIL[0m] ID: Recapturing.079          | S: 98/100 | Ex: a2b3 c2b3 c4b3 d2d3 d... | Got: c4b3   | FEN: r2qk1r1/1b3pb1/2pppp1p/8/2B1PP2/1nN5/PPPQ2PP/1K1R3R w q - 0 1
+[[31mFAIL[0m] ID: Recapturing.083          | S: 67/100 | Ex: b1b2 b1b3 c2b3 c2c3 d... | Got: c2b3   | FEN: r3b3/4kpp1/3p1n1p/5P2/1r2P1P1/1p2RN1P/2PN4/1R4K1 w - - 0 1
+[[31mFAIL[0m] ID: Recapturing.086          | S: 76/100 | Ex: a5b6 c1a1 c6b6 d5b6 f... | Got: c6b6   | FEN: r4r2/5pk1/1bR1n1p1/Pp1Np2p/1P1pP3/8/5PPP/2R3K1 w - - 0 1
+[[31mFAIL[0m] ID: Recapturing.088          | S: 96/100 | Ex: c1a3 c1d2 d4e5 e3e4 f... | Got: f3e5   | FEN: r4rk1/1p1bqpp1/2p4p/3pb2Q/Pn1P1P2/1P2PN2/6PP/R1B2RK1 w - - 0 1
+[[31mFAIL[0m] ID: Recapturing.091          | S: 94/100 | Ex: b1a1 b1c1 b1d1 e2e3 e... | Got: e2e4   | FEN: r4rk1/pp1qppbp/2p1b1p1/n7/P2PpB1N/2P3P1/2P1QPBP/1R2R1K1 w - - 0 1
+[[31mFAIL[0m] ID: Recapturing.095          | S: 73/100 | Ex: a8f8 b4a3 f7f5 f7g6 g... | Got: f7g6   | FEN: r5k1/5pbp/6P1/p2R4/1p5r/P5R1/1PP5/2KB4 b - - 0 1
+[[31mFAIL[0m] ID: Simplification.001       | S: 49/100 | Ex: b6c4 b8d6 b8e5 d8c8 d... | Got: f5f4   | FEN: 1b1qrr2/1p4pk/1np4p/p3Np1B/Pn1P4/R1N3B1/1Pb2PPP/2Q1R1K1 b - - 0 1
+[[31mFAIL[0m] ID: Simplification.004       | S: 90/100 | Ex: a5a4 b7d5 b7e4 b8c8 c... | Got: c4c5   | FEN: 1k1r4/1br2p2/3p1p2/pp2pPb1/2q1P2p/P1PQNB1P/1P4P1/1K1RR3 b - - 0 1
+[[31mFAIL[0m] ID: Simplification.005       | S:  0/100 | Ex: a5a4 b5b4 b8a7 c7c5 c... | Got: b7c6   | FEN: 1k1r4/1br2p2/3p1p2/pp2pPb1/4P2p/P1PRNB1P/1P4P1/1K2R3 b - - 0 1
+[[31mFAIL[0m] ID: Simplification.006       | S: 27/100 | Ex: b8c7 b8c8 d8c8 d8d1 d... | Got: d8f8   | FEN: 1k1r4/5qp1/p1b2n1p/1p2p3/2p1P2P/P1N1P1P1/1PB1Q3/3R2K1 b - - 0 1
+[[31mFAIL[0m] ID: Simplification.008       | S:  0/100 | Ex: c2e2 d1d4 d1d6 f2d4 f... | Got: c2g6   | FEN: 1kr5/3n2p1/q2rpn1p/p7/Ppp2P2/5BP1/1PQ2B1P/2RR2K1 w - - 0 1
+[[31mFAIL[0m] ID: Simplification.009       | S:  5/100 | Ex: a2a3 c2d2 c2e2 d3d1 d... | Got: g4h3   | FEN: 1nr2qk1/pb1r1p1p/1b4pP/1p1Bp1B1/4P1Q1/2NR4/P1R2PP1/6K1 w - - 0 1
+[[31mFAIL[0m] ID: Simplification.012       | S: 94/100 | Ex: b8c8 c6a5 c6b4 c6d4 d... | Got: b8c8   | FEN: 1r1qr1k1/2Q1bp1p/2n3p1/2PN4/4B3/2N3P1/5P1P/5RK1 b - - 0 1
+[[31mFAIL[0m] ID: Simplification.016       | S: 26/100 | Ex: b1b8 c2c4 e1c1 e1d1 e... | Got: e1c1   | FEN: 1r3r2/3q2kp/p2p1pp1/2pPp3/4Pn2/P2P1N1P/2Q2PP1/1R2R1K1 w - - 0 1
+[[31mFAIL[0m] ID: Simplification.021       | S:  0/100 | Ex: b8b7 b8c8 c5a7 c5e3 e... | Got: b8a8   | FEN: 1r4r1/4kp1p/3p1p1b/2q1pP2/Bn2P3/2N5/1PPNQ1PP/1K1R4 b - - 0 1
+[[31mFAIL[0m] ID: Simplification.023       | S: 95/100 | Ex: a6a7 b3a1 b3a5 b3c1 b... | Got: b3a5   | FEN: 1r6/1R2bk2/P3p1pp/4Pp2/1r1P3P/1N2B1P1/5PK1/8 w - - 0 1
+[[31mFAIL[0m] ID: Simplification.026       | S:  0/100 | Ex: a1b1 a1c1 d1d2 d3b2 d... | Got: e6f4   | FEN: 1rb2nk1/8/1p1PNbrp/3Pp1pq/p3Pn1P/P2N1PB1/4B3/R2Q1R1K w - - 0 1
+[[31mFAIL[0m] ID: Simplification.028       | S: 86/100 | Ex: a7a6 a7f7 b2a1 b2b3 b... | Got: b2b3   | FEN: 2br2k1/r5p1/4p3/5p2/8/pP3B2/1q2RPPP/Q3R1K1 b - - 0 1
+[[31mFAIL[0m] ID: Simplification.029       | S: 54/100 | Ex: a1b1 a1c1 b4b5 b4c5 b... | Got: b4c5   | FEN: 2brr1k1/2q1bpp1/pNnpp2p/P1p5/1P2PP2/2P1B1P1/4Q1BP/R2R2K1 w - - 0 1
+[[31mFAIL[0m] ID: Simplification.033       | S:  5/100 | Ex: a4a5 b3b4 c1b1 c1c2 d... | Got: e3a7   | FEN: 2r2nk1/pp3p2/5qpb/4p1Np/P3P2P/1P2B1P1/2r2P2/2RRQ1K1 w - - 0 1
+[[31mFAIL[0m] ID: Simplification.034       | S: 38/100 | Ex: a1c1 a4c6 c2c6 d2a5 d... | Got: d2c3   | FEN: 2r2r1k/1p1q2b1/pQn1b1pp/4pp2/B3P3/1P3N1P/P1RB1PP1/R5K1 w - - 0 1
+[[31mFAIL[0m] ID: Simplification.037       | S:  5/100 | Ex: c8c7 c8d8 d2b2 d2d1 d... | Got: e7d6   | FEN: 2r5/4q1kp/1nB2pp1/p3p3/Pb2Q3/4P3/1B1r1PPP/1R1R2K1 b - - 0 1
+[[31mFAIL[0m] ID: Simplification.044       | S: 25/100 | Ex: a6a5 b5c4 c7b8 c7d7 d... | Got: a6a5   | FEN: 3b4/2q2pkp/p2p1np1/1b1Pp1B1/1pN1P3/1P5P/P1Q2PP1/5NK1 b - - 0 1
+[[31mFAIL[0m] ID: Simplification.047       | S: 19/100 | Ex: a3a4 b1b6 d3e2 e3e2 f... | Got: f1d1   | FEN: 3r1k2/p4ppp/1r2p3/n1p1P3/5P1P/P1PBK1P1/8/1R3R2 w - - 0 1
+[[31mFAIL[0m] ID: Simplification.055       | S: 14/100 | Ex: c3b1 c3d1 c3e2 f3d1 f... | Got: f3g3   | FEN: 4r1k1/1p2qp1p/2p1n1pB/p3p3/P3P1B1/2N2Q1P/2P2PP1/6K1 w - - 0 1
+[[31mFAIL[0m] ID: Simplification.056       | S: 23/100 | Ex: b6e6 d5c6 d5d7 d5d8 e... | Got: b6e6   | FEN: 4r1k1/1p5p/1r4p1/2pq1p2/P4P2/3P2Q1/1bP3RP/4R1BK b - - 0 1
+[[31mFAIL[0m] ID: Simplification.059       | S:  5/100 | Ex: c1c2 d1e1 d1f1 e2b2 e... | Got: h4g3   | FEN: 4r2k/p1r1b1pp/1p1pqn2/4p3/1PP4B/P4B1P/4QPP1/2RR2K1 w - - 0 1
+[[31mFAIL[0m] ID: Simplification.062       | S:  5/100 | Ex: a2a3 c4b5 e2d2 e2d3 e... | Got: c4b5   | FEN: 4rrk1/2pb3p/p7/1ppPq3/2P1P1pP/2N5/PP2Q2P/4RR1K w - - 0 1
+[[31mFAIL[0m] ID: Simplification.065       | S: 32/100 | Ex: a1b1 a3b4 b2c3 b3d2 c... | Got: b2c3   | FEN: 5qk1/1p1rbrpp/pP3p2/P1pbp3/1n6/BN1P2P1/1Q2PPBP/R1R3K1 w - - 0 1
+[[31mFAIL[0m] ID: Simplification.070       | S: 77/100 | Ex: b2d2 e2d1 e2d3 e2f1 e... | Got: e5f6   | FEN: 6k1/5p2/1q1bp1p1/1Pp1B2p/2Pn3P/6P1/1Q2BP2/6K1 w - - 0 1
+[[31mFAIL[0m] ID: Simplification.082       | S:  0/100 | Ex: a6c8 a6d3 a6e2 d1c1 d... | Got: d1e2   | FEN: R1b2b2/2kp1p1p/B2npp2/2p5/4P1r1/6P1/3N1P1P/3K3R w - - 0 1
+[[31mFAIL[0m] ID: Simplification.083       | S: 81/100 | Ex: b5b1 d1c1 d2d5 e4c3 e... | Got: e4d6   | FEN: r1b2rk1/1p2bpp1/5n2/1Q2pq2/2P1N3/p3B1Pp/P2RPP1P/3R2KB w - - 0 1
+[[31mFAIL[0m] ID: Simplification.089       | S: 99/100 | Ex: b6b5 c7b7 c7c6 c7d6 d... | Got: d5c6   | FEN: r3r1k1/2qn3p/1p2ppp1/3b4/p1PP1P2/4QN2/R5PP/1R3BK1 b - - 0 1
+[[31mFAIL[0m] ID: Simplification.091       | S: 10/100 | Ex: a8b8 a8c8 a8d8 b5b4 e... | Got: f6f3   | FEN: r3r1k1/6p1/p2p1qp1/1p1P3p/4P1bP/P2Q3B/1PP5/1K2R2R b - - 0 1
+[[31mFAIL[0m] ID: Simplification.093       | S:  0/100 | Ex: a7a6 a8b8 a8c8 c7b7 c... | Got: d7b8   | FEN: r3rbk1/p1qn1p1p/2p1n1p1/Pp2p1B1/1P2P3/2N1Q3/2PN1PPP/1R2R1K1 b - - 0 1
+[[31mFAIL[0m] ID: Simplification.097       | S: 90/100 | Ex: b2b4 c1a1 c1b1 d1d2 d... | Got: g2g4   | FEN: r4rk1/pp5p/2pp2pb/2n1nq2/2P2P2/2N1B3/PP2B1PP/2RQR1K1 w - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.002       | S: 69/100 | Ex: a1b1 c2c3 e3c3 e3c5 e... | Got: f5g7   | FEN: r2r2k1/pp3ppp/2p1qn2/5N1b/1n2PP2/4Q2P/PPP3B1/R1B2RK1 w - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.003       | S:  5/100 | Ex: a1a2 a1a4 a1a5 d1d2 d... | Got: d1e1   | FEN: 3r4/p4pk1/P1pr3p/3nb3/1p6/5B1P/1P3PP1/R1BR2K1 w - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.004       | S: 57/100 | Ex: d6c4 d6c8 e6e5 e7e8 e... | Got: d6c4   | FEN: 1b1r3r/3pkpp1/3np1q1/2p5/2P1PPP1/5Q2/PP4B1/R1BR2K1 b - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.011       | S: 20/100 | Ex: a1a2 a1a5 c2c1 c2d1 c... | Got: g5g8   | FEN: 1q1k2r1/p2bn3/1r3n2/2QPp1Rp/2P4P/2PB1P2/2K1N3/R7 w - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.012       | S:  5/100 | Ex: e7c7 e7d7 e7d8 e7f8 f... | Got: e7c7   | FEN: 8/p3q1kp/1p1p1rp1/3Bn3/P1PQ1p2/1P6/6PP/4R2K b - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.013       | S: 57/100 | Ex: a1b1 a1c1 a1d1 a1e1 a... | Got: a1b1   | FEN: 4r1rk/pp6/5q2/3pNp1P/2pPnQ2/2P1P2P/P6K/R5R1 w - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.016       | S:  5/100 | Ex: a6a5 b7b5 b7b6 c7b6 c... | Got: c7d6   | FEN: 4r1k1/1pb3p1/p1p3q1/3n4/1P1P4/P3pRP1/4Q1K1/2B2R2 b - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.018       | S: 29/100 | Ex: a7a6 e6c6 e6c8 e6e7 e... | Got: e6c8   | FEN: 4r1k1/p5pp/4q3/P2R4/2p2P2/2N3P1/2nB1K1P/1R6 b - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.019       | S: 29/100 | Ex: b8d8 b8f8 d2f2 d2g2 f... | Got: d2g2   | FEN: 1Q6/1p2p2k/1r4pp/p1p2P2/q2nr1P1/7R/1P1R4/5NK1 w - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.023       | S: 46/100 | Ex: a2a3 b2d3 c1d1 c4d5 e... | Got: b2d3   | FEN: 2r2rk1/pb2qp1p/n3p1p1/2pp4/N1P1n3/1P2P1P1/PN3PBP/2R1QRK1 w - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.026       | S: 77/100 | Ex: a7a5 a8c6 a8d5 b6b5 c... | Got: g6e6   | FEN: q5k1/p2p2bp/1p1p2r1/2p1np2/6p1/1PP2PP1/P2PQ1KP/4R1NR b - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.028       | S:  5/100 | Ex: a3a4 c2d3 f1d1 f1f2 g... | Got: f1d1   | FEN: r5nk/p4p1r/qp1Rb2p/2p1Pp2/5P1Q/P4N2/2B3PP/5RK1 w - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.029       | S: 42/100 | Ex: a8b8 a8c8 b7a7 b7b4 b... | Got: g7g6   | FEN: r2r2k1/1q2bpp1/4p2p/p6Q/N4P2/1P2R1P1/2P4P/2KR4 b - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.031       | S: 89/100 | Ex: b7b5 b8f8 g3e5 g5h6 h... | Got: g3e5   | FEN: 1r5r/1p6/p2p2p1/P2P1pkq/1R1Qp3/2P1P1bP/1P2R3/5BK1 b - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.032       | S:  0/100 | Ex: d3b1 d3b5 d3d1 d5b5 d... | Got: f4e5   | FEN: 2r1r2k/q6p/6p1/3R1p2/1p1P1B2/2bQPBP1/5P1P/6K1 w - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.033       | S: 44/100 | Ex: a6f6 b3b2 f8b4 f8c8 f... | Got: f8e8   | FEN: 1r3q1k/6p1/r6p/3P3b/2PQ1R2/pp4P1/5P2/R1B3K1 b - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.036       | S: 29/100 | Ex: b3b4 f4e2 f4e6 f4g2 f... | Got: g3g8   | FEN: 6rk/5q1p/p2p4/P1nP1p2/2B2N1Q/1Pb1pPR1/7P/7K w - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.041       | S: 17/100 | Ex: b5b4 c4c3 c5d4 c5d6 c... | Got: c5f2   | FEN: r2r2k1/5p1p/6nQ/ppq5/2p1P3/P4P2/1P4PP/R1N2R1K b - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.042       | S: 94/100 | Ex: a4a5 c1c2 c1d1 c1f1 d... | Got: c1c2   | FEN: r3r1k1/ppq3p1/2p1n3/3pN1p1/Pb1P2P1/3QB2P/1P3P2/R1R3K1 w - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.043       | S:  0/100 | Ex: b4a2 b7b8 b7e7 c8d7 c... | Got: b4c2   | FEN: 2bq1rk1/1r3p2/3p2pp/p1p1p3/PnP1P3/2QPP1N1/2B3PP/1R3RK1 b - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.045       | S: 98/100 | Ex: e1a1 e1b1 e1c1 e1e2 e... | Got: e1c1   | FEN: 2q2r1k/7p/p2p1p2/1p1Np3/nP6/4Q2P/P4PP1/4R1K1 w - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.047       | S:  5/100 | Ex: a6a5 c5c6 c5c7 c5c8 f... | Got: f6e7   | FEN: 8/7p/p2p1kqP/2r1b3/P1B1p1r1/1P6/4QP2/3R1K1R b - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.050       | S: 94/100 | Ex: e1a5 e1c1 e1f1 e1f2 f... | Got: e1f2   | FEN: r6k/1p2rR1P/2p3p1/4p1q1/8/pP6/P1P5/1K2Q2R w - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.052       | S: 36/100 | Ex: a6a5 c7c6 d8d5 d8d6 d... | Got: f7f6   | FEN: 3r2k1/2p2pp1/p6p/1p5q/1PbB4/P1Q3P1/5P1P/4R1K1 b - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.057       | S:  0/100 | Ex: a2a3 a2a4 d2d4 d2e3 d... | Got: b3d5   | FEN: 2rqrbk1/1b1n1p2/p2p1npp/1p6/4P2B/1B3NNP/PP1Q1PP1/3RR1K1 w - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.058       | S: 36/100 | Ex: a4c5 a8a6 a8a7 a8b8 c... | Got: a8a6   | FEN: r1k5/4qp2/P1p1b1p1/6Pp/n3P2P/6Q1/2N5/1K1R2R1 b - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.060       | S: 17/100 | Ex: b5b8 b5d5 c3a1 c3a5 c... | Got: b5b8   | FEN: 3n4/p2rk3/3pq1p1/pR3p1p/2PQ1P2/1PB4P/6PK/8 w - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.062       | S: 71/100 | Ex: d7b8 d7c5 d7f6 e6e5 f... | Got: f8f7   | FEN: 5rk1/3n4/3Rp1p1/2P2q1p/1p1P2n1/6P1/1B1NQ2P/6K1 b - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.064       | S:  0/100 | Ex: d7a4 d7b5 d7c6 d7c8 d... | Got: f8c8   | FEN: 5r2/3q2pk/5n1p/3p1p1P/1p1P4/4PP2/1P2R1PQ/2rNR1K1 b - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.068       | S: 92/100 | Ex: d3c2 d3e2 d3e4 d4e4 d... | Got: d4g4   | FEN: 6k1/4bp2/4q3/3pP3/p1pr3p/P1NbQR2/1P4PR/3K4 b - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.069       | S: 99/100 | Ex: b5b4 b5b6 b5b7 b5b8 b... | Got: b5b8   | FEN: 5bk1/3r1p1p/3P1Pp1/1q4Pn/2pN3P/1P2B3/1K3Q2/R7 b - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.070       | S: 50/100 | Ex: a3a1 a3a2 a3a4 a3b2 a... | Got: b1b3   | FEN: 1r1n3k/1pq3pp/p2Nrn2/2P1p3/3p4/Q2P2P1/4PPB1/1RR3K1 w - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.071       | S: 78/100 | Ex: e6a6 e6e5 f3c6 f3f1 g... | Got: e6e5   | FEN: 3r1q1k/6pp/4R3/8/n2p1PB1/3PpQP1/4P1K1/8 w - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.072       | S: 89/100 | Ex: b7b6 c3b5 c3d5 e5d7 e... | Got: c3d5   | FEN: 8/1p3q1k/p1p2b1P/2B1nP2/8/1Pn2PN1/2Q3P1/6K1 b - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.074       | S: 13/100 | Ex: b2b1 b2b3 b2b4 b2b5 b... | Got: b2b4   | FEN: bq6/4bk1p/1B1p2p1/3Ppp2/2P5/7P/1Q1N1PP1/6K1 w - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.076       | S:  0/100 | Ex: b2b3 e3c1 e3d2 e4d3 f... | Got: f1f7   | FEN: r3r1k1/1b3p1p/3b2p1/p2Pp1P1/1pq1B3/4B3/PPP3QP/1K1R1R2 w - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.077       | S: 65/100 | Ex: a3a4 b1a2 g2e4 g3g4 g... | Got: g3g7   | FEN: r4q1k/1p2b2r/7P/p1pPp3/8/P2PP1R1/1P4Q1/1K5R w - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.079       | S:  0/100 | Ex: a5a4 a5c3 a8b8 c8a6 c... | Got: a5a3   | FEN: r1b2rk1/p6p/1p1P1pp1/q1p5/2P1PQ2/P7/1R2B1PP/5R1K b - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.081       | S: 61/100 | Ex: b7b1 b7b5 d5f4 e2a6 e... | Got: e2h5   | FEN: 2r1r3/1Rpp2pk/2n4p/p1PNqp2/P3p3/2P1P1P1/4QP1P/3R2K1 w - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.082       | S: 22/100 | Ex: a2a3 a2a4 b2b3 d3b1 d... | Got: e2e5   | FEN: r1b1k2r/2q1pp2/1p5p/p1pPp1p1/2P5/3B3P/PP2QPP1/4RRK1 w kq - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.083       | S: 18/100 | Ex: a2a4 c1c2 c1d1 c1e1 c... | Got: f1e2   | FEN: 1rr3k1/pp3p1p/6p1/1PPB4/4P2q/2Q2P2/P4P1P/2R2K2 w - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.085       | S:  5/100 | Ex: a7a3 a7c7 c6c3 e7d7 e... | Got: c6c3   | FEN: 7r/q3kp2/2rp1p2/3RpPb1/1p2P1P1/1P1N4/P4R1P/1K2Q3 b - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.091       | S:  5/100 | Ex: c5c4 d8a8 d8b8 f6a6 f... | Got: d8b8   | FEN: 3r2k1/5pb1/5qpp/1Np5/8/1P3P1P/1PQ3P1/1K5R b - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.092       | S: 35/100 | Ex: a7a2 a7d4 a7d7 d2a2 d... | Got: d2a2   | FEN: 5k2/q7/2p5/4pppn/1pP2nN1/1P2RPPP/3r1B1K/4Q3 b - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.095       | S:  0/100 | Ex: a1a2 a1a4 a1a5 a1a7 e... | Got: b5b7   | FEN: 2k3r1/1b1n1p2/5n2/1Rp1q2p/1pPpP1p1/1N3P2/4B1PP/Q4RK1 w - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.096       | S: 67/100 | Ex: a4a3 a6a5 a8b8 a8c8 a... | Got: g4d7   | FEN: r3r1k1/5pp1/p2p3p/2nPP3/p5q1/2P1RNP1/2Q2P1P/2R3K1 b - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.097       | S:  0/100 | Ex: e1d1 e1e2 e1e3 e1e4 e... | Got: f3d3   | FEN: 7k/ppr1qpb1/1n2pN1p/4P1p1/8/1B3QP1/PP3PKP/4R3 w - - 0 1
+[[31mFAIL[0m] ID: Square Vacancy.098       | S: 23/100 | Ex: a7a6 a7c7 a7e7 b2a2 b... | Got: a7c7   | FEN: 3r2k1/R5p1/2b2npp/1pP5/4pP1P/6Pq/1Q2BP2/4B1K1 w - - 0 1
+[[31mFAIL[0m] ID: Undermine.001            | S:  6/100 | Ex: b2b3 d4e3 d4f2 d4g7 f... | Got: f3d5   | FEN: 1kr5/3n4/q3p2p/p2n2p1/PppB1P2/5BP1/1P2Q2P/3R2K1 w - - 0 1
+[[31mFAIL[0m] ID: Undermine.002            | S: 18/100 | Ex: a3a4 b4b5 c1d1 c1f1 c... | Got: h6f4   | FEN: 1n5k/3q3p/pp1p2pB/5r2/1PP1Qp2/P6P/6P1/2R3K1 w - - 0 1
+[[31mFAIL[0m] ID: Undermine.012            | S: 25/100 | Ex: a1f1 a1g1 a5b6 b2b4 e... | Got: a5b6   | FEN: 1r3bk1/7p/pp1q2p1/P1pPp3/2P3b1/4B3/1P1Q2BP/R6K w - - 0 1
+[[31mFAIL[0m] ID: Undermine.013            | S:  5/100 | Ex: a5a4 b6a6 b6a7 b6c7 b... | Got: d4e2   | FEN: 1r3rk1/3n1pbp/1q1pp1p1/p1p5/2PnPP2/PPB1N1PP/6B1/1R1Q1RK1 b - - 0 1
+[[31mFAIL[0m] ID: Undermine.015            | S:  0/100 | Ex: c1a1 c1d1 c1e1 c4d6 d... | Got: b5c6   | FEN: 1r4k1/1rq2pp1/3b1nn1/pBpPp3/P1N4p/2PP1Q1P/6PB/2R2RK1 w - - 0 1
+[[31mFAIL[0m] ID: Undermine.017            | S: 38/100 | Ex: b6d4 b6e3 d7c7 d7d8 d... | Got: g5e6   | FEN: 2r3k1/p2q1pp1/Pbrp3p/6n1/1BP1PpP1/R4P2/2QN2KP/1R6 b - - 0 1
+[[31mFAIL[0m] ID: Undermine.019            | S: 91/100 | Ex: f2f1 f2g1 f2g2 f3f4 f... | Got: g3f1   | FEN: 1r6/R1nk1p2/1p4pp/pP1p1P2/P2P3P/5PN1/5K2/8 w - - 0 1
+[[31mFAIL[0m] ID: Undermine.021            | S:  9/100 | Ex: a1b1 a1c1 a1d1 a1e1 a... | Got: e3g5   | FEN: 1rbqnrk1/6bp/pp3np1/2pPp3/P1P1N3/2N1B3/1P2Q1BP/R4R1K w - - 0 1
+[[31mFAIL[0m] ID: Undermine.023            | S:  5/100 | Ex: a1a2 a1a3 a1c1 b2b3 b... | Got: d1e1   | FEN: 2kr2r1/1bpnqp2/1p1ppn2/p5pp/P1PP4/4PP2/1P1NBBPP/R2Q1RK1 w - - 0 1
+[[31mFAIL[0m] ID: Undermine.024            | S: 10/100 | Ex: a2a3 a2a4 b2b3 c2c3 d... | Got: d3d5   | FEN: 2b1k2r/5p2/pq1pNp1b/1p6/2r1PPBp/3Q4/PPP3PP/1K1RR3 w k - 0 1
+[[31mFAIL[0m] ID: Undermine.030            | S: 90/100 | Ex: a1a4 a1c1 a5a6 d2c1 d... | Got: g2g3   | FEN: 2kr4/ppqnbp1r/2n1p1p1/P2pP3/3P2P1/3BBN2/1P1Q1PP1/R4RK1 w - - 0 1
+[[31mFAIL[0m] ID: Undermine.034            | S: 59/100 | Ex: a7a6 b7c6 b7d7 c5c4 c... | Got: f7f5   | FEN: 2r2bk1/pq3r1p/6p1/2ppP1P1/P7/BP1Q4/2R3P1/3R3K b - - 0 1
+[[31mFAIL[0m] ID: Undermine.035            | S: 98/100 | Ex: a3a4 d1a1 d1b1 d1d3 d... | Got: d4f3   | FEN: 2r2rk1/1bb2ppp/p2ppn2/1p4q1/1PnNP3/P1N4P/2P1QPPB/3RRBK1 w - - 0 1
+[[31mFAIL[0m] ID: Undermine.037            | S: 12/100 | Ex: a2a3 a2a4 d4b2 g1f1 g... | Got: g2g5   | FEN: 2r4k/pp3q1b/5PpQ/3p4/3Bp3/1P6/P5RP/6K1 w - - 0 1
+[[31mFAIL[0m] ID: Undermine.039            | S:  5/100 | Ex: b6b5 c4d6 c4e3 c4e5 c... | Got: c8e8   | FEN: 2r3k1/5pp1/1pq4p/p7/P1nR4/2P2P2/Q5PP/4B1K1 b - - 0 1
+[[31mFAIL[0m] ID: Undermine.043            | S:  0/100 | Ex: a7a5 a7a6 c6b8 c6d8 c... | Got: c8d8   | FEN: 2r5/p3kpp1/1pn1p2p/8/1PP2P2/PB1R1KP1/7P/8 b - - 0 1
+[[31mFAIL[0m] ID: Undermine.044            | S: 32/100 | Ex: a2a3 a2a4 b1a3 b1c3 b... | Got: b1d2   | FEN: 2rq1rk1/1b2bppp/p2p1n2/1p1Pp3/1Pn1P3/5N1P/P1B2PP1/RNBQR1K1 w - - 0 1
+[[31mFAIL[0m] ID: Undermine.045            | S: 62/100 | Ex: c2b1 c2b3 c3d5 d1a1 d... | Got: c3d5   | FEN: 2rqr1k1/1b2bp1p/ppn1p1pB/3n4/3P3P/P1NQ1N2/1PB2PP1/3RR1K1 w - - 0 1
+[[31mFAIL[0m] ID: Undermine.049            | S: 87/100 | Ex: a3a4 c1b1 d4d5 e5d6 f... | Got: e5d6   | FEN: 3k1r1r/p2n1p1p/q2p2pQ/1p2P3/2pP4/P4N2/5PPP/2R1R1K1 w - - 0 1
+[[31mFAIL[0m] ID: Undermine.050            | S:  5/100 | Ex: c1b1 c1e1 c1f1 c4a4 c... | Got: c4c3   | FEN: 3r1bk1/1p2qp1p/p5p1/P1pPp3/2QnP3/3BB3/1P3PPP/2R3K1 w - - 0 1
+[[31mFAIL[0m] ID: Undermine.056            | S:  0/100 | Ex: a2a3 b3a4 d3e3 d3f3 d... | Got: e1h4   | FEN: 4k3/r2bbprp/3p1p1N/2qBpP2/ppP1P1P1/1P1R3P/P7/1KR1Q3 w - - 0 1
+[[31mFAIL[0m] ID: Undermine.068            | S: 96/100 | Ex: a5a1 a5a2 a5a4 a5a6 a... | Got: d4d5   | FEN: 8/1r2k3/4p2p/R3K2P/1p1P1P2/1P6/8/8 w - - 0 1
+[[31mFAIL[0m] ID: Undermine.070            | S:  5/100 | Ex: e5e4 g6g5 g7h8 h2e2 h... | Got: h2e2   | FEN: 8/6k1/3P1bp1/2B1p3/1P6/1Q3P1q/7r/1K2R3 b - - 0 1
+[[31mFAIL[0m] ID: Undermine.073            | S: 31/100 | Ex: a3f3 a3g3 b1a1 b2b4 d... | Got: g6e5   | FEN: k1qbr1n1/1p4p1/p1p1p1Np/2P2p1P/3P4/R7/PP2Q1P1/1K1R4 w - - 0 1
+[[31mFAIL[0m] ID: Undermine.077            | S:  0/100 | Ex: b1a2 c1d1 c1e1 c1f1 c... | Got: g3g6   | FEN: r1br1k2/1pq2pb1/1np1p1pp/2N1N3/p2P1P1P/P3P1R1/1PQ3P1/1BR3K1 w - - 0 1
+[[31mFAIL[0m] ID: Undermine.078            | S:  8/100 | Ex: b5d3 c6c5 c6g6 e2c4 e... | Got: c6g6   | FEN: r1n2k1r/5pp1/2R5/pB2pPq1/P2pP3/6Pp/1P2Q2P/5RK1 w - - 0 1
+[[31mFAIL[0m] ID: Undermine.080            | S:  0/100 | Ex: a1b1 d3b5 e1c1 e1d2 e... | Got: f3e5   | FEN: r2q1r2/pp1b2kp/2n1p1p1/3p4/3P1P1P/2PB1N2/6P1/R3QRK1 w - - 0 1
+[[31mFAIL[0m] ID: Undermine.089            | S: 92/100 | Ex: a1b1 a1d1 a3a4 b5b6 d... | Got: b5b6   | FEN: r3r1k1/bpp1np1p/3p1p2/pPP1p3/3P2b1/P3PN2/1B3PPP/R3KB1R w KQ - 0 1
+[[31mFAIL[0m] ID: Undermine.090            | S:  0/100 | Ex: a4a5 b2b3 d1b1 d1e2 f... | Got: h5f6   | FEN: r3r1k1/pp2q3/2b1pp2/6pN/Pn1P4/6R1/1P3PP1/3QRBK1 w - - 0 1
+[[31mFAIL[0m] ID: Undermine.091            | S:  0/100 | Ex: b2b4 c1c2 c1d1 c3c5 e... | Got: e4e5   | FEN: r4r2/1p2pbk1/1np1qppp/p7/3PP2P/P1Q2NP1/1P3PB1/2R1R1K1 w - - 0 1
+[[31mFAIL[0m] ID: Undermine.095            | S: 30/100 | Ex: a1a3 a1b1 a4a5 c2b2 c... | Got: c5c6   | FEN: r4rk1/p5pp/1p2b3/2Pn1p2/P2Pp2P/4P1Pq/2Q1BP2/R1BR2K1 w - - 0 1
+[[31mFAIL[0m] ID: Undermine.096            | S:  0/100 | Ex: a7a5 a7a6 a8c8 a8d8 c... | Got: e5g3   | FEN: r4rk1/pbq2p2/2p2np1/1p2b2p/4P3/2N1BPP1/PPQ1B2P/R2R2K1 b - - 0 1
+[[31mFAIL[0m] ID: Undermine.101            | S: 85/100 | Ex: a3a4 c2c3 c2c4 d5d1 d... | Got: d5d2   | FEN: 7r/2b1kpp1/p2p1q2/1p1RpPp1/nP2P1B1/R7/2P1Q1KP/8 w - - 0 1
+===========================================================================
+THEMATIC SUMMARY
+===========================================================================
+Theme                        STS Score           STS %        Best Move %
+---------------------------------------------------------------------------
+7th Rank                    4197/5400             77.7%       48.1%
+AKPC                        3727/7700             48.4%       26.0%
+AT                          2100/3000             70.0%       33.3%
+Advancement of a/b/c p...   3336/6900             48.3%       26.1%
+Bishop vs Knight            6515/8200             79.5%       59.8%
+Center Control              3728/5300             70.3%       49.1%
+King Activity               3803/5800             65.6%       43.1%
+Knight Outposts/Reposi...   5881/8200             71.7%       56.1%
+Offer of Simplification     4219/6700             63.0%       40.3%
+Open Files and Diagonals    5948/8700             68.4%       49.4%
+Pawn Play in the Center     4047/5700             71.0%       50.9%
+Recapturing                 6908/7600             90.9%       55.3%
+Simplification              5654/7600             74.4%       60.5%
+Square Vacancy              5498/8500             64.7%       43.5%
+Undermine                   5904/8200             72.0%       59.8%
+---------------------------------------------------------------------------
+OVERALL                    71465/103500            69.0%       47.6%
+===========================================================================

@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{prelude::*, tuning::params::TunableParams};
 use std::fmt::Debug;
 
 pub mod score;
@@ -58,6 +58,17 @@ impl CompositeEvaluator {
             .add_evaluator(Box::new(PositionEvaluator::new()), 2)
             .add_evaluator(Box::new(PawnStructureEvaluator::new()), 2)
             .add_evaluator(Box::new(MobilityEvaluator::new()), 1);
+        evaluator
+    }
+
+    pub fn with_params(params: &TunableParams) -> Self {
+        let mut evaluator = CompositeEvaluator::new("Tunable");
+        evaluator
+            .add_evaluator(Box::new(MaterialEvaluator::with_params(params)), 5)
+            .add_evaluator(Box::new(KingSafetyEvaluator::with_params(params)), 3)
+            .add_evaluator(Box::new(PositionEvaluator::with_params(params)), 2)
+            .add_evaluator(Box::new(PawnStructureEvaluator::with_params(params)), 2)
+            .add_evaluator(Box::new(MobilityEvaluator::with_params(params)), 1);
         evaluator
     }
 

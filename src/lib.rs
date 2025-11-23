@@ -8,6 +8,7 @@ pub mod moves;
 pub mod precomputed;
 pub mod prelude;
 pub mod search;
+pub mod tuning;
 pub mod utils;
 
 pub mod ansi_colors {

@@ -2,6 +2,7 @@ pub mod cli;
 pub mod log;
 pub mod perft;
 pub mod prng;
+pub mod sts_runner;
 
 use std::io::Write;
 

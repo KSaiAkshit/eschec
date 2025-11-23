@@ -1,6 +1,6 @@
 use std::sync::RwLock;
 
-use crate::prelude::*;
+use crate::{prelude::*, tuning::params::TunableParams};
 
 const MOBILITY_WEIGHTS: [i32; NUM_PIECES] = [1, 3, 3, 5, 9, 0];
 #[derive(Debug)]
@@ -19,8 +19,23 @@ impl Default for MobilityEvaluator {
 impl MobilityEvaluator {
     pub fn new() -> Self {
         Self {
-            name: "Mobility".to_string(),
+            name: "Mobility".to_owned(),
             mobility_weights: MOBILITY_WEIGHTS,
+            move_buffer: RwLock::new(MoveBuffer::new()),
+        }
+    }
+
+    pub fn with_params(params: &TunableParams) -> Self {
+        Self {
+            name: "Mobility".to_owned(),
+            mobility_weights: [
+                params.mobility_pawn,
+                params.mobility_knight,
+                params.mobility_bishop,
+                params.mobility_rook,
+                params.mobility_queen,
+                0,
+            ],
             move_buffer: RwLock::new(MoveBuffer::new()),
         }
     }

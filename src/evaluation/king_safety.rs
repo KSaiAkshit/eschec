@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{prelude::*, tuning::params::TunableParams};
 
 #[rustfmt::skip]
 const SAFETY_TABLE: [i32; 100] = [
@@ -20,17 +20,20 @@ pub struct KingSafetyEvaluator {
     // Bonus
     /// Bonus per castling option available
     castling_bonus: i32,
+    /// Bonus for full pawn shield
     pawn_shield_bonus_full: i32,
+    /// Bonus for partial pawn shield
     pawn_shield_bonus_partial: i32,
 
     // Penalties
+    /// Strong penalty for open files
     open_file_penalty: i32,
 }
 
 impl Default for KingSafetyEvaluator {
     fn default() -> Self {
         Self {
-            name: "KingSafety".to_string(),
+            name: "KingSafety".to_owned(),
             castling_bonus: 0,
             pawn_shield_bonus_full: 0,
             pawn_shield_bonus_partial: 0,
@@ -42,11 +45,21 @@ impl Default for KingSafetyEvaluator {
 impl KingSafetyEvaluator {
     pub fn new() -> Self {
         Self {
-            name: "KingSafety".to_string(),
+            name: "KingSafety".to_owned(),
             castling_bonus: 10,
-            pawn_shield_bonus_full: 30,    // Bonus for full pawn shield
-            pawn_shield_bonus_partial: 10, // Bonus for partial pawn shield
-            open_file_penalty: -40,        // Strong penalty for open files
+            pawn_shield_bonus_full: 30,
+            pawn_shield_bonus_partial: 10,
+            open_file_penalty: -40,
+        }
+    }
+
+    pub fn with_params(params: &TunableParams) -> Self {
+        Self {
+            name: "KingSafety".to_owned(),
+            castling_bonus: params.castling_bonus,
+            pawn_shield_bonus_full: params.pawn_shield_full,
+            pawn_shield_bonus_partial: params.pawn_shield_partial,
+            open_file_penalty: params.open_file_penalty,
         }
     }
     fn evaluate_castling(&self, rights: CastlingRights, side: Side) -> i32 {
