@@ -1,11 +1,12 @@
-use std::path::PathBuf;
-
 use clap::Parser;
 use eschec::{
     prelude::*,
     tuning::{params::TunableParams, spsa_tuner},
     utils::sts_runner,
 };
+use std::{path::PathBuf, time::Duration};
+
+const NUM_RUNS: u64 = 3;
 
 /// An SPSA based tuner for Eschec's evaluation parameters
 #[derive(Parser, Debug)]
@@ -14,6 +15,10 @@ struct TunerCli {
     /// Path to the directory containing the STS EPD files for tuning
     #[arg(required = true)]
     path: PathBuf,
+
+    /// Number of threads to use (0 = auto-detect/all-cores)
+    #[arg(long, default_value_t = 0)]
+    threads: usize,
 
     /// Time in milliseconds for each search during a test run
     #[arg(long, default_value_t = 1000)]
@@ -36,8 +41,40 @@ fn main() -> miette::Result<()> {
     eschec::utils::log::init();
     let cli = TunerCli::parse();
 
-    println!("Loading test suite from: {}", cli.path.display());
+    let num_threads;
+    #[cfg(feature = "parallel")]
+    {
+        num_threads = if cli.threads == 0 {
+            std::thread::available_parallelism()
+                .map(|n| n.get())
+                .unwrap_or(1)
+        } else {
+            cli.threads
+        };
+
+        println!("Running tuner using {num_threads} threads!");
+
+        rayon::ThreadPoolBuilder::new()
+            .num_threads(num_threads)
+            .build_global()
+            .into_diagnostic()?;
+    }
+    #[cfg(not(feature = "parallel"))]
+    {
+        num_threads = 1;
+    }
+
+    let start_time = std::time::Instant::now();
     let all_tests = sts_runner::load_epd_files_from_path(&cli.path)?;
+    let eta = Duration::from_millis(
+        NUM_RUNS * cli.iterations as u64 * cli.time_ms * all_tests.len() as u64
+            / num_threads as u64,
+    );
+    println!(
+        "Loading test suite from: {}...ETA: {:?}",
+        cli.path.display(),
+        eta
+    );
     println!("Loaded {} test positions.", all_tests.len());
 
     println!("\n==> Starting SPSA tuning");
@@ -78,17 +115,12 @@ fn main() -> miette::Result<()> {
         cli.gamma,
     );
 
-    println!("\n==> Tuning complete");
-    std::fs::write(
-        "tuned_params.txt",
-        final_params_vec
-            .iter()
-            .map(|p| p.to_string())
-            .collect::<Vec<_>>()
-            .join("\n"),
-    )
-    .into_diagnostic()?;
+    println!("\n==> Tuning complete, took: {:?}", start_time.elapsed());
+    let final_params = TunableParams::from_vector(&final_params_vec);
+    final_params.save_to_file("tuned_params.toml")?;
 
-    println!("Final params have been written to 'tuned_params.txt'");
+    println!("{:?}", final_params);
+
+    println!("Final params have been written to 'tuned_params.toml'");
     Ok(())
 }

@@ -1,4 +1,7 @@
 use crate::prelude::Score;
+use miette::IntoDiagnostic;
+use serde::{Deserialize, Serialize};
+use std::{fs, path::Path};
 
 // Material
 pub const BISHOP_PAIR_BONUS_MG: usize = 0;
@@ -36,6 +39,7 @@ pub const MOBILITY_QUEEN: usize = 40;
 
 pub const NUM_TUNABLE_PARAMS: usize = 41;
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TunableParams {
     // Material (2 params)
     pub bishop_pair_bonus: Score,
@@ -201,5 +205,19 @@ impl TunableParams {
             mobility_rook: vec[MOBILITY_ROOK] as i32,
             mobility_queen: vec[MOBILITY_QUEEN] as i32,
         }
+    }
+
+    /// Save to TOML File
+    pub fn save_to_file<P: AsRef<Path>>(&self, path: P) -> miette::Result<()> {
+        let toml_string = toml::to_string_pretty(self).into_diagnostic()?;
+        fs::write(path, toml_string).into_diagnostic()?;
+        Ok(())
+    }
+
+    /// Load from a TOML File
+    pub fn load_from_file<P: AsRef<Path>>(path: P) -> miette::Result<Self> {
+        let file_content = fs::read_to_string(path).into_diagnostic()?;
+        let params: Self = toml::from_str(&file_content).into_diagnostic()?;
+        Ok(params)
     }
 }

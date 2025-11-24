@@ -64,10 +64,10 @@ build-all-tags:
 
 [doc("Build and symlink binary")]
 update bin="eschec":
-    -rm {{engines_dir}}/eschec_old
-    -mv {{engines_dir}}/eschec {{engines_dir}}/eschec_old
+    -rm {{ engines_dir }}/eschec_old
+    -mv {{ engines_dir }}/eschec {{ engines_dir }}/eschec_old
     just build {{ bin }}
-    cp target/release/eschec {{engines_dir}}
+    cp target/release/eschec {{ engines_dir }}
 
 [doc("Warmup with the given binary and then run perf stat on it")]
 stat bin: setup
@@ -77,10 +77,11 @@ stat bin: setup
     perf stat -r {{ perf_reps }} -e {{ perf_stat_events }} {{ bin }}
     notify-send "Done stating"
 
-spsa:
+spsa sts='./test_suites/sts/' threads='0' time_ms='1000' iter='200':
     @echo "{{ MAGENTA }} Starting SPSA Tuning {{ NORMAL }}"
-    cargo run --bin tuner --features parallel --release -- ./test_suites/sts/ \
-        | tee {{ pgn_output_dir }}spsa_tuning_log.txt
+    cargo run --bin tuner --features parallel --release -- {{ sts }} --threads {{ threads }} \
+        --time-ms {{ time_ms }} --iterations {{ iter }} \
+        | tee {{ pgn_output_dir }}spsa_tuning_log_{{ threads }}t_{{ time_ms }}ms_{{ iter }}.txt
 
 [doc("Run a gauntlet match against another engine using cutechess-cli")]
 [positional-arguments]
@@ -139,7 +140,6 @@ sprt p1 p2 rounds='100' concurrency='4' book='8moves_v3.pgn' tc='30+0.3':
 eval_validation_test:
     cargo run --release --features parallel --bin eval_tester {{ test_suite_dir }} -d {{ epd_test_depth }} --threads 0 \
     | tee {{ pgn_output_dir }}eval_validation_test_log.txt
-
 
 [doc("Run a fast 'smoke_test' on a small set of positions")]
 [group("eval")]

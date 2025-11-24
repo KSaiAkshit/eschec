@@ -39,6 +39,10 @@ required-features = ["parallel"]
 name = "eval_tester"
 path = "src/bin/eval_tester.rs"
 
+[[bin]]
+name = "tuner"
+path = "src/bin/tuner.rs"
+
 [dependencies]
 # Logging
 chrono = "0.4.41"
@@ -54,6 +58,8 @@ color-backtrace = { version = "0.7.0", optional = true }
 dhat = { version = "0.3.3", optional = true }
 rayon = { version = "1.10.0", optional = true }
 indicatif = { version = "0.18.0", default-features = false, optional = true, features = ["unicode-width", "rayon"] }
+toml = "0.9.8"
+serde = { version = "1.0.228", features = ["derive"] }
 
 [dev-dependencies]
 criterion = "0.6.0"

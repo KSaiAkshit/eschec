@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 use crate::prelude::*;
 use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub, SubAssign};
 
@@ -7,7 +9,9 @@ use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub, SubAssign};
 pub struct Phase(pub i32);
 
 /// Score that holds seperate values for midgame and endgame
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default, Hash)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default, Hash, Serialize, Deserialize,
+)]
 pub struct Score {
     // MidGame score
     pub mg: i32,

@@ -29,16 +29,27 @@ pub fn run_spsa_tuning_session(
             .as_secs(),
     );
 
+    let initial_a = alpha;
+    let initial_c = gamma;
+    let stability = iterations as f64 * 0.1;
+    let alpha_decay = 0.602;
+    let gamma_decay = 0.101;
+
     for k in 0..iterations {
+        let k_float = k as f64;
+        let ak = initial_a / (k_float + 1.0 + stability).powf(alpha_decay);
+        let ck = initial_c / (k_float + 1.0).powf(gamma_decay);
+
         println!("[Iteration {}/{}]", k + 1, iterations);
+        println!("  [a = {ak}, c = {ck}]");
 
         let delta: Vec<f64> = (0..num_params).map(|_| rng.pm_one()).collect();
 
         let mut params_plus = params_vec.clone();
         let mut params_minus = params_vec.clone();
         for i in 0..num_params {
-            params_plus[i] += gamma * delta[i];
-            params_minus[i] -= gamma * delta[i];
+            params_plus[i] += ck * delta[i];
+            params_minus[i] -= ck * delta[i];
         }
 
         println!("  Evaluating pertubations...");
@@ -54,12 +65,12 @@ pub fn run_spsa_tuning_session(
 
         if diff.abs() > 1e-9 {
             for i in 0..num_params {
-                grad_estimate[i] = diff / (2.0 * gamma * delta[i]);
+                grad_estimate[i] = diff / (2.0 * ck * delta[i]);
             }
         }
 
         for i in 0..num_params {
-            params_vec[i] += alpha * grad_estimate[i];
+            params_vec[i] += ak * grad_estimate[i];
         }
 
         let current_fitness = fitness_function(&params_vec);
