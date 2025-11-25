@@ -1,6 +1,7 @@
 use crate::{
     prelude::*,
     search::common::{SearchConfig, SearchLimits},
+    tuning::params::TunableParams,
 };
 use std::{
     collections::HashMap,
@@ -60,7 +61,7 @@ pub struct TestResult {
 /// * `time_ms_per_move` - The time limit in milliseconds for each search.
 pub fn run_suite(
     tests: &[EpdTest],
-    evaluator: Box<dyn Evaluator>,
+    params: &TunableParams,
     time_ms_per_move: u64,
     #[cfg(feature = "parallel")] progress_bar: Option<&ProgressBar>,
     #[cfg(not(feature = "parallel"))] _progress_bar: Option<()>,
@@ -70,7 +71,7 @@ pub fn run_suite(
         lim.max_depth = Some(MAX_PLY as u16); // Ensure there's a depth limit
 
         // Each thread needs its own independent search engine instance.
-        let mut search = AlphaBetaSearch::new(evaluator.clone_box()).with_limits(lim);
+        let mut search = AlphaBetaSearch::with_eval(params).with_limits(lim);
 
         let conf = SearchConfig {
             emit_info: false,

@@ -10,7 +10,7 @@ pub use crate::board::{
 pub use crate::comms::*;
 pub use crate::consts::*;
 pub use crate::evaluation::{
-    self, CompositeEvaluator, Evaluator,
+    self, evaluate,
     score::{Phase, Score},
 };
 pub use crate::moves::magics;

@@ -1,50 +1,51 @@
 use clap::Parser;
 use eschec::{
     prelude::*,
-    tuning::{params::TunableParams, spsa_tuner},
-    utils::sts_runner,
+    tuning::{
+        gd_tuner::{self, GdParams},
+        params::{NUM_TRACE_FEATURES, TunableParams},
+        texel::{self},
+        trace::EvalTrace,
+    },
 };
-use std::{path::PathBuf, time::Duration};
+use std::path::PathBuf;
 
-const NUM_RUNS: u64 = 3;
-
-/// An SPSA based tuner for Eschec's evaluation parameters
 #[derive(Parser, Debug)]
 #[command(version, about)]
 struct TunerCli {
-    /// Path to the directory containing the STS EPD files for tuning
+    /// Path to the .book or .epd file
     #[arg(required = true)]
-    path: PathBuf,
+    dataset: PathBuf,
 
     /// Number of threads to use (0 = auto-detect/all-cores)
     #[arg(long, default_value_t = 0)]
     threads: usize,
 
-    /// Time in milliseconds for each search during a test run
-    #[arg(long, default_value_t = 1000)]
-    time_ms: u64,
-
-    /// Number of tuning iterations to run
+    /// Number of epochs (passes through the dataset)
     #[arg(long, default_value_t = 200)]
-    iterations: usize,
+    epochs: usize,
 
-    /// SPSA learning rate. Controls how big the steps are
-    #[arg(long, default_value_t = 1.0)]
-    alpha: f64,
+    /// Learning Rate (try 10.0 or 100.0 for AdaGrad on CP scores)
+    #[arg(long, default_value_t = 10.0)]
+    lr: f64,
 
-    /// SPSA pertubation size. Controls how far to 'look' in rand direction
-    #[arg(long, default_value_t = 0.5)]
-    gamma: f64,
+    /// Batch size (higher = faster but less frequent updates)
+    #[arg(long, default_value_t = 16384)]
+    batch_size: usize,
+
+    /// Sigmoid K factor
+    #[arg(long, default_value_t = 1.13)]
+    k: f64,
 }
 
 fn main() -> miette::Result<()> {
     eschec::utils::log::init();
     let cli = TunerCli::parse();
 
-    let num_threads;
+    // Setup ThreadPool if parallel feature is enabled
     #[cfg(feature = "parallel")]
     {
-        num_threads = if cli.threads == 0 {
+        let num_threads = if cli.threads == 0 {
             std::thread::available_parallelism()
                 .map(|n| n.get())
                 .unwrap_or(1)
@@ -59,68 +60,68 @@ fn main() -> miette::Result<()> {
             .build_global()
             .into_diagnostic()?;
     }
-    #[cfg(not(feature = "parallel"))]
-    {
-        num_threads = 1;
-    }
 
-    let start_time = std::time::Instant::now();
-    let all_tests = sts_runner::load_epd_files_from_path(&cli.path)?;
-    let eta = Duration::from_millis(
-        NUM_RUNS * cli.iterations as u64 * cli.time_ms * all_tests.len() as u64
-            / num_threads as u64,
-    );
-    println!(
-        "Loading test suite from: {}...ETA: {:?}",
-        cli.path.display(),
-        eta
-    );
-    println!("Loaded {} test positions.", all_tests.len());
+    println!("Loading dataset from: {}", cli.dataset.display());
+    let entries = texel::load_texel_dataset(&cli.dataset)?;
+    println!("Loaded {} positions.", entries.len());
 
-    println!("\n==> Starting SPSA tuning");
-    println!(
-        "Iterations: {}, Time/Move: {}ms",
-        cli.iterations, cli.time_ms
-    );
-    println!("Alpha: {}, Gamma: {}", cli.alpha, cli.gamma);
-    println!("{:-<20}\n", "");
+    // Precompute maps
+    let feature_map: Vec<usize> = (0..NUM_TRACE_FEATURES)
+        .map(|i| EvalTrace::map_feature_to_spsa_index(i))
+        .collect();
 
-    let fitness_function = |params_vec: &[f64]| -> f64 {
-        let params = TunableParams::from_vector(params_vec);
-        let evaluator = CompositeEvaluator::with_params(&params);
+    let mobility_map: Vec<usize> = (0..5)
+        .map(|i| EvalTrace::map_mobility_to_spsa_index(i))
+        .collect();
 
-        let results = sts_runner::run_suite(&all_tests, Box::new(evaluator), cli.time_ms, None);
+    // Initial Error
+    let initial_params = TunableParams::default();
+    let initial_vec = initial_params.to_vector();
 
-        let mut total_score = 0;
-        let mut total_max_score = 0;
-        for result in results {
-            total_score += result.score;
-            total_max_score += result.max_score;
-        }
+    let initial_error =
+        texel::calculate_mse(&entries, &initial_vec, &feature_map, &mobility_map, cli.k);
+    println!("Initial MSE: {:.6}", initial_error);
 
-        if total_max_score > 0 {
-            (total_score as f64 / total_max_score as f64) * 100.0
-        } else {
-            0.0
-        }
+    println!("\n==> Starting Gradient Descent (AdaGrad)...");
+
+    let params = GdParams {
+        learning_rate: cli.lr,
+        k: cli.k,
+        epochs: cli.epochs,
+        batch_size: cli.batch_size,
     };
 
-    let initial_params = TunableParams::default().to_vector();
+    let final_vec =
+        gd_tuner::run_gd_tuning(&entries, initial_vec, &feature_map, &mobility_map, params);
 
-    let final_params_vec = spsa_tuner::run_spsa_tuning_session(
-        initial_params,
-        fitness_function,
-        cli.iterations,
-        cli.alpha,
-        cli.gamma,
+    let final_error =
+        texel::calculate_mse(&entries, &final_vec, &feature_map, &mobility_map, cli.k);
+    println!("\nFinal MSE: {:.6}", final_error);
+    println!("Improvement: {:.6}", initial_error - final_error);
+
+    let final_params = TunableParams::from_vector(&final_vec);
+    final_params.save_to_file("tuned_params.toml")?;
+    println!("Saved raw params to tuned_params.toml");
+
+    let pawn_mg = final_params.material[0].mg as f64;
+    let target_pawn_mg = 100.0;
+
+    let scale = if pawn_mg.abs() > 1e-4 {
+        target_pawn_mg / pawn_mg
+    } else {
+        1.0
+    };
+
+    println!(
+        "Normalizing parameters... (Pawn MG: {:.2} -> 100.0, Scale: {:.4}",
+        pawn_mg, scale
     );
 
-    println!("\n==> Tuning complete, took: {:?}", start_time.elapsed());
-    let final_params = TunableParams::from_vector(&final_params_vec);
-    final_params.save_to_file("tuned_params.toml")?;
+    let normalized_vec: Vec<f64> = final_vec.iter().map(|&x| x * scale).collect();
+    let normalized_params = TunableParams::from_vector(&normalized_vec);
 
-    println!("{:?}", final_params);
+    normalized_params.save_to_file("normalized_tuned_params.toml")?;
+    println!("Saved normalized params to 'normalized_tuned_params.toml'");
 
-    println!("Final params have been written to 'tuned_params.toml'");
     Ok(())
 }

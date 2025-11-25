@@ -17,7 +17,6 @@ use crate::{
 pub struct UciState {
     board: Board,
     search_depth: u16,
-    evaluator: Arc<dyn Evaluator>,
     search: Arc<Mutex<AlphaBetaSearch>>,
     search_running: Arc<AtomicBool>,
     search_thread: Option<thread::JoinHandle<SearchResult>>,
@@ -31,7 +30,6 @@ impl Default for UciState {
             board: Board::default(),
             search_depth: u16::default(),
             search: Arc::default(),
-            evaluator: Arc::new(CompositeEvaluator::default()),
             search_running: Arc::default(),
             search_thread: None,
             move_history: Vec::default(),
@@ -57,7 +55,7 @@ impl UciState {
             hash_size_mb: 256,
             ..Default::default()
         };
-        let mut s = AlphaBetaSearch::new(Box::new(CompositeEvaluator::balanced()))
+        let mut s = AlphaBetaSearch::new()
             .with_config(conf)?
             .init(search_running.clone());
         s.set_depth(depth);
@@ -66,7 +64,6 @@ impl UciState {
             board: Board::new(),
             search_depth: depth,
             search,
-            evaluator: Arc::new(CompositeEvaluator::balanced()),
             search_running,
             search_thread: None,
             move_history: Vec::new(),
@@ -156,7 +153,6 @@ fn cmd_position(
 // #[instrument(skip_all)]
 fn cmd_go(state: &mut UciState, params: GoParams) {
     let board = state.board;
-    let evaluator = state.evaluator.clone();
     let search_running = state.search_running.clone();
     let default_depth = state.search_depth;
     let search = state.search.clone();
@@ -213,10 +209,6 @@ fn cmd_go(state: &mut UciState, params: GoParams) {
         let stat: SearchStats;
         {
             let mut search = search.lock().unwrap();
-            let e = evaluator.clone_box();
-            search
-                .set_evaluator(e)
-                .expect("Should be able to set evaluator");
             if let Some(time) = max_time_ms {
                 info!("changing time {:?}", max_time_ms);
                 search.set_time(time);

@@ -3,6 +3,7 @@ use crate::{
     evaluation::score::Phase,
     moves::{attack_data::calculate_attack_data, move_gen},
     prelude::*,
+    tuning::params::TunableParams,
 };
 use miette::Context;
 use std::fmt::Display;
@@ -30,6 +31,7 @@ pub struct Board {
     ///  The number of the full moves in a game. It starts at 1, and is incremented after each Black's move.
     pub fullmove_counter: u8,
     /// Material left for each side [White, Black]
+    #[deprecated]
     pub material: [Score; 2],
     /// Zobrist hash
     pub hash: u64,
@@ -97,12 +99,12 @@ impl Display for Board {
 
         writeln!(f, "Halfmove clock: {}", self.halfmove_clock)?;
         writeln!(f, "Fullmove counter: {}", self.fullmove_counter)?;
-        writeln!(
-            f,
-            "Material balance: W: {} B: {}",
-            self.material[Side::White.index()],
-            self.material[Side::Black.index()]
-        )?;
+        // writeln!(
+        //     f,
+        //     "Material balance: W: {} B: {}",
+        //     self.material[Side::White.index()],
+        //     self.material[Side::Black.index()]
+        // )?;
 
         Ok(())
     }
@@ -119,13 +121,26 @@ impl Board {
         let mut board = match parsed {
             Ok(b) => b,
             Err(e) => {
-                eprintln!("Got error while parsing given fen: {e}");
+                eprintln!("Got error while parsing given fen'{fen}': {e}");
                 panic!("very bad fen")
             }
         };
         board.recalculate_material();
         board.hash = calculate_hash(&board);
         board
+    }
+
+    pub fn try_from_fen(fen: &str) -> miette::Result<Self> {
+        let parsed = fen::parse_fen(fen);
+        let mut board = match parsed {
+            Ok(b) => b,
+            Err(e) => {
+                miette::bail!("Got error while parsing given fen'{fen}': {e}");
+            }
+        };
+        board.recalculate_material();
+        board.hash = calculate_hash(&board);
+        Ok(board)
     }
 
     pub fn to_fen(&self) -> miette::Result<String> {
@@ -147,10 +162,11 @@ impl Board {
         buffer
     }
 
-    pub fn generate_pseudo_legal_moves(&self, buffer: &mut MoveBuffer) {
+    pub fn generate_pseudo_legal_moves(&self, buffer: &mut MoveBuffer, side: Option<Side>) {
+        let s = side.unwrap_or(self.stm);
         move_gen::generate_pseudo_legal_moves(
             &self.positions,
-            self.stm,
+            s,
             self.castling_rights,
             self.enpassant_square,
             buffer,
@@ -196,8 +212,8 @@ impl Board {
 
         // Restore moved piece
         if let Some(promoted_piece) = move_data.promotion {
-            self.material[self.stm.index()] -= promoted_piece.score();
-            self.material[self.stm.index()] += Piece::Pawn.score();
+            // self.material[self.stm.index()] -= promoted_piece.score();
+            // self.material[self.stm.index()] += Piece::Pawn.score();
             self.positions
                 .remove_piece(self.stm, promoted_piece, to.index())?;
             self.positions.set(self.stm, Piece::Pawn, from.index())?;
@@ -207,7 +223,7 @@ impl Board {
 
         // Restore captured pieces
         if let Some(captured) = move_data.captured_piece {
-            self.material[opponent.index()] += captured.score();
+            // self.material[opponent.index()] += captured.score();
             if move_data.is_en_passant {
                 let captured_idx = match self.stm {
                     Side::White => to.index() - 8,
@@ -297,7 +313,7 @@ impl Board {
                 .remove_piece(opponent, captured_piece, to.index())?;
             // XOR out key for removed piece
             self.hash ^= &ZOBRIST.pieces[opponent.index()][captured_piece.index()][to.index()];
-            self.material[opponent.index()] -= captured_piece.score();
+            // self.material[opponent.index()] -= captured_piece.score();
         }
 
         // Move the piece from 'from' to 'to'
@@ -332,7 +348,7 @@ impl Board {
                     .remove_piece(opponent, Piece::Pawn, captured_pawn_idx)?;
                 // XOR out captured opponent pawn
                 self.hash ^= &ZOBRIST.pieces[opponent.index()][Piece::pawn()][captured_pawn_idx];
-                self.material[opponent.index()] -= Piece::Pawn.score();
+                // self.material[opponent.index()] -= Piece::Pawn.score();
             }
             Move::KING_CASTLE => {
                 let (rook_from, rook_to) = (
@@ -362,12 +378,12 @@ impl Board {
                 // The pawn is already at the 'to' square, so we replace it.
                 self.positions
                     .remove_piece(self.stm, Piece::Pawn, to.index())?;
-                self.material[self.stm.index()] -= Piece::Pawn.score();
+                // self.material[self.stm.index()] -= Piece::Pawn.score();
                 // XOR out pawn
                 self.hash ^= &ZOBRIST.pieces[self.stm.index()][Piece::pawn()][to.index()];
 
                 self.positions.set(self.stm, promo_piece, to.index())?;
-                self.material[self.stm.index()] += promo_piece.score();
+                // self.material[self.stm.index()] += promo_piece.score();
                 // XOR in promote piece
                 self.hash ^= &ZOBRIST.pieces[self.stm.index()][promo_piece.index()][to.index()];
             }
@@ -577,15 +593,16 @@ impl Board {
         self.is_stalemate(self.stm) || self.halfmove_clock >= 100 || self.is_insufficient_material()
     }
 
-    pub fn evaluate_position(&self, evaluator: &dyn Evaluator) -> i32 {
+    pub fn evaluate_position(&self, params: &TunableParams) -> i32 {
         let phase = self.game_phase();
-        evaluator.evaluate(self).taper(phase)
+        evaluate(self, params).taper(phase)
     }
 
     pub fn get_piece_at(&self, square: Square) -> Option<Piece> {
         self.positions.get_piece_at(&square).map(|(piece, _)| piece)
     }
 
+    #[allow(deprecated)]
     fn recalculate_material(&mut self) {
         // Reset material
         self.material = [Score::default(); 2];

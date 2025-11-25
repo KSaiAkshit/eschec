@@ -66,11 +66,9 @@ mod tests {
     fn test_null_move_pruning() {
         init();
         // let _ = utils::log::toggle_file_logging(true);
-        let evaluator = CompositeEvaluator::balanced();
         let lim = SearchLimits::depth(10);
-        let mut search_with_null = AlphaBetaSearch::new(Box::new(evaluator)).with_limits(lim);
-        let evaluator = CompositeEvaluator::balanced();
-        let mut search_without_null = AlphaBetaSearch::new(Box::new(evaluator)).with_limits(lim);
+        let mut search_with_null = AlphaBetaSearch::new().with_limits(lim);
+        let mut search_without_null = AlphaBetaSearch::new().with_limits(lim);
 
         assert!(search_without_null.get_config().enable_nmp);
         let conf = SearchConfig {

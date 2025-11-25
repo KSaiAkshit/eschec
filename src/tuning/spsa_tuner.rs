@@ -4,15 +4,13 @@ use crate::utils::prng::Prng;
 ///
 /// Args:
 /// * `initial_params` - The starting vector of parameters to be tuned.
-/// * `fitness_function` - A closure that takes a param vector and returns a fitness
-/// score to be maximized.
+/// * `fitness_function` - A closure that takes a param vector and returns a fitness score to be maximized.
 /// * `iterations` - The number of tuning iterations to run.
 /// * `alpha` - The SPSA 'a' param (learning rate)
 /// * `gamma` - The SPSA 'c' param (pertubation rate))
 ///
 /// Returns
 /// Final optimized parameter vector
-
 pub fn run_spsa_tuning_session(
     initial_params: Vec<f64>,
     fitness_function: impl Fn(&[f64]) -> f64,

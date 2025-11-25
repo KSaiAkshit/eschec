@@ -18,6 +18,10 @@ struct EvalCli {
     #[arg(required = true)]
     path: PathBuf,
 
+    /// Path to the params file. Accepts a 'toml' file
+    #[arg(short, long)]
+    params: Option<PathBuf>,
+
     /// Set the time control for the test
     #[arg(short, long, value_enum, default_value_t = TimeControl::Short)]
     time_control: TimeControl,
@@ -113,9 +117,10 @@ fn main() -> miette::Result<()> {
     );
     println!("{:-<80}", "");
 
-    let params = TunableParams::default(); // Using default, non-tuned params
-    let evaluator = CompositeEvaluator::with_params(&params);
-
+    let params = match cli.params {
+        Some(path) => TunableParams::load_from_file(path)?,
+        None => TunableParams::default(),
+    };
     let pb = ProgressBar::new(all_tests.len() as u64);
     let pb_style = ProgressStyle::default_bar()
         .template(
@@ -126,12 +131,8 @@ fn main() -> miette::Result<()> {
     pb.set_style(pb_style);
     pb.enable_steady_tick(Duration::from_millis(100));
 
-    let results: Vec<TestResult> = sts_runner::run_suite(
-        &all_tests,
-        Box::new(evaluator),
-        cli.time_control.to_ms(),
-        Some(&pb),
-    );
+    let results: Vec<TestResult> =
+        sts_runner::run_suite(&all_tests, &params, cli.time_control.to_ms(), Some(&pb));
     pb.finish_with_message("Done!");
 
     let mut thematic_results: HashMap<String, SuiteSummary> = HashMap::new();

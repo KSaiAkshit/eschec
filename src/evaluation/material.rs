@@ -1,89 +1,49 @@
-use crate::{prelude::*, tuning::params::TunableParams};
+use crate::{
+    evaluation::accumulator::EvalAccumulator,
+    prelude::*,
+    tuning::params::{
+        BISHOP_PAIR_BONUS, MATERIAL_BISHOP, MATERIAL_KNIGHT, MATERIAL_PAWN, MATERIAL_QUEEN,
+        MATERIAL_ROOK,
+    },
+};
 
-#[derive(Debug, Clone)]
-pub struct MaterialEvaluator {
-    name: String,
-    bishop_pair_bonus: Score,
-}
+pub(crate) fn eval_material(board: &Board, acc: &mut impl EvalAccumulator) {
+    let pieces = [
+        (Piece::Pawn, MATERIAL_PAWN),
+        (Piece::Knight, MATERIAL_KNIGHT),
+        (Piece::Bishop, MATERIAL_BISHOP),
+        (Piece::Rook, MATERIAL_ROOK),
+        (Piece::Queen, MATERIAL_QUEEN),
+    ];
 
-impl Default for MaterialEvaluator {
-    fn default() -> Self {
-        Self {
-            name: "Material".to_owned(),
-            bishop_pair_bonus: Score::default(),
+    for (piece, param_idx) in pieces {
+        let white_count = board.positions.get_piece_bb(Side::White, piece).pop_count();
+        let black_count = board.positions.get_piece_bb(Side::Black, piece).pop_count();
+
+        if white_count > 0 {
+            acc.add_feature(param_idx, Side::White, white_count as i32);
         }
-    }
-}
-
-impl MaterialEvaluator {
-    pub fn new() -> Self {
-        Self {
-            name: "Material".to_owned(),
-            bishop_pair_bonus: Score::new(26, 40),
-        }
-    }
-    pub fn with_params(params: &TunableParams) -> Self {
-        Self {
-            name: "Material".to_owned(),
-            bishop_pair_bonus: params.bishop_pair_bonus,
-        }
-    }
-    fn evaluate_bishop_pair(&self, board: &Board) -> Score {
-        let mut score = Score::default();
-
-        if board
-            .positions
-            .get_piece_bb(Side::White, Piece::Bishop)
-            .pop_count()
-            >= 2
-        {
-            score += self.bishop_pair_bonus;
-        }
-
-        if board
-            .positions
-            .get_piece_bb(Side::Black, Piece::Bishop)
-            .pop_count()
-            >= 2
-        {
-            score -= self.bishop_pair_bonus
-        }
-        score
-    }
-}
-
-impl Evaluator for MaterialEvaluator {
-    fn evaluate(&self, board: &Board) -> Score {
-        // Source: https://www.chessprogramming.org/Simplified_Evaluation_Function
-        // 4 rules of thumb
-        // 1.) Avoid expaching one minor piece for 3 pawns
-        // 2.) Encourage engine to have the bishop pair
-        // 3.) Avoid exchanging 2 minor pieces for a rook and a pawn
-        // 4.) Stick to human chess experience
-        //
-        // Final Equations:
-        // ```
-        // B > N > 3P
-        // B + N = R + 1.5P
-        // Q + P = 2R
-        // ```
-
-        let mut score = board.material[Side::White.index()] - board.material[Side::Black.index()];
-        score += self.evaluate_bishop_pair(board);
-
-        // Convert to side-to-move perspective
-        if board.stm == Side::White {
-            score
-        } else {
-            -score
+        if black_count > 0 {
+            acc.add_feature(param_idx, Side::Black, black_count as i32);
         }
     }
 
-    fn name(&self) -> &str {
-        &self.name
+    // Bishop Pair
+    if board
+        .positions
+        .get_piece_bb(Side::White, Piece::Bishop)
+        .pop_count()
+        >= 2
+    {
+        acc.add_feature(BISHOP_PAIR_BONUS, Side::White, 1);
     }
 
-    fn clone_box(&self) -> Box<dyn Evaluator> {
-        Box::new(self.clone())
+    if board
+        .positions
+        .get_piece_bb(Side::Black, Piece::Bishop)
+        .pop_count()
+        >= 2
+    {
+        acc.add_feature(BISHOP_PAIR_BONUS, Side::Black, 1);
     }
 }

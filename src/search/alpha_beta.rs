@@ -17,6 +17,7 @@ use crate::search::move_ordering::{MainSearchPolicy, MoveScoringPolicy, sort_mov
 use crate::search::move_picker::MovePicker;
 use crate::search::tt::{ScoreTypes, TranspositionEntry, TranspositionTable};
 use crate::search::{SearchEngine, SearchResult, SearchStats, common::*};
+use crate::tuning::params::TunableParams;
 
 /// Consts
 const ASP_START_WINDOW: i32 = 48;
@@ -174,7 +175,7 @@ pub struct AlphaBetaSearch {
     config: SearchConfig,
     limits: SearchLimits,
     /// External deps
-    evaluator: Box<dyn Evaluator>,
+    eval_params: TunableParams,
     search_running: Option<Arc<AtomicBool>>,
     /// Move ordering & history
     search_tables: Box<SearchTables>,
@@ -196,7 +197,7 @@ impl Default for AlphaBetaSearch {
             search_cycle: Default::default(),
             config: Default::default(),
             limits: Default::default(),
-            evaluator: Box::new(CompositeEvaluator::default()),
+            eval_params: TunableParams::default(),
             search_running: Default::default(),
             search_tables: Default::default(),
             tt: Default::default(),
@@ -209,7 +210,7 @@ impl Default for AlphaBetaSearch {
 }
 
 impl AlphaBetaSearch {
-    pub fn new(evaluator: Box<dyn Evaluator>) -> Self {
+    pub fn new() -> Self {
         Self {
             config: SearchConfig::default(),
             limits: SearchLimits::default(),
@@ -217,7 +218,24 @@ impl AlphaBetaSearch {
             search_cycle: 0,
             start_time: Instant::now(),
             in_progress: false,
-            evaluator,
+            eval_params: TunableParams::default(),
+            tt: TranspositionTable::new(16),
+            search_tables: Box::new(SearchTables::new()),
+            repetition_table: RepetitionTable::new(),
+            search_running: None,
+            stats: SearchStats::new(),
+        }
+    }
+
+    pub fn with_eval(params: &TunableParams) -> Self {
+        Self {
+            config: SearchConfig::default(),
+            limits: SearchLimits::default(),
+            nodes_searched: 0,
+            search_cycle: 0,
+            start_time: Instant::now(),
+            in_progress: false,
+            eval_params: params.clone(),
             tt: TranspositionTable::new(16),
             search_tables: Box::new(SearchTables::new()),
             repetition_table: RepetitionTable::new(),
@@ -234,15 +252,6 @@ impl AlphaBetaSearch {
         }
         self.config = config;
         Ok(self)
-    }
-
-    pub fn set_evaluator(&mut self, evaluator: Box<dyn Evaluator>) -> miette::Result<()> {
-        miette::ensure!(
-            !self.in_progress,
-            "Cannot change Eval while search in progress"
-        );
-        self.evaluator = evaluator;
-        Ok(())
     }
 
     /// Constructor to set limits for search. Time, node count, depth
@@ -435,7 +444,7 @@ impl AlphaBetaSearch {
         // Necessary to prevent search extensions from explosion
         if context.ply >= MAX_PLY {
             // Treat this as leaf node
-            return board.evaluate_position(&*self.evaluator);
+            return board.evaluate_position(&self.eval_params);
         }
 
         if depth == 0 {
@@ -733,7 +742,7 @@ impl AlphaBetaSearch {
         }
 
         if context.ply > MAX_PLY {
-            return board.evaluate_position(&*self.evaluator);
+            return board.evaluate_position(&self.eval_params);
         }
 
         if self.should_stop() {
@@ -756,7 +765,7 @@ impl AlphaBetaSearch {
         let stand_pat_score;
 
         if !is_in_check {
-            stand_pat_score = board.evaluate_position(&*self.evaluator);
+            stand_pat_score = board.evaluate_position(&self.eval_params);
 
             if stand_pat_score >= beta {
                 if self.config.collect_stats {

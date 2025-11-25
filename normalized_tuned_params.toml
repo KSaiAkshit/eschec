@@ -1,0 +1,1659 @@
+[[material]]
+mg = 100
+eg = 166
+
+[[material]]
+mg = 468
+eg = 641
+
+[[material]]
+mg = 462
+eg = 599
+
+[[material]]
+mg = 620
+eg = 1091
+
+[[material]]
+mg = 1560
+eg = 2061
+
+[bishop_pair_bonus]
+mg = 28
+eg = 124
+
+[castling_bonus]
+mg = 20
+eg = 0
+
+[pawn_shield_full]
+mg = 25
+eg = -17
+
+[pawn_shield_partial]
+mg = 20
+eg = -11
+
+[open_file_penalty]
+mg = -56
+eg = -13
+
+[semi_open_file_penalty]
+mg = -54
+eg = 30
+
+[isolated_penalty]
+mg = -15
+eg = -20
+
+[doubled_penalty]
+mg = 0
+eg = -18
+
+[backward_penalty]
+mg = -10
+eg = -21
+
+[[passed_pawn_scores]]
+mg = 0
+eg = 0
+
+[[passed_pawn_scores]]
+mg = -10
+eg = 25
+
+[[passed_pawn_scores]]
+mg = -28
+eg = 34
+
+[[passed_pawn_scores]]
+mg = -16
+eg = 74
+
+[[passed_pawn_scores]]
+mg = 18
+eg = 105
+
+[[passed_pawn_scores]]
+mg = 29
+eg = 209
+
+[[passed_pawn_scores]]
+mg = 190
+eg = 315
+
+[[passed_pawn_scores]]
+mg = 0
+eg = 0
+
+[connected_bonus]
+mg = 1
+eg = 7
+
+[rook_open_file_bonus]
+mg = 53
+eg = 11
+
+[rook_semi_file_bonus]
+mg = 17
+eg = 22
+
+[knight_outpost_bonus]
+mg = -2
+eg = 48
+
+[[mobility]]
+mg = 0
+eg = 1
+
+[[mobility]]
+mg = -1
+eg = 0
+
+[[mobility]]
+mg = 7
+eg = 12
+
+[[mobility]]
+mg = 5
+eg = 4
+
+[[mobility]]
+mg = 5
+eg = 3
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = -1
+eg = 46
+
+[[psts]]
+mg = 10
+eg = 52
+
+[[psts]]
+mg = 8
+eg = 75
+
+[[psts]]
+mg = 8
+eg = 67
+
+[[psts]]
+mg = 12
+eg = 62
+
+[[psts]]
+mg = 10
+eg = 78
+
+[[psts]]
+mg = 18
+eg = 51
+
+[[psts]]
+mg = -5
+eg = 41
+
+[[psts]]
+mg = 0
+eg = 41
+
+[[psts]]
+mg = 17
+eg = 45
+
+[[psts]]
+mg = 13
+eg = 54
+
+[[psts]]
+mg = 24
+eg = 44
+
+[[psts]]
+mg = 37
+eg = 41
+
+[[psts]]
+mg = 14
+eg = 57
+
+[[psts]]
+mg = 20
+eg = 48
+
+[[psts]]
+mg = -5
+eg = 42
+
+[[psts]]
+mg = 5
+eg = 51
+
+[[psts]]
+mg = 12
+eg = 57
+
+[[psts]]
+mg = 27
+eg = 45
+
+[[psts]]
+mg = 48
+eg = 32
+
+[[psts]]
+mg = 55
+eg = 28
+
+[[psts]]
+mg = 32
+eg = 48
+
+[[psts]]
+mg = 12
+eg = 56
+
+[[psts]]
+mg = -3
+eg = 52
+
+[[psts]]
+mg = 29
+eg = 79
+
+[[psts]]
+mg = 40
+eg = 80
+
+[[psts]]
+mg = 57
+eg = 58
+
+[[psts]]
+mg = 83
+eg = 32
+
+[[psts]]
+mg = 89
+eg = 28
+
+[[psts]]
+mg = 60
+eg = 54
+
+[[psts]]
+mg = 36
+eg = 79
+
+[[psts]]
+mg = 17
+eg = 78
+
+[[psts]]
+mg = 24
+eg = 119
+
+[[psts]]
+mg = 102
+eg = 109
+
+[[psts]]
+mg = 129
+eg = 66
+
+[[psts]]
+mg = 124
+eg = 25
+
+[[psts]]
+mg = 139
+eg = 18
+
+[[psts]]
+mg = 142
+eg = 56
+
+[[psts]]
+mg = 105
+eg = 102
+
+[[psts]]
+mg = 17
+eg = 120
+
+[[psts]]
+mg = 41
+eg = 69
+
+[[psts]]
+mg = -8
+eg = 98
+
+[[psts]]
+mg = 82
+eg = 24
+
+[[psts]]
+mg = 97
+eg = -19
+
+[[psts]]
+mg = 115
+eg = -25
+
+[[psts]]
+mg = 74
+eg = 15
+
+[[psts]]
+mg = -51
+eg = 95
+
+[[psts]]
+mg = -56
+eg = 93
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = -67
+eg = -72
+
+[[psts]]
+mg = -15
+eg = -38
+
+[[psts]]
+mg = -6
+eg = 4
+
+[[psts]]
+mg = -13
+eg = 24
+
+[[psts]]
+mg = -10
+eg = 28
+
+[[psts]]
+mg = -5
+eg = 12
+
+[[psts]]
+mg = -15
+eg = -18
+
+[[psts]]
+mg = -63
+eg = -89
+
+[[psts]]
+mg = -8
+eg = 14
+
+[[psts]]
+mg = -33
+eg = 48
+
+[[psts]]
+mg = 11
+eg = 52
+
+[[psts]]
+mg = 25
+eg = 74
+
+[[psts]]
+mg = 24
+eg = 77
+
+[[psts]]
+mg = 13
+eg = 52
+
+[[psts]]
+mg = -16
+eg = 39
+
+[[psts]]
+mg = -5
+eg = 7
+
+[[psts]]
+mg = -14
+eg = 16
+
+[[psts]]
+mg = 26
+eg = 61
+
+[[psts]]
+mg = 52
+eg = 96
+
+[[psts]]
+mg = 58
+eg = 112
+
+[[psts]]
+mg = 57
+eg = 113
+
+[[psts]]
+mg = 53
+eg = 102
+
+[[psts]]
+mg = 35
+eg = 68
+
+[[psts]]
+mg = 2
+eg = 8
+
+[[psts]]
+mg = 31
+eg = 47
+
+[[psts]]
+mg = 55
+eg = 83
+
+[[psts]]
+mg = 71
+eg = 109
+
+[[psts]]
+mg = 77
+eg = 123
+
+[[psts]]
+mg = 84
+eg = 125
+
+[[psts]]
+mg = 72
+eg = 110
+
+[[psts]]
+mg = 67
+eg = 83
+
+[[psts]]
+mg = 34
+eg = 44
+
+[[psts]]
+mg = 28
+eg = 43
+
+[[psts]]
+mg = 77
+eg = 88
+
+[[psts]]
+mg = 100
+eg = 123
+
+[[psts]]
+mg = 114
+eg = 134
+
+[[psts]]
+mg = 113
+eg = 135
+
+[[psts]]
+mg = 116
+eg = 111
+
+[[psts]]
+mg = 84
+eg = 95
+
+[[psts]]
+mg = 35
+eg = 45
+
+[[psts]]
+mg = 27
+eg = 30
+
+[[psts]]
+mg = 118
+eg = 59
+
+[[psts]]
+mg = 144
+eg = 105
+
+[[psts]]
+mg = 159
+eg = 106
+
+[[psts]]
+mg = 186
+eg = 96
+
+[[psts]]
+mg = 160
+eg = 103
+
+[[psts]]
+mg = 129
+eg = 55
+
+[[psts]]
+mg = 24
+eg = 39
+
+[[psts]]
+mg = -7
+eg = -6
+
+[[psts]]
+mg = -4
+eg = 48
+
+[[psts]]
+mg = 82
+eg = 71
+
+[[psts]]
+mg = 161
+eg = 79
+
+[[psts]]
+mg = 121
+eg = 97
+
+[[psts]]
+mg = 129
+eg = 70
+
+[[psts]]
+mg = -2
+eg = 43
+
+[[psts]]
+mg = -3
+eg = -4
+
+[[psts]]
+mg = -256
+eg = -66
+
+[[psts]]
+mg = -160
+eg = 43
+
+[[psts]]
+mg = -117
+eg = 99
+
+[[psts]]
+mg = 8
+eg = 68
+
+[[psts]]
+mg = 39
+eg = 59
+
+[[psts]]
+mg = -139
+eg = 105
+
+[[psts]]
+mg = -203
+eg = 72
+
+[[psts]]
+mg = -228
+eg = -117
+
+[[psts]]
+mg = 34
+eg = 13
+
+[[psts]]
+mg = 17
+eg = 30
+
+[[psts]]
+mg = 16
+eg = 37
+
+[[psts]]
+mg = 10
+eg = 42
+
+[[psts]]
+mg = 4
+eg = 47
+
+[[psts]]
+mg = 13
+eg = 46
+
+[[psts]]
+mg = 13
+eg = 39
+
+[[psts]]
+mg = 25
+eg = 7
+
+[[psts]]
+mg = 30
+eg = 20
+
+[[psts]]
+mg = 36
+eg = 24
+
+[[psts]]
+mg = 31
+eg = 45
+
+[[psts]]
+mg = 20
+eg = 56
+
+[[psts]]
+mg = 22
+eg = 60
+
+[[psts]]
+mg = 27
+eg = 49
+
+[[psts]]
+mg = 43
+eg = 30
+
+[[psts]]
+mg = 31
+eg = 15
+
+[[psts]]
+mg = 22
+eg = 51
+
+[[psts]]
+mg = 42
+eg = 76
+
+[[psts]]
+mg = 32
+eg = 71
+
+[[psts]]
+mg = 39
+eg = 71
+
+[[psts]]
+mg = 31
+eg = 72
+
+[[psts]]
+mg = 35
+eg = 68
+
+[[psts]]
+mg = 41
+eg = 72
+
+[[psts]]
+mg = 35
+eg = 58
+
+[[psts]]
+mg = 13
+eg = 57
+
+[[psts]]
+mg = 14
+eg = 74
+
+[[psts]]
+mg = 44
+eg = 88
+
+[[psts]]
+mg = 44
+eg = 76
+
+[[psts]]
+mg = 49
+eg = 79
+
+[[psts]]
+mg = 35
+eg = 88
+
+[[psts]]
+mg = 24
+eg = 74
+
+[[psts]]
+mg = -2
+eg = 65
+
+[[psts]]
+mg = 9
+eg = 76
+
+[[psts]]
+mg = 39
+eg = 93
+
+[[psts]]
+mg = 33
+eg = 80
+
+[[psts]]
+mg = 82
+eg = 78
+
+[[psts]]
+mg = 82
+eg = 81
+
+[[psts]]
+mg = 36
+eg = 81
+
+[[psts]]
+mg = 31
+eg = 96
+
+[[psts]]
+mg = 8
+eg = 80
+
+[[psts]]
+mg = 24
+eg = 82
+
+[[psts]]
+mg = 60
+eg = 92
+
+[[psts]]
+mg = 65
+eg = 79
+
+[[psts]]
+mg = 69
+eg = 74
+
+[[psts]]
+mg = 84
+eg = 74
+
+[[psts]]
+mg = 59
+eg = 80
+
+[[psts]]
+mg = 59
+eg = 88
+
+[[psts]]
+mg = 18
+eg = 82
+
+[[psts]]
+mg = -54
+eg = 68
+
+[[psts]]
+mg = -10
+eg = 95
+
+[[psts]]
+mg = 5
+eg = 94
+
+[[psts]]
+mg = -25
+eg = 88
+
+[[psts]]
+mg = -1
+eg = 80
+
+[[psts]]
+mg = 4
+eg = 94
+
+[[psts]]
+mg = -1
+eg = 87
+
+[[psts]]
+mg = -35
+eg = 64
+
+[[psts]]
+mg = -65
+eg = 106
+
+[[psts]]
+mg = -94
+eg = 104
+
+[[psts]]
+mg = -147
+eg = 110
+
+[[psts]]
+mg = -141
+eg = 111
+
+[[psts]]
+mg = -126
+eg = 120
+
+[[psts]]
+mg = -187
+eg = 113
+
+[[psts]]
+mg = -65
+eg = 99
+
+[[psts]]
+mg = -39
+eg = 91
+
+[[psts]]
+mg = 2
+eg = 89
+
+[[psts]]
+mg = 29
+eg = 101
+
+[[psts]]
+mg = 42
+eg = 103
+
+[[psts]]
+mg = 50
+eg = 99
+
+[[psts]]
+mg = 45
+eg = 97
+
+[[psts]]
+mg = 47
+eg = 108
+
+[[psts]]
+mg = 44
+eg = 98
+
+[[psts]]
+mg = 22
+eg = 85
+
+[[psts]]
+mg = -134
+eg = 106
+
+[[psts]]
+mg = -1
+eg = 86
+
+[[psts]]
+mg = 16
+eg = 97
+
+[[psts]]
+mg = 20
+eg = 95
+
+[[psts]]
+mg = 17
+eg = 96
+
+[[psts]]
+mg = 28
+eg = 90
+
+[[psts]]
+mg = 21
+eg = 79
+
+[[psts]]
+mg = -97
+eg = 97
+
+[[psts]]
+mg = -30
+eg = 91
+
+[[psts]]
+mg = 24
+eg = 111
+
+[[psts]]
+mg = 10
+eg = 110
+
+[[psts]]
+mg = 5
+eg = 109
+
+[[psts]]
+mg = 4
+eg = 109
+
+[[psts]]
+mg = 8
+eg = 113
+
+[[psts]]
+mg = 40
+eg = 110
+
+[[psts]]
+mg = -6
+eg = 87
+
+[[psts]]
+mg = -21
+eg = 126
+
+[[psts]]
+mg = 9
+eg = 143
+
+[[psts]]
+mg = 1
+eg = 145
+
+[[psts]]
+mg = 5
+eg = 140
+
+[[psts]]
+mg = -4
+eg = 142
+
+[[psts]]
+mg = 5
+eg = 146
+
+[[psts]]
+mg = 20
+eg = 142
+
+[[psts]]
+mg = -3
+eg = 127
+
+[[psts]]
+mg = 19
+eg = 150
+
+[[psts]]
+mg = 42
+eg = 143
+
+[[psts]]
+mg = 55
+eg = 149
+
+[[psts]]
+mg = 74
+eg = 139
+
+[[psts]]
+mg = 65
+eg = 143
+
+[[psts]]
+mg = 58
+eg = 144
+
+[[psts]]
+mg = 64
+eg = 141
+
+[[psts]]
+mg = 45
+eg = 144
+
+[[psts]]
+mg = 30
+eg = 163
+
+[[psts]]
+mg = 99
+eg = 133
+
+[[psts]]
+mg = 76
+eg = 153
+
+[[psts]]
+mg = 107
+eg = 141
+
+[[psts]]
+mg = 108
+eg = 138
+
+[[psts]]
+mg = 99
+eg = 147
+
+[[psts]]
+mg = 126
+eg = 124
+
+[[psts]]
+mg = 49
+eg = 158
+
+[[psts]]
+mg = 51
+eg = 171
+
+[[psts]]
+mg = 57
+eg = 176
+
+[[psts]]
+mg = 85
+eg = 173
+
+[[psts]]
+mg = 104
+eg = 172
+
+[[psts]]
+mg = 92
+eg = 178
+
+[[psts]]
+mg = 112
+eg = 167
+
+[[psts]]
+mg = 62
+eg = 176
+
+[[psts]]
+mg = 64
+eg = 166
+
+[[psts]]
+mg = 128
+eg = 157
+
+[[psts]]
+mg = 107
+eg = 166
+
+[[psts]]
+mg = 103
+eg = 171
+
+[[psts]]
+mg = 111
+eg = 168
+
+[[psts]]
+mg = 109
+eg = 171
+
+[[psts]]
+mg = 103
+eg = 175
+
+[[psts]]
+mg = 121
+eg = 167
+
+[[psts]]
+mg = 146
+eg = 155
+
+[[psts]]
+mg = 36
+eg = 20
+
+[[psts]]
+mg = 55
+eg = 5
+
+[[psts]]
+mg = 59
+eg = 13
+
+[[psts]]
+mg = 64
+eg = 28
+
+[[psts]]
+mg = 62
+eg = 31
+
+[[psts]]
+mg = 61
+eg = 2
+
+[[psts]]
+mg = 63
+eg = 1
+
+[[psts]]
+mg = 33
+eg = -6
+
+[[psts]]
+mg = 22
+eg = 49
+
+[[psts]]
+mg = 47
+eg = 34
+
+[[psts]]
+mg = 61
+eg = 17
+
+[[psts]]
+mg = 50
+eg = 72
+
+[[psts]]
+mg = 51
+eg = 74
+
+[[psts]]
+mg = 59
+eg = 26
+
+[[psts]]
+mg = 44
+eg = 37
+
+[[psts]]
+mg = 12
+eg = 39
+
+[[psts]]
+mg = 26
+eg = 95
+
+[[psts]]
+mg = 48
+eg = 105
+
+[[psts]]
+mg = 38
+eg = 133
+
+[[psts]]
+mg = 36
+eg = 113
+
+[[psts]]
+mg = 33
+eg = 115
+
+[[psts]]
+mg = 36
+eg = 142
+
+[[psts]]
+mg = 54
+eg = 109
+
+[[psts]]
+mg = 43
+eg = 75
+
+[[psts]]
+mg = 27
+eg = 146
+
+[[psts]]
+mg = 28
+eg = 183
+
+[[psts]]
+mg = 13
+eg = 196
+
+[[psts]]
+mg = 2
+eg = 227
+
+[[psts]]
+mg = 11
+eg = 213
+
+[[psts]]
+mg = 11
+eg = 211
+
+[[psts]]
+mg = 35
+eg = 168
+
+[[psts]]
+mg = 34
+eg = 164
+
+[[psts]]
+mg = 17
+eg = 206
+
+[[psts]]
+mg = 31
+eg = 226
+
+[[psts]]
+mg = 9
+eg = 238
+
+[[psts]]
+mg = 9
+eg = 266
+
+[[psts]]
+mg = 0
+eg = 276
+
+[[psts]]
+mg = 11
+eg = 249
+
+[[psts]]
+mg = 35
+eg = 244
+
+[[psts]]
+mg = 41
+eg = 212
+
+[[psts]]
+mg = 36
+eg = 202
+
+[[psts]]
+mg = 30
+eg = 193
+
+[[psts]]
+mg = 16
+eg = 259
+
+[[psts]]
+mg = 8
+eg = 289
+
+[[psts]]
+mg = 22
+eg = 266
+
+[[psts]]
+mg = 25
+eg = 292
+
+[[psts]]
+mg = 62
+eg = 195
+
+[[psts]]
+mg = 61
+eg = 214
+
+[[psts]]
+mg = 7
+eg = 196
+
+[[psts]]
+mg = -76
+eg = 291
+
+[[psts]]
+mg = -18
+eg = 293
+
+[[psts]]
+mg = -51
+eg = 341
+
+[[psts]]
+mg = -33
+eg = 359
+
+[[psts]]
+mg = 7
+eg = 313
+
+[[psts]]
+mg = -84
+eg = 302
+
+[[psts]]
+mg = -7
+eg = 211
+
+[[psts]]
+mg = 81
+eg = 191
+
+[[psts]]
+mg = 44
+eg = 244
+
+[[psts]]
+mg = 46
+eg = 264
+
+[[psts]]
+mg = 54
+eg = 287
+
+[[psts]]
+mg = 42
+eg = 306
+
+[[psts]]
+mg = 33
+eg = 293
+
+[[psts]]
+mg = 3
+eg = 281
+
+[[psts]]
+mg = 38
+eg = 239
+
+[[psts]]
+mg = 3
+eg = -124
+
+[[psts]]
+mg = 22
+eg = -61
+
+[[psts]]
+mg = -21
+eg = -27
+
+[[psts]]
+mg = -81
+eg = -38
+
+[[psts]]
+mg = -72
+eg = -53
+
+[[psts]]
+mg = -75
+eg = -21
+
+[[psts]]
+mg = 38
+eg = -62
+
+[[psts]]
+mg = 33
+eg = -150
+
+[[psts]]
+mg = 9
+eg = -35
+
+[[psts]]
+mg = -17
+eg = -3
+
+[[psts]]
+mg = -46
+eg = 22
+
+[[psts]]
+mg = -122
+eg = 47
+
+[[psts]]
+mg = -103
+eg = 37
+
+[[psts]]
+mg = -77
+eg = 30
+
+[[psts]]
+mg = -4
+eg = -9
+
+[[psts]]
+mg = 27
+eg = -52
+
+[[psts]]
+mg = -96
+eg = -6
+
+[[psts]]
+mg = -37
+eg = 19
+
+[[psts]]
+mg = -44
+eg = 48
+
+[[psts]]
+mg = -72
+eg = 74
+
+[[psts]]
+mg = -55
+eg = 68
+
+[[psts]]
+mg = -42
+eg = 47
+
+[[psts]]
+mg = -28
+eg = 16
+
+[[psts]]
+mg = -80
+eg = -12
+
+[[psts]]
+mg = -106
+eg = -14
+
+[[psts]]
+mg = 21
+eg = 34
+
+[[psts]]
+mg = 23
+eg = 66
+
+[[psts]]
+mg = -26
+eg = 95
+
+[[psts]]
+mg = -7
+eg = 91
+
+[[psts]]
+mg = 33
+eg = 64
+
+[[psts]]
+mg = 31
+eg = 33
+
+[[psts]]
+mg = -81
+eg = -22
+
+[[psts]]
+mg = -74
+eg = 18
+
+[[psts]]
+mg = 90
+eg = 54
+
+[[psts]]
+mg = 108
+eg = 76
+
+[[psts]]
+mg = 52
+eg = 90
+
+[[psts]]
+mg = 95
+eg = 82
+
+[[psts]]
+mg = 125
+eg = 71
+
+[[psts]]
+mg = 95
+eg = 54
+
+[[psts]]
+mg = -78
+eg = 8
+
+[[psts]]
+mg = 9
+eg = 13
+
+[[psts]]
+mg = 206
+eg = 64
+
+[[psts]]
+mg = 249
+eg = 57
+
+[[psts]]
+mg = 202
+eg = 48
+
+[[psts]]
+mg = 174
+eg = 48
+
+[[psts]]
+mg = 227
+eg = 55
+
+[[psts]]
+mg = 175
+eg = 64
+
+[[psts]]
+mg = -4
+eg = 9
+
+[[psts]]
+mg = -24
+eg = -49
+
+[[psts]]
+mg = 191
+eg = 48
+
+[[psts]]
+mg = 192
+eg = 31
+
+[[psts]]
+mg = 272
+eg = -11
+
+[[psts]]
+mg = 166
+eg = 6
+
+[[psts]]
+mg = 260
+eg = 19
+
+[[psts]]
+mg = 106
+eg = 64
+
+[[psts]]
+mg = 100
+eg = -79
+
+[[psts]]
+mg = 115
+eg = -280
+
+[[psts]]
+mg = 369
+eg = -128
+
+[[psts]]
+mg = 279
+eg = -78
+
+[[psts]]
+mg = 251
+eg = -35
+
+[[psts]]
+mg = 303
+eg = -76
+
+[[psts]]
+mg = 233
+eg = -63
+
+[[psts]]
+mg = 342
+eg = -86
+
+[[psts]]
+mg = 19
+eg = -277

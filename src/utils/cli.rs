@@ -156,15 +156,13 @@ pub fn game_loop(fen: String, depth: u16) -> miette::Result<()> {
     let inp_fen = fen.clone();
 
     let mut board = Board::from_fen(&fen);
-    let evaluator = CompositeEvaluator::balanced();
     let limits = SearchLimits {
         max_depth: Some(depth),
         max_time: Some(Duration::from_millis(INITIAL_TIME)),
         max_nodes: None,
         mate_depth: None,
     };
-    let mut search =
-        AlphaBetaSearch::new(Box::new(CompositeEvaluator::balanced())).with_limits(limits);
+    let mut search = AlphaBetaSearch::new().with_limits(limits);
 
     let stdin = std::io::stdin();
 
@@ -265,8 +263,7 @@ pub fn game_loop(fen: String, depth: u16) -> miette::Result<()> {
                     }
                 }
                 GameSubcommand::Evaluate => {
-                    info!("Evaluating the current board state");
-                    evaluator.print_eval_breakdown(&board);
+                    info!("Not supported yet!");
                 }
                 GameSubcommand::Clear => {
                     info!("Clearing screen");
@@ -335,8 +332,7 @@ pub fn game_loop(fen: String, depth: u16) -> miette::Result<()> {
                             }
                             Err(e) => {
                                 warn!("Error changing size: {e} \n Resetting search");
-                                AlphaBetaSearch::new(Box::new(CompositeEvaluator::balanced()))
-                                    .with_limits(limits)
+                                AlphaBetaSearch::new().with_limits(limits)
                             }
                         }
                     }
