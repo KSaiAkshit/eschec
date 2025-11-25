@@ -29,11 +29,11 @@ struct TunerCli {
     iterations: usize,
 
     /// SPSA learning rate. Controls how big the steps are
-    #[arg(long, default_value_t = 1.0)]
+    #[arg(long, default_value_t = 10.0)]
     alpha: f64,
 
     /// SPSA pertubation size. Controls how far to 'look' in rand direction
-    #[arg(long, default_value_t = 0.5)]
+    #[arg(long, default_value_t = 2.0)]
     gamma: f64,
 }
 

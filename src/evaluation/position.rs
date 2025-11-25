@@ -1,4 +1,10 @@
-use crate::{evaluation::score::const_zip, tuning::params::TunableParams};
+use crate::{
+    evaluation::score::const_zip,
+    tuning::params::{
+        BISHOP_PAIR_BONUS, MATERIAL_BISHOP, MATERIAL_KNIGHT, MATERIAL_PAWN, MATERIAL_QUEEN,
+        MATERIAL_ROOK, TunableParams,
+    },
+};
 
 use super::*;
 
@@ -278,34 +284,45 @@ impl PositionEvaluator {
 }
 
 impl Evaluator for PositionEvaluator {
-    fn evaluate(&self, board: &Board) -> Score {
-        // Source: https://www.chessprogramming.org/Simplified_Evaluation_Function
-        // Add rewards or penlaties for pieces at different squares.
-        // 3 rules. Also called PST (Piece Square table)
-        // 1.) Bonuses for good squares
-        // 2.) Penalties for bad squares
-        // 3.) Neutral Value of 0 for other squares
-        let mut score = Score::new(0, 0);
+    fn eval_generic(&self, board: &Board, acc: &mut dyn EvalAccumulator) {
+        //  Base Material (Tunable!)
+        // We iterate over piece types (excluding King)
+        let pieces = [
+            (Piece::Pawn, MATERIAL_PAWN),
+            (Piece::Knight, MATERIAL_KNIGHT),
+            (Piece::Bishop, MATERIAL_BISHOP),
+            (Piece::Rook, MATERIAL_ROOK),
+            (Piece::Queen, MATERIAL_QUEEN),
+        ];
 
-        for piece in Piece::all_pieces() {
-            let piece_idx = piece.index();
-            let piece_table = &self.piece_square_tables[piece_idx];
-            for idx in board.positions.get_piece_bb(Side::White, piece).iter_bits() {
-                score += piece_table[idx];
+        for (piece, param_idx) in pieces {
+            let white_count = board.positions.get_piece_bb(Side::White, piece).pop_count();
+            let black_count = board.positions.get_piece_bb(Side::Black, piece).pop_count();
+
+            if white_count > 0 {
+                acc.add_feature(param_idx, Side::White, white_count as i32);
             }
-            for idx in board.positions.get_piece_bb(Side::Black, piece).iter_bits() {
-                let mirrored_idx = 63 - idx;
-                score -= piece_table[mirrored_idx];
+            if black_count > 0 {
+                acc.add_feature(param_idx, Side::Black, black_count as i32);
             }
         }
-        score += self.evaluate_side(board, Side::White);
-        score -= self.evaluate_side(board, Side::Black);
 
-        // Convert to side-to-move perspective
-        if board.stm == Side::White {
-            score
-        } else {
-            -score
+        //  Bishop Pair
+        if board
+            .positions
+            .get_piece_bb(Side::White, Piece::Bishop)
+            .pop_count()
+            >= 2
+        {
+            acc.add_feature(BISHOP_PAIR_BONUS, Side::White, 1);
+        }
+        if board
+            .positions
+            .get_piece_bb(Side::Black, Piece::Bishop)
+            .pop_count()
+            >= 2
+        {
+            acc.add_feature(BISHOP_PAIR_BONUS, Side::Black, 1);
         }
     }
 
@@ -321,6 +338,7 @@ impl Evaluator for PositionEvaluator {
 #[cfg(test)]
 mod tests {
 
+    use super::Evaluator;
     use super::*;
 
     #[test]
@@ -329,7 +347,8 @@ mod tests {
         println!("{board}");
         board.stm = board.stm.flip();
         let eval = PositionEvaluator::new();
-        let score = eval.evaluate(&board);
+        let params = TunableParams::default();
+        let score = eval.evaluate(&board, &params);
         assert_eq!(
             score,
             Score::new(-605, -1274),
@@ -340,7 +359,8 @@ mod tests {
     fn test_default_board() {
         let board = Board::new();
         let eval = PositionEvaluator::new();
-        let score = eval.evaluate(&board);
+        let params = TunableParams::default();
+        let score = eval.evaluate(&board, &params);
         assert_eq!(score, Score::new(-88, 7));
     }
 }

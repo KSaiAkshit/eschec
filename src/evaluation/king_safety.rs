@@ -1,4 +1,4 @@
-use crate::{prelude::*, tuning::params::TunableParams};
+use crate::{evaluation::accumulator::EvalAccumulator, prelude::*, tuning::params::TunableParams};
 
 #[rustfmt::skip]
 const SAFETY_TABLE: [i32; 100] = [
@@ -19,25 +19,25 @@ pub struct KingSafetyEvaluator {
     name: String,
     // Bonus
     /// Bonus per castling option available
-    castling_bonus: i32,
+    castling_bonus: Score,
     /// Bonus for full pawn shield
-    pawn_shield_bonus_full: i32,
+    pawn_shield_bonus_full: Score,
     /// Bonus for partial pawn shield
-    pawn_shield_bonus_partial: i32,
+    pawn_shield_bonus_partial: Score,
 
     // Penalties
     /// Strong penalty for open files
-    open_file_penalty: i32,
+    open_file_penalty: Score,
 }
 
 impl Default for KingSafetyEvaluator {
     fn default() -> Self {
         Self {
             name: "KingSafety".to_owned(),
-            castling_bonus: 0,
-            pawn_shield_bonus_full: 0,
-            pawn_shield_bonus_partial: 0,
-            open_file_penalty: 0,
+            castling_bonus: Score::default(),
+            pawn_shield_bonus_full: Score::default(),
+            pawn_shield_bonus_partial: Score::default(),
+            open_file_penalty: Score::default(),
         }
     }
 }
@@ -46,10 +46,10 @@ impl KingSafetyEvaluator {
     pub fn new() -> Self {
         Self {
             name: "KingSafety".to_owned(),
-            castling_bonus: 10,
-            pawn_shield_bonus_full: 30,
-            pawn_shield_bonus_partial: 10,
-            open_file_penalty: -40,
+            castling_bonus: Score::new(30, 0),
+            pawn_shield_bonus_full: Score::new(25, 0),
+            pawn_shield_bonus_partial: Score::new(10, 0),
+            open_file_penalty: Score::new(-20, 0),
         }
     }
 
@@ -62,8 +62,8 @@ impl KingSafetyEvaluator {
             open_file_penalty: params.open_file_penalty,
         }
     }
-    fn evaluate_castling(&self, rights: CastlingRights, side: Side) -> i32 {
-        let mut score = 0;
+    fn evaluate_castling(&self, rights: CastlingRights, side: Side) -> Score {
+        let mut score = Score::default();
 
         if rights.has_castled(side) {
             score += self.castling_bonus;
@@ -71,22 +71,24 @@ impl KingSafetyEvaluator {
             return score;
         }
 
+        const CASTLING_BUFFER: Score = Score::new(2, 0);
+
         // Subtracting some score here so that having two rights
         // is worth less than having castled.
         if rights.can_castle(side, true) {
-            score += (self.castling_bonus / 2) - 2;
+            score += (self.castling_bonus / 2) - CASTLING_BUFFER;
         }
 
         if rights.can_castle(side, false) {
-            score += (self.castling_bonus / 2) - 2;
+            score += (self.castling_bonus / 2) - CASTLING_BUFFER;
         }
 
         score
     }
 
-    fn evaluate_pawn_shield(&self, board: &Board, side: Side, king_sq: usize) -> i32 {
+    fn evaluate_pawn_shield(&self, board: &Board, side: Side, king_sq: usize) -> Score {
         let friendly_pawns = board.positions.get_piece_bb(side, Piece::Pawn);
-        let mut shield_score = 0;
+        let mut shield_score = Score::default();
 
         let king_file = king_sq % 8;
         let king_rank = king_sq / 8;
@@ -122,13 +124,13 @@ impl KingSafetyEvaluator {
         shield_score
     }
 
-    fn evaluate_open_files(&self, board: &Board, side: Side, king_sq: usize) -> i32 {
+    fn evaluate_open_files(&self, board: &Board, side: Side, king_sq: usize) -> Score {
         let king_file = king_sq % 8;
         let opponent = side.flip();
         let opponent_pawns = board.positions.get_piece_bb(opponent, Piece::Pawn);
         let friendly_pawns = board.positions.get_piece_bb(side, Piece::Pawn);
 
-        let mut penalty = 0;
+        let mut penalty = Score::default();
 
         for file_offset in [-1, 0, 1] {
             let target_file_idx = king_file as i8 + file_offset;
@@ -209,8 +211,8 @@ impl KingSafetyEvaluator {
 
 impl Evaluator for KingSafetyEvaluator {
     fn evaluate(&self, board: &Board) -> Score {
-        let mut white_score = 0;
-        let mut black_score = 0;
+        let mut white_score = Score::default();
+        let mut black_score = Score::default();
 
         let white_king_sq = board.positions.get_piece_bb(Side::White, Piece::King).lsb();
         let black_king_sq = board.positions.get_piece_bb(Side::Black, Piece::King).lsb();
@@ -220,7 +222,7 @@ impl Evaluator for KingSafetyEvaluator {
             white_score += self.evaluate_pawn_shield(board, Side::White, king_sq as usize);
             white_score += self.evaluate_open_files(board, Side::White, king_sq as usize);
             let attack_units = self.calculate_attack_units(board, Side::White, king_sq as usize);
-            white_score -= SAFETY_TABLE[attack_units.min(99) as usize];
+            white_score -= Score::splat(SAFETY_TABLE[attack_units.min(99) as usize]);
         }
 
         if let Some(king_sq) = black_king_sq {
@@ -228,13 +230,10 @@ impl Evaluator for KingSafetyEvaluator {
             black_score += self.evaluate_pawn_shield(board, Side::Black, king_sq as usize);
             black_score += self.evaluate_open_files(board, Side::Black, king_sq as usize);
             let attack_units = self.calculate_attack_units(board, Side::Black, king_sq as usize);
-            black_score -= SAFETY_TABLE[attack_units.min(99) as usize];
+            black_score -= Score::splat(SAFETY_TABLE[attack_units.min(99) as usize]);
         }
 
-        let mg_score = white_score - black_score;
-        let eg_score = mg_score / 4; // NOTE: KingSafety is much less relevant in endgame
-
-        let score = Score::new(mg_score, eg_score);
+        let score = white_score - black_score;
 
         if board.stm == Side::White {
             score

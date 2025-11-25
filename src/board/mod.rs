@@ -30,6 +30,7 @@ pub struct Board {
     ///  The number of the full moves in a game. It starts at 1, and is incremented after each Black's move.
     pub fullmove_counter: u8,
     /// Material left for each side [White, Black]
+    #[deprecated]
     pub material: [Score; 2],
     /// Zobrist hash
     pub hash: u64,
@@ -97,12 +98,12 @@ impl Display for Board {
 
         writeln!(f, "Halfmove clock: {}", self.halfmove_clock)?;
         writeln!(f, "Fullmove counter: {}", self.fullmove_counter)?;
-        writeln!(
-            f,
-            "Material balance: W: {} B: {}",
-            self.material[Side::White.index()],
-            self.material[Side::Black.index()]
-        )?;
+        // writeln!(
+        //     f,
+        //     "Material balance: W: {} B: {}",
+        //     self.material[Side::White.index()],
+        //     self.material[Side::Black.index()]
+        // )?;
 
         Ok(())
     }
@@ -196,8 +197,8 @@ impl Board {
 
         // Restore moved piece
         if let Some(promoted_piece) = move_data.promotion {
-            self.material[self.stm.index()] -= promoted_piece.score();
-            self.material[self.stm.index()] += Piece::Pawn.score();
+            // self.material[self.stm.index()] -= promoted_piece.score();
+            // self.material[self.stm.index()] += Piece::Pawn.score();
             self.positions
                 .remove_piece(self.stm, promoted_piece, to.index())?;
             self.positions.set(self.stm, Piece::Pawn, from.index())?;
@@ -207,7 +208,7 @@ impl Board {
 
         // Restore captured pieces
         if let Some(captured) = move_data.captured_piece {
-            self.material[opponent.index()] += captured.score();
+            // self.material[opponent.index()] += captured.score();
             if move_data.is_en_passant {
                 let captured_idx = match self.stm {
                     Side::White => to.index() - 8,
@@ -297,7 +298,7 @@ impl Board {
                 .remove_piece(opponent, captured_piece, to.index())?;
             // XOR out key for removed piece
             self.hash ^= &ZOBRIST.pieces[opponent.index()][captured_piece.index()][to.index()];
-            self.material[opponent.index()] -= captured_piece.score();
+            // self.material[opponent.index()] -= captured_piece.score();
         }
 
         // Move the piece from 'from' to 'to'
@@ -332,7 +333,7 @@ impl Board {
                     .remove_piece(opponent, Piece::Pawn, captured_pawn_idx)?;
                 // XOR out captured opponent pawn
                 self.hash ^= &ZOBRIST.pieces[opponent.index()][Piece::pawn()][captured_pawn_idx];
-                self.material[opponent.index()] -= Piece::Pawn.score();
+                // self.material[opponent.index()] -= Piece::Pawn.score();
             }
             Move::KING_CASTLE => {
                 let (rook_from, rook_to) = (
@@ -362,12 +363,12 @@ impl Board {
                 // The pawn is already at the 'to' square, so we replace it.
                 self.positions
                     .remove_piece(self.stm, Piece::Pawn, to.index())?;
-                self.material[self.stm.index()] -= Piece::Pawn.score();
+                // self.material[self.stm.index()] -= Piece::Pawn.score();
                 // XOR out pawn
                 self.hash ^= &ZOBRIST.pieces[self.stm.index()][Piece::pawn()][to.index()];
 
                 self.positions.set(self.stm, promo_piece, to.index())?;
-                self.material[self.stm.index()] += promo_piece.score();
+                // self.material[self.stm.index()] += promo_piece.score();
                 // XOR in promote piece
                 self.hash ^= &ZOBRIST.pieces[self.stm.index()][promo_piece.index()][to.index()];
             }
@@ -586,6 +587,7 @@ impl Board {
         self.positions.get_piece_at(&square).map(|(piece, _)| piece)
     }
 
+    #[allow(deprecated)]
     fn recalculate_material(&mut self) {
         // Reset material
         self.material = [Score::default(); 2];

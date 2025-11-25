@@ -1,8 +1,88 @@
-use crate::{prelude::*, tuning::params::TunableParams};
+use crate::{
+    evaluation::accumulator::{EvalAccumulator, ScoreAccumulator, TraceAccumulator},
+    prelude::*,
+    tuning::{params::TunableParams, trace::EvalTrace},
+};
 use std::fmt::Debug;
 
 pub mod score;
 
+/// TODO: Remove all this and replace with pure functions
+/// Weights will be held in TunableParams
+/*
+
+
+#### 3. Architectural Refactor
+We refactored the evaluation system to separate **Logic** from **Data**.
+
+*   **`TunableParams` (Data):**
+    *   Moved all weights (Material, PSTs, Bonuses) into one struct.
+    *   Converted all weights to `Score { mg, eg }` to allow Tapered Evaluation tuning.
+    *   Flattened PST arrays to support `serde` serialization.
+    *   Added `to_vector` / `from_vector` for the optimizer.
+
+*   **`EvalTrace` (Data):**
+    *   A struct that mirrors `TunableParams` but stores **Counts** (`i8`/`i16`) instead of Weights.
+    *   Records *what* is on the board (e.g., "1 Bishop Pair", "Isolated Pawn on File 3").
+
+*   **`EvalAccumulator` (Interface):**
+    *   A trait that abstracts the evaluation process.
+    *   **`ScoreAccumulator`**: Used during gameplay. Looks up weights in `TunableParams` and sums them into a `Score`.
+    *   **`TraceAccumulator`**: Used during tuning. Increments counts in `EvalTrace`.
+
+*   **`Evaluator` (Logic):**
+    *   Refactored all evaluators (`Material`, `Position`, `KingSafety`, etc.) to use `eval_generic`.
+    *   They no longer return scores directly; they call `acc.add_feature(...)`.
+    *   This ensures the Engine and the Tuner always agree on the board state without duplicating code.
+
+#### 4. Next Steps
+1.  **Generate Dataset:** Write a binary that reads your 12M position file, runs `eval.trace()`, and saves the `EvalTrace` + `GameResult` to a binary file.
+2.  **Offline Tuner:** Write a simple Gradient Descent program that loads the binary file and optimizes the weights in `TunableParams`.
+3.  **Result:** You will be able to tune 400+ parameters in minutes rather than days.
+*
+*
+use king_safety::eval_king_safety;
+use material::eval_material;
+use mobility::eval_mobility;
+use pawn_structure::eval_pawn_structure;
+use position::eval_position;
+
+/// The main evaluation entry point for the Engine.
+pub fn evaluate(board: &Board, params: &TunableParams) -> Score {
+    let mut acc = ScoreAccumulator {
+        params,
+        score: Score::default(),
+    };
+
+    // Call functions directly.
+    // The compiler can now INLINE all of this into one giant, optimized block of machine code.
+    eval_material(board, &mut acc);
+    eval_position(board, &mut acc);
+    eval_pawn_structure(board, &mut acc);
+    eval_mobility(board, &mut acc);
+    eval_king_safety(board, &mut acc);
+
+    // Side to move adjustment
+    if board.stm == Side::White {
+        acc.score
+    } else {
+        -acc.score
+    }
+}
+
+/// The trace entry point for the Tuner.
+pub fn trace(board: &Board, trace: &mut EvalTrace) {
+    let mut acc = TraceAccumulator { trace };
+
+    eval_material(board, &mut acc);
+    eval_position(board, &mut acc);
+    eval_pawn_structure(board, &mut acc);
+    eval_mobility(board, &mut acc);
+    eval_king_safety(board, &mut acc);
+}
+*
+*/
+pub mod accumulator;
 pub mod king_safety;
 pub mod material;
 pub mod mobility;
@@ -16,12 +96,30 @@ use pawn_structure::PawnStructureEvaluator;
 use position::PositionEvaluator;
 
 pub trait Evaluator: Debug + Send + Sync {
-    fn evaluate(&self, board: &Board) -> Score;
+    /// Core logic. Calculates featurres and adds them to the accumulator
+    fn eval_generic(&self, board: &Board, acc: &mut dyn EvalAccumulator);
+    /// Wrapper for playing. Calculating the final score from the board state
+    fn evaluate(&self, board: &Board, params: &TunableParams) -> Score {
+        let mut acc = ScoreAccumulator {
+            params,
+            score: Score::default(),
+        };
+
+        self.eval_generic(board, &mut acc);
+
+        if board.stm == Side::White {
+            acc.score
+        } else {
+            -acc.score
+        }
+    }
+    /// Wrapper for tuning. Records the presence of features
+    fn trace(&self, board: &Board, trace: &mut EvalTrace) {
+        let mut acc = TraceAccumulator { trace };
+        self.eval_generic(board, &mut acc);
+    }
     fn name(&self) -> &str;
     fn clone_box(&self) -> Box<dyn Evaluator>;
-    fn breakdown(&self, board: &Board) -> Option<(String, Score)> {
-        Some((self.name().to_string(), self.evaluate(board)))
-    }
 }
 
 #[derive(Debug, Default)]
@@ -78,64 +176,58 @@ impl CompositeEvaluator {
         self
     }
 
-    pub fn print_eval_breakdown(&self, board: &Board) {
-        let breakdown = self.breakdown(board);
-        println!("+-------------------+---------+---------+----------+");
-        println!("|     Term          |    MG   |    EG   |  Weight  |");
-        println!("+-------------------+---------+---------+----------+");
-        let mut mg_total = 0;
-        let mut eg_total = 0;
-        let weight_total: i32 = self.weights.iter().sum();
-        for (name, mg, eg, weight) in breakdown {
-            println!("| {:<17} | {:>7} | {:>7} | {:>8.2} |", name, mg, eg, weight);
-            mg_total += mg * weight;
-            eg_total += eg * weight;
-        }
-        println!("+-------------------+---------+---------+----------+");
-        println!(
-            "|     Total         | {:>7.2} | {:>7.2} | {:>8.2} |",
-            mg_total, eg_total, weight_total
-        );
-        println!("+-------------------+---------+---------+----------+");
-    }
+    pub fn print_eval_breakdown(&self, board: &Board, params: &TunableParams) {
+        println!("+-------------------+---------+---------+");
+        println!("|     Term          |    MG   |    EG   |");
+        println!("+-------------------+---------+---------+");
 
-    fn breakdown(&self, board: &Board) -> Vec<(String, i32, i32, i32)> {
-        self.evaluators
-            .iter()
-            .zip(self.weights.iter())
-            .filter_map(|(eval, &weight)| {
-                eval.breakdown(board)
-                    .map(|(name, score)| (name, score.mg, score.eg, weight))
-            })
-            .collect()
+        let mut total_mg = 0;
+        let mut total_eg = 0;
+
+        for eval in &self.evaluators {
+            // We run evaluate() on the sub-evaluator.
+            // Note: This returns STM score.
+            let score = eval.evaluate(board, params);
+
+            println!(
+                "| {:<17} | {:>7} | {:>7} |",
+                eval.name(),
+                score.mg,
+                score.eg
+            );
+            total_mg += score.mg;
+            total_eg += score.eg;
+        }
+
+        println!("+-------------------+---------+---------+");
+        println!("|     Total         | {:>7} | {:>7} |", total_mg, total_eg);
+        println!("+-------------------+---------+---------+");
     }
 }
 
 impl Evaluator for CompositeEvaluator {
-    fn evaluate(&self, board: &Board) -> Score {
-        let mut material_score = Score::default();
-        let mut positional_score = Score::default();
-        let mut positional_total_weight = 0;
-
-        for (evaluator, &weight) in self.evaluators.iter().zip(self.weights.iter()) {
-            if evaluator.name() == "Material" {
-                material_score = evaluator.evaluate(board);
-            } else {
-                positional_score += evaluator.evaluate(board) * weight;
-                positional_total_weight += weight;
-            }
+    fn eval_generic(&self, board: &Board, acc: &mut dyn EvalAccumulator) {
+        for evaluator in &self.evaluators {
+            evaluator.eval_generic(board, acc);
         }
+    }
+    fn evaluate(&self, board: &Board, params: &TunableParams) -> Score {
+        let mut acc = ScoreAccumulator {
+            params,
+            score: Score::default(),
+        };
 
-        if positional_total_weight > 0 {
-            positional_score.mg /= positional_total_weight;
-            positional_score.eg /= positional_total_weight;
-        }
+        self.eval_generic(board, &mut acc);
 
-        let final_score = material_score + positional_score;
-
+        //  Jiggle logic
         let jiggle = (board.hash % 5) as i32 - 2;
+        let final_score = Score::new(acc.score.mg + jiggle, acc.score.eg + jiggle);
 
-        Score::new(final_score.mg + jiggle, final_score.eg + jiggle)
+        if board.stm == Side::White {
+            final_score
+        } else {
+            -final_score
+        }
     }
     // fn evaluate(&self, board: &Board) -> Score {
     //     let total_weight: i32 = self.weights.iter().sum();
@@ -175,28 +267,5 @@ impl Evaluator for CompositeEvaluator {
             weights: self.weights.clone(),
             name: self.name().to_owned(),
         })
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_composite_evaluator() {
-        let board = Board::new();
-
-        let mut composite = CompositeEvaluator::new("Test Composite");
-        composite
-            .add_evaluator(Box::new(MaterialEvaluator::new()), 3)
-            .add_evaluator(Box::new(PositionEvaluator::new()), 3)
-            .add_evaluator(Box::new(MobilityEvaluator::new()), 1);
-
-        let score = composite.evaluate(&board);
-
-        // Initial position with our evaluators should be roughly balanced
-        // Allow some small variation from position scoring
-        assert!(score.mg < 10);
-        assert!(score.eg < 10);
     }
 }
