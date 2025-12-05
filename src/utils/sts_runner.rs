@@ -71,7 +71,7 @@ pub fn run_suite(
         lim.max_depth = Some(MAX_PLY as u16); // Ensure there's a depth limit
 
         // Each thread needs its own independent search engine instance.
-        let mut search = AlphaBetaSearch::with_eval(params).with_limits(lim);
+        let mut search = AlphaBetaSearch::with_eval(params.clone()).with_limits(lim);
 
         let conf = SearchConfig {
             emit_info: false,

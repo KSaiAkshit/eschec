@@ -227,7 +227,7 @@ impl AlphaBetaSearch {
         }
     }
 
-    pub fn with_eval(params: &TunableParams) -> Self {
+    pub fn with_eval(params: TunableParams) -> Self {
         Self {
             config: SearchConfig::default(),
             limits: SearchLimits::default(),
@@ -235,7 +235,7 @@ impl AlphaBetaSearch {
             search_cycle: 0,
             start_time: Instant::now(),
             in_progress: false,
-            eval_params: params.clone(),
+            eval_params: params,
             tt: TranspositionTable::new(16),
             search_tables: Box::new(SearchTables::new()),
             repetition_table: RepetitionTable::new(),

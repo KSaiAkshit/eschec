@@ -1,9 +1,9 @@
-use std::{io::Write, time::Duration};
+use std::{io::Write, path::PathBuf, time::Duration};
 
 use clap::{Parser, Subcommand, ValueEnum};
 use tracing::{Level, span};
 
-use crate::{prelude::*, search::common::SearchLimits};
+use crate::{prelude::*, search::common::SearchLimits, tuning::params::TunableParams};
 
 const INITIAL_TIME: u64 = 10_000;
 
@@ -12,6 +12,10 @@ const INITIAL_TIME: u64 = 10_000;
 pub struct Cli {
     #[command(subcommand)]
     pub command: Option<Commands>,
+
+    /// Param file to use for evaluation
+    #[arg(short, long)]
+    pub params: Option<PathBuf>,
 }
 
 #[derive(Subcommand)]
@@ -151,7 +155,7 @@ pub enum GameSubcommand {
     Quit,
 }
 
-pub fn game_loop(fen: String, depth: u16) -> miette::Result<()> {
+pub fn game_loop(fen: String, depth: u16, params: TunableParams) -> miette::Result<()> {
     let inp_depth = depth;
     let inp_fen = fen.clone();
 
@@ -162,7 +166,7 @@ pub fn game_loop(fen: String, depth: u16) -> miette::Result<()> {
         max_nodes: None,
         mate_depth: None,
     };
-    let mut search = AlphaBetaSearch::new().with_limits(limits);
+    let mut search = AlphaBetaSearch::with_eval(params).with_limits(limits);
 
     let stdin = std::io::stdin();
 

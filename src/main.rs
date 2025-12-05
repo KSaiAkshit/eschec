@@ -1,5 +1,5 @@
 use clap::Parser;
-use eschec::prelude::*;
+use eschec::{prelude::*, tuning::params::TunableParams};
 
 #[cfg(feature = "dhat-heap")]
 #[global_allocator]
@@ -12,11 +12,17 @@ fn main() -> miette::Result<()> {
 
     let span = span!(Level::DEBUG, "main");
     let _guard = span.enter();
-    match Cli::parse().command {
+    let parsed = Cli::parse();
+
+    let params = match parsed.params {
+        Some(f) => TunableParams::load_from_file(f)?,
+        None => TunableParams::default(),
+    };
+    match parsed.command {
         Some(cmd) => match cmd {
             Commands::Play { fen, depth } => {
                 trace!("Starting game with fen: {:?}, depth: {:?}", fen, depth);
-                game_loop(fen.unwrap(), depth.unwrap())?;
+                game_loop(fen.unwrap(), depth.unwrap(), params)?;
             }
             Commands::Perft { fen, depth, divide } => {
                 trace!(
@@ -33,12 +39,12 @@ fn main() -> miette::Result<()> {
             }
             Commands::Headless { protocol } => {
                 trace!("Running headless with protocol: {:?}", protocol);
-                uci::play()?;
+                uci::play(params)?;
             }
         },
         None => {
             trace!("Running headless with protocol: uci");
-            uci::play()?;
+            uci::play(params)?;
         }
     }
     Ok(())

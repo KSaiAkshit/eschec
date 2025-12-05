@@ -11,6 +11,7 @@ use crate::{
     comms::uci_parser::{GoParams, UciCommand, parse_line},
     prelude::*,
     search::{SearchStats, common::SearchConfig},
+    tuning::params::TunableParams,
 };
 
 #[derive(Debug)]
@@ -48,14 +49,14 @@ impl Drop for UciState {
 }
 
 impl UciState {
-    pub fn new(depth: Option<u16>) -> miette::Result<Self> {
+    pub fn new(depth: Option<u16>, params: TunableParams) -> miette::Result<Self> {
         let depth = depth.unwrap_or(20);
         let search_running = Arc::new(AtomicBool::new(false));
         let conf = SearchConfig {
             hash_size_mb: 256,
             ..Default::default()
         };
-        let mut s = AlphaBetaSearch::new()
+        let mut s = AlphaBetaSearch::with_eval(params)
             .with_config(conf)?
             .init(search_running.clone());
         s.set_depth(depth);
@@ -79,8 +80,8 @@ impl UciState {
     }
 }
 
-pub fn play() -> miette::Result<()> {
-    let mut state = UciState::new(None)?;
+pub fn play(params: TunableParams) -> miette::Result<()> {
+    let mut state = UciState::new(None, params)?;
 
     let stdin = std::io::stdin();
     let mut lines = stdin.lock().lines();
