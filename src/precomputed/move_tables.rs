@@ -30,8 +30,7 @@ pub struct MoveTables {
     pub northwest_rays: [BitBoard; 64],
 }
 
-// pub static MOVE_TABLES: LazyLock<MoveTables> = LazyLock::new(MoveTables::new);
-pub const MOVE_TABLES: MoveTables = MoveTables::new();
+pub static MOVE_TABLES: MoveTables = MoveTables::new();
 
 impl Default for MoveTables {
     fn default() -> Self {

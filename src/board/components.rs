@@ -697,7 +697,12 @@ impl BoardState {
 
     #[inline(always)]
     pub fn get_piece_at(&self, square: &Square) -> Option<(Piece, Side)> {
-        self.mailbox[square.index()].map(|info| (info.piece, info.side))
+        // SAFETY: Square index is always [0, 63]
+        unsafe {
+            self.mailbox
+                .get_unchecked(square.index())
+                .map(|info| (info.piece, info.side))
+        }
     }
 
     #[inline(always)]

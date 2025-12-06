@@ -497,12 +497,12 @@ fn is_move_a_check(board: &Board, mv: Move, opponent_king_sq: usize) -> bool {
         let rooks_queens = board.positions.get_orhto_sliders_bb(board.stm);
         let bishops_queens = board.positions.get_diag_sliders_bb(board.stm);
 
-        let rook_attacks = MOVE_TABLES.get_rook_attacks_generic(opponent_king_sq, occupied);
-        if (rook_attacks & rooks_queens).any() {
+        let magic_rook = MOVE_TABLES.get_rook_attacks_bb(opponent_king_sq, occupied);
+        if (magic_rook & rooks_queens).any() {
             return true;
         }
-        let bishop_attacks = MOVE_TABLES.get_bishop_attacks_generic(opponent_king_sq, occupied);
-        if (bishop_attacks & bishops_queens).any() {
+        let magic_bishop = MOVE_TABLES.get_bishop_attacks_bb(opponent_king_sq, occupied);
+        if (magic_bishop & bishops_queens).any() {
             return true;
         }
     }
@@ -521,13 +521,13 @@ fn is_move_a_check(board: &Board, mv: Move, opponent_king_sq: usize) -> bool {
         let rooks_queens = board.positions.get_orhto_sliders_bb(board.stm);
         let bishops_queens = board.positions.get_diag_sliders_bb(board.stm);
 
-        let rook_attacks = MOVE_TABLES.get_rook_attacks_generic(opponent_king_sq, occupied);
-        if (rook_attacks & rooks_queens).any() {
+        let magic_rook = MOVE_TABLES.get_rook_attacks_bb(opponent_king_sq, occupied);
+        if (magic_rook & rooks_queens).any() {
             return true;
         }
 
-        let bishop_attacks = MOVE_TABLES.get_bishop_attacks_generic(opponent_king_sq, occupied);
-        if (bishop_attacks & bishops_queens).any() {
+        let magic_bishop = MOVE_TABLES.get_bishop_attacks_bb(opponent_king_sq, occupied);
+        if (magic_bishop & bishops_queens).any() {
             return true;
         }
     }
@@ -539,15 +539,11 @@ fn get_piece_attacks(board: &Board, side: Side, piece: Piece, from: usize) -> Bi
         Piece::Pawn => MOVE_TABLES.get_pawn_attacks(from, side),
         Piece::Knight => MOVE_TABLES.knight_moves[from],
         Piece::King => MOVE_TABLES.king_moves[from],
-        Piece::Bishop => {
-            MOVE_TABLES.get_bishop_attacks_generic(from, board.positions.get_occupied_bb())
-        }
-        Piece::Rook => {
-            MOVE_TABLES.get_rook_attacks_generic(from, board.positions.get_occupied_bb())
-        }
+        Piece::Bishop => MOVE_TABLES.get_bishop_attacks_bb(from, board.positions.get_occupied_bb()),
+        Piece::Rook => MOVE_TABLES.get_rook_attacks_bb(from, board.positions.get_occupied_bb()),
         Piece::Queen => {
-            MOVE_TABLES.get_rook_attacks_generic(from, board.positions.get_occupied_bb())
-                | MOVE_TABLES.get_bishop_attacks_generic(from, board.positions.get_occupied_bb())
+            MOVE_TABLES.get_rook_attacks_bb(from, board.positions.get_occupied_bb())
+                | MOVE_TABLES.get_bishop_attacks_bb(from, board.positions.get_occupied_bb())
         }
     }
 }
