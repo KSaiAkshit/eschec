@@ -78,17 +78,19 @@ impl Move {
     /// Extract the from-square index (0..63)
     #[inline]
     pub const fn from_sq(&self) -> Square {
-        Square::new((self.0 & Self::FROM_MASK) as usize).unwrap()
+        // SAFETY: Mask 0x3F guarantees value is 0..63
+        unsafe { Square::new_unchecked((self.0 & Self::FROM_MASK) as usize) }
     }
 
     /// Extract the to-square index (0..63)
     #[inline]
     pub const fn to_sq(&self) -> Square {
-        Square::new(((self.0 & Self::TO_MASK) >> 6) as usize).unwrap()
+        // SAFETY: Mask 0x3F guarantees value is 0..63
+        unsafe { Square::new_unchecked(((self.0 & Self::TO_MASK) >> 6) as usize) }
     }
 
     /// Extract the flags (upper 4 bits)
-    #[inline]
+    #[inline(always)]
     pub const fn flags(&self) -> u16 {
         self.0 & Self::FLAG_MASK
     }
@@ -96,39 +98,32 @@ impl Move {
     /// Returns true if this move is a capture (including en passant and promotion-capture)
     #[inline]
     pub const fn is_capture(&self) -> bool {
-        matches!(
-            self.flags(),
-            Self::CAPTURE
-                | Self::EN_PASSANT
-                | Self::PROMO_NC
-                | Self::PROMO_BC
-                | Self::PROMO_RC
-                | Self::PROMO_QC
-        )
+        (self.0 & Self::CAPTURE) != 0
     }
 
     /// Returns true if this move is a promotion
     #[inline]
     pub const fn is_promotion(&self) -> bool {
-        (self.flags() >> 12) >= 0b1000
+        (self.0 & Self::PROMO) != 0
     }
 
     /// Returns true if this move is quiet
     #[inline]
     pub const fn is_quiet(&self) -> bool {
-        matches!(self.flags(), Self::QUIET)
+        self.flags() == Self::QUIET
     }
 
     /// Returns true if this move is a castling
     #[inline]
     pub const fn is_castling(&self) -> bool {
-        matches!(self.flags(), Self::KING_CASTLE | Self::QUEEN_CASTLE)
+        let f = self.flags();
+        f == Self::KING_CASTLE || f == Self::QUEEN_CASTLE
     }
 
     /// Returns true if this move is en_passant
     #[inline]
     pub const fn is_enpassant(&self) -> bool {
-        matches!(self.flags(), Self::EN_PASSANT)
+        self.flags() == Self::EN_PASSANT
     }
 
     /// Returns promoted piece type as types, if promotion; else None

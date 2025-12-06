@@ -896,6 +896,11 @@ impl Square {
         None
     }
 
+    /// SAFETY: Caller must ensure index is [0, 63]
+    pub const unsafe fn new_unchecked(index: usize) -> Self {
+        Self(index)
+    }
+
     /// Returns a Square from a given File and Rank.
     /// Will return None if either File or Rank are out of bounds.
     /// Rank < 7, File < 8

@@ -16,3 +16,4 @@ gauntlet/results/**
 .direnv
 config.json
 flamegraph.svg
+stacks.folded

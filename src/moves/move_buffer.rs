@@ -53,7 +53,7 @@ impl MoveBuffer {
         // SAFETY: Assuming `MAX_MOVES` is enough for chess
         // Using get_unchecked for hot paths
         unsafe {
-            self.moves.get_unchecked_mut(self.len).write(m);
+            *self.moves.get_unchecked_mut(self.len).as_mut_ptr() = m;
         }
         self.len += 1;
     }

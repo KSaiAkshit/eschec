@@ -53,14 +53,15 @@ tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 clap = { version = "4.5.38", features = ["derive"] }
 miette = { version = "7.5.0", default-features = false, features = ["fancy"] }
 shell-words = "1.1.0"
+# Serialization
+toml = "0.9.8"
+serde = { version = "1.0.228", features = ["derive"] }
+serde-big-array = "0.5.1"
 # Optional
 color-backtrace = { version = "0.7.0", optional = true }
 dhat = { version = "0.3.3", optional = true }
 rayon = { version = "1.10.0", optional = true }
 indicatif = { version = "0.18.0", default-features = false, optional = true, features = ["unicode-width", "rayon"] }
-toml = "0.9.8"
-serde = { version = "1.0.228", features = ["derive"] }
-serde-big-array = "0.5.1"
 
 [dev-dependencies]
 criterion = "0.6.0"
