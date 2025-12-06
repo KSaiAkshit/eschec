@@ -1,8 +1,6 @@
-use std::sync::LazyLock;
-
 use crate::prelude::*;
 
-pub static ZOBRIST: LazyLock<ZobristKeys> = LazyLock::new(ZobristKeys::new);
+pub static ZOBRIST: ZobristKeys = ZobristKeys::new();
 
 #[derive(Debug)]
 pub struct ZobristKeys {
@@ -28,30 +26,57 @@ impl Default for ZobristKeys {
 }
 
 impl ZobristKeys {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         let mut rng = Prng::init(1070373321345817214);
         let mut keys = Self {
+            pieces: [[[0; NUM_SQUARES]; NUM_PIECES]; NUM_SIDES],
+            castling: [0; NUM_CASTLING_RIGHTS],
+            en_passant_file: [0; NUM_FILES],
             black_to_move: rng.rand(),
-            ..Default::default()
         };
 
-        for side in Side::SIDES {
-            Piece::all_pieces().for_each(|piece| {
-                for square in 0..NUM_SQUARES {
-                    keys.pieces[side.index()][piece.index()][square] = rng.rand();
-                }
-            })
-        }
-
-        for i in 0..NUM_CASTLING_RIGHTS {
-            keys.castling[i] = rng.rand();
-        }
-
-        for i in 0..NUM_FILES {
-            keys.en_passant_file[i] = rng.rand();
-        }
+        keys.init_pieces(&mut rng);
+        keys.init_castling(&mut rng);
+        keys.init_en_passant(&mut rng);
 
         keys
+    }
+
+    const fn init_pieces(&mut self, rng: &mut Prng) {
+        let sides = Side::SIDES;
+        let pieces = Piece::PIECES;
+        let mut s = 0;
+        while s < sides.len() {
+            let side_idx = sides[s].index();
+
+            let mut i = 0;
+            while i < pieces.len() {
+                let piece_idx = pieces[i].index();
+                let mut sq = 0;
+                while sq < NUM_SQUARES {
+                    self.pieces[side_idx][piece_idx][sq] = rng.rand();
+                    sq += 1;
+                }
+                i += 1;
+            }
+            s += 1;
+        }
+    }
+
+    const fn init_castling(&mut self, rng: &mut Prng) {
+        let mut i = 0;
+        while i < NUM_CASTLING_RIGHTS {
+            self.castling[i] = rng.rand();
+            i += 1;
+        }
+    }
+
+    const fn init_en_passant(&mut self, rng: &mut Prng) {
+        let mut i = 0;
+        while i < NUM_FILES {
+            self.en_passant_file[i] = rng.rand();
+            i += 1;
+        }
     }
 }
 

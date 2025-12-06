@@ -3,7 +3,6 @@ use std::io::stderr;
 use std::path::Path;
 use std::sync::{LazyLock, Mutex, OnceLock};
 
-use crate::board::zobrist::ZOBRIST;
 use chrono::Local;
 use miette::{Context, IntoDiagnostic};
 use tracing::level_filters::LevelFilter;
@@ -124,7 +123,6 @@ pub fn toggle_file_logging(enable: bool) -> miette::Result<()> {
 /// Initialize tracing and backtrace
 pub fn init() {
     LazyLock::force(&LOG_HANDLES);
-    LazyLock::force(&ZOBRIST);
     #[cfg(feature = "simd")]
     {
         info!("Simd Enabled, but nothing for now");
