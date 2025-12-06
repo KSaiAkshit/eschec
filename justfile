@@ -166,7 +166,7 @@ clean:
 
 [doc("Run the engine in play mode")]
 play:
-    cargo run --bin eschec {{ flags }} -- play
+    cargo run --bin eschec {{ flags }} -- --params ./config/normalized_tuned_params.toml play
 
 [doc("Run the engine in headless mode")]
 uci:

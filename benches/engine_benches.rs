@@ -31,7 +31,7 @@ fn bench_move_generation(c: &mut Criterion) {
             |board| {
                 let mut moves = MoveBuffer::new();
                 (board.generate_legal_moves(&mut moves, false));
-                black_box(moves)
+                black_box(moves.as_slice());
             },
             BatchSize::SmallInput,
         );

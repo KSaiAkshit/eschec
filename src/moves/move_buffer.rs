@@ -1,3 +1,4 @@
+use std::mem::MaybeUninit;
 use std::slice::{Iter, IterMut, SliceIndex};
 
 #[cfg(feature = "parallel")]
@@ -9,10 +10,20 @@ use crate::{consts::MAX_MOVES, prelude::Move};
 ///
 /// It holds up to `MAX_MOVES` (256) and tracks the
 /// number of moves currently stored.
-#[derive(Clone, Copy, Debug)]
+#[derive(Debug)]
 pub struct MoveBuffer {
-    moves: [Move; MAX_MOVES],
+    moves: [MaybeUninit<Move>; MAX_MOVES],
     len: usize,
+}
+
+impl Clone for MoveBuffer {
+    fn clone(&self) -> Self {
+        let mut new_buf = Self::new();
+        for i in 0..self.len {
+            unsafe { new_buf.push(self.get_unchecked(i)) }
+        }
+        new_buf
+    }
 }
 
 impl Default for MoveBuffer {
@@ -25,7 +36,9 @@ impl MoveBuffer {
     /// Creates a new, empty `MoveBuffer`.
     pub const fn new() -> Self {
         Self {
-            moves: [Move(0); MAX_MOVES],
+            // SAFETY: MaybeUninit::uninit() is valid for MaybeUninit types.
+            // This is zero-cost and safe.
+            moves: [MaybeUninit::uninit(); MAX_MOVES],
             len: 0,
         }
     }
@@ -33,14 +46,15 @@ impl MoveBuffer {
     /// Adds a move to the end of the buffer.
     ///
     /// # Panics
-    /// Panics if the buffer is full.
+    /// Panics if the buffer is full (debug mode).
     #[inline(always)]
     pub fn push(&mut self, m: Move) {
-        debug_assert!(self.len < MAX_MOVES, "MoveBuffer Overflow!");
+        debug_assert!(self.len < MAX_MOVES, "MoveBuffer overflow!");
+        // SAFETY: Assuming `MAX_MOVES` is enough for chess
+        // Using get_unchecked for hot paths
         unsafe {
-            core::hint::assert_unchecked(self.len < MAX_MOVES);
+            self.moves.get_unchecked_mut(self.len).write(m);
         }
-        self.moves[self.len] = m;
         self.len += 1;
     }
 
@@ -71,13 +85,17 @@ impl MoveBuffer {
     /// Returns a slice containing all the moves in the buffer.
     #[inline(always)]
     pub fn as_slice(&self) -> &[Move] {
-        &self.moves[..self.len]
+        // SAFETY: We only expose the slice up to `len`, which is initialized
+        // Casting *const MaybeUninit<Move> to *const Move is valid because they have the same layout.
+        unsafe { std::slice::from_raw_parts(self.moves.as_ptr() as *const Move, self.len()) }
     }
 
     /// Returns a mutable slice containing all the moves in the buffer.
     #[inline(always)]
     pub fn as_mut_slice(&mut self) -> &mut [Move] {
-        &mut self.moves[..self.len]
+        // SAFETY: We only expose the slice up to `len`, which is initialized
+        // Cast *const MaybeUnint<Move> to * const Move
+        unsafe { std::slice::from_raw_parts_mut(self.moves.as_mut_ptr() as *mut Move, self.len()) }
     }
 
     /// Returns a reference to the first move, or `None` if the buffer is empty.
@@ -99,20 +117,30 @@ impl MoveBuffer {
     {
         let mut len = 0;
         for i in 0..self.len {
-            if pred(&self.moves[i]) {
-                self.moves.swap(len, i);
-                len += 1;
+            // SAFETY: `i` is within bounds of initialized items
+            unsafe {
+                if pred(&self.get_unchecked(i)) {
+                    // OPTIM: maybe use memcpy here
+                    self.moves.swap(len, i);
+                    len += 1;
+                }
             }
         }
         self.len = len;
     }
 
+    /// Helper for internal use.
+    /// Caller should guarentee that 0 <= index <= len
+    unsafe fn get_unchecked(&self, index: usize) -> Move {
+        unsafe { self.moves.get_unchecked(index).assume_init_read() }
+    }
+
     /// Returns a reference to a move or sub-slice, or `None` if out of bounds.
     pub fn get<I>(&self, index: I) -> Option<&I::Output>
     where
-        I: SliceIndex<Self>,
+        I: SliceIndex<[Move]>,
     {
-        index.get(self)
+        index.get(self.as_slice())
     }
 
     /// Returns an iterator over the moves.
@@ -214,9 +242,11 @@ impl Iterator for MoveBufferIntoIter {
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.pos < self.buf.len {
-            let item = self.buf.moves[self.pos];
-            self.pos += 1;
-            Some(item)
+            unsafe {
+                let item = self.buf.get_unchecked(self.pos);
+                self.pos += 1;
+                Some(item)
+            }
         } else {
             None
         }
@@ -276,7 +306,6 @@ impl IntoParallelIterator for MoveBuffer {
     type Iter = rayon::vec::IntoIter<Move>;
 
     fn into_par_iter(self) -> Self::Iter {
-        let vec: Vec<Move> = self.moves[..self.len].to_vec();
-        vec.into_par_iter()
+        self.as_slice().to_vec().into_par_iter()
     }
 }
