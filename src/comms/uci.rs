@@ -142,11 +142,19 @@ fn cmd_position(
         state.move_history.clear();
     }
 
+    let mut search_guard = state.search.lock().unwrap();
+    search_guard.repetition_table.clear();
+
+    search_guard.repetition_table.push(state.board.hash);
+
     for move_uci in moves {
         let mov = Move::from_uci(&state.board, &move_uci)?;
         let move_info = state.board.make_move(mov)?;
         state.move_history.push(move_info);
+        search_guard.repetition_table.push(state.board.hash);
     }
+    // NOTE: Search's find_best_move already pushes the root node, so pop here to avoid duplication
+    search_guard.repetition_table.pop();
 
     Ok(())
 }

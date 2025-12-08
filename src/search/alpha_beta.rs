@@ -22,9 +22,10 @@ use crate::tuning::params::TunableParams;
 /// Consts
 const ASP_START_WINDOW: i32 = 48;
 const ASP_MAX_WINDOW: i32 = 4096;
-const HISTORY_SIZE: usize = 128;
+const HISTORY_SIZE: usize = 512;
 const DELTA_MARGIN: i32 = 700;
 const SEE_THRESHOLD: i32 = -100;
+const CONTEMPT_SCORE: i32 = 0;
 
 /// Holds pv_node and curr ply
 #[derive(Clone, Copy)]
@@ -132,7 +133,7 @@ impl RepetitionTable {
     }
 
     #[inline]
-    fn push(&mut self, hash: u64) {
+    pub fn push(&mut self, hash: u64) {
         debug_assert!(
             self.len < HISTORY_SIZE,
             "RepetitionTable overflow! len={}, max={}",
@@ -146,7 +147,7 @@ impl RepetitionTable {
     }
 
     #[inline]
-    fn pop(&mut self) {
+    pub fn pop(&mut self) {
         if self.len > 0 {
             self.len -= 1;
         }
@@ -161,7 +162,7 @@ impl RepetitionTable {
     }
 
     #[inline]
-    fn clear(&mut self) {
+    pub fn clear(&mut self) {
         self.len = 0;
     }
 }
@@ -475,7 +476,10 @@ impl AlphaBetaSearch {
             if self.config.collect_stats {
                 self.stats.draw_returns += 1;
             }
-            return 0;
+            // CONTEMPT Factor
+            // If we are drawing, return contempt score
+            // Nudge the engine away from accepting draws
+            return CONTEMPT_SCORE;
         }
 
         let mut tt_move = Move::default();
@@ -757,7 +761,7 @@ impl AlphaBetaSearch {
             if self.config.collect_stats {
                 self.stats.draw_returns += 1;
             }
-            return 0;
+            return CONTEMPT_SCORE;
         }
 
         let is_in_check = board.is_in_check(board.stm);
