@@ -9,7 +9,7 @@ fn main() -> miette::Result<()> {
     #[cfg(feature = "dhat-heap")]
     let _profiler = dhat::Profiler::new_heap();
     utils::log::init();
-    toggle_file_logging(true)?;
+    // toggle_file_logging(true)?;
 
     let span = span!(Level::DEBUG, "main");
     let _guard = span.enter();

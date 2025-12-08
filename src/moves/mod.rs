@@ -56,6 +56,22 @@ impl Direction {
         matches!(dir.0, 7 | -7 | 9 | -9)
     }
 
+    pub const fn index(&self) -> usize {
+        match *self {
+            Direction::NORTH => 0,
+            Direction::SOUTH => 1,
+            Direction::EAST => 2,
+            Direction::WEST => 3,
+            Direction::NORTHEAST => 4,
+            Direction::SOUTHEAST => 5,
+            Direction::SOUTHWEST => 6,
+            Direction::NORTHWEST => 7,
+            _ => {
+                panic!("Should not reach here")
+            }
+        }
+    }
+
     pub const fn get_dir(from: usize, to: usize) -> Direction {
         let rank_diff = (to / 8) as i8 - (from / 8) as i8;
         let file_diff = (to % 8) as i8 - (from % 8) as i8;

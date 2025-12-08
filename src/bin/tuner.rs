@@ -67,12 +67,10 @@ fn main() -> miette::Result<()> {
 
     // Precompute maps
     let feature_map: Vec<usize> = (0..NUM_TRACE_FEATURES)
-        .map(|i| EvalTrace::map_feature_to_spsa_index(i))
+        .map(EvalTrace::map_feature_to_spsa_index)
         .collect();
 
-    let mobility_map: Vec<usize> = (0..5)
-        .map(|i| EvalTrace::map_mobility_to_spsa_index(i))
-        .collect();
+    let mobility_map: Vec<usize> = (0..5).map(EvalTrace::map_mobility_to_spsa_index).collect();
 
     // Initial Error
     let initial_params = TunableParams::default();

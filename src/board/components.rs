@@ -901,8 +901,10 @@ impl Square {
         None
     }
 
-    /// SAFETY: Caller must ensure index is [0, 63]
+    /// # Safety
+    ///  Caller must ensure index is [0, 63]
     pub const unsafe fn new_unchecked(index: usize) -> Self {
+        debug_assert!(index < 64, "Index out of bounds! Expected [0, 63");
         Self(index)
     }
 

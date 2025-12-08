@@ -20,14 +20,7 @@ pub struct MoveTables {
 
     // For sliding pieces, pre-compute ray attacks
     // These represent attacks in each direction, assuming empty board
-    pub north_rays: [BitBoard; 64],
-    pub south_rays: [BitBoard; 64],
-    pub east_rays: [BitBoard; 64],
-    pub west_rays: [BitBoard; 64],
-    pub northeast_rays: [BitBoard; 64],
-    pub southeast_rays: [BitBoard; 64],
-    pub southwest_rays: [BitBoard; 64],
-    pub northwest_rays: [BitBoard; 64],
+    pub dir_rays: [[BitBoard; 64]; 8],
 }
 
 pub static MOVE_TABLES: MoveTables = MoveTables::new();
@@ -51,14 +44,7 @@ impl MoveTables {
             black_pawn_double_pushes: [BitBoard(0); 64],
             rook_magics: [MagicEntry::EMPTY_MAGIC; 64],
             bishop_magics: [MagicEntry::EMPTY_MAGIC; 64],
-            north_rays: [BitBoard(0); 64],
-            south_rays: [BitBoard(0); 64],
-            east_rays: [BitBoard(0); 64],
-            west_rays: [BitBoard(0); 64],
-            northeast_rays: [BitBoard(0); 64],
-            southeast_rays: [BitBoard(0); 64],
-            southwest_rays: [BitBoard(0); 64],
-            northwest_rays: [BitBoard(0); 64],
+            dir_rays: [[BitBoard(0); 64]; 8],
         };
 
         tables.init_knight_moves();
@@ -242,21 +228,20 @@ impl MoveTables {
     }
 
     const fn init_ray_attacks(&mut self) {
-        let mut index = 0;
-        while index < 64 {
-            let rank = index / 8;
-            let file = index % 8;
+        let mut d = 0;
+        let dir_len = Direction::ALL.len();
+        while d < dir_len {
+            let dir = Direction::ALL[d];
+            let mut index = 0;
+            while index < 64 {
+                let rank = index / 8;
+                let file = index % 8;
 
-            self.north_rays[index] = self.generate_ray(rank, file, Direction::NORTH);
-            self.south_rays[index] = self.generate_ray(rank, file, Direction::SOUTH);
-            self.east_rays[index] = self.generate_ray(rank, file, Direction::EAST);
-            self.west_rays[index] = self.generate_ray(rank, file, Direction::WEST);
-            self.northeast_rays[index] = self.generate_ray(rank, file, Direction::NORTHEAST);
-            self.southeast_rays[index] = self.generate_ray(rank, file, Direction::SOUTHEAST);
-            self.southwest_rays[index] = self.generate_ray(rank, file, Direction::SOUTHWEST);
-            self.northwest_rays[index] = self.generate_ray(rank, file, Direction::NORTHWEST);
+                self.dir_rays[dir.index()][index] = self.generate_ray(rank, file, dir);
 
-            index += 1
+                index += 1;
+            }
+            d += 1;
         }
     }
 
@@ -264,17 +249,17 @@ impl MoveTables {
         let mut attacks = BitBoard(0);
         let all_rays = if is_rook {
             [
-                self.north_rays[from],
-                self.south_rays[from],
-                self.east_rays[from],
-                self.west_rays[from],
+                self.dir_rays[Direction::NORTH.index()][from],
+                self.dir_rays[Direction::SOUTH.index()][from],
+                self.dir_rays[Direction::EAST.index()][from],
+                self.dir_rays[Direction::WEST.index()][from],
             ]
         } else {
             [
-                self.northeast_rays[from],
-                self.southeast_rays[from],
-                self.southwest_rays[from],
-                self.northwest_rays[from],
+                self.dir_rays[Direction::NORTHEAST.index()][from],
+                self.dir_rays[Direction::SOUTHEAST.index()][from],
+                self.dir_rays[Direction::SOUTHWEST.index()][from],
+                self.dir_rays[Direction::NORTHWEST.index()][from],
             ]
         };
 
@@ -419,17 +404,10 @@ impl MoveTables {
     }
 
     pub fn get_ray(&self, from: usize, dir: Direction) -> BitBoard {
-        match dir {
-            Direction::NORTH => self.north_rays[from],
-            Direction::SOUTH => self.south_rays[from],
-            Direction::EAST => self.east_rays[from],
-            Direction::WEST => self.west_rays[from],
-            Direction::NORTHEAST => self.northeast_rays[from],
-            Direction::SOUTHEAST => self.southeast_rays[from],
-            Direction::SOUTHWEST => self.southwest_rays[from],
-            Direction::NORTHWEST => self.northwest_rays[from],
-            _ => BitBoard(0),
+        if !Direction::ALL.contains(&dir) {
+            return BitBoard(0);
         }
+        self.dir_rays[dir.index()][from]
     }
 
     // "generic" functions that do not care about ally/enemy
@@ -455,42 +433,58 @@ impl MoveTables {
 
     pub fn get_bishop_attacks_generic(&self, from: usize, occupied: BitBoard) -> BitBoard {
         let ne_attacks = self.get_attacks_in_dir(
-            self.northeast_rays[from],
+            self.dir_rays[Direction::NORTHEAST.index()][from],
             occupied,
             true,
-            &self.northeast_rays,
+            &self.dir_rays[Direction::NORTHEAST.index()],
         );
         let se_attacks = self.get_attacks_in_dir(
-            self.southeast_rays[from],
+            self.dir_rays[Direction::SOUTHEAST.index()][from],
             occupied,
             false,
-            &self.southeast_rays,
+            &self.dir_rays[Direction::SOUTHEAST.index()],
         );
         let sw_attacks = self.get_attacks_in_dir(
-            self.southwest_rays[from],
+            self.dir_rays[Direction::SOUTHWEST.index()][from],
             occupied,
             false,
-            &self.southwest_rays,
+            &self.dir_rays[Direction::SOUTHWEST.index()],
         );
         let nw_attacks = self.get_attacks_in_dir(
-            self.northwest_rays[from],
+            self.dir_rays[Direction::NORTHWEST.index()][from],
             occupied,
             true,
-            &self.northwest_rays,
+            &self.dir_rays[Direction::NORTHWEST.index()],
         );
 
         ne_attacks | se_attacks | sw_attacks | nw_attacks
     }
 
     pub fn get_rook_attacks_generic(&self, from: usize, occupied: BitBoard) -> BitBoard {
-        let n_attacks =
-            self.get_attacks_in_dir(self.north_rays[from], occupied, true, &self.north_rays);
-        let s_attacks =
-            self.get_attacks_in_dir(self.south_rays[from], occupied, false, &self.south_rays);
-        let e_attacks =
-            self.get_attacks_in_dir(self.east_rays[from], occupied, true, &self.east_rays);
-        let w_attacks =
-            self.get_attacks_in_dir(self.west_rays[from], occupied, false, &self.west_rays);
+        let n_attacks = self.get_attacks_in_dir(
+            self.dir_rays[Direction::NORTH.index()][from],
+            occupied,
+            true,
+            &self.dir_rays[Direction::NORTH.index()],
+        );
+        let s_attacks = self.get_attacks_in_dir(
+            self.dir_rays[Direction::SOUTH.index()][from],
+            occupied,
+            true,
+            &self.dir_rays[Direction::SOUTH.index()],
+        );
+        let e_attacks = self.get_attacks_in_dir(
+            self.dir_rays[Direction::EAST.index()][from],
+            occupied,
+            true,
+            &self.dir_rays[Direction::EAST.index()],
+        );
+        let w_attacks = self.get_attacks_in_dir(
+            self.dir_rays[Direction::WEST.index()][from],
+            occupied,
+            true,
+            &self.dir_rays[Direction::WEST.index()],
+        );
 
         n_attacks | s_attacks | e_attacks | w_attacks
     }

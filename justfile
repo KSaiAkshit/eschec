@@ -212,7 +212,7 @@ test:
 
 [doc("Generate flamegraph for given args and view in flamelens")]
 flame *args: setup
-    cargo flamegraph --post-process 'flamelens --echo' {{ flags }} --bin eschec -- {{ args }}
+    cargo flamegraph --post-process 'flamelens --echo' {{ flags }} --bin eschec --  --params ./config/normalized_tuned_params.toml {{ args }}
 
 [doc("lint the codebase")]
 lint:
