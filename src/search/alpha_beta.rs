@@ -11,7 +11,7 @@ use std::time::{Duration, Instant};
 
 use tracing::trace_span;
 
-use crate::moves::move_gen::{CapturesOnly, generate_legal_moves};
+use crate::moves::move_gen::{AllMoves, CapturesOnly, generate_legal_moves};
 use crate::prelude::*;
 use crate::search::move_ordering::{MainSearchPolicy, MoveScoringPolicy, sort_moves};
 use crate::search::move_picker::MovePicker;
@@ -782,7 +782,11 @@ impl AlphaBetaSearch {
 
         // Generate all moves in check, otherwise use forcing moves only
         let mut legal_moves = MoveBuffer::new();
-        generate_legal_moves::<CapturesOnly>(board, &mut legal_moves);
+        if is_in_check {
+            generate_legal_moves::<AllMoves>(board, &mut legal_moves);
+        } else {
+            generate_legal_moves::<CapturesOnly>(board, &mut legal_moves);
+        }
 
         if is_in_check && legal_moves.is_empty() {
             // return Losing Mate score
