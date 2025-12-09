@@ -306,6 +306,12 @@ impl Default for TunableParams {
 }
 
 impl TunableParams {
+    pub fn tuned() -> Self {
+        match Self::load_from_file("./config/normalized_tuned_params.toml") {
+            Ok(t) => return t,
+            Err(_) => panic!("Config file not found!"),
+        }
+    }
     /// Helper to get a weight by its LOGICAL index (from constants above).
     pub fn get_weight(&self, index: usize) -> Score {
         if index >= PST_START {
@@ -340,6 +346,7 @@ impl TunableParams {
         }
     }
 
+    /// Helper to get a mobility weight by its LOGICAL index (from constants above).
     pub fn get_mobility_weight(&self, piece_idx: usize) -> Score {
         self.mobility[piece_idx]
     }
