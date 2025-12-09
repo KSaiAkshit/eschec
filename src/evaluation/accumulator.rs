@@ -109,6 +109,8 @@ impl<'a> EvalAccumulator for TraceAccumulator<'a> {
             params::ROOK_SEMI_FILE_BONUS => trace::ROOK_SEMI_FILE,
             params::KNIGHT_OUTPOST_BONUS => trace::KNIGHT_OUTPOST,
 
+            params::TEMPO_BONUS => trace::TEMPO_BONUS,
+
             _ => return,
         };
         if side == Side::White {

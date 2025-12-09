@@ -15,6 +15,7 @@ perf_reps := "5"
 perf_stat_events := "cycles,instructions,branches,branch-misses,cache-references,cache-misses"
 OUT_DIR := "/tmp/out_dir"
 BIN_NAME := "eschec"
+params_file := "./config/normalized_tuned_params.toml"
 export RUST_BACKTRACE := "full"
 
 alias up := update
@@ -138,26 +139,26 @@ sprt p1 p2 rounds='100' concurrency='4' book='8moves_v3.pgn' tc='30+0.3':
 [doc("Run a full validation test at a fixed depth")]
 [group("eval")]
 eval_validation_test:
-    cargo run --release --features parallel --bin eval_tester {{ test_suite_dir }} -d {{ epd_test_depth }} --threads 0 \
-    | tee {{ pgn_output_dir }}eval_validation_test_log.txt
+    cargo run --release --features parallel --bin eval_tester {{ test_suite_dir }} -p {{ params_file }} -d {{ epd_test_depth }} --threads 0 \
+    | tee {{ pgn_output_dir }}{{ datetime("%Y-%m-%d_%H-%M-%S") }}_validation_test_log.txt
 
 [doc("Run a fast 'smoke_test' on a small set of positions")]
 [group("eval")]
 eval_blitz_test:
-    cargo run {{ flags }} --features parallel --bin eval_tester {{ test_suite_blitz_file }} -d {{ epd_test_depth }} --threads 0  \
-    | tee {{ pgn_output_dir }}eval_blitz_test.txt
+    cargo run {{ flags }} --features parallel --bin eval_tester {{ test_suite_blitz_file }} -p {{ params_file }} -d {{ epd_test_depth }} --threads 0  \
+    | tee {{ pgn_output_dir }}{{ datetime("%Y-%m-%d_%H-%M-%S") }}_blitz_test.txt
 
 [doc("Run eval_tester sequentially with given time control.")]
 [group("eval")]
 eval_test_seq tc='stc' suite=test_suite_dir:
-    cargo run {{ flags }} --bin eval_tester {{ suite }} -t {{ tc }} \
-    | tee {{ pgn_output_dir }}eval_test_{{ tc }}_sequential.txt
+    cargo run {{ flags }} --bin eval_tester {{ suite }} -p {{ params_file }} -t {{ tc }} \
+    | tee {{ pgn_output_dir }}{{ datetime("%Y-%m-%d_%H-%M-%S") }}_test_{{ tc }}_sequential.txt
 
 [doc("Run eval_tester with given time control and threads")]
 [group("eval")]
 eval_test threads="6" tc='stc' suite=test_suite_dir:
-    cargo run {{ flags }} --features parallel --bin eval_tester {{ suite }} -t {{ tc }} --threads {{ threads }} \
-    | tee {{ pgn_output_dir }}eval_test_{{ tc }}_{{ threads }}threads.txt
+    cargo run {{ flags }} --features parallel --bin eval_tester {{ suite }} -p {{ params_file }} -t {{ tc }} --threads {{ threads }} \
+    | tee {{ pgn_output_dir }}{{ datetime("%Y-%m-%d_%H-%M-%S") }}_test_{{ tc }}_{{ threads }}threads.txt
 
 [doc("Remove build artifacts and gauntlet artifacts")]
 clean:

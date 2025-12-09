@@ -21,6 +21,10 @@ struct TunerCli {
     #[arg(long, default_value_t = 0)]
     threads: usize,
 
+    /// Params file to use as starting point
+    #[arg(long, short)]
+    params: Option<PathBuf>,
+
     /// Number of epochs (passes through the dataset)
     #[arg(long, default_value_t = 200)]
     epochs: usize,
@@ -41,6 +45,8 @@ struct TunerCli {
 fn main() -> miette::Result<()> {
     eschec::utils::log::init();
     let cli = TunerCli::parse();
+
+    let start_time = std::time::Instant::now();
 
     // Setup ThreadPool if parallel feature is enabled
     #[cfg(feature = "parallel")]
@@ -73,7 +79,22 @@ fn main() -> miette::Result<()> {
     let mobility_map: Vec<usize> = (0..5).map(EvalTrace::map_mobility_to_spsa_index).collect();
 
     // Initial Error
-    let initial_params = TunableParams::default();
+    let mut initial_params = match cli.params {
+        Some(path) => {
+            println!("Using params from file: {}", path.display());
+            TunableParams::load_from_file(path)?
+        }
+        None => {
+            println!("No params file supplied. Using default values");
+            TunableParams::default()
+        }
+    };
+    // Zeroing out PSTs and Tempo
+    initial_params
+        .psts
+        .iter_mut()
+        .for_each(|v| *v = Score::default());
+    initial_params.tempo_bonus = Score::default();
     let initial_vec = initial_params.to_vector();
 
     let initial_error =
@@ -89,6 +110,8 @@ fn main() -> miette::Result<()> {
         batch_size: cli.batch_size,
     };
 
+    println!("Using GdParams: {:?}", params);
+
     let final_vec =
         gd_tuner::run_gd_tuning(&entries, initial_vec, &feature_map, &mobility_map, params);
 
@@ -96,6 +119,7 @@ fn main() -> miette::Result<()> {
         texel::calculate_mse(&entries, &final_vec, &feature_map, &mobility_map, cli.k);
     println!("\nFinal MSE: {:.6}", final_error);
     println!("Improvement: {:.6}", initial_error - final_error);
+    println!("Took: {:?}", start_time.elapsed());
 
     let final_params = TunableParams::from_vector(&final_vec);
     final_params.save_to_file("tuned_params.toml")?;

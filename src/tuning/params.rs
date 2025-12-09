@@ -42,12 +42,15 @@ pub const ROOK_OPEN_FILE_BONUS: usize = 23;
 pub const ROOK_SEMI_FILE_BONUS: usize = 24;
 pub const KNIGHT_OUTPOST_BONUS: usize = 25;
 
+// Tempo Bonus
+pub const TEMPO_BONUS: usize = 26;
+
 // PSTs (6 pieces * 64 squares = 384 params)
-pub const PST_START: usize = 26;
+pub const PST_START: usize = 27;
 pub const NUM_PST_PARAMS: usize = NUM_PIECES * NUM_SQUARES;
 
 // Total number of LOGICAL features (for Trace)
-// 26 + 384 = 410
+// 27 + 384 = 411
 pub const NUM_TRACE_FEATURES: usize = PST_START + NUM_PST_PARAMS;
 
 // Mobility is handled separately in Trace (i16 array),
@@ -84,6 +87,9 @@ pub struct TunableParams {
     pub rook_open_file_bonus: Score,
     pub rook_semi_file_bonus: Score,
     pub knight_outpost_bonus: Score,
+
+    // Tempo
+    pub tempo_bonus: Score,
 
     // Mobility
     pub mobility: [Score; 5], // Pawn, Knight, Bishop, Rook, Queen
@@ -286,6 +292,7 @@ impl Default for TunableParams {
             rook_open_file_bonus: Score::new(30, 15),
             rook_semi_file_bonus: Score::new(15, 10),
             knight_outpost_bonus: Score::new(30, 20),
+            tempo_bonus: Score::new(15, 5),
             mobility: [
                 Score::new(1, 2),
                 Score::new(4, 4),
@@ -325,6 +332,7 @@ impl TunableParams {
             ROOK_OPEN_FILE_BONUS => self.rook_open_file_bonus,
             ROOK_SEMI_FILE_BONUS => self.rook_semi_file_bonus,
             KNIGHT_OUTPOST_BONUS => self.knight_outpost_bonus,
+            TEMPO_BONUS => self.tempo_bonus,
             i if (PASSED_PAWN_START..PASSED_PAWN_START + 8).contains(&i) => {
                 self.passed_pawn_scores[i - PASSED_PAWN_START]
             }
@@ -367,6 +375,7 @@ impl TunableParams {
         push_score(self.rook_open_file_bonus);
         push_score(self.rook_semi_file_bonus);
         push_score(self.knight_outpost_bonus);
+        push_score(self.tempo_bonus);
 
         //  PSTs
         for score in self.psts {
@@ -415,6 +424,7 @@ impl TunableParams {
         params.rook_open_file_bonus = read_score();
         params.rook_semi_file_bonus = read_score();
         params.knight_outpost_bonus = read_score();
+        params.tempo_bonus = read_score();
 
         //  PSTs
         for i in 0..NUM_PST_PARAMS {

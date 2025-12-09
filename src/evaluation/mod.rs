@@ -1,7 +1,10 @@
 use crate::{
     evaluation::accumulator::{ScoreAccumulator, TraceAccumulator},
     prelude::*,
-    tuning::{params::TunableParams, trace::EvalTrace},
+    tuning::{
+        params::{TEMPO_BONUS, TunableParams},
+        trace::EvalTrace,
+    },
 };
 
 pub mod score;
@@ -26,6 +29,8 @@ fn eval_all(board: &Board, acc: &mut impl accumulator::EvalAccumulator) {
     eval_pawn_structure(board, acc);
     eval_mobility(board, acc);
     eval_king_safety(board, acc);
+
+    acc.add_feature(TEMPO_BONUS, board.stm, 1);
 }
 
 pub fn evaluate(board: &Board, params: &TunableParams) -> Score {

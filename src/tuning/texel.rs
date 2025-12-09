@@ -53,9 +53,13 @@ impl TexelEntry {
 }
 /// Loads the dataset from a .book  file
 pub fn load_texel_dataset<P: AsRef<Path>>(path: P) -> miette::Result<Vec<TexelEntry>> {
-    let file = File::open(path).expect("Failed to open book file");
+    let file = File::open(path)
+        .into_diagnostic()
+        .context("Failed to open book file")?;
     let reader = BufReader::new(file);
     let lines: Vec<String> = reader.lines().map_while(Result::ok).collect();
+
+    println!("Num Lines in Book file: {}", lines.len());
 
     #[cfg(feature = "parallel")]
     let iter = lines.par_iter();

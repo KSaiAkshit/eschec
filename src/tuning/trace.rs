@@ -32,9 +32,12 @@ pub const ROOK_OPEN_FILE: usize = 23;
 pub const ROOK_SEMI_FILE: usize = 24;
 pub const KNIGHT_OUTPOST: usize = 25;
 
+// Tempo Bonus
+pub const TEMPO_BONUS: usize = 26;
+
 // PSTs (384 params)
 // We put PSTs before mobility in the 'features' array to keep i8s together
-pub const PST_START: usize = 26;
+pub const PST_START: usize = 27;
 
 // Mobility (5 params)
 // These are stored in a separate i16 array because counts can exceed 127
@@ -101,6 +104,8 @@ impl EvalTrace {
             ROOK_OPEN_FILE => params::ROOK_OPEN_FILE_BONUS,
             ROOK_SEMI_FILE => params::ROOK_SEMI_FILE_BONUS,
             KNIGHT_OUTPOST => params::KNIGHT_OUTPOST_BONUS,
+
+            TEMPO_BONUS => params::TEMPO_BONUS,
 
             // PSTs
             i if i >= PST_START => params::PST_START + (i - PST_START),

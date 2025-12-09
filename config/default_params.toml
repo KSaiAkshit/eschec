@@ -102,6 +102,10 @@ eg = 10
 mg = 30
 eg = 20
 
+[tempo_bonus]
+mg = 15
+eg = 5
+
 [[mobility]]
 mg = 1
 eg = 2

@@ -4,6 +4,7 @@ use crate::tuning::texel::TexelEntry;
 use rayon::prelude::*;
 
 /// Config for Gradient Descent
+#[derive(Debug)]
 pub struct GdParams {
     /// Usually (1.0 - 100.0) for AdaGrad
     pub learning_rate: f64,
