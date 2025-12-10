@@ -106,25 +106,269 @@ eg = 46
 mg = 15
 eg = 19
 
-[[mobility]]
+[[mobility_knight]]
 mg = 0
 eg = 0
 
-[[mobility]]
+[[mobility_knight]]
 mg = 0
 eg = 0
 
-[[mobility]]
-mg = 6
-eg = 11
+[[mobility_knight]]
+mg = 0
+eg = 0
 
-[[mobility]]
-mg = 5
-eg = 4
+[[mobility_knight]]
+mg = 0
+eg = 0
 
-[[mobility]]
-mg = 4
-eg = 4
+[[mobility_knight]]
+mg = 0
+eg = 0
+
+[[mobility_knight]]
+mg = 0
+eg = 0
+
+[[mobility_knight]]
+mg = 0
+eg = 0
+
+[[mobility_knight]]
+mg = 0
+eg = 0
+
+[[mobility_knight]]
+mg = 0
+eg = 0
+
+[[mobility_bishop]]
+mg = 0
+eg = 0
+
+[[mobility_bishop]]
+mg = 0
+eg = 0
+
+[[mobility_bishop]]
+mg = 0
+eg = 0
+
+[[mobility_bishop]]
+mg = 0
+eg = 0
+
+[[mobility_bishop]]
+mg = 0
+eg = 0
+
+[[mobility_bishop]]
+mg = 0
+eg = 0
+
+[[mobility_bishop]]
+mg = 0
+eg = 0
+
+[[mobility_bishop]]
+mg = 0
+eg = 0
+
+[[mobility_bishop]]
+mg = 0
+eg = 0
+
+[[mobility_bishop]]
+mg = 0
+eg = 0
+
+[[mobility_bishop]]
+mg = 0
+eg = 0
+
+[[mobility_bishop]]
+mg = 0
+eg = 0
+
+[[mobility_bishop]]
+mg = 0
+eg = 0
+
+[[mobility_bishop]]
+mg = 0
+eg = 0
+
+[[mobility_rook]]
+mg = 0
+eg = 0
+
+[[mobility_rook]]
+mg = 0
+eg = 0
+
+[[mobility_rook]]
+mg = 0
+eg = 0
+
+[[mobility_rook]]
+mg = 0
+eg = 0
+
+[[mobility_rook]]
+mg = 0
+eg = 0
+
+[[mobility_rook]]
+mg = 0
+eg = 0
+
+[[mobility_rook]]
+mg = 0
+eg = 0
+
+[[mobility_rook]]
+mg = 0
+eg = 0
+
+[[mobility_rook]]
+mg = 0
+eg = 0
+
+[[mobility_rook]]
+mg = 0
+eg = 0
+
+[[mobility_rook]]
+mg = 0
+eg = 0
+
+[[mobility_rook]]
+mg = 0
+eg = 0
+
+[[mobility_rook]]
+mg = 0
+eg = 0
+
+[[mobility_rook]]
+mg = 0
+eg = 0
+
+[[mobility_rook]]
+mg = 0
+eg = 0
+
+[[mobility_queen]]
+mg = 0
+eg = 0
+
+[[mobility_queen]]
+mg = 0
+eg = 0
+
+[[mobility_queen]]
+mg = 0
+eg = 0
+
+[[mobility_queen]]
+mg = 0
+eg = 0
+
+[[mobility_queen]]
+mg = 0
+eg = 0
+
+[[mobility_queen]]
+mg = 0
+eg = 0
+
+[[mobility_queen]]
+mg = 0
+eg = 0
+
+[[mobility_queen]]
+mg = 0
+eg = 0
+
+[[mobility_queen]]
+mg = 0
+eg = 0
+
+[[mobility_queen]]
+mg = 0
+eg = 0
+
+[[mobility_queen]]
+mg = 0
+eg = 0
+
+[[mobility_queen]]
+mg = 0
+eg = 0
+
+[[mobility_queen]]
+mg = 0
+eg = 0
+
+[[mobility_queen]]
+mg = 0
+eg = 0
+
+[[mobility_queen]]
+mg = 0
+eg = 0
+
+[[mobility_queen]]
+mg = 0
+eg = 0
+
+[[mobility_queen]]
+mg = 0
+eg = 0
+
+[[mobility_queen]]
+mg = 0
+eg = 0
+
+[[mobility_queen]]
+mg = 0
+eg = 0
+
+[[mobility_queen]]
+mg = 0
+eg = 0
+
+[[mobility_queen]]
+mg = 0
+eg = 0
+
+[[mobility_queen]]
+mg = 0
+eg = 0
+
+[[mobility_queen]]
+mg = 0
+eg = 0
+
+[[mobility_queen]]
+mg = 0
+eg = 0
+
+[[mobility_queen]]
+mg = 0
+eg = 0
+
+[[mobility_queen]]
+mg = 0
+eg = 0
+
+[[mobility_queen]]
+mg = 0
+eg = 0
+
+[[mobility_queen]]
+mg = 0
+eg = 0
 
 [[psts]]
 mg = 0

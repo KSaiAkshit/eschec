@@ -26,7 +26,7 @@ pub struct TexelEntry {
 
 impl TexelEntry {
     /// Calculates the static evaluation fo the position using provided weights
-    pub fn evaluate(&self, weights: &[f64], feature_map: &[usize], mobility_map: &[usize]) -> f64 {
+    pub fn evaluate(&self, weights: &[f64], feature_map: &[usize]) -> f64 {
         let mut mg = self.fixed_score.mg as f64;
         let mut eg = self.fixed_score.eg as f64;
 
@@ -34,15 +34,6 @@ impl TexelEntry {
         for (trace_idx, &count) in self.trace.features.iter().enumerate() {
             if count != 0 {
                 let spsa_idx = feature_map[trace_idx];
-                mg += weights[spsa_idx] * count as f64;
-                eg += weights[spsa_idx + 1] * count as f64;
-            }
-        }
-
-        // Sum mobility
-        for (mob_idx, &count) in self.trace.mobility.iter().enumerate() {
-            if count != 0 {
-                let spsa_idx = mobility_map[mob_idx];
                 mg += weights[spsa_idx] * count as f64;
                 eg += weights[spsa_idx + 1] * count as f64;
             }
@@ -111,9 +102,6 @@ fn parse_book_line(line: &str) -> Option<TexelEntry> {
         for f in trace.features.iter_mut() {
             *f = -*f;
         }
-        for m in trace.mobility.iter_mut() {
-            *m = -*m;
-        }
         fixed_score = -fixed_score;
     }
 
@@ -136,7 +124,6 @@ pub fn calculate_mse(
     entries: &[TexelEntry],
     weights: &[f64],
     feature_map: &[usize],
-    mobility_map: &[usize],
     k: f64,
 ) -> f64 {
     #[cfg(feature = "parallel")]
@@ -146,7 +133,7 @@ pub fn calculate_mse(
 
     let total_error: f64 = iter
         .map(|entry| {
-            let eval = entry.evaluate(weights, feature_map, mobility_map);
+            let eval = entry.evaluate(weights, feature_map);
             // Sigmoid: 1 / (1 + 10^(-K * eval / 400))
             // Note: Using base 10 or base e depends on preference.
             // Standard Texel usually uses base 10, but base e is fine if K is adjusted.

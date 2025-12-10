@@ -20,7 +20,6 @@ pub fn run_gd_tuning(
     entries: &[TexelEntry],
     initial_weights: Vec<f64>,
     feature_map: &[usize],
-    mobility_map: &[usize],
     params: GdParams,
 ) -> Vec<f64> {
     let mut weights = initial_weights;
@@ -48,7 +47,7 @@ pub fn run_gd_tuning(
             // Helper closure to process one entry
             let map_op = |mut grads: Vec<f64>, entry: &TexelEntry| {
                 // Forward pass: calc eval
-                let eval = entry.evaluate(&weights, feature_map, mobility_map);
+                let eval = entry.evaluate(&weights, feature_map);
 
                 let sigmoid = 1.0 / (1.0 + (-params.k * eval / 400.0).exp());
 
@@ -65,16 +64,6 @@ pub fn run_gd_tuning(
                         let spsa_idx = feature_map[trace_idx];
                         let grad = error_term * count as f64;
                         // Update MG and EG gradients based on Phase
-                        grads[spsa_idx] += grad * (1.0 - entry.phase);
-                        grads[spsa_idx + 1] += grad * entry.phase;
-                    }
-                }
-
-                // Mobility
-                for (mob_idx, &count) in entry.trace.mobility.iter().enumerate() {
-                    if count != 0 {
-                        let spsa_idx = mobility_map[mob_idx];
-                        let grad = error_term * count as f64;
                         grads[spsa_idx] += grad * (1.0 - entry.phase);
                         grads[spsa_idx + 1] += grad * entry.phase;
                     }
@@ -116,13 +105,7 @@ pub fn run_gd_tuning(
 
         // Report Progress
         if epoch % 10 == 0 || epoch == params.epochs - 1 {
-            let mse = crate::tuning::texel::calculate_mse(
-                entries,
-                &weights,
-                feature_map,
-                mobility_map,
-                params.k,
-            );
+            let mse = crate::tuning::texel::calculate_mse(entries, &weights, feature_map, params.k);
 
             println!(
                 "Epoch: {} / {} complete. MSE: {:.6}",

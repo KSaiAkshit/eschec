@@ -38,11 +38,11 @@ impl<'a> EvalAccumulator for ScoreAccumulator<'a> {
 
     #[inline(always)]
     fn add_mobility(&mut self, piece: Piece, side: Side, count: i32) {
-        let weight = self.params.get_mobility_weight(piece.index());
+        let weight = self.params.get_mobility_weight(piece, count as usize);
         if side == Side::White {
-            self.score += weight * count;
+            self.score += weight;
         } else {
-            self.score -= weight * count;
+            self.score -= weight;
         }
     }
 
@@ -122,21 +122,24 @@ impl<'a> EvalAccumulator for TraceAccumulator<'a> {
 
     #[inline(always)]
     fn add_mobility(&mut self, piece: Piece, side: Side, count: i32) {
-        let idx = match piece {
-            Piece::Pawn => trace::MOBILITY_PAWN,
-            Piece::Knight => trace::MOBILITY_KNIGHT,
-            Piece::Bishop => trace::MOBILITY_BISHOP,
-            Piece::Rook => trace::MOBILITY_ROOK,
-            Piece::Queen => trace::MOBILITY_QUEEN,
+        let count = count as usize;
+
+        let (start_idx, max) = match piece {
+            Piece::Knight => (params::MOBILITY_KNIGHT_START, params::KNIGHT_MAX),
+            Piece::Bishop => (params::MOBILITY_BISHOP_START, params::BISHOP_MAX),
+            Piece::Rook => (params::MOBILITY_ROOK_START, params::ROOK_MAX),
+            Piece::Queen => (params::MOBILITY_QUEEN_START, params::QUEEN_MAX),
             _ => return,
         };
-        // Safety check. Do not touch King
-        if idx < 5 {
-            if side == Side::White {
-                self.trace.mobility[idx] += count as i16;
-            } else {
-                self.trace.mobility[idx] -= count as i16;
-            }
+
+        // Clamp count to max-1
+        let offset = count.min(max - 1);
+        let trace_idx = start_idx + offset;
+
+        if side == Side::White {
+            self.trace.features[trace_idx] += 1;
+        } else {
+            self.trace.features[trace_idx] -= 1;
         }
     }
 
@@ -160,9 +163,9 @@ impl<'a> EvalAccumulator for TraceAccumulator<'a> {
     #[inline(always)]
     fn add_fixed_score(&mut self, score: Score, side: Side) {
         if side == Side::White {
-            self.fixed_score += score
+            self.fixed_score += score;
         } else {
-            self.fixed_score -= score
+            self.fixed_score -= score;
         }
     }
 }

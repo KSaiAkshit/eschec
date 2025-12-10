@@ -56,18 +56,12 @@ pub struct EvalTrace {
     /// 0..19: Standard Features (Bishop Pair, King Safety, etc.)
     /// 20..403: PSTs (Piece-Square Tables)
     pub features: [i8; NUM_TRACE_FEATURES],
-
-    /// Stores mobility counts.
-    /// We use i16 because move counts can exceed 127 (e.g. total queen moves).
-    /// Index 0=Pawn, 1=Knight, 2=Bishop, 3=Rook, 4=Queen
-    pub mobility: [i16; 5],
 }
 
 impl Default for EvalTrace {
     fn default() -> Self {
         Self {
             features: [0; NUM_TRACE_FEATURES],
-            mobility: [0; 5],
         }
     }
 }
@@ -108,7 +102,13 @@ impl EvalTrace {
             TEMPO_BONUS => params::TEMPO_BONUS,
 
             // PSTs
-            i if i >= PST_START => params::PST_START + (i - PST_START),
+            i if i >= params::PST_START && i < params::MOBILITY_KNIGHT_START => {
+                params::PST_START + (i - params::PST_START)
+            }
+
+            // Mobility (Explicit Range)
+            i if i >= params::MOBILITY_KNIGHT_START && i < params::NUM_TRACE_FEATURES => i,
+
             _ => panic!("Invalid Trace Index: {}", trace_idx),
         };
 

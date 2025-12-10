@@ -6,14 +6,18 @@ pub(crate) fn eval_mobility(board: &Board, acc: &mut impl EvalAccumulator) {
     // White Mobility
     board.generate_pseudo_legal_moves(&mut buffer, Some(Side::White));
 
-    for m in &buffer {
-        let from = m.from_sq();
+    let mut move_counts = [0u8; 64];
 
-        if let Some(piece) = board.get_piece_at(from) {
-            // We generally don't count King or Pawn mobility in this specific term
-            if piece != Piece::King && piece != Piece::Pawn {
-                acc.add_mobility(piece, Side::White, 1);
-            }
+    for m in &buffer {
+        let from = m.from_sq().index();
+        move_counts[from] += 1;
+    }
+
+    for piece in [Piece::Knight, Piece::Bishop, Piece::Rook, Piece::Queen] {
+        let bb = board.positions.get_piece_bb(Side::White, piece);
+        for sq in bb.iter_bits() {
+            let count = move_counts[sq];
+            acc.add_mobility(piece, Side::White, count as i32);
         }
     }
 
@@ -21,15 +25,18 @@ pub(crate) fn eval_mobility(board: &Board, acc: &mut impl EvalAccumulator) {
 
     // Black Mobility
     board.generate_pseudo_legal_moves(&mut buffer, Some(Side::Black));
+    move_counts.fill(0);
 
     for m in &buffer {
-        let from = m.from_sq();
+        let from = m.from_sq().index();
+        move_counts[from] += 1;
+    }
 
-        if let Some(piece) = board.get_piece_at(from)
-            && piece != Piece::King
-            && piece != Piece::Pawn
-        {
-            acc.add_mobility(piece, Side::Black, 1);
+    for piece in [Piece::Knight, Piece::Bishop, Piece::Rook, Piece::Queen] {
+        let bb = board.positions.get_piece_bb(Side::Black, piece);
+        for sq in bb.iter_bits() {
+            let count = move_counts[sq];
+            acc.add_mobility(piece, Side::Black, count as i32);
         }
     }
 }

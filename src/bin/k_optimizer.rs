@@ -55,7 +55,6 @@ fn main() -> miette::Result<()> {
     let feature_map: Vec<usize> = (0..NUM_TRACE_FEATURES)
         .map(EvalTrace::map_feature_to_spsa_index)
         .collect();
-    let mobility_map: Vec<usize> = (0..5).map(EvalTrace::map_mobility_to_spsa_index).collect();
 
     println!("Pre-calc static evaluations for all positions");
 
@@ -66,7 +65,7 @@ fn main() -> miette::Result<()> {
 
     let data_points: Vec<(f64, f64)> = iter
         .map(|entry| {
-            let eval = entry.evaluate(&weights, &feature_map, &mobility_map);
+            let eval = entry.evaluate(&weights, &feature_map);
             (eval, entry.result)
         })
         .collect();

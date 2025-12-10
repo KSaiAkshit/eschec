@@ -76,8 +76,6 @@ fn main() -> miette::Result<()> {
         .map(EvalTrace::map_feature_to_spsa_index)
         .collect();
 
-    let mobility_map: Vec<usize> = (0..5).map(EvalTrace::map_mobility_to_spsa_index).collect();
-
     // Initial Error
     let mut initial_params = match cli.params {
         Some(path) => {
@@ -97,8 +95,7 @@ fn main() -> miette::Result<()> {
     initial_params.tempo_bonus = Score::default();
     let initial_vec = initial_params.to_vector();
 
-    let initial_error =
-        texel::calculate_mse(&entries, &initial_vec, &feature_map, &mobility_map, cli.k);
+    let initial_error = texel::calculate_mse(&entries, &initial_vec, &feature_map, cli.k);
     println!("Initial MSE: {:.6}", initial_error);
 
     println!("\n==> Starting Gradient Descent (AdaGrad)...");
@@ -112,11 +109,9 @@ fn main() -> miette::Result<()> {
 
     println!("Using GdParams: {:?}", params);
 
-    let final_vec =
-        gd_tuner::run_gd_tuning(&entries, initial_vec, &feature_map, &mobility_map, params);
+    let final_vec = gd_tuner::run_gd_tuning(&entries, initial_vec, &feature_map, params);
 
-    let final_error =
-        texel::calculate_mse(&entries, &final_vec, &feature_map, &mobility_map, cli.k);
+    let final_error = texel::calculate_mse(&entries, &final_vec, &feature_map, cli.k);
     println!("\nFinal MSE: {:.6}", final_error);
     println!("Improvement: {:.6}", initial_error - final_error);
     println!("Took: {:?}", start_time.elapsed());

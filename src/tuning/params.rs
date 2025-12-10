@@ -11,6 +11,12 @@ use serde_big_array::BigArray;
 // Since a feature (like "Bishop Pair") has both an MG and EG weight,
 // the SPSA vector will be 2x the size of these indices.
 
+// Mobility Array Sizes (Max Moves + 1)
+pub const KNIGHT_MAX: usize = 9;
+pub const BISHOP_MAX: usize = 14;
+pub const ROOK_MAX: usize = 15;
+pub const QUEEN_MAX: usize = 28;
+
 // Material Values
 pub const MATERIAL_PAWN: usize = 0;
 pub const MATERIAL_KNIGHT: usize = 1;
@@ -49,18 +55,19 @@ pub const TEMPO_BONUS: usize = 26;
 pub const PST_START: usize = 27;
 pub const NUM_PST_PARAMS: usize = NUM_PIECES * NUM_SQUARES;
 
-// Total number of LOGICAL features (for Trace)
-// 27 + 384 = 411
-pub const NUM_TRACE_FEATURES: usize = PST_START + NUM_PST_PARAMS;
+// Mobility Offsets
+pub const MOBILITY_KNIGHT_START: usize = PST_START + NUM_PST_PARAMS;
+pub const MOBILITY_BISHOP_START: usize = MOBILITY_KNIGHT_START + KNIGHT_MAX;
+pub const MOBILITY_ROOK_START: usize = MOBILITY_BISHOP_START + BISHOP_MAX;
+pub const MOBILITY_QUEEN_START: usize = MOBILITY_ROOK_START + ROOK_MAX;
 
-// Mobility is handled separately in Trace (i16 array),
-// but we need to include it in the SPSA vector.
-pub const MOBILITY_PARAMS_COUNT: usize = 5;
+// Total number of LOGICAL features (for Trace)
+pub const NUM_TRACE_FEATURES: usize = MOBILITY_QUEEN_START + QUEEN_MAX;
 
 // Total number of weights in the SPSA vector
-// (Features * 2) + (Mobility * 2)
+// (Features * 2)
 // We multiply by 2 because every feature has MG and EG.
-pub const SPSA_VECTOR_SIZE: usize = (NUM_TRACE_FEATURES * 2) + (MOBILITY_PARAMS_COUNT * 2);
+pub const SPSA_VECTOR_SIZE: usize = NUM_TRACE_FEATURES * 2;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TunableParams {
@@ -92,7 +99,14 @@ pub struct TunableParams {
     pub tempo_bonus: Score,
 
     // Mobility
-    pub mobility: [Score; 5], // Pawn, Knight, Bishop, Rook, Queen
+    #[serde(with = "BigArray")]
+    pub mobility_knight: [Score; KNIGHT_MAX],
+    #[serde(with = "BigArray")]
+    pub mobility_bishop: [Score; BISHOP_MAX],
+    #[serde(with = "BigArray")]
+    pub mobility_rook: [Score; ROOK_MAX],
+    #[serde(with = "BigArray")]
+    pub mobility_queen: [Score; QUEEN_MAX],
 
     // PSTs
     #[serde(with = "BigArray")]
@@ -293,19 +307,42 @@ impl Default for TunableParams {
             rook_semi_file_bonus: Score::new(15, 10),
             knight_outpost_bonus: Score::new(30, 20),
             tempo_bonus: Score::new(15, 5),
-            mobility: [
-                Score::new(1, 2),
-                Score::new(4, 4),
-                Score::new(4, 4),
-                Score::new(3, 6),
-                Score::new(2, 4),
-            ],
+            mobility_knight: [Score::default(); KNIGHT_MAX],
+            mobility_bishop: [Score::default(); BISHOP_MAX],
+            mobility_rook: [Score::default(); ROOK_MAX],
+            mobility_queen: [Score::default(); QUEEN_MAX],
             psts,
         }
     }
 }
 
 impl TunableParams {
+    pub fn zeros() -> Self {
+        Self {
+            material: [Score::default(); 5],
+            bishop_pair_bonus: Score::default(),
+            castling_bonus: Score::default(),
+            pawn_shield_full: Score::default(),
+            pawn_shield_partial: Score::default(),
+            open_file_penalty: Score::default(),
+            semi_open_file_penalty: Score::default(),
+            isolated_penalty: Score::default(),
+            doubled_penalty: Score::default(),
+            backward_penalty: Score::default(),
+            passed_pawn_scores: [Score::default(); 8],
+            connected_bonus: Score::default(),
+            rook_open_file_bonus: Score::default(),
+            rook_semi_file_bonus: Score::default(),
+            knight_outpost_bonus: Score::default(),
+            tempo_bonus: Score::default(),
+            mobility_knight: [Score::default(); KNIGHT_MAX],
+            mobility_bishop: [Score::default(); BISHOP_MAX],
+            mobility_rook: [Score::default(); ROOK_MAX],
+            mobility_queen: [Score::default(); QUEEN_MAX],
+            psts: [Score::default(); NUM_PST_PARAMS],
+        }
+    }
+
     pub fn tuned() -> Self {
         match Self::load_from_file("./config/normalized_tuned_params.toml") {
             Ok(t) => return t,
@@ -347,8 +384,14 @@ impl TunableParams {
     }
 
     /// Helper to get a mobility weight by its LOGICAL index (from constants above).
-    pub fn get_mobility_weight(&self, piece_idx: usize) -> Score {
-        self.mobility[piece_idx]
+    pub fn get_mobility_weight(&self, piece: Piece, count: usize) -> Score {
+        match piece {
+            Piece::Knight => self.mobility_knight[count.min(KNIGHT_MAX - 1)],
+            Piece::Bishop => self.mobility_bishop[count.min(BISHOP_MAX - 1)],
+            Piece::Rook => self.mobility_rook[count.min(ROOK_MAX - 1)],
+            Piece::Queen => self.mobility_queen[count.min(QUEEN_MAX - 1)],
+            _ => Score::default(),
+        }
     }
 
     // SPSA / OPTIMIZER CONVERSION
@@ -390,7 +433,16 @@ impl TunableParams {
         }
 
         //  Mobility
-        for s in self.mobility {
+        for s in self.mobility_knight {
+            push_score(s);
+        }
+        for s in self.mobility_bishop {
+            push_score(s);
+        }
+        for s in self.mobility_rook {
+            push_score(s);
+        }
+        for s in self.mobility_queen {
             push_score(s);
         }
 
@@ -439,8 +491,17 @@ impl TunableParams {
         }
 
         //  Mobility
-        for i in 0..5 {
-            params.mobility[i] = read_score();
+        for i in 0..KNIGHT_MAX {
+            params.mobility_knight[i] = read_score();
+        }
+        for i in 0..BISHOP_MAX {
+            params.mobility_bishop[i] = read_score();
+        }
+        for i in 0..ROOK_MAX {
+            params.mobility_rook[i] = read_score();
+        }
+        for i in 0..QUEEN_MAX {
+            params.mobility_queen[i] = read_score();
         }
 
         params
