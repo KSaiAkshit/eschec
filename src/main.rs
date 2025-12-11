@@ -22,7 +22,7 @@ fn main() -> miette::Result<()> {
         }
         None => {
             debug!("Using default params");
-            TunableParams::default()
+            TunableParams::tuned()
         }
     };
     debug!("Params set to: {:?}", params);

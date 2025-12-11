@@ -87,11 +87,6 @@ fn main() -> miette::Result<()> {
             TunableParams::default()
         }
     };
-    // Zeroing out PSTs and Tempo
-    initial_params
-        .psts
-        .iter_mut()
-        .for_each(|v| *v = Score::default());
     initial_params.tempo_bonus = Score::default();
     let initial_vec = initial_params.to_vector();
 

@@ -1,34 +1,34 @@
 [[material]]
-mg = 145
-eg = 258
+mg = 155
+eg = 270
 
 [[material]]
-mg = 586
-eg = 939
+mg = 561
+eg = 857
 
 [[material]]
-mg = 588
-eg = 887
+mg = 596
+eg = 874
 
 [[material]]
-mg = 783
-eg = 1636
+mg = 818
+eg = 1616
 
 [[material]]
-mg = 1954
-eg = 3098
+mg = 2009
+eg = 3059
 
 [bishop_pair_bonus]
 mg = 32
-eg = 179
+eg = 180
 
 [castling_bonus]
-mg = 20
+mg = 13
 eg = 0
 
 [pawn_shield_full]
-mg = 34
-eg = -14
+mg = 35
+eg = -13
 
 [pawn_shield_partial]
 mg = 20
@@ -47,12 +47,12 @@ mg = -20
 eg = -32
 
 [doubled_penalty]
-mg = -1
-eg = -25
+mg = -2
+eg = -24
 
 [backward_penalty]
 mg = -16
-eg = -27
+eg = -28
 
 [[passed_pawn_scores]]
 mg = 0
@@ -60,27 +60,27 @@ eg = 0
 
 [[passed_pawn_scores]]
 mg = -15
-eg = 40
+eg = 39
 
 [[passed_pawn_scores]]
 mg = -34
-eg = 49
+eg = 47
 
 [[passed_pawn_scores]]
 mg = -21
-eg = 105
+eg = 104
 
 [[passed_pawn_scores]]
 mg = 32
 eg = 151
 
 [[passed_pawn_scores]]
-mg = 65
+mg = 66
 eg = 294
 
 [[passed_pawn_scores]]
-mg = 250
-eg = 425
+mg = 235
+eg = 399
 
 [[passed_pawn_scores]]
 mg = 0
@@ -91,1817 +91,1817 @@ mg = 1
 eg = 8
 
 [rook_open_file_bonus]
-mg = 75
-eg = 19
-
-[rook_semi_file_bonus]
-mg = 27
-eg = 31
-
-[knight_outpost_bonus]
-mg = 2
-eg = 68
-
-[tempo_bonus]
-mg = 22
+mg = 73
 eg = 27
 
-[[mobility_knight]]
-mg = 0
-eg = 0
+[rook_semi_file_bonus]
+mg = 28
+eg = 26
+
+[knight_outpost_bonus]
+mg = 3
+eg = 70
+
+[tempo_bonus]
+mg = 21
+eg = 28
 
 [[mobility_knight]]
-mg = 0
-eg = 0
-
-[[mobility_knight]]
-mg = 0
-eg = 0
-
-[[mobility_knight]]
-mg = 0
-eg = 0
-
-[[mobility_knight]]
-mg = 0
-eg = 0
-
-[[mobility_knight]]
-mg = 0
-eg = 0
-
-[[mobility_knight]]
-mg = 0
-eg = 0
-
-[[mobility_knight]]
-mg = 0
-eg = 0
-
-[[mobility_knight]]
-mg = 0
-eg = 0
-
-[[mobility_bishop]]
-mg = 0
-eg = 0
-
-[[mobility_bishop]]
-mg = 0
-eg = 0
-
-[[mobility_bishop]]
-mg = 0
-eg = 0
-
-[[mobility_bishop]]
-mg = 0
-eg = 0
-
-[[mobility_bishop]]
-mg = 0
-eg = 0
-
-[[mobility_bishop]]
-mg = 0
-eg = 0
-
-[[mobility_bishop]]
-mg = 0
-eg = 0
-
-[[mobility_bishop]]
-mg = 0
-eg = 0
-
-[[mobility_bishop]]
-mg = 0
-eg = 0
-
-[[mobility_bishop]]
-mg = 0
-eg = 0
-
-[[mobility_bishop]]
-mg = 0
-eg = 0
-
-[[mobility_bishop]]
-mg = 0
-eg = 0
-
-[[mobility_bishop]]
-mg = 0
-eg = 0
-
-[[mobility_bishop]]
-mg = 0
-eg = 0
-
-[[mobility_rook]]
-mg = 0
-eg = 0
-
-[[mobility_rook]]
-mg = 0
-eg = 0
-
-[[mobility_rook]]
-mg = 0
-eg = 0
-
-[[mobility_rook]]
-mg = 0
-eg = 0
-
-[[mobility_rook]]
-mg = 0
-eg = 0
-
-[[mobility_rook]]
-mg = 0
-eg = 0
-
-[[mobility_rook]]
-mg = 0
-eg = 0
-
-[[mobility_rook]]
-mg = 0
-eg = 0
-
-[[mobility_rook]]
-mg = 0
-eg = 0
-
-[[mobility_rook]]
-mg = 0
-eg = 0
-
-[[mobility_rook]]
-mg = 0
-eg = 0
-
-[[mobility_rook]]
-mg = 0
-eg = 0
-
-[[mobility_rook]]
-mg = 0
-eg = 0
-
-[[mobility_rook]]
-mg = 0
-eg = 0
-
-[[mobility_rook]]
-mg = 0
-eg = 0
-
-[[mobility_queen]]
-mg = 0
-eg = 0
-
-[[mobility_queen]]
-mg = 0
-eg = 0
-
-[[mobility_queen]]
-mg = 0
-eg = 0
-
-[[mobility_queen]]
-mg = 0
-eg = 0
-
-[[mobility_queen]]
-mg = 0
-eg = 0
-
-[[mobility_queen]]
-mg = 0
-eg = 0
-
-[[mobility_queen]]
-mg = 0
-eg = 0
-
-[[mobility_queen]]
-mg = 0
-eg = 0
-
-[[mobility_queen]]
-mg = 0
-eg = 0
-
-[[mobility_queen]]
-mg = 0
-eg = 0
-
-[[mobility_queen]]
-mg = 0
-eg = 0
-
-[[mobility_queen]]
-mg = 0
-eg = 0
-
-[[mobility_queen]]
-mg = 0
-eg = 0
-
-[[mobility_queen]]
-mg = 0
-eg = 0
-
-[[mobility_queen]]
-mg = 0
-eg = 0
-
-[[mobility_queen]]
-mg = 0
-eg = 0
-
-[[mobility_queen]]
-mg = 0
-eg = 0
-
-[[mobility_queen]]
-mg = 0
-eg = 0
-
-[[mobility_queen]]
-mg = 0
-eg = 0
-
-[[mobility_queen]]
-mg = 0
-eg = 0
-
-[[mobility_queen]]
-mg = 0
-eg = 0
-
-[[mobility_queen]]
-mg = 0
-eg = 0
-
-[[mobility_queen]]
-mg = 0
-eg = 0
-
-[[mobility_queen]]
-mg = 0
-eg = 0
-
-[[mobility_queen]]
-mg = 0
-eg = 0
-
-[[mobility_queen]]
-mg = 0
-eg = 0
-
-[[mobility_queen]]
-mg = 0
-eg = 0
-
-[[mobility_queen]]
-mg = 0
-eg = 0
-
-[[psts]]
-mg = 0
-eg = 0
-
-[[psts]]
-mg = 0
-eg = 0
-
-[[psts]]
-mg = 0
-eg = 0
-
-[[psts]]
-mg = 0
-eg = 0
-
-[[psts]]
-mg = 0
-eg = 0
-
-[[psts]]
-mg = 0
-eg = 0
-
-[[psts]]
-mg = 0
-eg = 0
-
-[[psts]]
-mg = 0
-eg = 0
-
-[[psts]]
-mg = -5
-eg = 64
-
-[[psts]]
-mg = -3
-eg = 60
-
-[[psts]]
-mg = -7
-eg = 81
-
-[[psts]]
-mg = -8
-eg = 80
-
-[[psts]]
-mg = -6
-eg = 85
-
-[[psts]]
 mg = 25
+eg = -12
+
+[[mobility_knight]]
+mg = 30
+eg = 54
+
+[[mobility_knight]]
+mg = 32
+eg = 70
+
+[[mobility_knight]]
+mg = 37
+eg = 84
+
+[[mobility_knight]]
+mg = 36
+eg = 94
+
+[[mobility_knight]]
+mg = 34
 eg = 98
 
-[[psts]]
+[[mobility_knight]]
+mg = 31
+eg = 98
+
+[[mobility_knight]]
+mg = 31
+eg = 94
+
+[[mobility_knight]]
+mg = 30
+eg = 83
+
+[[mobility_bishop]]
+mg = -5
+eg = -204
+
+[[mobility_bishop]]
+mg = 4
+eg = -60
+
+[[mobility_bishop]]
+mg = 18
+eg = -8
+
+[[mobility_bishop]]
+mg = 19
+eg = 30
+
+[[mobility_bishop]]
+mg = 28
+eg = 65
+
+[[mobility_bishop]]
+mg = 40
+eg = 94
+
+[[mobility_bishop]]
+mg = 50
+eg = 117
+
+[[mobility_bishop]]
+mg = 51
+eg = 136
+
+[[mobility_bishop]]
+mg = 51
+eg = 150
+
+[[mobility_bishop]]
+mg = 54
+eg = 150
+
+[[mobility_bishop]]
+mg = 58
+eg = 147
+
+[[mobility_bishop]]
+mg = 69
+eg = 143
+
+[[mobility_bishop]]
+mg = 65
+eg = 143
+
+[[mobility_bishop]]
+mg = 172
+eg = 97
+
+[[mobility_rook]]
+mg = -11
+eg = -86
+
+[[mobility_rook]]
+mg = -6
+eg = -45
+
+[[mobility_rook]]
+mg = 1
+eg = -5
+
+[[mobility_rook]]
+mg = 5
+eg = 26
+
+[[mobility_rook]]
+mg = 4
+eg = 52
+
+[[mobility_rook]]
+mg = 11
+eg = 66
+
+[[mobility_rook]]
+mg = 17
+eg = 77
+
+[[mobility_rook]]
+mg = 24
+eg = 81
+
+[[mobility_rook]]
+mg = 27
+eg = 95
+
+[[mobility_rook]]
+mg = 30
+eg = 109
+
+[[mobility_rook]]
+mg = 37
+eg = 113
+
+[[mobility_rook]]
 mg = 39
-eg = 57
+eg = 119
+
+[[mobility_rook]]
+mg = 43
+eg = 119
+
+[[mobility_rook]]
+mg = 71
+eg = 108
+
+[[mobility_rook]]
+mg = 99
+eg = 78
+
+[[mobility_queen]]
+mg = -43
+eg = -774
+
+[[mobility_queen]]
+mg = -22
+eg = -650
+
+[[mobility_queen]]
+mg = -5
+eg = -330
+
+[[mobility_queen]]
+mg = 0
+eg = -162
+
+[[mobility_queen]]
+mg = 1
+eg = -77
+
+[[mobility_queen]]
+mg = 2
+eg = -23
+
+[[mobility_queen]]
+mg = 6
+eg = 11
+
+[[mobility_queen]]
+mg = 7
+eg = 58
+
+[[mobility_queen]]
+mg = 11
+eg = 76
+
+[[mobility_queen]]
+mg = 17
+eg = 93
+
+[[mobility_queen]]
+mg = 22
+eg = 109
+
+[[mobility_queen]]
+mg = 24
+eg = 126
+
+[[mobility_queen]]
+mg = 29
+eg = 137
+
+[[mobility_queen]]
+mg = 33
+eg = 144
+
+[[mobility_queen]]
+mg = 35
+eg = 154
+
+[[mobility_queen]]
+mg = 36
+eg = 161
+
+[[mobility_queen]]
+mg = 33
+eg = 174
+
+[[mobility_queen]]
+mg = 36
+eg = 174
+
+[[mobility_queen]]
+mg = 40
+eg = 172
+
+[[mobility_queen]]
+mg = 35
+eg = 177
+
+[[mobility_queen]]
+mg = 24
+eg = 189
+
+[[mobility_queen]]
+mg = 41
+eg = 166
+
+[[mobility_queen]]
+mg = 33
+eg = 166
+
+[[mobility_queen]]
+mg = 44
+eg = 148
+
+[[mobility_queen]]
+mg = 19
+eg = 156
+
+[[mobility_queen]]
+mg = 0
+eg = 153
+
+[[mobility_queen]]
+mg = -104
+eg = 190
+
+[[mobility_queen]]
+mg = 41
+eg = 169
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = -13
+eg = 52
+
+[[psts]]
+mg = -10
+eg = 48
+
+[[psts]]
+mg = -14
+eg = 69
 
 [[psts]]
 mg = -15
-eg = 34
+eg = 69
 
 [[psts]]
-mg = 2
-eg = 51
+mg = -13
+eg = 75
 
 [[psts]]
-mg = 4
-eg = 50
+mg = 17
+eg = 87
 
 [[psts]]
-mg = 10
-eg = 54
+mg = 31
+eg = 46
 
 [[psts]]
-mg = 15
-eg = 47
-
-[[psts]]
-mg = 36
-eg = 56
-
-[[psts]]
-mg = 14
-eg = 73
-
-[[psts]]
-mg = 30
-eg = 52
+mg = -24
+eg = 22
 
 [[psts]]
 mg = -5
 eg = 40
 
 [[psts]]
-mg = 4
-eg = 69
+mg = -2
+eg = 37
 
 [[psts]]
-mg = 14
-eg = 68
+mg = 3
+eg = 44
 
 [[psts]]
-mg = 30
-eg = 43
+mg = 8
+eg = 37
 
 [[psts]]
-mg = 45
-eg = 36
+mg = 28
+eg = 46
 
 [[psts]]
-mg = 60
-eg = 35
+mg = 7
+eg = 63
 
 [[psts]]
-mg = 34
-eg = 58
-
-[[psts]]
-mg = 18
-eg = 62
-
-[[psts]]
-mg = -12
-eg = 56
-
-[[psts]]
-mg = 27
-eg = 114
-
-[[psts]]
-mg = 47
-eg = 100
-
-[[psts]]
-mg = 54
-eg = 73
-
-[[psts]]
-mg = 88
-eg = 29
-
-[[psts]]
-mg = 111
-eg = 34
-
-[[psts]]
-mg = 85
-eg = 59
-
-[[psts]]
-mg = 45
-eg = 93
-
-[[psts]]
-mg = 6
-eg = 91
-
-[[psts]]
-mg = 21
-eg = 183
-
-[[psts]]
-mg = 90
-eg = 157
-
-[[psts]]
-mg = 135
-eg = 95
-
-[[psts]]
-mg = 133
-eg = 22
-
-[[psts]]
-mg = 160
-eg = 11
-
-[[psts]]
-mg = 213
-eg = 62
-
-[[psts]]
-mg = 113
-eg = 119
-
-[[psts]]
-mg = 9
-eg = 144
-
-[[psts]]
-mg = 123
-eg = 138
-
-[[psts]]
-mg = 82
-eg = 143
-
-[[psts]]
-mg = 144
-eg = 64
-
-[[psts]]
-mg = 170
-eg = -12
-
-[[psts]]
-mg = 167
-eg = -24
-
-[[psts]]
-mg = 79
-eg = 30
-
-[[psts]]
-mg = -184
-eg = 158
-
-[[psts]]
-mg = -141
-eg = 158
-
-[[psts]]
-mg = 0
-eg = 0
-
-[[psts]]
-mg = 0
-eg = 0
-
-[[psts]]
-mg = 0
-eg = 0
-
-[[psts]]
-mg = 0
-eg = 0
-
-[[psts]]
-mg = 0
-eg = 0
-
-[[psts]]
-mg = 0
-eg = 0
-
-[[psts]]
-mg = 0
-eg = 0
-
-[[psts]]
-mg = 0
-eg = 0
-
-[[psts]]
-mg = -99
-eg = -88
-
-[[psts]]
-mg = -20
-eg = -51
-
-[[psts]]
-mg = -19
-eg = 25
-
-[[psts]]
-mg = -26
-eg = 62
-
-[[psts]]
-mg = -11
-eg = 66
-
-[[psts]]
-mg = 0
-eg = 42
+mg = 22
+eg = 40
 
 [[psts]]
 mg = -13
-eg = -23
-
-[[psts]]
-mg = -87
-eg = -114
-
-[[psts]]
-mg = -37
 eg = 28
 
 [[psts]]
-mg = -46
-eg = 85
+mg = -4
+eg = 56
 
 [[psts]]
-mg = 10
-eg = 89
-
-[[psts]]
-mg = 35
-eg = 119
-
-[[psts]]
-mg = 25
-eg = 128
-
-[[psts]]
-mg = 29
-eg = 85
-
-[[psts]]
-mg = -8
-eg = 73
-
-[[psts]]
-mg = 6
-eg = 27
-
-[[psts]]
-mg = -10
-eg = 13
-
-[[psts]]
-mg = 37
-eg = 109
-
-[[psts]]
-mg = 56
-eg = 154
-
-[[psts]]
-mg = 75
-eg = 185
-
-[[psts]]
-mg = 83
-eg = 180
-
-[[psts]]
-mg = 75
-eg = 155
-
-[[psts]]
-mg = 59
-eg = 119
-
-[[psts]]
-mg = 15
-eg = 19
-
-[[psts]]
-mg = 19
-eg = 82
-
-[[psts]]
-mg = 61
-eg = 143
-
-[[psts]]
-mg = 83
-eg = 188
-
-[[psts]]
-mg = 84
-eg = 204
-
-[[psts]]
-mg = 101
-eg = 210
-
-[[psts]]
-mg = 78
-eg = 189
-
-[[psts]]
-mg = 106
-eg = 142
-
-[[psts]]
-mg = 45
-eg = 94
-
-[[psts]]
-mg = 42
-eg = 84
-
-[[psts]]
-mg = 80
-eg = 141
-
-[[psts]]
-mg = 132
-eg = 193
-
-[[psts]]
-mg = 143
-eg = 224
-
-[[psts]]
-mg = 118
-eg = 229
-
-[[psts]]
-mg = 162
-eg = 194
-
-[[psts]]
-mg = 105
-eg = 166
-
-[[psts]]
-mg = 71
-eg = 101
-
-[[psts]]
-mg = 16
-eg = 60
-
-[[psts]]
-mg = 86
-eg = 126
-
-[[psts]]
-mg = 164
-eg = 181
-
-[[psts]]
-mg = 188
-eg = 184
-
-[[psts]]
-mg = 258
-eg = 160
-
-[[psts]]
-mg = 238
-eg = 173
-
-[[psts]]
-mg = 163
-eg = 115
-
-[[psts]]
-mg = 64
-eg = 68
-
-[[psts]]
-mg = 4
-eg = 16
-
-[[psts]]
-mg = 12
-eg = 85
-
-[[psts]]
-mg = 120
-eg = 120
-
-[[psts]]
-mg = 199
-eg = 161
-
-[[psts]]
-mg = 168
-eg = 162
-
-[[psts]]
-mg = 216
-eg = 92
-
-[[psts]]
-mg = -2
-eg = 83
-
-[[psts]]
-mg = 46
-eg = 16
-
-[[psts]]
-mg = -362
-eg = -96
-
-[[psts]]
-mg = -168
-eg = 67
-
-[[psts]]
-mg = -186
-eg = 163
+mg = 5
+eg = 56
 
 [[psts]]
 mg = 21
-eg = 109
+eg = 32
 
 [[psts]]
-mg = 93
-eg = 99
+mg = 36
+eg = 25
 
 [[psts]]
-mg = -167
-eg = 168
+mg = 52
+eg = 25
 
 [[psts]]
-mg = -199
+mg = 25
+eg = 47
+
+[[psts]]
+mg = 10
+eg = 50
+
+[[psts]]
+mg = -22
+eg = 44
+
+[[psts]]
+mg = 18
 eg = 100
 
 [[psts]]
-mg = -257
-eg = -148
+mg = 38
+eg = 87
+
+[[psts]]
+mg = 46
+eg = 59
+
+[[psts]]
+mg = 78
+eg = 14
+
+[[psts]]
+mg = 101
+eg = 20
+
+[[psts]]
+mg = 77
+eg = 45
+
+[[psts]]
+mg = 36
+eg = 80
+
+[[psts]]
+mg = -3
+eg = 78
+
+[[psts]]
+mg = 13
+eg = 168
+
+[[psts]]
+mg = 80
+eg = 143
+
+[[psts]]
+mg = 124
+eg = 80
+
+[[psts]]
+mg = 122
+eg = 8
+
+[[psts]]
+mg = 150
+eg = -3
+
+[[psts]]
+mg = 203
+eg = 47
+
+[[psts]]
+mg = 103
+eg = 105
+
+[[psts]]
+mg = 0
+eg = 129
+
+[[psts]]
+mg = 131
+eg = 146
+
+[[psts]]
+mg = 89
+eg = 153
+
+[[psts]]
+mg = 150
+eg = 77
+
+[[psts]]
+mg = 175
+eg = -1
+
+[[psts]]
+mg = 172
+eg = -13
+
+[[psts]]
+mg = 86
+eg = 41
+
+[[psts]]
+mg = -178
+eg = 169
+
+[[psts]]
+mg = -133
+eg = 167
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = 0
+eg = 0
+
+[[psts]]
+mg = -96
+eg = -74
+
+[[psts]]
+mg = -23
+eg = -40
+
+[[psts]]
+mg = -24
+eg = 22
+
+[[psts]]
+mg = -30
+eg = 62
+
+[[psts]]
+mg = -15
+eg = 65
+
+[[psts]]
+mg = -4
+eg = 40
+
+[[psts]]
+mg = -15
+eg = -15
+
+[[psts]]
+mg = -85
+eg = -97
+
+[[psts]]
+mg = -42
+eg = 25
+
+[[psts]]
+mg = -51
+eg = 77
+
+[[psts]]
+mg = 3
+eg = 73
+
+[[psts]]
+mg = 29
+eg = 106
+
+[[psts]]
+mg = 19
+eg = 115
+
+[[psts]]
+mg = 22
+eg = 70
+
+[[psts]]
+mg = -14
+eg = 67
+
+[[psts]]
+mg = 2
+eg = 26
+
+[[psts]]
+mg = -17
+eg = 0
+
+[[psts]]
+mg = 31
+eg = 89
+
+[[psts]]
+mg = 50
+eg = 142
+
+[[psts]]
+mg = 68
+eg = 173
+
+[[psts]]
+mg = 76
+eg = 169
+
+[[psts]]
+mg = 69
+eg = 143
+
+[[psts]]
+mg = 52
+eg = 99
+
+[[psts]]
+mg = 13
+eg = 7
+
+[[psts]]
+mg = 11
+eg = 70
+
+[[psts]]
+mg = 53
+eg = 123
+
+[[psts]]
+mg = 76
+eg = 174
+
+[[psts]]
+mg = 77
+eg = 192
+
+[[psts]]
+mg = 93
+eg = 197
+
+[[psts]]
+mg = 71
+eg = 175
+
+[[psts]]
+mg = 98
+eg = 123
+
+[[psts]]
+mg = 38
+eg = 82
+
+[[psts]]
+mg = 34
+eg = 71
+
+[[psts]]
+mg = 72
+eg = 119
+
+[[psts]]
+mg = 126
+eg = 180
+
+[[psts]]
+mg = 137
+eg = 209
+
+[[psts]]
+mg = 113
+eg = 215
+
+[[psts]]
+mg = 156
+eg = 178
+
+[[psts]]
+mg = 97
+eg = 144
+
+[[psts]]
+mg = 63
+eg = 88
+
+[[psts]]
+mg = 5
+eg = 46
+
+[[psts]]
+mg = 77
+eg = 104
+
+[[psts]]
+mg = 156
+eg = 169
+
+[[psts]]
+mg = 180
+eg = 171
+
+[[psts]]
+mg = 250
+eg = 147
+
+[[psts]]
+mg = 230
+eg = 161
+
+[[psts]]
+mg = 155
+eg = 93
+
+[[psts]]
+mg = 53
+eg = 54
+
+[[psts]]
+mg = -6
+eg = 11
+
+[[psts]]
+mg = -1
+eg = 73
+
+[[psts]]
+mg = 112
+eg = 98
+
+[[psts]]
+mg = 191
+eg = 139
+
+[[psts]]
+mg = 159
+eg = 140
+
+[[psts]]
+mg = 208
+eg = 69
+
+[[psts]]
+mg = -16
+eg = 69
+
+[[psts]]
+mg = 35
+eg = 11
+
+[[psts]]
+mg = -372
+eg = -86
+
+[[psts]]
+mg = -181
+eg = 62
+
+[[psts]]
+mg = -205
+eg = 148
+
+[[psts]]
+mg = 3
+eg = 94
+
+[[psts]]
+mg = 76
+eg = 83
+
+[[psts]]
+mg = -183
+eg = 152
+
+[[psts]]
+mg = -214
+eg = 95
+
+[[psts]]
+mg = -267
+eg = -137
+
+[[psts]]
+mg = 58
+eg = 63
+
+[[psts]]
+mg = 28
+eg = 93
+
+[[psts]]
+mg = 11
+eg = 93
+
+[[psts]]
+mg = 10
+eg = 97
+
+[[psts]]
+mg = 0
+eg = 106
+
+[[psts]]
+mg = 26
+eg = 103
+
+[[psts]]
+mg = 17
+eg = 100
+
+[[psts]]
+mg = 43
+eg = 59
+
+[[psts]]
+mg = 50
+eg = 70
+
+[[psts]]
+mg = 57
+eg = 70
 
 [[psts]]
 mg = 51
+eg = 90
+
+[[psts]]
+mg = 26
+eg = 108
+
+[[psts]]
+mg = 39
+eg = 104
+
+[[psts]]
+mg = 48
+eg = 91
+
+[[psts]]
+mg = 79
+eg = 85
+
+[[psts]]
+mg = 53
+eg = 30
+
+[[psts]]
+mg = 30
+eg = 97
+
+[[psts]]
+mg = 67
+eg = 124
+
+[[psts]]
+mg = 49
+eg = 133
+
+[[psts]]
+mg = 58
+eg = 136
+
+[[psts]]
+mg = 46
+eg = 138
+
+[[psts]]
+mg = 61
+eg = 128
+
+[[psts]]
+mg = 69
+eg = 118
+
+[[psts]]
+mg = 65
+eg = 103
+
+[[psts]]
+mg = 20
+eg = 101
+
+[[psts]]
+mg = 39
+eg = 127
+
+[[psts]]
+mg = 54
+eg = 160
+
+[[psts]]
+mg = 74
+eg = 162
+
+[[psts]]
+mg = 80
+eg = 160
+
+[[psts]]
+mg = 35
+eg = 157
+
+[[psts]]
+mg = 48
+eg = 127
+
+[[psts]]
+mg = 27
+eg = 100
+
+[[psts]]
+mg = 7
+eg = 125
+
+[[psts]]
+mg = 68
+eg = 149
+
+[[psts]]
+mg = 65
+eg = 147
+
+[[psts]]
+mg = 132
+eg = 161
+
+[[psts]]
+mg = 98
+eg = 176
+
+[[psts]]
+mg = 86
+eg = 149
+
+[[psts]]
+mg = 57
+eg = 161
+
+[[psts]]
+mg = 26
+eg = 134
+
+[[psts]]
+mg = 30
+eg = 127
+
+[[psts]]
+mg = 58
+eg = 156
+
+[[psts]]
+mg = 105
+eg = 145
+
+[[psts]]
+mg = 92
+eg = 140
+
+[[psts]]
+mg = 141
+eg = 136
+
+[[psts]]
+mg = 119
+eg = 159
+
+[[psts]]
+mg = 114
+eg = 150
+
+[[psts]]
+mg = 47
+eg = 135
+
+[[psts]]
+mg = -72
+eg = 134
+
+[[psts]]
+mg = 19
+eg = 148
+
+[[psts]]
+mg = 12
+eg = 149
+
+[[psts]]
+mg = -19
+eg = 150
+
+[[psts]]
+mg = 18
+eg = 142
+
+[[psts]]
+mg = 50
+eg = 145
+
+[[psts]]
+mg = 7
+eg = 151
+
+[[psts]]
+mg = -4
+eg = 114
+
+[[psts]]
+mg = -82
+eg = 162
+
+[[psts]]
+mg = -118
+eg = 174
+
+[[psts]]
+mg = -212
+eg = 178
+
+[[psts]]
+mg = -195
+eg = 185
+
+[[psts]]
+mg = -144
+eg = 177
+
+[[psts]]
+mg = -220
+eg = 172
+
+[[psts]]
+mg = -16
+eg = 146
+
+[[psts]]
+mg = -61
+eg = 156
+
+[[psts]]
+mg = 7
+eg = 106
+
+[[psts]]
+mg = 20
+eg = 122
+
+[[psts]]
+mg = 33
+eg = 129
+
+[[psts]]
+mg = 50
+eg = 114
+
+[[psts]]
+mg = 44
+eg = 115
+
+[[psts]]
+mg = 51
+eg = 133
+
+[[psts]]
+mg = 53
+eg = 112
+
+[[psts]]
+mg = 33
+eg = 80
+
+[[psts]]
+mg = -114
+eg = 115
+
+[[psts]]
+mg = -15
+eg = 96
+
+[[psts]]
+mg = -4
+eg = 113
+
+[[psts]]
+mg = 6
+eg = 105
+
+[[psts]]
+mg = 6
+eg = 105
+
+[[psts]]
+mg = 40
+eg = 89
+
+[[psts]]
+mg = 43
+eg = 79
+
+[[psts]]
+mg = -99
+eg = 112
+
+[[psts]]
+mg = -45
+eg = 110
+
+[[psts]]
+mg = 0
+eg = 137
+
+[[psts]]
+mg = -19
+eg = 136
+
+[[psts]]
+mg = -6
+eg = 126
+
+[[psts]]
+mg = -5
+eg = 126
+
+[[psts]]
+mg = 6
+eg = 132
+
+[[psts]]
+mg = 60
+eg = 122
+
+[[psts]]
+mg = -2
+eg = 99
+
+[[psts]]
+mg = -32
+eg = 155
+
+[[psts]]
+mg = -18
+eg = 186
+
+[[psts]]
+mg = -23
+eg = 188
+
+[[psts]]
+mg = -7
+eg = 174
+
+[[psts]]
+mg = -10
+eg = 171
+
+[[psts]]
+mg = 8
+eg = 173
+
+[[psts]]
+mg = 38
+eg = 169
+
+[[psts]]
+mg = 6
+eg = 146
+
+[[psts]]
+mg = 3
+eg = 189
+
+[[psts]]
+mg = 28
+eg = 187
+
+[[psts]]
+mg = 44
+eg = 195
+
+[[psts]]
+mg = 86
+eg = 178
+
+[[psts]]
+mg = 66
+eg = 180
+
+[[psts]]
+mg = 94
+eg = 170
+
+[[psts]]
+mg = 95
+eg = 165
+
+[[psts]]
+mg = 72
+eg = 170
+
+[[psts]]
+mg = 8
+eg = 210
+
+[[psts]]
+mg = 90
+eg = 178
+
+[[psts]]
+mg = 69
+eg = 202
+
+[[psts]]
+mg = 119
+eg = 178
+
+[[psts]]
+mg = 156
+eg = 162
+
+[[psts]]
+mg = 165
+eg = 175
+
+[[psts]]
+mg = 215
+eg = 135
+
+[[psts]]
+mg = 90
+eg = 183
+
+[[psts]]
+mg = 53
+eg = 220
+
+[[psts]]
+mg = 37
+eg = 235
+
+[[psts]]
+mg = 93
+eg = 227
+
+[[psts]]
+mg = 136
+eg = 225
+
+[[psts]]
+mg = 128
+eg = 229
+
+[[psts]]
+mg = 196
+eg = 183
+
+[[psts]]
+mg = 102
+eg = 209
+
+[[psts]]
+mg = 123
+eg = 196
+
+[[psts]]
+mg = 131
+eg = 213
+
+[[psts]]
+mg = 121
+eg = 224
+
+[[psts]]
+mg = 91
+eg = 238
+
+[[psts]]
+mg = 111
+eg = 229
+
+[[psts]]
+mg = 126
+eg = 228
+
+[[psts]]
+mg = 155
+eg = 229
+
+[[psts]]
+mg = 190
+eg = 216
+
+[[psts]]
+mg = 220
+eg = 204
+
+[[psts]]
+mg = 30
+eg = 68
+
+[[psts]]
+mg = 42
+eg = 30
+
+[[psts]]
+mg = 51
+eg = 18
+
+[[psts]]
+mg = 58
+eg = 81
+
+[[psts]]
+mg = 57
+eg = 38
+
+[[psts]]
+mg = 43
+eg = 10
+
+[[psts]]
+mg = 59
+eg = -7
+
+[[psts]]
+mg = 22
 eg = 37
 
 [[psts]]
 mg = 20
-eg = 66
-
-[[psts]]
-mg = 7
-eg = 58
-
-[[psts]]
-mg = 4
-eg = 82
-
-[[psts]]
-mg = -5
-eg = 89
-
-[[psts]]
-mg = 18
-eg = 80
-
-[[psts]]
-mg = 11
-eg = 73
-
-[[psts]]
-mg = 35
-eg = 29
-
-[[psts]]
-mg = 43
-eg = 58
-
-[[psts]]
-mg = 52
-eg = 57
-
-[[psts]]
-mg = 44
-eg = 81
-
-[[psts]]
-mg = 19
-eg = 97
-
-[[psts]]
-mg = 31
-eg = 95
-
-[[psts]]
-mg = 41
-eg = 79
-
-[[psts]]
-mg = 73
-eg = 74
-
-[[psts]]
-mg = 48
-eg = 12
-
-[[psts]]
-mg = 24
-eg = 91
-
-[[psts]]
-mg = 60
-eg = 117
+eg = 60
 
 [[psts]]
 mg = 42
-eg = 119
-
-[[psts]]
-mg = 47
-eg = 121
-
-[[psts]]
-mg = 38
-eg = 126
-
-[[psts]]
-mg = 54
-eg = 113
-
-[[psts]]
-mg = 62
-eg = 110
-
-[[psts]]
-mg = 59
-eg = 97
-
-[[psts]]
-mg = 14
-eg = 101
-
-[[psts]]
-mg = 32
-eg = 123
-
-[[psts]]
-mg = 45
-eg = 145
-
-[[psts]]
-mg = 69
-eg = 132
-
-[[psts]]
-mg = 74
-eg = 125
-
-[[psts]]
-mg = 24
-eg = 144
-
-[[psts]]
-mg = 40
-eg = 122
-
-[[psts]]
-mg = 21
-eg = 99
-
-[[psts]]
-mg = 3
-eg = 125
-
-[[psts]]
-mg = 61
-eg = 144
-
-[[psts]]
-mg = 56
-eg = 133
-
-[[psts]]
-mg = 126
-eg = 129
-
-[[psts]]
-mg = 92
-eg = 144
-
-[[psts]]
-mg = 74
-eg = 132
-
-[[psts]]
-mg = 49
-eg = 157
-
-[[psts]]
-mg = 22
-eg = 134
-
-[[psts]]
-mg = 26
-eg = 124
-
-[[psts]]
-mg = 54
-eg = 151
-
-[[psts]]
-mg = 96
-eg = 127
-
-[[psts]]
-mg = 83
-eg = 128
-
-[[psts]]
-mg = 133
-eg = 123
-
-[[psts]]
-mg = 113
-eg = 139
-
-[[psts]]
-mg = 106
-eg = 144
-
-[[psts]]
-mg = 44
-eg = 132
-
-[[psts]]
-mg = -73
-eg = 124
-
-[[psts]]
-mg = 9
-eg = 142
-
-[[psts]]
-mg = 6
-eg = 146
-
-[[psts]]
-mg = -26
-eg = 149
-
-[[psts]]
-mg = 10
-eg = 140
-
-[[psts]]
-mg = 45
-eg = 142
-
-[[psts]]
-mg = 0
-eg = 143
-
-[[psts]]
-mg = -6
-eg = 107
-
-[[psts]]
-mg = -85
-eg = 158
-
-[[psts]]
-mg = -120
-eg = 172
-
-[[psts]]
-mg = -213
-eg = 177
-
-[[psts]]
-mg = -194
-eg = 187
-
-[[psts]]
-mg = -145
-eg = 178
-
-[[psts]]
-mg = -221
-eg = 173
-
-[[psts]]
-mg = -20
-eg = 146
-
-[[psts]]
-mg = -65
-eg = 153
-
-[[psts]]
-mg = 9
-eg = 118
-
-[[psts]]
-mg = 23
-eg = 136
-
-[[psts]]
-mg = 36
-eg = 142
-
-[[psts]]
-mg = 53
-eg = 128
-
-[[psts]]
-mg = 47
-eg = 128
-
-[[psts]]
-mg = 52
-eg = 145
-
-[[psts]]
-mg = 56
-eg = 125
-
-[[psts]]
-mg = 36
-eg = 90
-
-[[psts]]
-mg = -112
-eg = 129
-
-[[psts]]
-mg = -14
-eg = 113
-
-[[psts]]
-mg = -3
-eg = 132
-
-[[psts]]
-mg = 6
-eg = 124
-
-[[psts]]
-mg = 6
-eg = 124
-
-[[psts]]
-mg = 41
-eg = 106
-
-[[psts]]
-mg = 43
-eg = 96
-
-[[psts]]
-mg = -98
-eg = 126
-
-[[psts]]
-mg = -43
-eg = 127
-
-[[psts]]
-mg = 0
-eg = 158
-
-[[psts]]
-mg = -19
-eg = 157
-
-[[psts]]
-mg = -6
-eg = 147
-
-[[psts]]
-mg = -5
-eg = 147
-
-[[psts]]
-mg = 5
-eg = 150
-
-[[psts]]
-mg = 61
-eg = 142
-
-[[psts]]
-mg = 0
-eg = 116
-
-[[psts]]
-mg = -30
-eg = 175
-
-[[psts]]
-mg = -17
-eg = 206
-
-[[psts]]
-mg = -21
-eg = 209
-
-[[psts]]
-mg = -6
-eg = 196
-
-[[psts]]
-mg = -9
-eg = 193
-
-[[psts]]
-mg = 8
-eg = 194
-
-[[psts]]
-mg = 39
-eg = 190
-
-[[psts]]
-mg = 7
-eg = 167
-
-[[psts]]
-mg = 6
-eg = 208
-
-[[psts]]
-mg = 31
-eg = 207
-
-[[psts]]
-mg = 48
-eg = 215
-
-[[psts]]
-mg = 90
-eg = 199
-
-[[psts]]
-mg = 69
-eg = 202
-
-[[psts]]
-mg = 94
-eg = 194
-
-[[psts]]
-mg = 95
-eg = 187
-
-[[psts]]
-mg = 73
-eg = 191
-
-[[psts]]
-mg = 12
-eg = 229
-
-[[psts]]
-mg = 95
-eg = 197
-
-[[psts]]
-mg = 76
-eg = 221
-
-[[psts]]
-mg = 125
-eg = 198
-
-[[psts]]
-mg = 160
-eg = 183
-
-[[psts]]
-mg = 169
-eg = 196
-
-[[psts]]
-mg = 218
-eg = 157
-
-[[psts]]
-mg = 93
-eg = 203
+eg = 69
 
 [[psts]]
 mg = 58
-eg = 238
+eg = 28
 
 [[psts]]
-mg = 43
-eg = 253
+mg = 46
+eg = 94
 
 [[psts]]
-mg = 100
-eg = 244
+mg = 51
+eg = 82
 
 [[psts]]
-mg = 143
-eg = 242
+mg = 71
+eg = 0
 
 [[psts]]
-mg = 134
-eg = 248
+mg = 60
+eg = 0
 
 [[psts]]
-mg = 202
-eg = 202
+mg = 3
+eg = 58
 
 [[psts]]
-mg = 107
-eg = 228
-
-[[psts]]
-mg = 127
-eg = 215
-
-[[psts]]
-mg = 142
-eg = 222
-
-[[psts]]
-mg = 135
-eg = 230
-
-[[psts]]
-mg = 110
-eg = 241
-
-[[psts]]
-mg = 131
-eg = 232
-
-[[psts]]
-mg = 142
-eg = 235
-
-[[psts]]
-mg = 165
-eg = 241
-
-[[psts]]
-mg = 196
-eg = 230
-
-[[psts]]
-mg = 226
-eg = 219
-
-[[psts]]
-mg = 33
-eg = 57
+mg = 25
+eg = 91
 
 [[psts]]
 mg = 48
-eg = 20
+eg = 122
 
 [[psts]]
-mg = 59
-eg = 7
+mg = 38
+eg = 177
 
 [[psts]]
-mg = 64
-eg = 62
+mg = 26
+eg = 146
 
 [[psts]]
-mg = 63
-eg = 32
+mg = 31
+eg = 147
 
 [[psts]]
-mg = 49
-eg = 4
+mg = 36
+eg = 196
 
 [[psts]]
-mg = 65
-eg = -18
-
-[[psts]]
-mg = 23
-eg = -4
-
-[[psts]]
-mg = 23
-eg = 62
-
-[[psts]]
-mg = 45
-eg = 72
-
-[[psts]]
-mg = 61
-eg = 34
-
-[[psts]]
-mg = 49
-eg = 97
+mg = 71
+eg = 131
 
 [[psts]]
 mg = 54
-eg = 85
+eg = 98
 
 [[psts]]
-mg = 76
-eg = 2
+mg = 19
+eg = 142
 
 [[psts]]
-mg = 63
-eg = 3
+mg = 26
+eg = 209
 
 [[psts]]
-mg = 8
-eg = 50
+mg = 13
+eg = 224
 
 [[psts]]
-mg = 28
-eg = 102
-
-[[psts]]
-mg = 49
-eg = 137
-
-[[psts]]
-mg = 40
-eg = 180
-
-[[psts]]
-mg = 28
-eg = 151
-
-[[psts]]
-mg = 34
-eg = 151
-
-[[psts]]
-mg = 39
-eg = 202
-
-[[psts]]
-mg = 73
-eg = 143
-
-[[psts]]
-mg = 57
-eg = 108
-
-[[psts]]
-mg = 22
-eg = 157
-
-[[psts]]
-mg = 27
-eg = 217
-
-[[psts]]
-mg = 14
-eg = 226
-
-[[psts]]
-mg = -3
-eg = 304
+mg = -6
+eg = 314
 
 [[psts]]
 mg = 0
-eg = 293
+eg = 303
 
 [[psts]]
-mg = 23
-eg = 294
+mg = 21
+eg = 289
 
 [[psts]]
-mg = 41
-eg = 249
+mg = 40
+eg = 237
 
 [[psts]]
-mg = 45
-eg = 271
+mg = 43
+eg = 255
 
 [[psts]]
-mg = 17
-eg = 197
+mg = 14
+eg = 183
 
 [[psts]]
-mg = 12
-eg = 267
+mg = 9
+eg = 260
 
 [[psts]]
-mg = 5
+mg = 7
 eg = 264
 
 [[psts]]
 mg = -7
-eg = 344
+eg = 360
 
 [[psts]]
 mg = -6
-eg = 388
+eg = 403
 
 [[psts]]
-mg = 19
-eg = 398
+mg = 21
+eg = 397
 
 [[psts]]
-mg = 47
-eg = 384
+mg = 46
+eg = 371
 
 [[psts]]
-mg = 62
-eg = 334
+mg = 59
+eg = 320
 
 [[psts]]
-mg = 8
-eg = 218
+mg = 3
+eg = 208
 
 [[psts]]
-mg = 7
-eg = 230
+mg = 3
+eg = 220
 
 [[psts]]
 mg = -11
 eg = 308
 
 [[psts]]
-mg = 9
+mg = 13
 eg = 346
 
 [[psts]]
-mg = 41
-eg = 383
+mg = 45
+eg = 386
 
 [[psts]]
-mg = 79
-eg = 431
+mg = 78
+eg = 429
 
 [[psts]]
-mg = 133
-eg = 334
+mg = 132
+eg = 321
 
 [[psts]]
-mg = 86
-eg = 378
+mg = 81
+eg = 367
 
 [[psts]]
-mg = -4
-eg = 253
+mg = -11
+eg = 241
 
 [[psts]]
-mg = -100
-eg = 349
+mg = -105
+eg = 338
 
 [[psts]]
-mg = -15
-eg = 344
-
-[[psts]]
-mg = -61
-eg = 436
-
-[[psts]]
-mg = -29
-eg = 488
-
-[[psts]]
-mg = 59
-eg = 435
-
-[[psts]]
-mg = -90
-eg = 445
-
-[[psts]]
-mg = 8
-eg = 343
-
-[[psts]]
-mg = 37
-eg = 271
-
-[[psts]]
-mg = 25
-eg = 328
-
-[[psts]]
-mg = 31
-eg = 351
-
-[[psts]]
-mg = 69
-eg = 361
-
-[[psts]]
-mg = 79
-eg = 393
-
-[[psts]]
-mg = 103
-eg = 399
-
-[[psts]]
-mg = 60
-eg = 393
-
-[[psts]]
-mg = 118
+mg = -16
 eg = 336
 
 [[psts]]
-mg = 0
-eg = -170
+mg = -61
+eg = 430
 
 [[psts]]
-mg = 37
-eg = -83
+mg = -29
+eg = 481
 
 [[psts]]
-mg = -25
-eg = -34
+mg = 59
+eg = 423
 
 [[psts]]
-mg = -133
-eg = -46
+mg = -95
+eg = 436
 
 [[psts]]
-mg = -52
-eg = -114
+mg = 2
+eg = 330
 
 [[psts]]
-mg = -152
-eg = -22
+mg = 33
+eg = 259
 
 [[psts]]
-mg = 38
-eg = -92
-
-[[psts]]
-mg = 46
-eg = -223
-
-[[psts]]
-mg = 24
-eg = -46
-
-[[psts]]
-mg = -20
-eg = 1
-
-[[psts]]
-mg = -62
-eg = 37
-
-[[psts]]
-mg = -181
-eg = 71
-
-[[psts]]
-mg = -126
-eg = 50
-
-[[psts]]
-mg = -129
-eg = 44
-
-[[psts]]
-mg = -3
-eg = -22
+mg = 20
+eg = 317
 
 [[psts]]
 mg = 26
-eg = -84
+eg = 343
 
 [[psts]]
-mg = -114
-eg = -13
+mg = 64
+eg = 356
+
+[[psts]]
+mg = 75
+eg = 385
+
+[[psts]]
+mg = 99
+eg = 387
+
+[[psts]]
+mg = 57
+eg = 379
+
+[[psts]]
+mg = 114
+eg = 326
+
+[[psts]]
+mg = 3
+eg = -175
+
+[[psts]]
+mg = 39
+eg = -86
+
+[[psts]]
+mg = -23
+eg = -37
+
+[[psts]]
+mg = -132
+eg = -48
 
 [[psts]]
 mg = -50
-eg = 34
+eg = -114
 
 [[psts]]
-mg = -45
-eg = 72
+mg = -149
+eg = -25
 
 [[psts]]
-mg = -92
-eg = 111
+mg = 41
+eg = -97
 
 [[psts]]
-mg = -59
-eg = 97
+mg = 49
+eg = -228
+
+[[psts]]
+mg = 26
+eg = -49
+
+[[psts]]
+mg = -18
+eg = 0
 
 [[psts]]
 mg = -61
+eg = 35
+
+[[psts]]
+mg = -182
+eg = 70
+
+[[psts]]
+mg = -127
+eg = 49
+
+[[psts]]
+mg = -129
+eg = 42
+
+[[psts]]
+mg = -2
+eg = -24
+
+[[psts]]
+mg = 28
+eg = -86
+
+[[psts]]
+mg = -113
+eg = -15
+
+[[psts]]
+mg = -49
+eg = 33
+
+[[psts]]
+mg = -45
+eg = 71
+
+[[psts]]
+mg = -95
+eg = 112
+
+[[psts]]
+mg = -62
+eg = 98
+
+[[psts]]
+mg = -60
 eg = 68
 
 [[psts]]
-mg = -28
+mg = -27
 eg = 14
 
 [[psts]]
-mg = -89
-eg = -29
+mg = -87
+eg = -31
 
 [[psts]]
-mg = -100
-eg = -26
+mg = -102
+eg = -27
 
 [[psts]]
 mg = 50
 eg = 56
 
 [[psts]]
-mg = 77
-eg = 99
+mg = 74
+eg = 100
 
 [[psts]]
-mg = -19
-eg = 144
+mg = -21
+eg = 145
 
 [[psts]]
-mg = 15
-eg = 129
+mg = 12
+eg = 130
 
 [[psts]]
-mg = 20
-eg = 94
+mg = 18
+eg = 95
 
 [[psts]]
 mg = 53
 eg = 43
 
 [[psts]]
-mg = -117
-eg = -27
+mg = -118
+eg = -28
 
 [[psts]]
-mg = -76
+mg = -81
 eg = 26
 
 [[psts]]
-mg = 140
+mg = 138
 eg = 84
 
 [[psts]]
 mg = 176
-eg = 114
+eg = 116
 
 [[psts]]
-mg = 81
+mg = 83
 eg = 135
 
 [[psts]]
 mg = 115
-eg = 121
+eg = 122
 
 [[psts]]
-mg = 153
-eg = 103
+mg = 154
+eg = 104
 
 [[psts]]
-mg = 113
-eg = 77
+mg = 111
+eg = 78
 
 [[psts]]
-mg = -130
+mg = -132
 eg = 11
 
 [[psts]]
-mg = -3
-eg = 22
+mg = -6
+eg = 21
 
 [[psts]]
-mg = 263
-eg = 96
+mg = 262
+eg = 97
 
 [[psts]]
-mg = 332
-eg = 87
-
-[[psts]]
-mg = 271
-eg = 74
-
-[[psts]]
-mg = 274
-eg = 61
-
-[[psts]]
-mg = 325
+mg = 330
 eg = 88
 
 [[psts]]
-mg = 231
-eg = 95
+mg = 270
+eg = 75
 
 [[psts]]
-mg = -15
-eg = 1
+mg = 274
+eg = 62
 
 [[psts]]
-mg = 1
-eg = -86
-
-[[psts]]
-mg = 235
-eg = 70
-
-[[psts]]
-mg = 335
-eg = 38
-
-[[psts]]
-mg = 332
-eg = 4
-
-[[psts]]
-mg = 255
-eg = 16
-
-[[psts]]
-mg = 326
-eg = 31
-
-[[psts]]
-mg = 149
+mg = 323
 eg = 89
 
 [[psts]]
-mg = 61
+mg = 229
+eg = 95
+
+[[psts]]
+mg = -21
+eg = 1
+
+[[psts]]
+mg = -9
+eg = -85
+
+[[psts]]
+mg = 224
+eg = 70
+
+[[psts]]
+mg = 326
+eg = 39
+
+[[psts]]
+mg = 324
+eg = 4
+
+[[psts]]
+mg = 245
+eg = 17
+
+[[psts]]
+mg = 319
+eg = 30
+
+[[psts]]
+mg = 138
+eg = 89
+
+[[psts]]
+mg = 50
 eg = -92
 
 [[psts]]
-mg = 399
+mg = 383
 eg = -450
 
 [[psts]]
-mg = 581
-eg = -203
+mg = 565
+eg = -204
 
 [[psts]]
-mg = 467
-eg = -128
+mg = 456
+eg = -130
 
 [[psts]]
-mg = 402
-eg = -69
+mg = 389
+eg = -71
 
 [[psts]]
-mg = 436
-eg = -117
+mg = 426
+eg = -118
 
 [[psts]]
-mg = 341
-eg = -96
+mg = 324
+eg = -97
 
 [[psts]]
-mg = 427
-eg = -120
+mg = 413
+eg = -121
 
 [[psts]]
-mg = 238
+mg = 224
 eg = -393

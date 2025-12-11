@@ -156,8 +156,9 @@ eval_test_seq tc='stc' suite=test_suite_dir:
 
 [doc("Run eval_tester with given time control and threads")]
 [group("eval")]
-eval_test threads="6" tc='stc' suite=test_suite_dir:
-    cargo run {{ flags }} --features parallel --bin eval_tester {{ suite }} -p {{ params_file }} -t {{ tc }} --threads {{ threads }} \
+eval_test threads="6" tc='stc' params=params_file suite=test_suite_dir:
+    @echo "{{ MAGENTA }}Using params: {{ params }} and test_suite: {{ suite }}"
+    cargo run {{ flags }} --features parallel --bin eval_tester {{ suite }} -p {{ params }} -t {{ tc }} --threads {{ threads }} \
     | tee {{ pgn_output_dir }}{{ datetime("%Y-%m-%d_%H-%M-%S") }}_test_{{ tc }}_{{ threads }}threads.txt
 
 [doc("Remove build artifacts and gauntlet artifacts")]
