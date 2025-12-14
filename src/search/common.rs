@@ -313,6 +313,7 @@ pub struct SearchConfig {
     pub enable_asp: bool,
     pub enable_lmr: bool,
     pub emit_info: bool,
+    pub sing_ext: bool,
     pub collect_stats: bool, // TODO: feature-gate this
     pub hash_size_mb: usize,
 }
@@ -324,6 +325,7 @@ impl Default for SearchConfig {
             enable_asp: true,
             enable_lmr: true,
             emit_info: true,
+            sing_ext: false,
             collect_stats: true, // Disabled for perf
             hash_size_mb: 16,
         }

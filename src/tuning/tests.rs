@@ -26,7 +26,7 @@ fn test_mobility_params_mapping() {
 
     // Verify Knight Mapping via Trace
     // We want to find where Knight Move 0 lives in the vector
-    let trace_idx_k0 = params::MOBILITY_KNIGHT_START + 0;
+    let trace_idx_k0 = params::MOBILITY_KNIGHT_START;
     let vec_idx_k0 = EvalTrace::map_feature_to_spsa_index(trace_idx_k0);
 
     assert_eq!(vec[vec_idx_k0], 100.0, "Knight Move 0 MG mismatch");

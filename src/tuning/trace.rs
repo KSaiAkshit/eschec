@@ -102,12 +102,12 @@ impl EvalTrace {
             TEMPO_BONUS => params::TEMPO_BONUS,
 
             // PSTs
-            i if i >= params::PST_START && i < params::MOBILITY_KNIGHT_START => {
+            i if (params::PST_START..params::MOBILITY_KNIGHT_START).contains(&i) => {
                 params::PST_START + (i - params::PST_START)
             }
 
             // Mobility (Explicit Range)
-            i if i >= params::MOBILITY_KNIGHT_START && i < params::NUM_TRACE_FEATURES => i,
+            i if (params::MOBILITY_KNIGHT_START..params::NUM_TRACE_FEATURES).contains(&i) => i,
 
             _ => panic!("Invalid Trace Index: {}", trace_idx),
         };

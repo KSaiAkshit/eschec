@@ -26,12 +26,16 @@ const HISTORY_SIZE: usize = 512;
 const DELTA_MARGIN: i32 = 700;
 const SEE_THRESHOLD: i32 = -100;
 const CONTEMPT_SCORE: i32 = 0;
+const SE_DEPTH: u16 = 8;
+const SE_MARGIN: i32 = 2;
 
 /// Holds pv_node and curr ply
 #[derive(Clone, Copy)]
 pub struct SearchContext {
     ply: usize,
     is_pv_node: bool,
+    /// If set, this move will be skipped during move generation/looping
+    excluded_move: Option<Move>,
 }
 
 impl SearchContext {
@@ -39,6 +43,7 @@ impl SearchContext {
         Self {
             ply: 0,
             is_pv_node: true,
+            excluded_move: None,
         }
     }
 
@@ -46,6 +51,7 @@ impl SearchContext {
         SearchContext {
             ply: self.ply + 1,
             is_pv_node: is_pv_child,
+            excluded_move: None,
         }
     }
 }
@@ -322,6 +328,10 @@ impl SearchEngine for AlphaBetaSearch {
     fn get_limits(&self) -> SearchLimits {
         self.limits
     }
+
+    fn get_params(&self) -> TunableParams {
+        self.eval_params.clone()
+    }
 }
 
 // Main search
@@ -482,7 +492,10 @@ impl AlphaBetaSearch {
             return CONTEMPT_SCORE;
         }
 
-        let mut tt_move = Move::default();
+        let mut tt_move = None;
+        let mut tt_value = i32::MIN;
+        let mut tt_depth = 0;
+        let mut tt_bound = ScoreTypes::Exact;
 
         // TT Probe
         if self.config.collect_stats {
@@ -494,8 +507,19 @@ impl AlphaBetaSearch {
             if self.config.collect_stats {
                 self.stats.tt_hits += 1;
             }
-            tt_move = entry.get_best_move();
-            if entry.get_depth() >= depth {
+            tt_move = Some(entry.get_best_move());
+            tt_value = adjust_score_for_ply(entry.get_score(), ply);
+            tt_depth = entry.get_depth();
+            tt_bound = entry.get_score_type();
+
+            // Only use cutoff if
+            //  - Depth is sufficient
+            //  - Not excluding the move that generated this score
+            if context
+                .excluded_move
+                .is_none_or(|excluded| excluded != entry.get_best_move())
+                && tt_depth >= depth
+            {
                 let score = adjust_score_for_ply(entry.get_score(), ply);
 
                 match entry.get_score_type() {
@@ -537,12 +561,71 @@ impl AlphaBetaSearch {
             panic!("Invalid alpha-beta window: alpha: {alpha}, beta: {beta}");
         }
 
-        // Null Move Pruning
-        let child_context = context.new_child(false);
-        if let Some(nmp_score) = self.try_null_move_pruning(board, child_context, depth, beta) {
-            return nmp_score;
+        // Disabled when we have a singular move to prevent instability
+        if context.excluded_move.is_none() {
+            // Null Move Pruning
+            let child_context = context.new_child(false);
+            if let Some(nmp_score) = self.try_null_move_pruning(board, child_context, depth, beta) {
+                return nmp_score;
+            }
         }
 
+        // Singular Extension
+        //  Extend search if TT move is the only good move
+        // Con:
+        //  - Not root, depth is high enough
+        //  - TT move that is a LowerBound or Exact - meaning its good
+        //  - TT depth is decent enough to trust
+        //  - Aren't already in singular search
+
+        let mut singular_extension = 0;
+
+        if self.config.sing_ext
+            && !context.is_pv_node
+            && context.excluded_move.is_none()
+            && depth >= SE_DEPTH
+            && tt_move.is_some()
+            && tt_depth >= depth.saturating_sub(3)
+            && tt_bound != ScoreTypes::UpperBound
+            && tt_value.abs() < MATE_THRESHOLD
+        {
+            // TODO: Add to tuning params
+            let margin = depth as i32 * SE_MARGIN;
+            let singular_beta = tt_value - margin;
+
+            // Search if any other move can beat margin
+            // if not, tt_move is singular
+            let reduced_depth = (depth - 1) / 2;
+
+            let mut se_ctx = context.new_child(false);
+            se_ctx.excluded_move = tt_move;
+            se_ctx.ply = ply;
+
+            // Null window search around singular beta
+            let score = self.alpha_beta(
+                board,
+                se_ctx,
+                reduced_depth,
+                singular_beta - 1,
+                singular_beta,
+            );
+
+            if score < singular_beta {
+                singular_extension = 1;
+
+                // if self.config.collect_stats {
+                //     self.stats.singular_extensions += 1;
+                // }
+            }
+            // Multi-cut:
+            //  If alternative moves are so good, that they beat current beta,
+            //  prune this node entirely
+            // else if singular_beta >= beta {
+            // return beta;
+            // }
+        }
+
+        // Move Generation
         let mut legal_moves = MoveBuffer::new();
         board.generate_legal_moves(&mut legal_moves, false);
 
@@ -562,24 +645,30 @@ impl AlphaBetaSearch {
             self.stats.main_search_nodes += 1;
         }
 
+        let mut move_index = 0;
+        let mut best_score = i32::MIN + 1;
         let mut best_move_this_node = legal_moves
             .first()
             .copied()
             .expect("Atleast one move should exist in the buffer");
-        let mut best_score = i32::MIN + 1;
 
         let mut picker = MovePicker::new(
             board,
             legal_moves.as_mut_slice(),
             &self.search_tables.killer_moves[ply],
-            Some(tt_move),
+            tt_move,
             &self.search_tables.history,
         );
 
-        let mut move_index = 0;
-
         while let Some(mv) = picker.next_best() {
-            // Use Unmake_move instead
+            // Skip singular move
+            if let Some(excluded) = context.excluded_move
+                && mv == excluded
+            {
+                continue;
+            }
+
+            // TODO: Use Unmake_move instead
             let mut board_copy = *board;
             board_copy.make_move(mv).expect("Move is already legal");
 
@@ -593,34 +682,40 @@ impl AlphaBetaSearch {
             // Starts as non-PV unless the parent is PV and this is the first move
             let mut child_context = context.new_child(child_is_pv);
 
-            let mut extension = 0;
             let move_gives_check = board_copy.is_in_check(board_copy.stm);
 
-            if is_in_check {
-                extension = 1;
-            } else {
-                // Passed pawn extension
-                if let Some(piece) = board.get_piece_at(mv.from_sq())
-                    && piece == Piece::Pawn
-                {
-                    let rank = mv.to_sq().row();
-                    let is_threatening_promo = if board.stm == Side::White {
-                        rank == 6
-                    } else {
-                        rank == 1
-                    };
+            let in_check_ext = if is_in_check { 1 } else { 0 };
 
-                    if is_threatening_promo {
-                        extension = 1
-                    }
-                }
-            }
+            let pawn_ext = if let Some(piece) = board.get_piece_at(mv.from_sq())
+                && piece == Piece::Pawn
+            {
+                let rank = mv.to_sq().row();
+                let is_threatening_promo = if board.stm == Side::White {
+                    rank == 6
+                } else {
+                    rank == 1
+                };
+                if is_threatening_promo { 1 } else { 0 }
+            } else {
+                0
+            };
+
+            let se_ext = if Some(mv) == tt_move {
+                singular_extension
+            } else {
+                0
+            };
+
+            let extension = (in_check_ext + pawn_ext + se_ext).min(1);
 
             let new_depth = depth + extension;
 
             if is_pv_node {
                 score = self.pv_search(&board_copy, child_context, new_depth, alpha, beta);
-            } else if self.should_reduce(depth, move_index, mv, is_in_check, move_gives_check) {
+            } else if self.should_reduce(depth, move_index, mv, is_in_check, move_gives_check)
+                && extension == 0
+            // Don't reduce extended moves
+            {
                 let mut reduction = self.lmr_reduction(depth, move_index);
 
                 if context.is_pv_node {
@@ -700,9 +795,19 @@ impl AlphaBetaSearch {
         }
 
         if best_score == i32::MIN + 1 {
+            // If we excluded the only legal move, we effectively have no moves to search.
+            // In a Singular Search, this means there are no alternatives.
+            // We should return alpha (fail low), because we couldn't beat the singular beta.
+            if context.excluded_move.is_some() {
+                return alpha;
+            }
             error!(
-                "Mad cooked: alpha: {alpha}, beta: {beta}, best_score: {best_score}, legal_moves searched: {move_index}",
+                "Mad cooked: alpha: {alpha}, beta: {beta}, best_score: {best_score}, legal_moves searched: {move_index}/{}",
+                legal_moves.len()
             );
+
+            // Fallback to alpha to prevent crashing, but this shouldn't happen in normal search
+            return alpha;
         }
 
         let score_type = if best_score <= original_alpha {
@@ -1072,6 +1177,7 @@ impl AlphaBetaSearch {
             let root_child_context = SearchContext {
                 ply: 1,
                 is_pv_node: true,
+                excluded_move: None,
             };
 
             let score = -self.alpha_beta(&board_copy, root_child_context, depth - 1, -beta, -alpha);

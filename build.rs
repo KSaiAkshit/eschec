@@ -11,6 +11,10 @@ fn git(args: &[&str]) -> Option<String> {
 }
 
 fn main() {
+    // Rebuild when git state changes
+    println!("cargo:rerun-if-changed=./.git/HEAD");
+    println!("cargo:rerun-if-changed=./.git/refs");
+
     let pkg_version = std::env::var("CARGO_PKG_VERSION").unwrap_or_else(|_| "0.0.0".into());
 
     let commit = git(&["rev-parse", "--short=12", "HEAD"]).unwrap_or("unknown".into());
@@ -20,8 +24,4 @@ fn main() {
     let full_version = format!("{} ({})", pkg_version, describe,);
 
     println!("cargo:rustc-env=APP_VERSION={full_version}");
-
-    // Rebuild when git state changes
-    println!("cargo:rerun-if-changed=./.git/HEAD");
-    println!("cargo:rerun-if-changed=./.git/index");
 }

@@ -18,6 +18,7 @@ pub use common::{SearchResult, SearchStats};
 use crate::{
     prelude::*,
     search::common::{SearchConfig, SearchLimits},
+    tuning::params::TunableParams,
 };
 
 /// Trait that all search implementations must implement
@@ -42,6 +43,9 @@ pub trait SearchEngine: Send {
 
     /// Get current config
     fn get_limits(&self) -> SearchLimits;
+
+    /// Get current eval params
+    fn get_params(&self) -> TunableParams;
 
     /// Clear internal state (TT, History, etc.)
     fn clear(&mut self);

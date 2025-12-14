@@ -345,7 +345,7 @@ impl TunableParams {
 
     pub fn tuned() -> Self {
         match Self::load_from_file("./config/normalized_tuned_params.toml") {
-            Ok(t) => return t,
+            Ok(t) => t,
             Err(_) => panic!("Config file not found!"),
         }
     }
