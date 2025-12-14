@@ -8,7 +8,7 @@ use crate::{prelude::*, search::common::SearchLimits, tuning::params::TunablePar
 const INITIAL_TIME: u64 = 10_000;
 
 #[derive(Parser)]
-#[command(name = env!("CARGO_PKG_NAME"), version = env!("CARGO_PKG_VERSION"), about = env!("CARGO_PKG_DESCRIPTION") )]
+#[command(name = env!("CARGO_PKG_NAME"), version = env!("APP_VERSION"), about = env!("CARGO_PKG_DESCRIPTION") )]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Option<Commands>,
