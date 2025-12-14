@@ -386,29 +386,6 @@ impl SearchResult {
     }
 }
 
-/// Holds pv_node and curr ply
-#[derive(Clone, Copy)]
-pub struct SearchContext {
-    pub ply: usize,
-    pub is_pv_node: bool,
-}
-
-impl SearchContext {
-    pub fn root() -> Self {
-        Self {
-            ply: 0,
-            is_pv_node: true,
-        }
-    }
-
-    pub fn new_child(&self, is_pv_child: bool) -> Self {
-        SearchContext {
-            ply: self.ply + 1,
-            is_pv_node: is_pv_child,
-        }
-    }
-}
-
 /// Helper functions for score adjustment
 /// Adjusts Score to encode mate distance in the score
 /// Takes ply-independent score and converts it to also hold ply info

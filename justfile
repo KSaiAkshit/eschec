@@ -15,6 +15,7 @@ perf_reps := "5"
 perf_stat_events := "cycles,instructions,branches,branch-misses,cache-references,cache-misses"
 OUT_DIR := "/tmp/out_dir"
 BIN_NAME := "eschec"
+sf14_path := env('SF_14_PATH')
 params_file := "./config/normalized_tuned_params.toml"
 export RUST_BACKTRACE := "full"
 
@@ -123,18 +124,46 @@ sprt p1 p2 rounds='100' concurrency='4' book='8moves_v3.pgn' tc='30+0.3':
     @echo "-------------------------------------"
 
     @echo "{{ GREEN }}Starting SPRT test...{{ NORMAL }}"
-    @fastchess \
+    fastchess \
         -engine cmd=./gauntlet/engines/{{ p1 }} name={{ p1 }} \
         -engine cmd=./gauntlet/engines/{{ p2 }} name={{ p2 }} \
         -each tc={{ tc }} \
         -rounds {{ rounds }} \
         -concurrency {{ concurrency }} \
         -openings file={{ book_dir }}{{ book }} format={{ extension(book_dir + book) }} order=random \
-        -sprt elo0=0 elo1=300 alpha=0.05 beta=0.05 \
+        -sprt elo0=0 elo1=20 alpha=0.05 beta=0.05 \
         -repeat -recover \
         -pgnout {{ pgn_output_dir }}{{ p1 }}_vs_{{ p2 }}_sprt.txt \
         -log file={{ engine_logs_dir }}sprt_log.txt level=info \
         | tee {{ pgn_output_dir }}{{ p1 }}_vs_{{ p2 }}_sprt_log.txt
+
+[doc("Run an Elo Estimate test between engine and sf_14.")]
+[positional-arguments]
+elo_est p1 rounds='100' book='balanced_book.epd' tc='15:00+0.0':
+    @# Print the configuration for this run
+    @echo "Starting gauntlet:"
+    @echo "  - Engine1: {{ BLUE }}{{ p1 }}{{ NORMAL }}"
+    @echo "  - Engine2: {{ BLUE }} Stockfish_14 {{ NORMAL }}"
+    @echo "  - Rounds: {{ GREEN }}{{ rounds }}x2{{ NORMAL }}"
+    @echo "  - Book: {{ MAGENTA }}{{ book }}{{ NORMAL }}"
+    @echo "  - Time Control: {{ CYAN }}{{ tc }}{{ NORMAL }}"
+    @echo "  - Output: {{ YELLOW }}{{ pgn_output_dir }}{{ p1 }}_vs_sf_12_eloest.txt{{ NORMAL }}"
+    @echo "-------------------------------------"
+
+    @echo "{{ GREEN }}Starting SPRT test...{{ NORMAL }}"
+    fastchess \
+        -engine cmd=./gauntlet/engines/{{ p1 }} name={{ p1 }} \
+        -engine cmd={{ sf14_path }} name=sf12 \
+        -each tc={{ tc }} option.Hash=256 option.Threads=1 \
+        option."Debug Log File"="false" \
+        -rounds {{ rounds }} \
+        -concurrency 8 \
+        -use-affinity \
+        -openings file={{ book_dir }}{{ book }} format={{ extension(book_dir + book) }} order=random plies=12 \
+        -repeat -recover \
+        -pgnout {{ pgn_output_dir }}{{ p1 }}_vs_sf12.pgn \
+        -log file={{ engine_logs_dir }}sprt_log.txt level=info \
+        | tee {{ pgn_output_dir }}{{ p1 }}_vs_sf_14_eloest_log.txt
 
 [doc("Run a full validation test at a fixed depth")]
 [group("eval")]

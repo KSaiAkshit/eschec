@@ -116,7 +116,7 @@ pub fn play(params: TunableParams) -> miette::Result<()> {
                 }
             }
             UciCommand::SetOption { name, value } => {
-                if let Err(e) = cmd_setoption(&name, &value) {
+                if let Err(e) = cmd_setoption(&mut state, &name, &value) {
                     warn!("Error setting option: {e:?}");
                 }
             }
@@ -254,12 +254,31 @@ fn cmd_stop(state: &mut UciState) {
     }
 }
 
-fn cmd_setoption(name: &str, value: &str) -> miette::Result<()> {
+fn cmd_setoption(state: &mut UciState, name: &str, value: &str) -> miette::Result<()> {
     match name {
         "LogFile" => {
             let enable = value.to_lowercase() == "true";
             toggle_file_logging(enable)?;
             info!("Set file logging to {enable}");
+        }
+        "Hash" => {
+            let size_mb = value.parse::<usize>().into_diagnostic()?;
+            let mut conf;
+            let params;
+            let lim;
+            {
+                let search = state.search.lock().unwrap();
+                conf = search.get_config();
+                params = search.get_params();
+                conf.hash_size_mb = size_mb;
+                lim = search.get_limits();
+            }
+            let s = AlphaBetaSearch::with_eval(params)
+                .with_config(conf)?
+                .with_limits(lim)
+                .init(state.search_running.clone());
+            state.search = Arc::new(Mutex::new(s));
+            info!("Set new hash size to {size_mb}");
         }
         _ => {
             info!("Unknown option: {name} = {value}");
@@ -276,6 +295,8 @@ fn cmd_uci() {
     println!("id name {}", env!("CARGO_PKG_NAME"));
     println!("id author {}", env!("CARGO_PKG_AUTHORS"));
     println!();
-    println!("option name LogFile type string default");
+    println!("option name Debug Log File type string default");
+    println!("option name Hash type spin default 16 min 16 max 512");
+    println!("option name Threads type spin default 1 min 1 max 1");
     println!("uciok");
 }
