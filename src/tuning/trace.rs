@@ -16,28 +16,29 @@ pub const PAWN_SHIELD_FULL: usize = 7;
 pub const PAWN_SHIELD_PARTIAL: usize = 8;
 pub const OPEN_FILE_PENALTY: usize = 9;
 pub const SEMI_OPEN_FILE_PENALTY: usize = 10;
+pub const POTENTIAL_OPEN_FILE_PENALTY: usize = 11;
 
 // Pawn Structure
-pub const ISOLATED_PENALTY: usize = 11;
-pub const DOUBLED_PENALTY: usize = 12;
-pub const BACKWARD_PENALTY: usize = 13;
-pub const CONNECTED_BONUS: usize = 14;
+pub const ISOLATED_PENALTY: usize = 12;
+pub const DOUBLED_PENALTY: usize = 13;
+pub const BACKWARD_PENALTY: usize = 14;
+pub const CONNECTED_BONUS: usize = 15;
 
 // Passed Pawns (8 Ranks)
-pub const PASSED_PAWN_START: usize = 15;
-// Indices 15..22 are passed pawns
+pub const PASSED_PAWN_START: usize = 16;
+// Indices 16..23 are passed pawns
 
 // Position Bonuses
-pub const ROOK_OPEN_FILE: usize = 23;
-pub const ROOK_SEMI_FILE: usize = 24;
-pub const KNIGHT_OUTPOST: usize = 25;
+pub const ROOK_OPEN_FILE: usize = 24;
+pub const ROOK_SEMI_FILE: usize = 25;
+pub const KNIGHT_OUTPOST: usize = 26;
 
 // Tempo Bonus
-pub const TEMPO_BONUS: usize = 26;
+pub const TEMPO_BONUS: usize = 27;
 
 // PSTs (384 params)
 // We put PSTs before mobility in the 'features' array to keep i8s together
-pub const PST_START: usize = 27;
+pub const PST_START: usize = 28;
 
 // Mobility (5 params)
 // These are stored in a separate i16 array because counts can exceed 127
@@ -84,6 +85,7 @@ impl EvalTrace {
             PAWN_SHIELD_PARTIAL => params::PAWN_SHIELD_PARTIAL,
             OPEN_FILE_PENALTY => params::OPEN_FILE_PENALTY,
             SEMI_OPEN_FILE_PENALTY => params::SEMI_OPEN_FILE_PENALTY,
+            POTENTIAL_OPEN_FILE_PENALTY => params::POTENTIAL_OPEN_FILE_PENALTY,
 
             ISOLATED_PENALTY => params::ISOLATED_PENALTY,
             DOUBLED_PENALTY => params::DOUBLED_PENALTY,

@@ -33,26 +33,27 @@ pub const PAWN_SHIELD_FULL: usize = 7;
 pub const PAWN_SHIELD_PARTIAL: usize = 8;
 pub const OPEN_FILE_PENALTY: usize = 9;
 pub const SEMI_OPEN_FILE_PENALTY: usize = 10;
+pub const POTENTIAL_OPEN_FILE_PENALTY: usize = 11;
 
 // Pawn Structure
-pub const ISOLATED_PENALTY: usize = 11;
-pub const DOUBLED_PENALTY: usize = 12;
-pub const BACKWARD_PENALTY: usize = 13;
-pub const CONNECTED_BONUS: usize = 14;
+pub const ISOLATED_PENALTY: usize = 12;
+pub const DOUBLED_PENALTY: usize = 13;
+pub const BACKWARD_PENALTY: usize = 14;
+pub const CONNECTED_BONUS: usize = 15;
 
 // Passed Pawns (8 ranks)
-pub const PASSED_PAWN_START: usize = 15; // 15..22
+pub const PASSED_PAWN_START: usize = 16; // 16..23
 
 // Position Bonuses
-pub const ROOK_OPEN_FILE_BONUS: usize = 23;
-pub const ROOK_SEMI_FILE_BONUS: usize = 24;
-pub const KNIGHT_OUTPOST_BONUS: usize = 25;
+pub const ROOK_OPEN_FILE_BONUS: usize = 24;
+pub const ROOK_SEMI_FILE_BONUS: usize = 25;
+pub const KNIGHT_OUTPOST_BONUS: usize = 26;
 
 // Tempo Bonus
-pub const TEMPO_BONUS: usize = 26;
+pub const TEMPO_BONUS: usize = 27;
 
 // PSTs (6 pieces * 64 squares = 384 params)
-pub const PST_START: usize = 27;
+pub const PST_START: usize = 28;
 pub const NUM_PST_PARAMS: usize = NUM_PIECES * NUM_SQUARES;
 
 // Mobility Offsets
@@ -82,6 +83,7 @@ pub struct TunableParams {
     pub pawn_shield_partial: Score,
     pub open_file_penalty: Score,
     pub semi_open_file_penalty: Score,
+    pub potential_open_file_penalty: Score,
 
     // Pawn Structure
     pub isolated_penalty: Score,
@@ -289,6 +291,7 @@ impl Default for TunableParams {
             pawn_shield_partial: Score::new(10, 0),
             open_file_penalty: Score::new(-20, 0),
             semi_open_file_penalty: Score::new(-10, 0),
+            potential_open_file_penalty: Score::new(-12, 0),
             isolated_penalty: Score::new(-10, -20),
             doubled_penalty: Score::new(-10, -20),
             backward_penalty: Score::new(-5, -10),
@@ -326,6 +329,7 @@ impl TunableParams {
             pawn_shield_partial: Score::default(),
             open_file_penalty: Score::default(),
             semi_open_file_penalty: Score::default(),
+            potential_open_file_penalty: Score::default(),
             isolated_penalty: Score::default(),
             doubled_penalty: Score::default(),
             backward_penalty: Score::default(),
@@ -368,6 +372,7 @@ impl TunableParams {
             PAWN_SHIELD_PARTIAL => self.pawn_shield_partial,
             OPEN_FILE_PENALTY => self.open_file_penalty,
             SEMI_OPEN_FILE_PENALTY => self.semi_open_file_penalty,
+            POTENTIAL_OPEN_FILE_PENALTY => self.potential_open_file_penalty,
             ISOLATED_PENALTY => self.isolated_penalty,
             DOUBLED_PENALTY => self.doubled_penalty,
             BACKWARD_PENALTY => self.backward_penalty,
@@ -415,6 +420,7 @@ impl TunableParams {
         push_score(self.pawn_shield_partial);
         push_score(self.open_file_penalty);
         push_score(self.semi_open_file_penalty);
+        push_score(self.potential_open_file_penalty);
         push_score(self.isolated_penalty);
         push_score(self.doubled_penalty);
         push_score(self.backward_penalty);
@@ -473,6 +479,7 @@ impl TunableParams {
         params.pawn_shield_partial = read_score();
         params.open_file_penalty = read_score();
         params.semi_open_file_penalty = read_score();
+        params.potential_open_file_penalty = read_score();
         params.isolated_penalty = read_score();
         params.doubled_penalty = read_score();
         params.backward_penalty = read_score();

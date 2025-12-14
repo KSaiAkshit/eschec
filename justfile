@@ -87,7 +87,7 @@ spsa sts='./test_suites/sts/' threads='0' time_ms='1000' iter='200':
 
 [doc("Run a gauntlet match against another engine using cutechess-cli")]
 [positional-arguments]
-gauntlet opponent='gnuchess' rounds='40' concurrency='4' book='8moves_v3.pgn' tc='30+0.3': update
+gauntlet opponent='gnuchess' rounds='40' concurrency='4' book='8moves_v3.pgn' tc='30+0.3':
     @# Print the configuration for this run
     @echo "Starting gauntlet:"
     @echo "  - Opponent: {{ BLUE }}{{ opponent }}{{ NORMAL }}"
@@ -127,11 +127,11 @@ sprt p1 p2 rounds='100' concurrency='4' book='8moves_v3.pgn' tc='30+0.3':
     fastchess \
         -engine cmd=./gauntlet/engines/{{ p1 }} name={{ p1 }} \
         -engine cmd=./gauntlet/engines/{{ p2 }} name={{ p2 }} \
-        -each tc={{ tc }} \
+        -each tc={{ tc }} option."Debug Log File"="false" option.Hash=256 \
         -rounds {{ rounds }} \
         -concurrency {{ concurrency }} \
         -openings file={{ book_dir }}{{ book }} format={{ extension(book_dir + book) }} order=random \
-        -sprt elo0=0 elo1=20 alpha=0.05 beta=0.05 \
+        -sprt elo0=0 elo1=10 alpha=0.05 beta=0.05 \
         -repeat -recover \
         -pgnout {{ pgn_output_dir }}{{ p1 }}_vs_{{ p2 }}_sprt.txt \
         -log file={{ engine_logs_dir }}sprt_log.txt level=info \
@@ -143,7 +143,7 @@ elo_est p1 rounds='100' book='balanced_book.epd' tc='15:00+0.0':
     @# Print the configuration for this run
     @echo "Starting gauntlet:"
     @echo "  - Engine1: {{ BLUE }}{{ p1 }}{{ NORMAL }}"
-    @echo "  - Engine2: {{ BLUE }} Stockfish_14 {{ NORMAL }}"
+    @echo "  - Engine2: {{ BLUE }} Stockfish_12 {{ NORMAL }}"
     @echo "  - Rounds: {{ GREEN }}{{ rounds }}x2{{ NORMAL }}"
     @echo "  - Book: {{ MAGENTA }}{{ book }}{{ NORMAL }}"
     @echo "  - Time Control: {{ CYAN }}{{ tc }}{{ NORMAL }}"

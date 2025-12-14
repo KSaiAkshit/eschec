@@ -42,6 +42,10 @@ eg = -14
 mg = -41
 eg = 26
 
+[potential_open_file_penalty]
+mg = -12
+eg = 0
+
 [isolated_penalty]
 mg = -13
 eg = -21

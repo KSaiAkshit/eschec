@@ -603,7 +603,7 @@ impl BoardState {
     }
 
     #[inline(always)]
-    pub const fn get_orhto_sliders_bb(&self, side: Side) -> BitBoard {
+    pub const fn get_ortho_sliders_bb(&self, side: Side) -> BitBoard {
         self.all_pieces[side.index()][Piece::rook()]
             .or(self.all_pieces[side.index()][Piece::queen()])
     }
@@ -976,6 +976,14 @@ impl Square {
     #[inline(always)]
     pub const fn index(&self) -> usize {
         self.0
+    }
+
+    pub(crate) fn distance(a: usize, b: usize) -> i32 {
+        let af = (a % 8) as i32;
+        let ar = (a / 8) as i32;
+        let bf = (b % 8) as i32;
+        let br = (b / 8) as i32;
+        (af - bf).abs().max((ar - br).abs())
     }
 }
 

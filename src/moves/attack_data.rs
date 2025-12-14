@@ -53,7 +53,7 @@ pub fn calculate_attack_data(board: &Board, side: Side) -> AttackData {
     let friendly_pieces = board.positions.get_side_bb(side);
 
     // Sliding pieces
-    let opp_rooks_queens = board.positions.get_orhto_sliders_bb(opponent);
+    let opp_rooks_queens = board.positions.get_ortho_sliders_bb(opponent);
     let opp_bishops_queens = board.positions.get_diag_sliders_bb(opponent);
 
     for &dir in &Direction::ALL {
@@ -160,7 +160,7 @@ pub fn calculate_attack_data(board: &Board, side: Side) -> AttackData {
             MOVE_TABLES.get_bishop_attacks_bb(diag_sq, all_pieces_no_king);
     }
     // Rook + Queen
-    for ortho_sq in board.positions.get_orhto_sliders_bb(opponent).iter_bits() {
+    for ortho_sq in board.positions.get_ortho_sliders_bb(opponent).iter_bits() {
         attack_data.opp_attack_map |= MOVE_TABLES.get_rook_attacks_bb(ortho_sq, all_pieces_no_king);
     }
 

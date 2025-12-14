@@ -82,7 +82,7 @@ pub fn get_attackers_to(board: &Board, square: Square, side: Side, occupied: Bit
         & occupied;
 
     let bishops_queens = board.positions.get_diag_sliders_bb(side);
-    let rooks_queens = board.positions.get_orhto_sliders_bb(side);
+    let rooks_queens = board.positions.get_ortho_sliders_bb(side);
 
     let bishop_attacks = MOVE_TABLES.get_bishop_attacks_generic(sq_idx, occupied);
     attackers |= bishop_attacks & bishops_queens & occupied;
@@ -431,7 +431,7 @@ fn gen_legal_pawn_moves<T: MoveGenType>(
                     (all_pieces & !BitBoard(1 << from_sq_u) & !BitBoard(1 << captured_pawn_sq))
                         | BitBoard(1 << ep_sq.index());
                 let king_sq = attack_data.king_sq;
-                let rooks_queens = board.positions.get_orhto_sliders_bb(side.flip());
+                let rooks_queens = board.positions.get_ortho_sliders_bb(side.flip());
                 let bishops_queens = board.positions.get_diag_sliders_bb(side.flip());
 
                 let rook_attacks =
@@ -494,7 +494,7 @@ fn is_move_a_check(board: &Board, mv: Move, opponent_king_sq: usize) -> bool {
     if king_and_from_ray.contains_square(from) {
         let occupied = board.positions.get_occupied_bb() & !BitBoard(1 << from); // Remove 'from' sq
 
-        let rooks_queens = board.positions.get_orhto_sliders_bb(board.stm);
+        let rooks_queens = board.positions.get_ortho_sliders_bb(board.stm);
         let bishops_queens = board.positions.get_diag_sliders_bb(board.stm);
 
         let magic_rook = MOVE_TABLES.get_rook_attacks_bb(opponent_king_sq, occupied);
@@ -518,7 +518,7 @@ fn is_move_a_check(board: &Board, mv: Move, opponent_king_sq: usize) -> bool {
             & !BitBoard(1 << captured_pawn_sq))
             | BitBoard(1 << to);
 
-        let rooks_queens = board.positions.get_orhto_sliders_bb(board.stm);
+        let rooks_queens = board.positions.get_ortho_sliders_bb(board.stm);
         let bishops_queens = board.positions.get_diag_sliders_bb(board.stm);
 
         let magic_rook = MOVE_TABLES.get_rook_attacks_bb(opponent_king_sq, occupied);
