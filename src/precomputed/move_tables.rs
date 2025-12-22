@@ -21,6 +21,9 @@ pub struct MoveTables {
     // For sliding pieces, pre-compute ray attacks
     // These represent attacks in each direction, assuming empty board
     pub dir_rays: [[BitBoard; 64]; 8],
+
+    // Rays between two squares (excluding endpoints)
+    pub rays_between: [[BitBoard; 64]; 64],
 }
 
 pub static MOVE_TABLES: MoveTables = MoveTables::new();
@@ -45,6 +48,7 @@ impl MoveTables {
             rook_magics: [MagicEntry::EMPTY_MAGIC; 64],
             bishop_magics: [MagicEntry::EMPTY_MAGIC; 64],
             dir_rays: [[BitBoard(0); 64]; 8],
+            rays_between: [[BitBoard(0); 64]; 64],
         };
 
         tables.init_knight_moves();
@@ -52,6 +56,7 @@ impl MoveTables {
         tables.init_pawn_tables();
         tables.init_magics();
         tables.init_ray_attacks();
+        tables.init_rays_between();
 
         tables
     }
@@ -116,6 +121,47 @@ impl MoveTables {
             }
             self.king_moves[index] = king_moves;
             index += 1;
+        }
+    }
+
+    const fn init_rays_between(&mut self) {
+        let mut from = 0;
+        while from < 64 {
+            let mut to = 0;
+            while to < 64 {
+                if from == to {
+                    self.rays_between[from][to] = BitBoard(0);
+                    to += 1;
+                    continue;
+                }
+
+                let dir = Direction::get_dir(from, to);
+
+                // If dir is 0, squares are not aligned
+                if dir.value() != 0 {
+                    let mut ray = BitBoard(0);
+                    let (dr, df) = dir.deltas();
+
+                    let mut r = (from / 8) as i8 + dr;
+                    let mut f = (from % 8) as i8 + df;
+
+                    let target_r = (to / 8) as i8;
+                    let target_f = (to % 8) as i8;
+
+                    // Walk from 'from' to 'to' Stop before hitting 'to'
+                    while r != target_r || f != target_f {
+                        let idx = (r as usize) * 8 + (f as usize);
+                        ray.set(idx);
+                        r += dr;
+                        f += df;
+                    }
+                    self.rays_between[from][to] = ray;
+                } else {
+                    self.rays_between[from][to] = BitBoard(0);
+                }
+                to += 1;
+            }
+            from += 1;
         }
     }
 
@@ -408,6 +454,12 @@ impl MoveTables {
             return BitBoard(0);
         }
         self.dir_rays[dir.index()][from]
+    }
+
+    /// Returns a BitBoard of squares strictly between 'from' and 'to'.
+    /// Returns empty if squares are not on the same rank, file or diagonal
+    pub const fn get_ray_between(&self, from: usize, to: usize) -> BitBoard {
+        self.rays_between[from][to]
     }
 
     // "generic" functions that do not care about ally/enemy

@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use std::fmt::Debug;
 
-#[derive(Clone, Default)]
+#[derive(Clone, Default, PartialEq)]
 pub struct AttackData {
     /// If one piece attacks king
     pub in_check: bool,
@@ -15,8 +15,6 @@ pub struct AttackData {
     pub check_ray_mask: BitBoard,
     /// Bits set for the checking pieces themselves.
     pub checker_mask: BitBoard,
-    /// All squares attacked by the opponent (for king move legality)
-    pub opp_attack_map: BitBoard,
     /// The square of the friendly king
     pub king_sq: usize,
 }
@@ -29,7 +27,6 @@ impl Debug for AttackData {
             .field("pin_ray_mask", &self.pin_ray_mask.print_bitboard())
             .field("check_ray_mask", &self.check_ray_mask.print_bitboard())
             .field("checker_mask", &self.checker_mask.print_bitboard())
-            .field("opp_attack_map", &self.opp_attack_map.print_bitboard())
             .field("king_sq", &self.king_sq)
             .finish()
     }
@@ -48,121 +45,98 @@ pub fn calculate_attack_data(board: &Board, side: Side) -> AttackData {
     attack_data.king_sq = king_sq;
 
     let opponent = side.flip();
-    let all_pieces =
-        board.positions.get_side_bb(Side::White) | board.positions.get_side_bb(Side::Black);
+    let occupied = board.positions.get_occupied_bb();
     let friendly_pieces = board.positions.get_side_bb(side);
+    let _enemy_pieces = board.positions.get_side_bb(opponent);
 
-    // Sliding pieces
+    // Enemy Sliding pieces
     let opp_rooks_queens = board.positions.get_ortho_sliders_bb(opponent);
     let opp_bishops_queens = board.positions.get_diag_sliders_bb(opponent);
 
-    for &dir in &Direction::ALL {
-        let is_forward_ray = dir.value() > 0;
-        let ray = MOVE_TABLES.get_ray(king_sq, dir);
-        let blockers_on_ray = ray & all_pieces;
+    let ortho_attacks = MOVE_TABLES.get_rook_attacks_bb(king_sq, occupied);
+    let diag_attacks = MOVE_TABLES.get_bishop_attacks_bb(king_sq, occupied);
 
-        if blockers_on_ray.any() {
-            let first_blocker_sq =
-                blockers_on_ray.get_closest_bit(is_forward_ray).unwrap() as usize;
+    let ortho_checkers = ortho_attacks & opp_rooks_queens;
+    let diag_checkers = diag_attacks & opp_bishops_queens;
+    let mut checkers = ortho_checkers | diag_checkers;
 
-            // If the first blocker is a friendly piece, it might be pinned.
-            if friendly_pieces.contains_square(first_blocker_sq) {
-                let blockers_behind_friendly = blockers_on_ray & !BitBoard(1 << first_blocker_sq);
-                if let Some(potential_pinner_sq) =
-                    blockers_behind_friendly.get_closest_bit(is_forward_ray)
-                {
-                    let potential_pinner_sq = potential_pinner_sq as usize;
-                    let pinner_bb = BitBoard(1 << potential_pinner_sq);
-                    let is_ortho_dir = matches!(
-                        dir,
-                        Direction::NORTH | Direction::SOUTH | Direction::EAST | Direction::WEST
-                    );
-
-                    if (is_ortho_dir && (pinner_bb & opp_rooks_queens).any())
-                        || (!is_ortho_dir && (pinner_bb & opp_bishops_queens).any())
-                    {
-                        // It's a valid pin. The friendly piece at first_blocker_sq is pinned.
-                        attack_data.pin_ray_mask.set(first_blocker_sq);
-                    }
-                }
-            }
-            // If the first blocker is an opponent piece, it's a check.
-            else {
-                let checker_bb = BitBoard(1 << first_blocker_sq);
-                let is_ortho_dir = matches!(
-                    dir,
-                    Direction::NORTH | Direction::SOUTH | Direction::EAST | Direction::WEST
-                );
-
-                if (is_ortho_dir && (checker_bb & opp_rooks_queens).any())
-                    || (!is_ortho_dir && (checker_bb & opp_bishops_queens).any())
-                {
-                    if attack_data.in_check {
-                        attack_data.double_check = true;
-                    }
-                    attack_data.in_check = true;
-                    attack_data.checker_mask |= checker_bb;
-                    // The check ray is the line between the king and the checker, including the checker's square.
-                    let check_ray = MOVE_TABLES.get_ray(king_sq, dir)
-                        & MOVE_TABLES.get_ray(first_blocker_sq, -dir);
-                    attack_data.check_ray_mask &= check_ray | checker_bb;
-                }
-            }
-        }
-    }
-
-    // Knights, Pawn, King attacks
     let opp_knights = board.positions.get_piece_bb(opponent, Piece::Knight);
-    let opp_pawns = board.positions.get_piece_bb(opponent, Piece::Pawn);
-    let opp_king = board.positions.get_piece_bb(opponent, Piece::King);
-
-    // Knight checks
     let knight_attacks = MOVE_TABLES.knight_moves[king_sq];
-    let knight_checkers = knight_attacks & *opp_knights;
-    if knight_checkers.any() {
-        if attack_data.in_check {
-            attack_data.double_check = true;
-        }
-        attack_data.in_check = true;
-        attack_data.checker_mask |= knight_checkers;
-        // for non-sliding checks, the only way to block is to capture the checker
-        attack_data.check_ray_mask &= knight_checkers;
-    }
+    checkers |= knight_attacks & *opp_knights;
 
-    // Pawn checks
+    let opp_pawns = board.positions.get_piece_bb(opponent, Piece::Pawn);
     let pawn_attacks = MOVE_TABLES.get_pawn_attacks(king_sq, side);
-    let pawn_checkers = pawn_attacks & *opp_pawns;
-    if pawn_checkers.any() {
-        if attack_data.in_check {
-            attack_data.double_check = true;
-        }
+    checkers |= pawn_attacks & *opp_pawns;
+
+    let checker_count = checkers.pop_count();
+    if checker_count > 0 {
         attack_data.in_check = true;
-        attack_data.checker_mask |= pawn_checkers;
-        attack_data.check_ray_mask &= pawn_checkers;
+        attack_data.checker_mask = checkers;
+
+        if checker_count > 1 {
+            attack_data.double_check = true;
+            attack_data.check_ray_mask = BitBoard(0);
+        } else {
+            let checker_sq = checkers.lsb().unwrap() as usize;
+            let ray = MOVE_TABLES.get_ray_between(king_sq, checker_sq);
+            attack_data.check_ray_mask = ray | checkers;
+        }
     }
 
-    // Opponent attack map
-    let all_pieces_no_king = all_pieces & !board.positions.get_piece_bb(side, Piece::King);
+    let xray_occupancy = occupied ^ *friendly_pieces;
 
-    if let Some(king_sq) = opp_king.lsb() {
-        attack_data.opp_attack_map |= MOVE_TABLES.king_moves[king_sq as usize];
-    }
+    let xray_ortho = MOVE_TABLES.get_rook_attacks_bb(king_sq, xray_occupancy);
+    let xray_diag = MOVE_TABLES.get_bishop_attacks_bb(king_sq, xray_occupancy);
 
-    for pawn_sq in opp_pawns.iter_bits() {
-        attack_data.opp_attack_map |= MOVE_TABLES.get_pawn_attacks(pawn_sq, opponent);
-    }
-    for knight_sq in opp_knights.iter_bits() {
-        attack_data.opp_attack_map |= MOVE_TABLES.knight_moves[knight_sq];
-    }
-    // Bishop + Queen
-    for diag_sq in board.positions.get_diag_sliders_bb(opponent).iter_bits() {
-        attack_data.opp_attack_map |=
-            MOVE_TABLES.get_bishop_attacks_bb(diag_sq, all_pieces_no_king);
-    }
-    // Rook + Queen
-    for ortho_sq in board.positions.get_ortho_sliders_bb(opponent).iter_bits() {
-        attack_data.opp_attack_map |= MOVE_TABLES.get_rook_attacks_bb(ortho_sq, all_pieces_no_king);
+    let pinners = (xray_ortho & opp_rooks_queens) | (xray_diag & opp_bishops_queens);
+
+    for pinner_sq in pinners.iter_bits() {
+        let ray = MOVE_TABLES.get_ray_between(king_sq, pinner_sq);
+
+        let pinned_on_ray = ray & *friendly_pieces;
+
+        if pinned_on_ray.pop_count() == 1 {
+            attack_data.pin_ray_mask |= ray | BitBoard(1 << pinner_sq);
+        }
     }
 
     attack_data
+}
+
+/// Returns BitBoard with all pieces attacking the king
+pub fn calculate_opp_attack_map(board: &Board, side: Side) -> BitBoard {
+    let opponent = side.flip();
+    let occupied = board.positions.get_occupied_bb();
+
+    let king_sq = board
+        .positions
+        .get_piece_bb(side, Piece::King)
+        .lsb()
+        .unwrap_or(0) as usize;
+
+    let occupancy_no_king = occupied ^ BitBoard(1 << king_sq);
+
+    let mut attack_map = BitBoard(0);
+
+    let opp_rook_queens = board.positions.get_ortho_sliders_bb(opponent);
+    for sq in opp_rook_queens.iter_bits() {
+        attack_map |= MOVE_TABLES.get_rook_attacks_bb(sq, occupancy_no_king);
+    }
+
+    let opp_bishop_queens = board.positions.get_diag_sliders_bb(opponent);
+    for sq in opp_bishop_queens.iter_bits() {
+        attack_map |= MOVE_TABLES.get_bishop_attacks_bb(sq, occupancy_no_king);
+    }
+    let opp_knights = board.positions.get_piece_bb(opponent, Piece::Knight);
+    for sq in opp_knights.iter_bits() {
+        attack_map |= MOVE_TABLES.knight_moves[sq];
+    }
+    let opp_pawns = board.positions.get_piece_bb(opponent, Piece::Pawn);
+    for sq in opp_pawns.iter_bits() {
+        attack_map |= MOVE_TABLES.get_pawn_attacks(sq, opponent)
+    }
+    if let Some(opp_king_sq) = board.positions.get_piece_bb(opponent, Piece::King).lsb() {
+        attack_map |= MOVE_TABLES.king_moves[opp_king_sq as usize];
+    }
+    attack_map
 }

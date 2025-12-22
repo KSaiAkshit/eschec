@@ -1,6 +1,6 @@
 use std::{
     fmt::{Display, Write},
-    ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, Not},
+    ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, Not},
     str::FromStr,
 };
 
@@ -50,6 +50,14 @@ impl Not for BitBoard {
     #[inline(always)]
     fn not(self) -> Self::Output {
         Self(!self.0)
+    }
+}
+
+impl BitXor for BitBoard {
+    type Output = BitBoard;
+
+    fn bitxor(self, rhs: Self) -> Self::Output {
+        BitBoard(self.0 ^ rhs.0)
     }
 }
 

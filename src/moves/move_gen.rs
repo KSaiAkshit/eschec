@@ -13,7 +13,7 @@
 //!   the king in check. This is what the engine's search and game logic uses. This
 //!   generator uses pre-calculated `AttackData` to efficiently determine legality.
 use crate::{
-    moves::attack_data::{AttackData, calculate_attack_data},
+    moves::attack_data::{self, AttackData, calculate_attack_data},
     prelude::*,
 };
 
@@ -105,9 +105,11 @@ fn gen_legal_king_moves<T: MoveGenType>(
 
     let mut legal_targets = king_moves & !friendly_pieces;
 
+    let opp_attack_map = attack_data::calculate_opp_attack_map(board, side);
+
     while legal_targets.any() {
         let to_sq = legal_targets.pop_lsb();
-        if !attack_data.opp_attack_map.contains_square(to_sq as usize) {
+        if !opp_attack_map.contains_square(to_sq as usize) {
             let is_capture = board.positions.is_occupied(to_sq as usize);
 
             // OPTIM: if only captures are needed, and this isn;t one,
@@ -139,8 +141,8 @@ fn gen_legal_king_moves<T: MoveGenType>(
                     .allows(CastlingRights(CastlingRights::WHITE_00))
                     && !all_pieces.contains_square(5)
                     && !all_pieces.contains_square(6)
-                    && !attack_data.opp_attack_map.contains_square(5)
-                    && !attack_data.opp_attack_map.contains_square(6)
+                    && !opp_attack_map.contains_square(5)
+                    && !opp_attack_map.contains_square(6)
                 {
                     moves.push(Move::new(4, 6, Move::KING_CASTLE));
                 }
@@ -151,8 +153,8 @@ fn gen_legal_king_moves<T: MoveGenType>(
                     && !all_pieces.contains_square(1)
                     && !all_pieces.contains_square(2)
                     && !all_pieces.contains_square(3)
-                    && !attack_data.opp_attack_map.contains_square(2)
-                    && !attack_data.opp_attack_map.contains_square(3)
+                    && !opp_attack_map.contains_square(2)
+                    && !opp_attack_map.contains_square(3)
                 {
                     moves.push(Move::new(4, 2, Move::QUEEN_CASTLE));
                 }
@@ -163,8 +165,8 @@ fn gen_legal_king_moves<T: MoveGenType>(
                     .allows(CastlingRights(CastlingRights::BLACK_00))
                     && !all_pieces.contains_square(61)
                     && !all_pieces.contains_square(62)
-                    && !attack_data.opp_attack_map.contains_square(61)
-                    && !attack_data.opp_attack_map.contains_square(62)
+                    && !opp_attack_map.contains_square(61)
+                    && !opp_attack_map.contains_square(62)
                 {
                     moves.push(Move::new(60, 62, Move::KING_CASTLE));
                 }
@@ -175,8 +177,8 @@ fn gen_legal_king_moves<T: MoveGenType>(
                     && !all_pieces.contains_square(57)
                     && !all_pieces.contains_square(58)
                     && !all_pieces.contains_square(59)
-                    && !attack_data.opp_attack_map.contains_square(58)
-                    && !attack_data.opp_attack_map.contains_square(59)
+                    && !opp_attack_map.contains_square(58)
+                    && !opp_attack_map.contains_square(59)
                 {
                     moves.push(Move::new(60, 58, Move::QUEEN_CASTLE));
                 }
