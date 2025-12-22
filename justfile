@@ -10,12 +10,12 @@ engine_logs_dir := '/tmp/eschec_logs/'
 test_suite_dir := './test_suites/sts'
 test_suite_blitz_file := './test_suites/sts_blitz.epd'
 epd_test_depth := "8"
-repo_url := env('REPO_URL')
+repo_url := env('REPO_URL', "Unknow")
 perf_reps := "5"
 perf_stat_events := "cycles,instructions,branches,branch-misses,cache-references,cache-misses"
 OUT_DIR := "/tmp/out_dir"
 BIN_NAME := "eschec"
-sf14_path := env('SF_14_PATH')
+sf14_path := env('SF_14_PATH', "Unknown")
 params_file := "./config/normalized_tuned_params.toml"
 export RUST_BACKTRACE := "full"
 

@@ -134,6 +134,27 @@ pub fn debug_perft_vs_stockfish(
     Ok(())
 }
 
+pub fn perft_recursive(board: &mut Board, depth: u8) -> u64 {
+    if depth == 1 {
+        let mut moves = MoveBuffer::new();
+        board.generate_legal_moves(&mut moves, false);
+        return moves.len() as u64;
+    }
+
+    let mut moves = MoveBuffer::new();
+    board.generate_legal_moves(&mut moves, false);
+
+    let mut nodes = 0;
+
+    for m in moves {
+        if let Ok(undo_info) = board.make_move(m) {
+            nodes += perft_recursive(board, depth - 1);
+            board.unmake_move(&undo_info).expect("Unmake failed");
+        }
+    }
+    nodes
+}
+
 pub fn perft(board: &mut Board, depth: u8, divide: bool) -> PerftResult {
     let start_time = Instant::now();
 
@@ -144,18 +165,6 @@ pub fn perft(board: &mut Board, depth: u8, divide: bool) -> PerftResult {
     let mut legal_moves = MoveBuffer::new();
     board.generate_legal_moves(&mut legal_moves, false);
 
-    if depth == 1 {
-        return PerftResult::new(
-            legal_moves.len() as u64,
-            start_time.elapsed(),
-            if divide {
-                Some(legal_moves.into_iter().map(|m| (m, 1)).collect())
-            } else {
-                None
-            },
-        );
-    }
-
     let mut total_nodes = 0;
     let mut move_counts = if divide {
         Some(Vec::with_capacity(legal_moves.len()))
@@ -164,33 +173,20 @@ pub fn perft(board: &mut Board, depth: u8, divide: bool) -> PerftResult {
     };
 
     for m in legal_moves {
-        let move_data = match board.make_move(m) {
-            Ok(data) => data,
-            Err(_) => continue,
-        };
+        if let Ok(undo_info) = board.make_move(m) {
+            let sub_nodes = if depth == 1 {
+                1
+            } else {
+                perft_recursive(board, depth - 1)
+            };
 
-        let sub_nodes = if depth == 1 {
-            1
-        } else {
-            let mut board_copy = *board;
-            perft(&mut board_copy, depth - 1, false).nodes
-        };
+            board.unmake_move(&undo_info).expect("Unmake failed");
 
-        board
-            .unmake_move(&move_data)
-            .wrap_err_with(|| {
-                format!(
-                    "fucked up at {} to {} at {depth} depth. {move_data:?}",
-                    m.from_sq(),
-                    m.to_sq()
-                )
-            })
-            .expect("Should be able to unmake move");
+            total_nodes += sub_nodes;
 
-        total_nodes += sub_nodes;
-
-        if let Some(ref mut counts) = move_counts {
-            counts.push((m, sub_nodes));
+            if let Some(ref mut counts) = move_counts {
+                counts.push((m, sub_nodes));
+            }
         }
     }
 
