@@ -193,45 +193,48 @@ impl Board {
         }
     }
 
-    /// Method to unmake a move, but arguably, making a Copy of the board to make
-    /// a Move is and discarding the Copy later is faster.
+    /// Method to unmake a move
     pub fn unmake_move(&mut self, move_data: &MoveInfo) -> miette::Result<()> {
         self.stm = move_data.stm;
         self.castling_rights = move_data.castle_rights;
         self.enpassant_square = move_data.enpassant_square;
         self.halfmove_clock = move_data.halfmove_clock;
         self.hash = move_data.zobrist_hash;
+
+        // if black move was just unmade, decrement full move counter
         if self.stm == Side::Black {
             self.fullmove_counter -= 1;
         }
 
         let from = move_data.from;
         let to = move_data.to;
+        let stm = self.stm;
         let opponent = self.stm.flip();
-        let _piece_moved = move_data.piece_moved;
+        let piece_moved = move_data.piece_moved;
 
         // Restore moved piece
         if let Some(promoted_piece) = move_data.promotion {
-            // self.material[self.stm.index()] -= promoted_piece.score();
-            // self.material[self.stm.index()] += Piece::Pawn.score();
             self.positions
-                .remove_piece(self.stm, promoted_piece, to.index())?;
-            self.positions.set(self.stm, Piece::Pawn, from.index())?;
+                .remove_piece_unchecked(self.stm, promoted_piece, to.index());
+            self.positions
+                .set_piece_unchecked(self.stm, Piece::Pawn, from.index());
         } else {
-            self.positions.move_piece(to, from)?;
+            self.positions
+                .move_piece_unchecked(to.into(), from.into(), stm, piece_moved);
         }
 
         // Restore captured pieces
         if let Some(captured) = move_data.captured_piece {
-            // self.material[opponent.index()] += captured.score();
             if move_data.is_en_passant {
                 let captured_idx = match self.stm {
                     Side::White => to.index() - 8,
                     Side::Black => to.index() + 8,
                 };
-                self.positions.set(opponent, captured, captured_idx)?;
+                self.positions
+                    .set_piece_unchecked(opponent, captured, captured_idx);
             } else {
-                self.positions.set(opponent, captured, to.index())?;
+                self.positions
+                    .set_piece_unchecked(opponent, captured, to.index());
             }
         }
 
@@ -244,12 +247,10 @@ impl Board {
                 (Side::Black, 58) => (59, 56), // Black queenside: rook from d8 to a8
                 _ => unreachable!("[unmake_move] Invalid castling move data"),
             };
-            let rook_from_sq = Square::new(rook_from).unwrap();
-            let rook_to_sq = Square::new(rook_to).unwrap();
-            self.positions.move_piece(rook_from_sq, rook_to_sq)?;
+            self.positions
+                .move_piece_unchecked(rook_from, rook_to, stm, Piece::Rook);
         }
 
-        // self.material = move_data.material;
         Ok(())
     }
 
@@ -382,7 +383,8 @@ impl Board {
                 // XOR out pawn
                 self.hash ^= &ZOBRIST.pieces[self.stm.index()][Piece::pawn()][to.index()];
 
-                self.positions.set(self.stm, promo_piece, to.index())?;
+                self.positions
+                    .set_piece(self.stm, promo_piece, to.index())?;
                 // self.material[self.stm.index()] += promo_piece.score();
                 // XOR in promote piece
                 self.hash ^= &ZOBRIST.pieces[self.stm.index()][promo_piece.index()][to.index()];
@@ -427,7 +429,8 @@ impl Board {
             Some(p) => p,
             None => unreachable!(
                 "Move is supposed to be legal.
-                There should be an attacker_piece at {from_sq}."
+                There should be an attacker_piece at {from_sq}. {:?}",
+                self.to_fen()
             ),
         };
         let victim_piece = if mv.is_enpassant() {

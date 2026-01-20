@@ -133,7 +133,7 @@ fn bench_boardstate_ops(c: &mut Criterion) {
     group.bench_function("set_piece", |b| {
         b.iter_batched(
             || (setup_board_state(), Side::White, Piece::Knight, 27),
-            |(mut state, side, piece, pos)| black_box(state.set(side, piece, pos).is_ok()),
+            |(mut state, side, piece, pos)| black_box(state.set_piece(side, piece, pos).is_ok()),
             BatchSize::SmallInput,
         );
     });

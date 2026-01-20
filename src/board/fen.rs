@@ -172,7 +172,7 @@ fn place_pieces(pieces: &str) -> miette::Result<BoardState> {
             }
             _ => {
                 if let Some((piece, side)) = PIECE_CHAR_LOOKUP_TABLE.get(&char) {
-                    positions.set(*side, *piece, rank * 8 + file)?;
+                    positions.set_piece(*side, *piece, rank * 8 + file)?;
                     file += 1
                 } else {
                     miette::bail!("Invalid fen character: {char}")

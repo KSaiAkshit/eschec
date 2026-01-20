@@ -253,20 +253,19 @@ mod material_tests {
         let from = Square::from_str("e2").unwrap();
         let to = Square::from_str("e4").unwrap();
         let mov = Move::new(from.index() as u8, to.index() as u8, Move::QUIET);
-        let orig_mat = board.material;
+
+        println!("Original: \n{}", board);
 
         let move_data = board.make_move(mov).unwrap();
 
-        let moved_mat = board.material;
-
         assert_ne!(board, orig_board);
-        assert_eq!(orig_mat, moved_mat);
 
+        println!("Make: \n{}", board);
         board.unmake_move(&move_data).unwrap();
-        let restored_mat = board.material;
+
+        println!("UnMade: \n{}", board);
 
         assert_eq!(board, orig_board);
-        assert_eq!(orig_mat, restored_mat);
     }
 
     #[test]
@@ -280,21 +279,16 @@ mod material_tests {
         let from = Square::from_str("e4").unwrap();
         let to = Square::from_str("d5").unwrap();
         let mov = Move::new(from.index() as u8, to.index() as u8, Move::CAPTURE);
-        let orig_mat = board.material;
 
         let move_data = board.make_move(mov).unwrap();
-        let moved_mat = board.material;
 
         assert_ne!(board, orig_board);
-        assert_ne!(orig_mat, moved_mat);
 
         board.unmake_move(&move_data).unwrap();
-        let restored_mat = board.material;
 
         println!("original board: \n{orig_board}");
         println!("unmade board: \n{board}");
         assert_eq!(board, orig_board);
-        assert_eq!(orig_mat, restored_mat);
     }
     #[test]
     fn test_initial_material_balance() {

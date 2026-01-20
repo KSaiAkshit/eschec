@@ -45,7 +45,7 @@ impl<'a> MovePicker<'a> {
     /// * `tt_move` - Transposition table move (gets highest priority)
     /// * `repetition_table` - History heuristic table
     pub fn new(
-        board: &'a Board,
+        board: &'_ Board,
         moves: &'a mut [Move],
         killers: &[Option<Move>; 2],
         tt_move: Option<Move>,
@@ -71,7 +71,7 @@ impl<'a> MovePicker<'a> {
     /// # Arguments
     /// * `board` - Current board position (for scoring)
     /// * `moves` - Mutable slice of legal moves to pick from
-    pub fn new_qsearch(board: &'a Board, moves: &'a mut [Move]) -> Self {
+    pub fn new_qsearch(board: &'_ Board, moves: &'a mut [Move]) -> Self {
         debug_assert!(moves.len() <= MAX_MOVES, "Too many moves");
 
         let mut scores = [0i32; MAX_MOVES];

@@ -386,6 +386,8 @@ impl AlphaBetaSearch {
         let mut best_score = i32::MIN + 1;
         let mut completed_depth = u16::default();
 
+        let mut root_board = *board;
+
         // Prev score for Aspiration Windows
         let mut prev_score = 0;
 
@@ -397,7 +399,7 @@ impl AlphaBetaSearch {
             debug!("Iterative Deepening current depth: {depth}");
 
             let (local_best_move, local_best_score) = self.root_search_with_aspiration(
-                board,
+                &mut root_board,
                 depth,
                 &mut legal_moves,
                 best_move,
@@ -441,7 +443,7 @@ impl AlphaBetaSearch {
 
     fn alpha_beta(
         &mut self,
-        board: &Board,
+        board: &mut Board,
         context: SearchContext,
         depth: u16,
         mut alpha: i32,
@@ -653,7 +655,7 @@ impl AlphaBetaSearch {
             .expect("Atleast one move should exist in the buffer");
 
         let mut picker = MovePicker::new(
-            board,
+            &board,
             legal_moves.as_mut_slice(),
             &self.search_tables.killer_moves[ply],
             tt_move,
@@ -669,10 +671,11 @@ impl AlphaBetaSearch {
             }
 
             // TODO: Use Unmake_move instead
-            let mut board_copy = *board;
-            board_copy.make_move(mv).expect("Move is already legal");
+            // let mut board_copy = *board;
+            // board_copy.make_move(mv).expect("Move is already legal");
+            let move_info = board.make_move(mv).expect("Move is already legal");
 
-            self.repetition_table.push(board_copy.hash);
+            self.repetition_table.push(board.hash);
 
             let mut score: i32;
 
@@ -682,7 +685,7 @@ impl AlphaBetaSearch {
             // Starts as non-PV unless the parent is PV and this is the first move
             let mut child_context = context.new_child(child_is_pv);
 
-            let move_gives_check = board_copy.is_in_check(board_copy.stm);
+            let move_gives_check = board.is_in_check(board.stm);
 
             let in_check_ext = if is_in_check { 1 } else { 0 };
 
@@ -711,7 +714,7 @@ impl AlphaBetaSearch {
             let new_depth = depth + extension;
 
             if is_pv_node {
-                score = self.pv_search(&board_copy, child_context, new_depth, alpha, beta);
+                score = self.pv_search(board, child_context, new_depth, alpha, beta);
             } else if self.should_reduce(depth, move_index, mv, is_in_check, move_gives_check)
                 && extension == 0
             // Don't reduce extended moves
@@ -729,13 +732,7 @@ impl AlphaBetaSearch {
                     self.stats.lmr_attempts += 1;
                 }
 
-                score = -self.alpha_beta(
-                    &board_copy,
-                    child_context,
-                    reduced_depth,
-                    -alpha - 1,
-                    -alpha,
-                );
+                score = -self.alpha_beta(board, child_context, reduced_depth, -alpha - 1, -alpha);
 
                 if score > alpha {
                     // Since LMR failed high, this node should now be PV node
@@ -743,13 +740,16 @@ impl AlphaBetaSearch {
                         self.stats.lmr_research += 1;
                     }
                     child_context.is_pv_node = true;
-                    score = self.zw_search(&board_copy, child_context, new_depth, alpha, beta);
+                    score = self.zw_search(board, child_context, new_depth, alpha, beta);
                 }
             } else {
-                score = self.zw_search(&board_copy, child_context, new_depth, alpha, beta);
+                score = self.zw_search(board, child_context, new_depth, alpha, beta);
             }
 
             self.repetition_table.pop();
+            board
+                .unmake_move(&move_info)
+                .expect("Should be able to unmake moves");
 
             if self.should_stop() {
                 return 0;
@@ -841,7 +841,7 @@ impl AlphaBetaSearch {
 
     fn quiescence_search(
         &mut self,
-        board: &Board,
+        board: &mut Board,
         context: SearchContext,
         mut alpha: i32,
         beta: i32,
@@ -951,21 +951,25 @@ impl AlphaBetaSearch {
                     continue;
                 }
             }
-            let mut board_copy = *board;
-            if let Err(e) = board_copy.make_move(mv) {
-                error!(
-                    "Making move on board (fen: {:?}) failed with error: {}",
-                    board_copy.to_fen(),
-                    e
-                );
-                continue;
-            }
-            self.repetition_table.push(board_copy.hash);
+            let move_info = board.make_move(mv).ok().expect("Move should be legal");
+            // let mut board_copy = *board;
+            // if let Err(e) = board_copy.make_move(mv) {
+            //     error!(
+            //         "Making move on board (fen: {:?}) failed with error: {}",
+            //         board_copy.to_fen(),
+            //         e
+            //     );
+            //     continue;
+            // }
+            self.repetition_table.push(board.hash);
 
             let child_context = context.new_child(context.is_pv_node);
-            let score = -self.quiescence_search(&board_copy, child_context, -beta, -alpha);
+            let score = -self.quiescence_search(board, child_context, -beta, -alpha);
 
             self.repetition_table.pop();
+            board
+                .unmake_move(&move_info)
+                .expect("Should be able to unmake move");
 
             if score >= beta {
                 // Fail-High
@@ -1061,7 +1065,7 @@ impl AlphaBetaSearch {
     #[inline(always)]
     fn pv_search(
         &mut self,
-        board: &Board,
+        board: &mut Board,
         context: SearchContext,
         depth: u16,
         alpha: i32,
@@ -1072,7 +1076,7 @@ impl AlphaBetaSearch {
 
     fn root_search_with_aspiration(
         &mut self,
-        board: &Board,
+        board: &mut Board,
         depth: u16,
         legal_moves: &mut MoveBuffer,
         prev_best_move: Option<Move>,
@@ -1145,7 +1149,7 @@ impl AlphaBetaSearch {
 
     fn root_search_attempt(
         &mut self,
-        board: &Board,
+        board: &mut Board,
         depth: u16,
         alpha_base: i32,
         beta_base: i32,
@@ -1162,17 +1166,25 @@ impl AlphaBetaSearch {
                 break;
             }
 
-            let mut board_copy = *board;
-            if let Err(e) = board_copy.make_move(mv) {
-                error!(
-                    "Making move on board (fen: {:?}) failed with error: {}",
-                    board_copy.to_fen(),
-                    e
-                );
-                continue;
-            }
+            // let make_info =  board.make_move(mv).ok().expect("Move should be legal");
+            let make_info = match board.make_move(mv) {
+                Ok(mi) => mi,
+                Err(e) => panic!(
+                    "{e:?}\n{}",
+                    format!("Curr board: {:?}, Curr move: {}", board.to_fen(), mv.uci())
+                ),
+            };
+            // let mut board_copy = *board;
+            // if let Err(e) = board_copy.make_move(mv) {
+            //     error!(
+            //         "Making move on board (fen: {:?}) failed with error: {}",
+            //         board_copy.to_fen(),
+            //         e
+            //     );
+            //     continue;
+            // }
 
-            self.repetition_table.push(board_copy.hash);
+            self.repetition_table.push(board.hash);
 
             let root_child_context = SearchContext {
                 ply: 1,
@@ -1180,9 +1192,12 @@ impl AlphaBetaSearch {
                 excluded_move: None,
             };
 
-            let score = -self.alpha_beta(&board_copy, root_child_context, depth - 1, -beta, -alpha);
+            let score = -self.alpha_beta(board, root_child_context, depth - 1, -beta, -alpha);
 
             self.repetition_table.pop();
+            board
+                .unmake_move(&make_info)
+                .expect("Should be able to unmake move");
 
             if self.should_stop() {
                 break;
@@ -1207,7 +1222,7 @@ impl AlphaBetaSearch {
     #[inline(always)]
     fn zw_search(
         &mut self,
-        board: &Board,
+        board: &mut Board,
         context: SearchContext,
         depth: u16,
         alpha: i32,
@@ -1226,7 +1241,7 @@ impl AlphaBetaSearch {
     /// Null move pruning
     fn try_null_move_pruning(
         &mut self,
-        board: &Board,
+        board: &mut Board,
         context: SearchContext,
         depth: u16,
         beta: i32,
@@ -1254,7 +1269,7 @@ impl AlphaBetaSearch {
         null_board.make_null_move();
 
         let child_context = context.new_child(false);
-        let score = -self.alpha_beta(&null_board, child_context, null_depth, -beta, -beta + 1);
+        let score = -self.alpha_beta(&mut null_board, child_context, null_depth, -beta, -beta + 1);
 
         if score >= beta {
             if self.config.collect_stats {

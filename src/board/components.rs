@@ -512,7 +512,7 @@ pub struct PieceInfo {
 }
 
 impl PieceInfo {
-    pub fn new(piece: Piece, side: Side) -> Self {
+    pub const fn new(piece: Piece, side: Side) -> Self {
         Self { piece, side }
     }
 }
@@ -633,7 +633,31 @@ impl BoardState {
             || self.all_sides[Side::Black.index()].contains_square(square)
     }
 
-    pub fn set(
+    #[inline]
+    pub(crate) const fn set_piece_unchecked(&mut self, side: Side, piece: Piece, sq: usize) {
+        unsafe {
+            self.all_pieces
+                .get_unchecked_mut(side.index())
+                .get_unchecked_mut(piece.index())
+                .set(sq);
+            self.all_sides.get_unchecked_mut(side.index()).set(sq);
+            self.mailbox[sq] = Some(PieceInfo::new(piece, side));
+        }
+    }
+
+    #[inline]
+    pub(crate) const fn remove_piece_unchecked(&mut self, side: Side, piece: Piece, sq: usize) {
+        unsafe {
+            self.all_pieces
+                .get_unchecked_mut(side.index())
+                .get_unchecked_mut(piece.index())
+                .capture(sq);
+            self.all_sides.get_unchecked_mut(side.index()).capture(sq);
+            self.mailbox[sq] = None;
+        }
+    }
+
+    pub fn set_piece(
         &mut self,
         side_to_set: Side,
         piece_to_set: Piece,
@@ -701,6 +725,35 @@ impl BoardState {
         self.mailbox[to_index] = Some(PieceInfo::new(piece, side));
 
         Ok(())
+    }
+
+    /// Primary way to make moves, unsafe version
+    /// This does NOT handle captures
+    pub(crate) fn move_piece_unchecked(
+        &mut self,
+        from: usize,
+        to: usize,
+        side: Side,
+        piece: Piece,
+    ) {
+        let side_idx = side.index();
+        let piece_idx = piece.index();
+
+        unsafe {
+            self.all_pieces
+                .get_unchecked_mut(side_idx)
+                .get_unchecked_mut(piece_idx)
+                .capture(from);
+            self.all_sides.get_unchecked_mut(side_idx).capture(from);
+            self.mailbox[from] = None;
+
+            self.all_pieces
+                .get_unchecked_mut(side_idx)
+                .get_unchecked_mut(piece_idx)
+                .set(to);
+            self.all_sides.get_unchecked_mut(side_idx).set(to);
+            self.mailbox[to] = Some(PieceInfo::new(piece, side))
+        }
     }
 
     #[inline(always)]

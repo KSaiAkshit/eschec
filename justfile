@@ -31,6 +31,14 @@ default: play
 help:
     just -l
 
+
+[doc("Check for required external tools")]
+doctor:
+    @which cutechess-cli > /dev/null && echo "cutechess-cli: {{ GREEN }}Found{{ NORMAL }}" || echo "cutechess-cli: {{ RED }}Missing{{ NORMAL }}"
+    @which fastchess > /dev/null && echo "fastchess: {{ GREEN }}Found{{ NORMAL }}" || echo "fastchess: {{ RED }}Missing{{ NORMAL }}"
+    @which perf > /dev/null && echo "perf: {{ GREEN }}Found{{ NORMAL }}" || echo "perf: {{ RED }}Missing{{ NORMAL }}"
+    @which flamelens > /dev/null && echo "flamelens: {{ GREEN }}Found{{ NORMAL }}" || echo "flamelens: {{ RED }}Missing{{ NORMAL }}"
+
 build-all-tags:
     #!/usr/bin/bash
     set -euo pipefail
