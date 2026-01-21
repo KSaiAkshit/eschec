@@ -1,6 +1,9 @@
 use std::{fs, path::Path};
 
-use crate::prelude::{NUM_PIECES, NUM_SQUARES, Piece, Score};
+use crate::{
+    prelude::{NUM_PIECES, NUM_SQUARES, Piece, Score},
+    tuning::Tunable,
+};
 use miette::IntoDiagnostic;
 use serde::{Deserialize, Serialize};
 use serde_big_array::BigArray;
@@ -70,6 +73,7 @@ pub const NUM_TRACE_FEATURES: usize = MOBILITY_QUEEN_START + QUEEN_MAX;
 // We multiply by 2 because every feature has MG and EG.
 pub const SPSA_VECTOR_SIZE: usize = NUM_TRACE_FEATURES * 2;
 
+crate::define_tunable_params! {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TunableParams {
     // Index 0=Pawn, 1=Knight, 2=Bishop, 3=Rook, 4=Queen
@@ -100,6 +104,10 @@ pub struct TunableParams {
     // Tempo
     pub tempo_bonus: Score,
 
+    // PSTs
+    #[serde(with = "BigArray")]
+    pub psts: [Score; NUM_PST_PARAMS],
+
     // Mobility
     #[serde(with = "BigArray")]
     pub mobility_knight: [Score; KNIGHT_MAX],
@@ -110,9 +118,7 @@ pub struct TunableParams {
     #[serde(with = "BigArray")]
     pub mobility_queen: [Score; QUEEN_MAX],
 
-    // PSTs
-    #[serde(with = "BigArray")]
-    pub psts: [Score; NUM_PST_PARAMS],
+}
 }
 
 impl Default for TunableParams {
@@ -401,118 +407,118 @@ impl TunableParams {
 
     // SPSA / OPTIMIZER CONVERSION
 
-    pub fn to_vector(&self) -> Vec<f64> {
-        let mut vec = Vec::with_capacity(SPSA_VECTOR_SIZE);
+    // pub fn to_vector(&self) -> Vec<f64> {
+    //     let mut vec = Vec::with_capacity(SPSA_VECTOR_SIZE);
 
-        // Helper to push a Score
-        let mut push_score = |s: Score| {
-            vec.push(s.mg as f64);
-            vec.push(s.eg as f64);
-        };
+    //     // Helper to push a Score
+    //     let mut push_score = |s: Score| {
+    //         vec.push(s.mg as f64);
+    //         vec.push(s.eg as f64);
+    //     };
 
-        for s in self.material {
-            push_score(s);
-        }
-        // Standard Features
-        push_score(self.bishop_pair_bonus);
-        push_score(self.castling_bonus);
-        push_score(self.pawn_shield_full);
-        push_score(self.pawn_shield_partial);
-        push_score(self.open_file_penalty);
-        push_score(self.semi_open_file_penalty);
-        push_score(self.potential_open_file_penalty);
-        push_score(self.isolated_penalty);
-        push_score(self.doubled_penalty);
-        push_score(self.backward_penalty);
-        push_score(self.connected_bonus);
-        for s in self.passed_pawn_scores {
-            push_score(s);
-        }
-        push_score(self.rook_open_file_bonus);
-        push_score(self.rook_semi_file_bonus);
-        push_score(self.knight_outpost_bonus);
-        push_score(self.tempo_bonus);
+    //     for s in self.material {
+    //         push_score(s);
+    //     }
+    //     // Standard Features
+    //     push_score(self.bishop_pair_bonus);
+    //     push_score(self.castling_bonus);
+    //     push_score(self.pawn_shield_full);
+    //     push_score(self.pawn_shield_partial);
+    //     push_score(self.open_file_penalty);
+    //     push_score(self.semi_open_file_penalty);
+    //     push_score(self.potential_open_file_penalty);
+    //     push_score(self.isolated_penalty);
+    //     push_score(self.doubled_penalty);
+    //     push_score(self.backward_penalty);
+    //     push_score(self.connected_bonus);
+    //     for s in self.passed_pawn_scores {
+    //         push_score(s);
+    //     }
+    //     push_score(self.rook_open_file_bonus);
+    //     push_score(self.rook_semi_file_bonus);
+    //     push_score(self.knight_outpost_bonus);
+    //     push_score(self.tempo_bonus);
 
-        //  PSTs
-        for score in self.psts {
-            push_score(score);
-        }
+    //     //  PSTs
+    //     for score in self.psts {
+    //         push_score(score);
+    //     }
 
-        //  Mobility
-        for s in self.mobility_knight {
-            push_score(s);
-        }
-        for s in self.mobility_bishop {
-            push_score(s);
-        }
-        for s in self.mobility_rook {
-            push_score(s);
-        }
-        for s in self.mobility_queen {
-            push_score(s);
-        }
+    //     //  Mobility
+    //     for s in self.mobility_knight {
+    //         push_score(s);
+    //     }
+    //     for s in self.mobility_bishop {
+    //         push_score(s);
+    //     }
+    //     for s in self.mobility_rook {
+    //         push_score(s);
+    //     }
+    //     for s in self.mobility_queen {
+    //         push_score(s);
+    //     }
 
-        vec
-    }
+    //     vec
+    // }
 
-    pub fn from_vector(vec: &[f64]) -> Self {
-        let mut params = Self::default();
-        let mut idx = 0;
+    // pub fn from_vector(vec: &[f64]) -> Self {
+    //     let mut params = Self::default();
+    //     let mut idx = 0;
 
-        // Helper to read a Score
-        let mut read_score = || -> Score {
-            let mg = vec[idx] as i32;
-            let eg = vec[idx + 1] as i32;
-            idx += 2;
-            Score::new(mg, eg)
-        };
+    //     // Helper to read a Score
+    //     let mut read_score = || -> Score {
+    //         let mg = vec[idx] as i32;
+    //         let eg = vec[idx + 1] as i32;
+    //         idx += 2;
+    //         Score::new(mg, eg)
+    //     };
 
-        // Material values
-        for i in 0..5 {
-            params.material[i] = read_score();
-        }
+    //     // Material values
+    //     for i in 0..5 {
+    //         params.material[i] = read_score();
+    //     }
 
-        //  Standard Features
-        params.bishop_pair_bonus = read_score();
-        params.castling_bonus = read_score();
-        params.pawn_shield_full = read_score();
-        params.pawn_shield_partial = read_score();
-        params.open_file_penalty = read_score();
-        params.semi_open_file_penalty = read_score();
-        params.potential_open_file_penalty = read_score();
-        params.isolated_penalty = read_score();
-        params.doubled_penalty = read_score();
-        params.backward_penalty = read_score();
-        params.connected_bonus = read_score();
-        for i in 0..8 {
-            params.passed_pawn_scores[i] = read_score();
-        }
-        params.rook_open_file_bonus = read_score();
-        params.rook_semi_file_bonus = read_score();
-        params.knight_outpost_bonus = read_score();
-        params.tempo_bonus = read_score();
+    //     //  Standard Features
+    //     params.bishop_pair_bonus = read_score();
+    //     params.castling_bonus = read_score();
+    //     params.pawn_shield_full = read_score();
+    //     params.pawn_shield_partial = read_score();
+    //     params.open_file_penalty = read_score();
+    //     params.semi_open_file_penalty = read_score();
+    //     params.potential_open_file_penalty = read_score();
+    //     params.isolated_penalty = read_score();
+    //     params.doubled_penalty = read_score();
+    //     params.backward_penalty = read_score();
+    //     params.connected_bonus = read_score();
+    //     for i in 0..8 {
+    //         params.passed_pawn_scores[i] = read_score();
+    //     }
+    //     params.rook_open_file_bonus = read_score();
+    //     params.rook_semi_file_bonus = read_score();
+    //     params.knight_outpost_bonus = read_score();
+    //     params.tempo_bonus = read_score();
 
-        //  PSTs
-        for i in 0..NUM_PST_PARAMS {
-            params.psts[i] = read_score();
-        }
+    //     //  PSTs
+    //     for i in 0..NUM_PST_PARAMS {
+    //         params.psts[i] = read_score();
+    //     }
 
-        //  Mobility
-        for i in 0..KNIGHT_MAX {
-            params.mobility_knight[i] = read_score();
-        }
-        for i in 0..BISHOP_MAX {
-            params.mobility_bishop[i] = read_score();
-        }
-        for i in 0..ROOK_MAX {
-            params.mobility_rook[i] = read_score();
-        }
-        for i in 0..QUEEN_MAX {
-            params.mobility_queen[i] = read_score();
-        }
+    //     //  Mobility
+    //     for i in 0..KNIGHT_MAX {
+    //         params.mobility_knight[i] = read_score();
+    //     }
+    //     for i in 0..BISHOP_MAX {
+    //         params.mobility_bishop[i] = read_score();
+    //     }
+    //     for i in 0..ROOK_MAX {
+    //         params.mobility_rook[i] = read_score();
+    //     }
+    //     for i in 0..QUEEN_MAX {
+    //         params.mobility_queen[i] = read_score();
+    //     }
 
-        params
-    }
+    //     params
+    // }
 
     /// Save to TOML File
     pub fn save_to_file<P: AsRef<Path>>(&self, path: P) -> miette::Result<()> {

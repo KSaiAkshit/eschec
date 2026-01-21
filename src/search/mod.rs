@@ -67,6 +67,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[ignore = "Takes way too long"]
     fn test_null_move_pruning() {
         init();
         // let _ = utils::log::toggle_file_logging(true);

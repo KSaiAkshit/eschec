@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::prelude::*;
+use crate::tuning::Tunable;
 use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub, SubAssign};
 
 /// Type safe wrapper for game phase
@@ -57,6 +58,32 @@ impl Score {
         let mg_w = ENDGAME_PHASE - phase.0;
         let eg_w = phase.0;
         ((self.mg * mg_w) + (self.eg * eg_w)) / ENDGAME_PHASE
+    }
+}
+
+impl Tunable for Score {
+    fn push_to_vector(&self, vec: &mut Vec<f64>) {
+        vec.push(self.mg as f64);
+        vec.push(self.eg as f64);
+    }
+
+    fn read_from_vector(vec: &[f64], idx: &mut usize) -> Self {
+        let mg = vec[*idx] as i32;
+        let eg = vec[*idx + 1] as i32;
+        *idx += 2;
+        Score::new(mg, eg)
+    }
+}
+
+impl<const N: usize> Tunable for [Score; N] {
+    fn push_to_vector(&self, vec: &mut Vec<f64>) {
+        for score in self {
+            score.push_to_vector(vec);
+        }
+    }
+
+    fn read_from_vector(vec: &[f64], idx: &mut usize) -> Self {
+        std::array::from_fn(|_| Score::read_from_vector(vec, idx))
     }
 }
 
